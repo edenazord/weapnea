@@ -1,0 +1,38 @@
+[
+  {
+    "id": "it",
+    "code": "it",
+    "name": "Italian",
+    "native_name": "Italiano"
+  },
+  {
+    "id": "en",
+    "code": "en",
+    "name": "English",
+    "native_name": "English"
+  },
+  {
+    "id": "es",
+    "code": "es",
+    "name": "Spanish",
+    "native_name": "Español"
+  },
+  {
+    "id": "fr",
+    "code": "fr",
+    "name": "French",
+    "native_name": "Français"
+  },
+  {
+    "id": "pl",
+    "code": "pl",
+    "name": "Polish",
+    "native_name": "Polski"
+  },
+  {
+    "id": "ru",
+    "code": "ru",
+    "name": "Russian",
+    "native_name": "Русский"
+  }
+]

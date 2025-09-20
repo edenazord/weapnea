@@ -1,0 +1,173 @@
+
+import { useState, useEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
+import { useToast } from '@/components/ui/use-toast';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getEmailTemplates, updateEmailTemplate, EmailTemplate } from '@/lib/email-templates-api';
+import { Mail, Save, Eye } from 'lucide-react';
+
+const EmailTemplatesManager = () => {
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadTemplates();
+  }, []);
+
+  const loadTemplates = async () => {
+    try {
+      const data = await getEmailTemplates();
+      setTemplates(data);
+    } catch (error) {
+      toast({
+        title: 'Errore',
+        description: 'Impossibile caricare i template email',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSave = async (template: EmailTemplate) => {
+    setSaving(template.id);
+    try {
+      await updateEmailTemplate(template.template_type, {
+        subject: template.subject,
+        html_content: template.html_content,
+        is_active: template.is_active,
+      });
+      
+      toast({
+        title: 'Successo',
+        description: 'Template email aggiornato',
+      });
+    } catch (error) {
+      toast({
+        title: 'Errore',
+        description: 'Impossibile aggiornare il template',
+        variant: 'destructive',
+      });
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  const updateTemplate = (index: number, field: keyof EmailTemplate, value: any) => {
+    setTemplates(prev => prev.map((template, i) => 
+      i === index ? { ...template, [field]: value } : template
+    ));
+  };
+
+  const getTemplateTitle = (type: string) => {
+    switch (type) {
+      case 'signup_confirmation':
+        return 'Conferma Registrazione';
+      case 'password_recovery':
+        return 'Recupero Password';
+      case 'magic_link':
+        return 'Link Magico';
+      default:
+        return type;
+    }
+  };
+
+  if (loading) {
+    return <div className="flex justify-center p-8">Caricamento...</div>;
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center space-x-2">
+        <Mail className="h-6 w-6" />
+        <h2 className="text-2xl font-bold">Gestione Template Email</h2>
+      </div>
+
+      <Tabs defaultValue="signup_confirmation" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          {templates.map((template) => (
+            <TabsTrigger key={template.template_type} value={template.template_type}>
+              {getTemplateTitle(template.template_type)}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {templates.map((template, index) => (
+          <TabsContent key={template.template_type} value={template.template_type}>
+            <Card>
+              <CardHeader>
+                <CardTitle>{getTemplateTitle(template.template_type)}</CardTitle>
+                <CardDescription>
+                  Personalizza il template per le email di {getTemplateTitle(template.template_type).toLowerCase()}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    checked={template.is_active}
+                    onCheckedChange={(checked) => updateTemplate(index, 'is_active', checked)}
+                  />
+                  <Label>Template attivo</Label>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={`subject-${template.template_type}`}>Oggetto</Label>
+                  <Input
+                    id={`subject-${template.template_type}`}
+                    value={template.subject}
+                    onChange={(e) => updateTemplate(index, 'subject', e.target.value)}
+                    placeholder="Oggetto dell'email"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor={`content-${template.template_type}`}>Contenuto HTML</Label>
+                  <Textarea
+                    id={`content-${template.template_type}`}
+                    value={template.html_content}
+                    onChange={(e) => updateTemplate(index, 'html_content', e.target.value)}
+                    placeholder="Contenuto HTML dell'email"
+                    rows={10}
+                  />
+                </div>
+
+                <div className="flex justify-between">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      // Preview functionality could be implemented here
+                      toast({
+                        title: 'Info',
+                        description: 'Funzionalità di anteprima in sviluppo',
+                      });
+                    }}
+                  >
+                    <Eye className="h-4 w-4 mr-2" />
+                    Anteprima
+                  </Button>
+
+                  <Button
+                    onClick={() => handleSave(template)}
+                    disabled={saving === template.id}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {saving === template.id ? 'Salvataggio...' : 'Salva'}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
+  );
+};
+
+export default EmailTemplatesManager;

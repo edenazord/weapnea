@@ -1,0 +1,209 @@
+{
+  "nav": {"home": "Inicio", "events": "Eventos", "about": "Quiénes somos", "blog": "Blog", "forum": "Foro", "profile": "Perfil", "dashboard": "Panel", "logout": "Salir"},
+  "common": {"login": "Iniciar sesión", "register": "Registrarse", "error": "Error", "unexpected_error": "Error inesperado", "cancel": "Cancelar", "delete": "Eliminar"},
+  "homepage": {"uncategorized_events": "Entrenamientos", "loading_events": "Cargando eventos...", "error_title": "Error de carga", "error_description": "Se produjo un error al cargar los eventos.", "retry_btn": "Reintentar", "no_events_title": "No hay eventos disponibles", "no_events_description": "Actualmente no hay eventos publicados.", "no_results_title": "No se encontraron eventos", "no_results_description": "No hay próximos eventos que coincidan con tus filtros.", "sponsors": {"title": "Socios y Patrocinadores", "learn_more": "Más información"}},
+  "categories": {"trainings": "Entrenamientos", "trips": "Viajes", "courses": "Cursos", "workshops": "Talleres", "competitions": "Competiciones", "stages": "Stages"},
+  "footer": {"description": "La primera plataforma internacional dedicada a la apnea. Únete a eventos, viajes y actividades formativas conectándote con una comunidad de entusiastas nada superficial.", "quick_links": "Enlaces rápidos", "contact": "Contactos", "copyright": "Todos los derechos reservados."},
+  "hero": {"badge_text": "Descubre el mundo de la apnea", "title_line1": "Tu plataforma para", "title_line2": "la apnea", "description": "Encuentra eventos, cursos y competiciones. Conéctate con la comunidad y descubre nuevas oportunidades para mejorar tu rendimiento.", "btn_explore": "Explorar eventos", "btn_community": "Unirse a la comunidad", "stats_events": "Eventos organizados", "stats_freedivers": "Apneístas activos", "stats_instructors": "Instructores certificados"},
+  "about_page": {"title": "Quiénes somos", "subtitle": "WeApnea es la primera plataforma internacional dedicada a la apnea, nacida de la pasión de un grupo de apneístas que quiso crear un espacio de intercambio y crecimiento para toda la comunidad.", "mission_title": "Nuestra misión", "mission_desc": "Conectar a apneístas de todo el mundo a través de una plataforma que facilita la participación en eventos, viajes y actividades formativas. Queremos hacer la apnea más accesible y crear una comunidad global de entusiastas.", "vision_title": "Nuestra visión", "vision_desc": "Convertirnos en el punto de referencia internacional para la apnea, donde cada apneísta pueda encontrar oportunidades de crecimiento, compartir experiencias y conectar de forma auténtica con otros miembros de la comunidad.", "values_title": "Nuestros valores", "values": {"community_title": "Comunidad", "community_desc": "Creemos en la fuerza de la comunidad y en compartir experiencias para crecer juntos como apneístas.", "passion_title": "Pasión", "passion_desc": "La apnea es nuestra pasión y queremos transmitirla a través de eventos y experiencias inolvidables.", "innovation_title": "Innovación", "innovation_desc": "Utilizamos la tecnología para hacer la apnea más accesible y conectar apneístas en todo el mundo."}, "team_title": "Nuestro equipo", "team_desc": "Somos un equipo de apneístas apasionados, desarrolladores y profesionales del sector que trabajan juntos para crear la mejor experiencia posible para la comunidad de la apnea."},
+  "search": {"placeholder": "Buscar eventos, cursos, competiciones...", "active_filters": "Filtros activos", "filter_results": "Filtra tus resultados", "category": "Categoría", "all_categories": "Todas las categorías", "discipline": "Disciplina", "all_disciplines": "Todas las disciplinas", "nation": "Nación", "all_nations": "Todas las naciones", "date": "Fecha", "select_month": "Selecciona mes", "disciplines": {"indoor": "Indoor", "outdoor": "Outdoor", "indoor_outdoor": "Indoor & Outdoor"}},
+  "test": {"hello": "Hola", "welcome": "Bienvenido", "goodbye": "Adiós"},
+  "auth": {
+    "login_title": "Bienvenido de nuevo a WeApnea",
+    "login_subtitle": "Introduce tus credenciales para acceder a tu cuenta.",
+    "register_title": "Crea una cuenta en WeApnea",
+    "register_subtitle": "Únete a la comunidad de WeApnea.",
+    "back_home": "Volver a la página principal",
+    "login": {
+      "validation": {"email_invalid": "Correo electrónico no válido.", "password_required": "La contraseña es obligatoria."},
+      "success_title": "Inicio de sesión correcto",
+      "success_desc": "¡Bienvenido de nuevo a WeApnea!",
+      "error_title": "Error de inicio de sesión",
+      "error_invalid": "Credenciales no válidas. Inténtalo de nuevo.",
+      "error_generic": "Se produjo un error. Inténtalo de nuevo.",
+      "form": {"email_label": "Correo", "email_placeholder": "tu@correo.com", "password_label": "Contraseña", "submitting": "Iniciando sesión...", "forgot_password": "¿Olvidaste tu contraseña?"}
+    },
+    "register": {
+      "validation": {"role_required": "Debes seleccionar un tipo de cuenta.", "fullname_required": "El nombre completo es obligatorio", "email_invalid": "Correo electrónico no válido.", "password_min": "La contraseña debe tener al menos 6 caracteres.", "company_required": "Todos los campos de sponsor son obligatorios si el rol es 'Sponsor'."},
+      "success_title": "¡Registro completo!",
+      "success_desc": "Revisa tu correo para confirmar la cuenta y completar el registro.",
+      "error_title": "Error de registro",
+  "error_generic": "Se produjo un error durante el registro.",
+      "error_try_later": "Se produjo un error durante el registro. Inténtalo más tarde.",
+      "form": {"role_label": "Tipo de cuenta", "role_user": "Usuario", "role_instructor": "Organizador", "role_company": "Sponsor", "fullname_label": "Nombre y apellidos", "fullname_placeholder": "Juan Pérez", "email_label": "Correo", "email_placeholder": "tu@correo.com", "password_label": "Contraseña", "company_name_label": "Nombre del sponsor", "company_name_placeholder": "WeApnea SL", "vat_number_label": "NIF", "vat_number_placeholder": "ES12345678A", "company_address_label": "Dirección del sponsor", "company_address_placeholder": "Calle Mar 1, 28001 Madrid", "submitting": "Registrando..."}
+    }
+  },
+  "blog_page": {"title": "Blog GoApnea", "subtitle": "Descubre las últimas novedades del mundo de la apnea, técnicas, consejos e historias de nuestra comunidad", "search_placeholder": "Buscar artículos...", "read_more": "Leer más", "author_fallback": "Autor", "no_results_title": "No se encontraron artículos", "no_results_desc": "Intenta cambiar los términos de búsqueda.", "no_posts_title": "No hay artículos publicados", "no_posts_desc": "¡Vuelve pronto para ver nuevo contenido!", "back_to_blog": "Volver al Blog", "share_button": "Compartir", "share_copied_title": "¡Enlace copiado!", "share_copied_desc": "El enlace del artículo se copió al portapapeles.", "not_found_title": "Artículo no encontrado", "not_found_desc": "El artículo que buscas no existe o ha sido eliminado.", "gallery_title": "Galería"},
+  "password_reset": {
+    "email_sent_title": "Correo enviado",
+    "email_sent_desc": "Revisa tu bandeja de entrada para las instrucciones de recuperación.",
+    "errors": {
+      "email_invalid": "Dirección de correo no válida.",
+      "password_min": "La contraseña debe tener al menos 6 caracteres.",
+      "confirm_required": "Confirma la contraseña.",
+      "password_mismatch": "Las contraseñas no coinciden",
+      "send_failed": "Ocurrió un error al enviar el correo de recuperación.",
+      "invalid_link": "Enlace de recuperación no válido. Solicita un nuevo enlace.",
+      "invalid_token": "Token no válido o caducado.",
+      "update_failed": "Se produjo un error al actualizar la contraseña."
+    },
+    "email_sent_heading": "¡Correo enviado!",
+    "email_sent_help": "Hemos enviado instrucciones para restablecer la contraseña a tu correo.",
+    "email_sent_follow": "Revisa tu bandeja y sigue las instrucciones para restablecer la contraseña.",
+    "back_to_login": "Volver al inicio de sesión",
+    "set_new_title": "Establecer nueva contraseña",
+    "request_title": "Recuperar contraseña",
+    "set_new_subtitle": "Introduce tu nueva contraseña.",
+    "request_subtitle": "Introduce tu correo y te enviaremos instrucciones para restablecer la contraseña.",
+    "new_password_label": "Nueva contraseña",
+    "new_password_placeholder": "Introduce nueva contraseña",
+    "confirm_password_label": "Confirmar contraseña",
+    "updating": "Actualizando...",
+    "update_button": "Actualizar contraseña",
+    "email_label": "Correo",
+    "email_placeholder": "tu@correo.com",
+    "sending": "Enviando...",
+    "send_button": "Enviar correo de recuperación",
+    "updated_title": "Contraseña actualizada",
+    "updated_desc": "Tu contraseña se ha actualizado correctamente. Ahora puedes iniciar sesión."
+  },
+  "not_found": {
+    "subtitle": "¡Ups! Página no encontrada",
+    "back_home": "Volver al inicio"
+  },
+  "events": {"participants": "participantes", "details": "Detalles", "count_in_category": "eventos en esta categoría", "none_in_category": "No hay eventos disponibles en esta categoría"},
+  "forum": {
+    "title": "Foro",
+    "subtitle": "Debate con la comunidad de apnea",
+    "new_topic": "Nuevo tema",
+    "login_to_create_topic": "Inicia sesión para crear un tema",
+    "filter": {"all": "Todas"},
+    "anonymous": "Anónimo",
+    "last_reply": "Última respuesta:",
+    "no_topics": {
+      "title": "No se encontraron temas",
+      "generic": "Todavía no hay discusiones en el foro.",
+      "in_category_prefix": "Todavía no hay discusiones en"
+    },
+    "create_first_topic": "Crear el primer tema",
+    "login_to_create_first_topic": "Inicia sesión para crear el primer tema",
+    "back_to_forum": "Volver al foro",
+    "topic_not_found": "Tema no encontrado",
+    "replies": "Respuestas",
+    "delete_topic": {"title": "¿Eliminar este tema?", "description": "Esta acción no se puede deshacer. El tema y todas sus respuestas se eliminarán permanentemente."},
+    "delete_reply": {"title": "¿Eliminar esta respuesta?", "description": "Esta acción no se puede deshacer. La respuesta se eliminará permanentemente."},
+    "add_reply": {"title": "Añadir una respuesta", "placeholder": "Escribe tu respuesta...", "send": "Enviar respuesta", "sending": "Enviando..."},
+    "locked": {"title": "Este tema está bloqueado", "description": "No es posible añadir nuevas respuestas."},
+    "login_cta": {"title": "¡Únete a la conversación!", "description": "Debes iniciar sesión para responder a este tema.", "button": "Inicia sesión para responder"},
+    "toasts": {
+      "topic_deleted": "¡Tema eliminado con éxito!",
+      "topic_delete_error_prefix": "Error al eliminar el tema: ",
+      "reply_deleted": "¡Respuesta eliminada con éxito!",
+      "reply_delete_error_prefix": "Error al eliminar la respuesta: ",
+      "reply_added": "¡Respuesta añadida con éxito!",
+      "reply_add_error_prefix": "Error al añadir la respuesta: "
+    }
+  },
+  "common_ext": {
+    "error": "Error",
+    "unexpected_error": "Error inesperado"
+  },
+  "profile": {
+    "title": "Mi Perfil",
+    "subtitle": "Gestiona tu información personal",
+    "mobile_header_title": "Mi Perfil",
+    "role_label": "Rol",
+    "roles": {
+      "user": "Usuario",
+      "instructor": "Organizador",
+      "company": "Patrocinador"
+    },
+    "tabs": {
+      "overview": "Perfil",
+      "company": "Empresa",
+      "sponsor": "Patrocinio"
+    },
+    "sections": {
+      "my_events": {
+        "title": "Mis Eventos",
+        "description": "Gestiona tus eventos y tu lista de deseos",
+        "participated_button": "Eventos Participados",
+        "participated_sub": "Historial de eventos",
+        "wishlist_button": "Wishlist",
+        "wishlist_sub": "Eventos guardados"
+      },
+      "personal_info": {
+        "title": "Información Personal",
+        "description": "Actualiza tu información personal y de contacto",
+        "full_name_label": "Nombre Completo",
+        "full_name_placeholder": "Tu nombre completo",
+        "instagram_label": "Instagram",
+        "instagram_placeholder": "@usuario",
+        "phone_label": "Teléfono",
+        "phone_placeholder": "+34 600 123456",
+        "bio_label": "Biografía",
+        "bio_placeholder": "Cuéntanos algo sobre ti..."
+      },
+      "certifications": {
+        "title": "Certificaciones y Seguros",
+        "description": "Mantén actualizadas tus certificaciones. Para inscribirte en eventos de pago son obligatorios: Teléfono, Seguro y sus fechas de vencimiento, Certificado médico válido.",
+        "brevetto_label": "Certificación",
+        "brevetto_placeholder": "Selecciona certificación",
+        "brevetto_options": {
+          "none": "Sin certificación",
+          "open_water": "Open Water",
+          "advanced": "Advanced",
+          "rescue": "Rescue",
+          "master": "Master",
+          "instructor": "Instructor"
+        },
+        "brevetto_expiry_label": "Vencimiento de Certificación",
+        "insurance_label": "Seguro",
+        "insurance_placeholder": "Nombre del seguro",
+        "insurance_expiry_label": "Vencimiento del Seguro",
+        "medical_expiry_label": "Vencimiento del Certificado Médico"
+      },
+      "personal_bests": {
+        "title": "Récords Personales",
+        "description": "Registra tus mejores resultados en apnea",
+        "static_apnea_label": "Apnea Estática (minutos:segundos)",
+        "static_apnea_placeholder": "ej. 4:30",
+        "dynamic_apnea_label": "Apnea Dinámica (metros)",
+        "dynamic_apnea_placeholder": "ej. 75",
+        "free_immersion_label": "Inmersión Libre (metros)",
+        "free_immersion_placeholder": "ej. 30",
+        "constant_weight_label": "Peso Constante (metros)",
+        "constant_weight_placeholder": "ej. 45"
+      },
+      "company": {
+        "title": "Información de la Empresa",
+        "description": "Gestiona los datos de tu empresa",
+        "fields": {
+          "company_name_label": "Nombre de la Empresa",
+          "company_name_placeholder": "Nombre de tu empresa",
+          "vat_number_label": "NIF/Número de IVA",
+          "vat_number_placeholder": "ES12345678Z",
+          "company_address_label": "Dirección de la Empresa",
+          "company_address_placeholder": "Dirección completa de la empresa"
+        }
+      },
+      "sponsor": {
+        "title": "Paquetes de Patrocinio",
+        "description": "Descubre nuestros paquetes de patrocinio",
+        "cta_text": "Aumenta la visibilidad de tu empresa patrocinando eventos de apnea.",
+        "cta_button": "Descubrir Paquetes"
+      }
+    },
+    "buttons": {
+      "save": "Guardar Cambios",
+      "saving": "Guardando..."
+    },
+    "toasts": {
+      "update_success_title": "Éxito",
+      "update_success_desc": "¡Perfil actualizado con éxito!",
+      "update_error_title": "Error",
+      "update_error_desc": "Se produjo un error al actualizar el perfil."
+    },
+    "login_required": "Debes estar autenticado para ver el perfil."
+  }
+}
