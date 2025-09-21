@@ -39,9 +39,29 @@ const pool = new Pool({
 // Ensure required schema bits exist (safe to run at startup)
 (async () => {
   try {
+    // Ensure optional columns/tables exist to avoid runtime failures if migrations weren't applied yet
     await pool.query("ALTER TABLE IF NOT EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
+    await pool.query(`
+      CREATE EXTENSION IF NOT EXISTS pgcrypto;
+      CREATE TABLE IF NOT EXISTS public.user_packages (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+        package_type text NOT NULL CHECK (package_type IN ('organizer','sponsor')),
+        package_id text NOT NULL,
+        package_name text NOT NULL,
+        status text NOT NULL DEFAULT 'active' CHECK (status IN ('active','expired','cancelled')),
+        starts_at timestamptz NOT NULL DEFAULT now(),
+        expires_at timestamptz NULL,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        UNIQUE(user_id, package_type)
+      );
+      CREATE INDEX IF NOT EXISTS idx_user_packages_user_id ON public.user_packages(user_id);
+      CREATE INDEX IF NOT EXISTS idx_user_packages_created_at ON public.user_packages(created_at DESC);
+      CREATE INDEX IF NOT EXISTS idx_user_packages_status ON public.user_packages(status);
+    `);
     await detectSchema();
-    console.log('[startup] ensured/detected profiles.personal_best:', HAS_PERSONAL_BEST);
+    console.log('[startup] ensured/detected flags:', { HAS_PERSONAL_BEST, HAS_USER_PACKAGES });
   } catch (e) {
     console.error('[startup] ensure/detect schema failed:', e?.message || e);
   }
@@ -72,6 +92,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 
 // Feature flags detected at runtime
 let HAS_PERSONAL_BEST = false;
+let HAS_USER_PACKAGES = false;
 async function detectSchema() {
   try {
     const q = `SELECT 1 FROM information_schema.columns 
@@ -79,6 +100,9 @@ async function detectSchema() {
     const { rowCount } = await pool.query(q);
     HAS_PERSONAL_BEST = rowCount > 0;
     if (!HAS_PERSONAL_BEST) console.warn('[startup] profiles.personal_best NOT present');
+    const r2 = await pool.query("SELECT to_regclass('public.user_packages') as t");
+    HAS_USER_PACKAGES = !!r2.rows?.[0]?.t;
+    if (!HAS_USER_PACKAGES) console.warn('[startup] user_packages table NOT present');
   } catch (e) {
     console.warn('[startup] schema detection failed:', e?.message || e);
   }
@@ -1323,6 +1347,7 @@ app.delete('/api/admin/users/:id', requireAuth, requireAdmin, async (req, res) =
 // Admin: User packages management
 // -----------------------------
 app.get('/api/admin/user-packages', requireAuth, requireAdmin, async (_req, res) => {
+  if (!HAS_USER_PACKAGES) return res.json([]);
   try {
     const { rows } = await pool.query(`
       SELECT up.*, json_build_object('full_name', p.full_name) AS user_profile
@@ -1337,6 +1362,7 @@ app.get('/api/admin/user-packages', requireAuth, requireAdmin, async (_req, res)
 });
 
 app.post('/api/admin/user-packages/assign', requireAuth, requireAdmin, async (req, res) => {
+  if (!HAS_USER_PACKAGES) return res.status(503).json({ error: 'user_packages not migrated yet' });
   const { targetUserId, packageType, packageId, packageName, durationMonths } = req.body || {};
   if (!targetUserId || !packageType || !packageId || !packageName) {
     return res.status(400).json({ error: 'targetUserId, packageType, packageId, packageName are required' });
@@ -1366,6 +1392,7 @@ app.post('/api/admin/user-packages/assign', requireAuth, requireAdmin, async (re
 });
 
 app.post('/api/admin/user-packages/:id/cancel', requireAuth, requireAdmin, async (req, res) => {
+  if (!HAS_USER_PACKAGES) return res.status(503).json({ error: 'user_packages not migrated yet' });
   try {
     const { rows } = await pool.query("UPDATE user_packages SET status = 'cancelled', updated_at = now() WHERE id = $1 RETURNING *", [req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
