@@ -40,9 +40,10 @@ const pool = new Pool({
 (async () => {
   try {
     await pool.query("ALTER TABLE IF NOT EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
-    console.log('[startup] ensured profiles.personal_best exists');
+    await detectSchema();
+    console.log('[startup] ensured/detected profiles.personal_best:', HAS_PERSONAL_BEST);
   } catch (e) {
-    console.error('[startup] ensure schema failed:', e?.message || e);
+    console.error('[startup] ensure/detect schema failed:', e?.message || e);
   }
 })();
 
@@ -68,6 +69,20 @@ const upload = multer({ storage });
 // Simple token-based auth for mutation endpoints
 const API_TOKEN = process.env.API_TOKEN;
 const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
+
+// Feature flags detected at runtime
+let HAS_PERSONAL_BEST = false;
+async function detectSchema() {
+  try {
+    const q = `SELECT 1 FROM information_schema.columns 
+               WHERE table_schema='public' AND table_name='profiles' AND column_name='personal_best'`;
+    const { rowCount } = await pool.query(q);
+    HAS_PERSONAL_BEST = rowCount > 0;
+    if (!HAS_PERSONAL_BEST) console.warn('[startup] profiles.personal_best NOT present');
+  } catch (e) {
+    console.warn('[startup] schema detection failed:', e?.message || e);
+  }
+}
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
@@ -231,16 +246,14 @@ app.post('/api/auth/reset-password', async (req, res) => {
 app.get('/api/auth/me', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
-    const { rows } = await pool.query(
-      `SELECT 
-        id, email, full_name, role, is_active, avatar_url,
-        bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
-        assicurazione, scadenza_assicurazione, instagram_contact,
-        personal_best, company_name, vat_number, company_address,
-        phone
-       FROM profiles WHERE id = $1 LIMIT 1`,
-      [req.user.id]
-    );
+  const pb = HAS_PERSONAL_BEST ? ', personal_best' : '';
+  const sql = `SELECT 
+    id, email, full_name, role, is_active, avatar_url,
+    bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
+    assicurazione, scadenza_assicurazione, instagram_contact${pb},
+    company_name, vat_number, company_address, phone
+     FROM profiles WHERE id = $1 LIMIT 1`;
+  const { rows } = await pool.query(sql, [req.user.id]);
     const user = rows[0];
     if (!user) return res.status(404).json({ error: 'Not found' });
     res.json({ user });
@@ -263,16 +276,14 @@ app.get('/api/health', async (_, res) => {
 app.get('/api/profile', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
-    const { rows } = await pool.query(
-      `SELECT 
-        id, email, full_name, role, is_active, avatar_url,
-        bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
-        assicurazione, scadenza_assicurazione, instagram_contact,
-        personal_best, company_name, vat_number, company_address,
-        phone
-       FROM profiles WHERE id = $1 LIMIT 1`,
-      [req.user.id]
-    );
+  const pb = HAS_PERSONAL_BEST ? ', personal_best' : '';
+  const sql = `SELECT 
+    id, email, full_name, role, is_active, avatar_url,
+    bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
+    assicurazione, scadenza_assicurazione, instagram_contact${pb},
+    company_name, vat_number, company_address, phone
+     FROM profiles WHERE id = $1 LIMIT 1`;
+  const { rows } = await pool.query(sql, [req.user.id]);
     const user = rows[0];
     if (!user) return res.status(404).json({ error: 'Not found' });
     res.json({ user });
@@ -286,9 +297,10 @@ app.put('/api/profile', requireAuth, async (req, res) => {
   try {
     const allowed = [
       'full_name','avatar_url','bio','brevetto','scadenza_brevetto','scadenza_certificato_medico',
-      'assicurazione','scadenza_assicurazione','instagram_contact','personal_best',
+      'assicurazione','scadenza_assicurazione','instagram_contact',
       'company_name','vat_number','company_address','phone'
     ];
+    if (HAS_PERSONAL_BEST) allowed.push('personal_best');
     const p = req.body || {};
     const fields = Object.keys(p).filter(k => allowed.includes(k));
     if (fields.length === 0) return res.status(400).json({ error: 'no valid fields to update' });
