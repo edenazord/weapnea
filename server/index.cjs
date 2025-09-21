@@ -282,9 +282,16 @@ app.put('/api/profile', requireAuth, async (req, res) => {
     const p = req.body || {};
     const fields = Object.keys(p).filter(k => allowed.includes(k));
     if (fields.length === 0) return res.status(400).json({ error: 'no valid fields to update' });
+    // Serialize JSON fields
+    const values = fields.map((k) => {
+      if (k === 'personal_best' && p[k] && typeof p[k] !== 'string') {
+        return JSON.stringify(p[k]);
+      }
+      return p[k];
+    });
     const sets = fields.map((k,i)=> `${k} = $${i+1}`).join(', ');
     const sql = `UPDATE profiles SET ${sets}, updated_at = now() WHERE id = $${fields.length+1} RETURNING *`;
-    const { rows } = await pool.query(sql, [...fields.map(k => p[k]), req.user.id]);
+    const { rows } = await pool.query(sql, [...values, req.user.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json({ user: rows[0] });
   } catch (e) {
