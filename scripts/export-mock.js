@@ -61,6 +61,9 @@ async function main() {
   const forumReplies = await safeQuery(
     `select id, content, topic_id, author_id, created_at, updated_at from public.forum_replies`
   );
+  const blog = await safeQuery(
+    `select id, created_at, updated_at, title, slug, excerpt, content, cover_image_url, gallery_images, seo_title, seo_description, seo_keywords, hashtags, published, author_id from public.blog_articles`
+  );
 
   // Scrive i file
   const write = (name, data) => {
@@ -74,6 +77,7 @@ async function main() {
   write('forum-categories.json', forumCategories);
   write('forum-topics.json', forumTopics);
   write('forum-replies.json', forumReplies);
+  write('blog.json', blog);
 
   await client.end();
 }

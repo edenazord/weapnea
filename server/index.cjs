@@ -304,7 +304,7 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
   }
 });
 
-// Categories with event count
+// Categories with event count (UUID ids)
 app.get('/api/categories', async (_req, res) => {
   const sql = `
     SELECT c.id, c.name, COALESCE(c.order_index, 0) AS order_index,
@@ -980,10 +980,31 @@ app.put('/api/events/:id', requireAuth, async (req, res) => {
   const e = req.body || {};
   const fields = Object.keys(e);
   if (fields.length === 0) return res.status(400).json({ error: 'no fields to update' });
+
+  // Colonne JSONB da serializzare in modo sicuro
+  const jsonCols = new Set([
+    'participants',
+    'included_in_activity',
+    'not_included_in_activity',
+    'gallery_images',
+    'activity_details',
+    'who_we_are',
+    'instructors',
+    'instructor_certificates'
+  ]);
+
+  const values = fields.map((k) => {
+    let v = e[k];
+    if (v !== null && v !== undefined && jsonCols.has(k)) {
+      try { v = JSON.stringify(v); } catch (_) { /* leave as-is */ }
+    }
+    return v ?? null;
+  });
+
   const sets = fields.map((k, i) => `${k} = $${i+1}`).join(', ');
   const sql = `UPDATE events SET ${sets} WHERE id = $${fields.length+1} RETURNING *`;
   try {
-    const { rows } = await pool.query(sql, [...fields.map(k => e[k]), req.params.id]);
+    const { rows } = await pool.query(sql, [...values, req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (err) {

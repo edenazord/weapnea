@@ -1,0 +1,46 @@
+-- Categories and Events schema
+CREATE TABLE IF NOT EXISTS public.categories (
+  id SERIAL PRIMARY KEY,
+  name text NOT NULL,
+  order_index int,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS public.events (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  title text NOT NULL,
+  slug text NOT NULL UNIQUE,
+  description text,
+  date date,
+  end_date date,
+  location text,
+  participants jsonb,
+  image_url text,
+  category_id int REFERENCES public.categories(id) ON DELETE SET NULL,
+  cost numeric,
+  nation text,
+  discipline text,
+  created_by uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+  level text,
+  activity_description text,
+  language text,
+  about_us text,
+  objectives text,
+  included_in_activity jsonb,
+  not_included_in_activity jsonb,
+  notes text,
+  schedule_logistics text,
+  gallery_images jsonb,
+  event_type text,
+  activity_details jsonb,
+  who_we_are jsonb,
+  fixed_appointment boolean,
+  instructors jsonb,
+  instructor_certificates jsonb,
+  max_participants_per_instructor int,
+  schedule_meeting_point text,
+  responsibility_waiver_accepted boolean,
+  privacy_accepted boolean
+);

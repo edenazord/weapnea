@@ -1,0 +1,102 @@
+[
+  {
+    "id": "a0a1a551-7f0d-43fc-b76a-cfb3ad4e37f9",
+    "name": "Tecnica e Allenamento",
+    "description": "Consigli tecnici e metodologie di allenamento",
+    "slug": "tecnica-allenamento",
+    "color": "#10B981",
+    "created_at": "2025-06-17T07:01:31.285Z",
+    "updated_at": "2025-06-17T08:55:20.705Z",
+    "order_index": 1
+  },
+  {
+    "id": "df0254b3-5fcd-44d1-b6b6-04a72bda4246",
+    "name": "Sicurezza",
+    "description": "Discussioni sulla sicurezza in apnea",
+    "slug": "sicurezza",
+    "color": "#8B5CF6",
+    "created_at": "2025-06-17T07:01:31.285Z",
+    "updated_at": "2025-06-17T08:55:20.709Z",
+    "order_index": 3
+  },
+  {
+    "id": "88fd514a-95c8-4301-95ba-6adee214eb9c",
+    "name": "Domande sul sito",
+    "description": "per confrontarsi rispetto a funzioni e particolarità del sito GoApnea",
+    "slug": "sito-funzioni-curiosità",
+    "color": "#3bf75a",
+    "created_at": "2025-06-20T11:13:10.253Z",
+    "updated_at": "2025-06-20T11:15:26.054Z",
+    "order_index": 0
+  },
+  {
+    "id": "b2f8a369-d4c3-45bb-bea2-53484e544fd4",
+    "name": "Eventi e Viaggi",
+    "description": "Informazioni su eventi e viaggi. Ci sei stato? Lo conosci?",
+    "slug": "eventi-viaggi",
+    "color": "#e4f042",
+    "created_at": "2025-06-17T07:01:31.285Z",
+    "updated_at": "2025-06-20T11:16:50.534Z",
+    "order_index": 2
+  },
+  {
+    "id": "476bc222-6b22-4a1e-b239-4b9b71e5a31f",
+    "name": "Discussioni Generali",
+    "description": "Discussioni generali sull'apnea e sport acquatici",
+    "slug": "discussioni-generali",
+    "color": "#3bf7d1",
+    "created_at": "2025-06-17T07:01:31.285Z",
+    "updated_at": "2025-06-20T11:37:07.641Z",
+    "order_index": 0
+  },
+  {
+    "id": "3f1fac4f-697d-4b8c-b95a-be66671a120b",
+    "name": "Gare e Competizioni",
+    "description": "curiosità, info e condivisioni sul mondo agonistico",
+    "slug": "gare-competizioni-agonistica",
+    "color": "#f73b3b",
+    "created_at": "2025-06-20T11:16:20.259Z",
+    "updated_at": "2025-06-20T11:42:29.495Z",
+    "order_index": 0
+  },
+  {
+    "id": "f8c00145-4805-4c90-a93d-d9d931617189",
+    "name": "Car pooling & Home sharing",
+    "description": "tu per caso vai lì a quell'evento? troviamo alloggio insieme? possiamo viaggiare insieme? puoi ospitare?",
+    "slug": "ottimizzazione-passagg-ialloggi-carpooling-homesharing",
+    "color": "#f73bd4",
+    "created_at": "2025-06-18T21:41:05.722Z",
+    "updated_at": "2025-06-20T11:43:18.457Z",
+    "order_index": 0
+  },
+  {
+    "id": "a357df45-53f5-46d8-880e-6194bbcd80cb",
+    "name": "Cerco - Risorse umane",
+    "description": "Sei alla ricerca di personale preparato per il tuo stage? Ti trovi a dover rimpiazzare o sostituire qualcuno nello staff?",
+    "slug": "cerco-compro-ricerca-acquisto",
+    "color": "#3B82F6",
+    "created_at": "2025-06-20T11:31:59.507Z",
+    "updated_at": "2025-06-20T11:43:43.193Z",
+    "order_index": 0
+  },
+  {
+    "id": "07766528-2aaa-414f-8667-f42c46435064",
+    "name": "Compro- Vendo - Scambio",
+    "description": "l'attrezzatura si consuma e vuoi rinnovarla? non puoi più andare a quell'evento e vuoi provare ad essere rimpiazzato da qualcuno? cerchi un particolare item? vuoi vendere qualcosa?",
+    "slug": "compro-vendo-scambio-materiali-attrezzatura",
+    "color": "#3B82F6",
+    "created_at": "2025-06-20T11:47:41.440Z",
+    "updated_at": "2025-06-20T11:47:41.440Z",
+    "order_index": 0
+  },
+  {
+    "id": "783a2684-fbbe-46c6-a94d-7e5c342c7aac",
+    "name": "Attrezzatura",
+    "description": "Discussioni su attrezzature e equipaggiamenti",
+    "slug": "attrezzatura-band-marchi-modelli",
+    "color": "#F59E0B",
+    "created_at": "2025-06-17T07:01:31.285Z",
+    "updated_at": "2025-06-20T13:51:16.476Z",
+    "order_index": 4
+  }
+]

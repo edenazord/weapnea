@@ -1,12 +1,17 @@
 const { Client } = require('pg');
 
 async function main() {
-  const connString = process.env.POSTGRES_URL;
+  const connString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
   if (!connString) {
     console.error('POSTGRES_URL non impostata. Esempio: postgres://postgres:dev@localhost:5432/postgres');
     process.exit(1);
   }
-  const client = new Client({ connectionString: connString, ssl: false });
+  const shouldSSL = (
+    process.env.DB_SSL === 'true' ||
+    process.env.PGSSLMODE === 'require' ||
+    (connString && /(?:^|[?&])sslmode=require(?:&|$)/i.test(connString))
+  );
+  const client = new Client({ connectionString: connString, ssl: shouldSSL ? { rejectUnauthorized: false } : false });
   await client.connect();
 
   const ver = await client.query('select version()');

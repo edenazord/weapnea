@@ -8,7 +8,15 @@ async function run() {
     console.error('POSTGRES_URL non impostata');
     process.exit(1);
   }
-  const client = new Client({ connectionString: conn, ssl: false });
+  const shouldSSL = (
+    process.env.DB_SSL === 'true' ||
+    process.env.PGSSLMODE === 'require' ||
+    (conn && /(?:^|[?&])sslmode=require(?:&|$)/i.test(conn))
+  );
+  const client = new Client({
+    connectionString: conn,
+    ssl: shouldSSL ? { rejectUnauthorized: false } : false,
+  });
   await client.connect();
 
   // Directory delle migrazioni: per default usa scripts/migrations (se presente),

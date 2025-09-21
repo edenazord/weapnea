@@ -77,3 +77,5 @@ Prossimi passi consigliati:
 - [ ] JWT reale sul backend (sostituire token statico), permessi granulari
 - [ ] Webhook pagamenti e stato post-checkout
 - [ ] `.env.example` esteso e `DEPLOY.md`
+
+ok
