@@ -36,6 +36,16 @@ const pool = new Pool({
   ssl: sslRequired ? { rejectUnauthorized: false } : false,
 });
 
+// Ensure required schema bits exist (safe to run at startup)
+(async () => {
+  try {
+    await pool.query("ALTER TABLE IF NOT EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
+    console.log('[startup] ensured profiles.personal_best exists');
+  } catch (e) {
+    console.error('[startup] ensure schema failed:', e?.message || e);
+  }
+})();
+
 const app = express();
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
