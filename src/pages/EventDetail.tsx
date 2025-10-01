@@ -24,7 +24,7 @@ const EventDetailSkeleton = () => (
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                         <Waves className="h-8 w-8 text-blue-600" />
-                        <span className="text-2xl font-bold text-blue-900">GoApnea</span>
+                        <span className="text-2xl font-bold text-blue-900">WeApnea</span>
                     </div>
                     <div className="flex items-center space-x-3">
                         <Skeleton className="h-9 w-20" />
@@ -509,7 +509,7 @@ const EventDetail = () => {
                 <div className="flex items-center justify-between">
                   <Link to="/" className="flex items-center space-x-2">
                     <Waves className="h-8 w-8 text-blue-600" />
-                    <span className="text-2xl font-bold text-blue-900">GoApnea</span>
+                    <span className="text-2xl font-bold text-blue-900">WeApnea</span>
                   </Link>
                    <div className="flex items-center space-x-3">
                     {authLoading ? (

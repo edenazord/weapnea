@@ -18,7 +18,7 @@ async function main() {
   const ping = await client.query('select 1 as ok');
   async function countSafe(tbl) { try { const r = await client.query(`select count(*)::int as c from ${tbl}`); return r.rows[0].c; } catch { return null; } }
   const counts = {};
-  for (const t of ['public.events','public.categories','public.forum_categories','public.forum_topics','public.forum_replies']) {
+  for (const t of ['public.events','public.categories','public.forum_categories','public.forum_topics','public.forum_replies','public.user_packages']) {
     counts[t] = await countSafe(t);
   }
 

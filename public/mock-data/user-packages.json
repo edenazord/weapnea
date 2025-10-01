@@ -1,0 +1,38 @@
+[
+  {
+    "id": "d13d3d66-8f9e-4007-9212-d32407cef367",
+    "user_id": "a2afd813-20fc-4c03-90b0-199e299fbb7d",
+    "package_type": "organizer",
+    "package_id": "startup",
+    "package_name": "Startup",
+    "status": "cancelled",
+    "starts_at": "2025-07-28T11:11:56.345Z",
+    "expires_at": "2026-01-28T13:44:07.606Z",
+    "created_at": "2025-07-28T11:11:56.345Z",
+    "updated_at": "2025-07-28T12:44:37.527Z"
+  },
+  {
+    "id": "d369d5c9-bee6-4701-ac07-d1de7df50e40",
+    "user_id": "099c49cc-3b1e-4687-ab48-cb37270b5ba6",
+    "package_type": "organizer",
+    "package_id": "startup",
+    "package_name": "Startup",
+    "status": "active",
+    "starts_at": "2025-08-13T08:40:40.888Z",
+    "expires_at": "2026-02-13T08:40:40.888Z",
+    "created_at": "2025-07-28T11:20:48.738Z",
+    "updated_at": "2025-08-13T08:40:40.918Z"
+  },
+  {
+    "id": "bb949503-3661-425e-9766-004c41e1f27f",
+    "user_id": "5f4d96e6-6c64-4340-ab63-bcaaaf038f5e",
+    "package_type": "sponsor",
+    "package_id": "partner",
+    "package_name": "Partner",
+    "status": "active",
+    "starts_at": "2025-08-13T08:41:29.869Z",
+    "expires_at": "2026-08-13T08:41:28.927Z",
+    "created_at": "2025-08-13T08:41:29.869Z",
+    "updated_at": "2025-08-13T08:41:29.869Z"
+  }
+]

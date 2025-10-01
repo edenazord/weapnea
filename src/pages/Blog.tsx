@@ -42,7 +42,7 @@ const Blog = () => {
       <div className="max-w-6xl mx-auto px-4 md:px-6">
       
   <PageHeader
-        title={t('blog_page.title', 'Blog GoApnea')}
+        title={t('blog_page.title', 'Blog WeApnea')}
         subtitle={t('blog_page.subtitle', "Scopri le ultime novità dal mondo dell'apnea, tecniche, consigli e storie dalla nostra community")}
       />
 
