@@ -1,209 +1,347 @@
 {
-  "nav": {"home": "Start", "events": "Wydarzenia", "about": "O nas", "blog": "Blog", "forum": "Forum", "profile": "Profil", "dashboard": "Panel", "logout": "Wyloguj"},
-  "common": {"login": "Zaloguj się", "register": "Zarejestruj się", "error": "Błąd", "unexpected_error": "Nieoczekiwany błąd", "cancel": "Anuluj", "delete": "Usuń"},
-  "homepage": {"uncategorized_events": "Treningi", "loading_events": "Ładowanie wydarzeń...", "error_title": "Błąd ładowania", "error_description": "Wystąpił błąd podczas ładowania wydarzeń.", "retry_btn": "Spróbuj ponownie", "no_events_title": "Brak dostępnych wydarzeń", "no_events_description": "Obecnie brak opublikowanych wydarzeń.", "no_results_title": "Nie znaleziono wydarzeń", "no_results_description": "Brak nadchodzących wydarzeń pasujących do filtrów.", "sponsors": {"title": "Partnerzy i Sponsorzy", "learn_more": "Dowiedz się więcej"}},
-  "categories": {"trainings": "Treningi", "trips": "Podróże", "courses": "Kursy", "workshops": "Warsztaty", "competitions": "Zawody", "stages": "Staże"},
-  "footer": {"description": "Pierwsza międzynarodowa platforma poświęcona freedivingowi. Weź udział w wydarzeniach, wyjazdach i szkoleniach, łącząc się ze społecznością pasjonatów bynajmniej nie płytkich!", "quick_links": "Szybkie linki", "contact": "Kontakt", "copyright": "Wszelkie prawa zastrzeżone."},
-  "hero": {"badge_text": "Odkryj świat freedivingu", "title_line1": "Twoja platforma do", "title_line2": "freedivingu", "description": "Znajdź wydarzenia, kursy i zawody. Połącz się ze społecznością i odkryj nowe możliwości poprawy swoich wyników.", "btn_explore": "Przeglądaj wydarzenia", "btn_community": "Dołącz do społeczności", "stats_events": "Zorganizowane wydarzenia", "stats_freedivers": "Aktywni freediverzy", "stats_instructors": "Certyfikowani instruktorzy"},
-  "about_page": {"title": "O nas", "subtitle": "WeApnea to pierwsza międzynarodowa platforma poświęcona freedivingowi, zrodzona z pasji grupy freediverów, którzy chcieli stworzyć przestrzeń do dzielenia się i rozwoju dla całej społeczności.", "mission_title": "Nasza misja", "mission_desc": "Łączyć freediverów na całym świecie poprzez platformę, która ułatwia udział w wydarzeniach, wyjazdach i aktywnościach szkoleniowych. Chcemy uczynić freediving bardziej dostępnym i budować globalną społeczność pasjonatów.", "vision_title": "Nasza wizja", "vision_desc": "Stać się międzynarodowym punktem odniesienia dla freedivingu, gdzie każdy freediver znajdzie możliwości rozwoju, dzielenia się doświadczeniami i autentycznych połączeń z innymi członkami społeczności.", "values_title": "Nasze wartości", "values": {"community_title": "Społeczność", "community_desc": "Wierzymy w siłę społeczności i dzielenie się doświadczeniami, aby wspólnie rozwijać się jako freediverzy.", "passion_title": "Pasja", "passion_desc": "Freediving to nasza pasja i chcemy ją przekazywać poprzez wydarzenia i niezapomniane doświadczenia.", "innovation_title": "Innowacja", "innovation_desc": "Wykorzystujemy technologię, aby uczynić freediving bardziej dostępnym i łączyć freediverów na całym świecie."}, "team_title": "Nasz zespół", "team_desc": "Jesteśmy zespołem pasjonatów freedivingu, programistów i profesjonalistów branżowych współpracujących, aby tworzyć jak najlepsze doświadczenia dla społeczności freedivingowej."},
-  "search": {"placeholder": "Szukaj wydarzeń, kursów, zawodów...", "active_filters": "Aktywne filtry", "filter_results": "Filtruj wyniki", "category": "Kategoria", "all_categories": "Wszystkie kategorie", "discipline": "Dyscyplina", "all_disciplines": "Wszystkie dyscypliny", "nation": "Kraj", "all_nations": "Wszystkie kraje", "date": "Data", "select_month": "Wybierz miesiąc", "disciplines": {"indoor": "Indoor", "outdoor": "Outdoor", "indoor_outdoor": "Indoor & Outdoor"}},
-  "test": {"hello": "Cześć", "welcome": "Witamy", "goodbye": "Do widzenia"},
-  "auth": {
-    "login_title": "Witamy ponownie w WeApnea",
-    "login_subtitle": "Wpisz dane logowania, aby uzyskać dostęp do konta.",
-    "register_title": "Utwórz konto WeApnea",
-    "register_subtitle": "Dołącz do społeczności WeApnea.",
-    "back_home": "Powrót na stronę główną",
-    "login": {
-      "validation": {"email_invalid": "Nieprawidłowy adres e-mail.", "password_required": "Hasło jest wymagane."},
-      "success_title": "Zalogowano",
-      "success_desc": "Witamy ponownie w WeApnea!",
-      "error_title": "Błąd logowania",
-      "error_invalid": "Nieprawidłowe dane logowania. Spróbuj ponownie.",
-      "error_generic": "Wystąpił błąd. Spróbuj ponownie.",
-      "form": {"email_label": "E-mail", "email_placeholder": "ty@example.com", "password_label": "Hasło", "submitting": "Logowanie...", "forgot_password": "Zapomniałeś hasła?"}
-    },
-    "register": {
-      "validation": {"role_required": "Musisz wybrać typ konta.", "fullname_required": "Imię i nazwisko jest wymagane", "email_invalid": "Nieprawidłowy adres e-mail.", "password_min": "Hasło musi mieć co najmniej 6 znaków.", "company_required": "Wszystkie pola sponsora są wymagane, jeśli rola to 'Sponsor'."},
-      "success_title": "Rejestracja zakończona!",
-      "success_desc": "Sprawdź e-mail, aby potwierdzić konto i dokończyć rejestrację.",
-      "error_title": "Błąd rejestracji",
-      "error_generic": "Wystąpił błąd podczas rejestracji.",
-      "error_try_later": "Wystąpił błąd podczas rejestracji. Spróbuj ponownie później.",
-      "form": {"role_label": "Typ konta", "role_user": "Użytkownik", "role_instructor": "Organizator", "role_company": "Sponsor", "fullname_label": "Imię i nazwisko", "fullname_placeholder": "Jan Kowalski", "email_label": "E-mail", "email_placeholder": "ty@example.com", "password_label": "Hasło", "company_name_label": "Nazwa sponsora", "company_name_placeholder": "WeApnea Sp. z o.o.", "vat_number_label": "NIP", "vat_number_placeholder": "PL1234567890", "company_address_label": "Adres sponsora", "company_address_placeholder": "ul. Morza 1, 00-001 Warszawa", "submitting": "Rejestrowanie..."}
-    }
-  },
-  "blog_page": {"title": "Blog WeApnea", "subtitle": "Odkryj najnowsze informacje ze świata freedivingu, techniki, porady i historie z naszej społeczności", "search_placeholder": "Szukaj artykułów...", "read_more": "Czytaj więcej", "author_fallback": "Autor", "no_results_title": "Nie znaleziono artykułów", "no_results_desc": "Spróbuj zmienić kryteria wyszukiwania.", "no_posts_title": "Brak opublikowanych artykułów", "no_posts_desc": "Wróć wkrótce po nowe treści!", "back_to_blog": "Powrót do Bloga", "share_button": "Udostępnij", "share_copied_title": "Link skopiowany!", "share_copied_desc": "Link do artykułu został skopiowany do schowka.", "not_found_title": "Artykuł nie znaleziony", "not_found_desc": "Artykuł, którego szukasz, nie istnieje lub został usunięty.", "gallery_title": "Galeria"},
-  "password_reset": {
-    "email_sent_title": "E-mail wysłany",
-    "email_sent_desc": "Sprawdź skrzynkę odbiorczą, aby zobaczyć instrukcje odzyskiwania hasła.",
-    "errors": {
-      "email_invalid": "Nieprawidłowy adres e-mail.",
-      "password_min": "Hasło musi mieć co najmniej 6 znaków.",
-      "confirm_required": "Potwierdź hasło.",
-      "password_mismatch": "Hasła nie są zgodne",
-      "send_failed": "Wystąpił błąd podczas wysyłania e-maila z odzyskiwaniem.",
-      "invalid_link": "Nieprawidłowy link odzyskiwania. Poproś o nowy link.",
-      "invalid_token": "Nieprawidłowy lub wygasły token.",
-      "update_failed": "Wystąpił błąd podczas aktualizacji hasła."
-    },
-    "email_sent_heading": "E-mail wysłany!",
-    "email_sent_help": "Wysłaliśmy instrukcje resetowania hasła na Twój e-mail.",
-    "email_sent_follow": "Sprawdź skrzynkę i postępuj zgodnie z instrukcjami, aby zresetować hasło.",
-    "back_to_login": "Powrót do logowania",
-    "set_new_title": "Ustaw nowe hasło",
-    "request_title": "Odzyskaj hasło",
-    "set_new_subtitle": "Wpisz nowe hasło.",
-    "request_subtitle": "Wpisz swój adres e-mail, a wyślemy instrukcje resetowania hasła.",
-    "new_password_label": "Nowe hasło",
-    "new_password_placeholder": "Wpisz nowe hasło",
-    "confirm_password_label": "Potwierdź hasło",
-    "updating": "Aktualizowanie...",
-    "update_button": "Zaktualizuj hasło",
-    "email_label": "E-mail",
-    "email_placeholder": "ty@example.com",
-    "sending": "Wysyłanie...",
-    "send_button": "Wyślij e-mail odzyskiwania",
-    "updated_title": "Hasło zaktualizowane",
-    "updated_desc": "Twoje hasło zostało pomyślnie zaktualizowane. Możesz się teraz zalogować."
-  },
-  "not_found": {
-    "subtitle": "Ups! Strona nie znaleziona",
-    "back_home": "Powrót do strony głównej"
-  },
-  "events": {"participants": "uczestników", "details": "Szczegóły", "count_in_category": "wydarzenia w tej kategorii", "none_in_category": "Brak wydarzeń w tej kategorii"},
-  "forum": {
-    "title": "Forum",
-    "subtitle": "Dyskutuj ze społecznością freedivingu",
-    "new_topic": "Nowy temat",
-    "login_to_create_topic": "Zaloguj się, aby utworzyć temat",
-    "filter": {"all": "Wszystkie"},
-    "anonymous": "Anonimowy",
-    "last_reply": "Ostatnia odpowiedź:",
-    "no_topics": {
-      "title": "Nie znaleziono tematów",
-      "generic": "Na forum nie ma jeszcze dyskusji.",
-      "in_category_prefix": "Nie ma jeszcze dyskusji w"
-    },
-    "create_first_topic": "Utwórz pierwszy temat",
-    "login_to_create_first_topic": "Zaloguj się, aby utworzyć pierwszy temat",
-    "back_to_forum": "Powrót do forum",
-    "topic_not_found": "Temat nie znaleziony",
-    "replies": "Odpowiedzi",
-    "delete_topic": {"title": "Usunąć ten temat?", "description": "Tej czynności nie można cofnąć. Temat i wszystkie odpowiedzi zostaną trwale usunięte."},
-    "delete_reply": {"title": "Usunąć tę odpowiedź?", "description": "Tej czynności nie można cofnąć. Odpowiedź zostanie trwale usunięta."},
-    "add_reply": {"title": "Dodaj odpowiedź", "placeholder": "Napisz swoją odpowiedź...", "send": "Wyślij odpowiedź", "sending": "Wysyłanie..."},
-    "locked": {"title": "Ten temat jest zablokowany", "description": "Nie można dodawać nowych odpowiedzi."},
-    "login_cta": {"title": "Dołącz do dyskusji!", "description": "Musisz być zalogowany, aby odpowiedzieć na ten temat.", "button": "Zaloguj się, aby odpowiedzieć"},
-    "toasts": {
-      "topic_deleted": "Temat pomyślnie usunięty!",
-      "topic_delete_error_prefix": "Błąd podczas usuwania tematu: ",
-      "reply_deleted": "Odpowiedź pomyślnie usunięta!",
-      "reply_delete_error_prefix": "Błąd podczas usuwania odpowiedzi: ",
-      "reply_added": "Odpowiedź pomyślnie dodana!",
-      "reply_add_error_prefix": "Błąd podczas dodawania odpowiedzi: "
-    }
-  },
-  "common_ext": {
-    "error": "Błąd",
-    "unexpected_error": "Nieoczekiwany błąd"
-  },
-  "profile": {
-    "title": "Mój Profil",
-    "subtitle": "Zarządzaj swoimi danymi osobowymi",
-    "mobile_header_title": "Mój Profil",
-    "role_label": "Rola",
-    "roles": {
-      "user": "Użytkownik",
-      "instructor": "Organizator",
-      "company": "Sponsor"
-    },
-    "tabs": {
-      "overview": "Profil",
-      "company": "Firma",
-      "sponsor": "Sponsor"
-    },
-    "sections": {
-      "my_events": {
-        "title": "Moje Wydarzenia",
-        "description": "Zarządzaj swoimi wydarzeniami i listą życzeń",
-        "participated_button": "Uczestniczone Wydarzenia",
-        "participated_sub": "Historia wydarzeń",
-        "wishlist_button": "Lista życzeń",
-        "wishlist_sub": "Zapisane wydarzenia"
-      },
-      "personal_info": {
-        "title": "Dane Osobowe",
-        "description": "Zaktualizuj swoje dane osobowe i kontaktowe",
-        "full_name_label": "Imię i Nazwisko",
-        "full_name_placeholder": "Twoje pełne imię i nazwisko",
-        "instagram_label": "Instagram",
-        "instagram_placeholder": "@uzytkownik",
-        "phone_label": "Telefon",
-        "phone_placeholder": "+48 600 123 456",
-        "bio_label": "Bio",
-        "bio_placeholder": "Powiedz nam coś o sobie..."
-      },
-      "certifications": {
-        "title": "Certyfikaty i Ubezpieczenia",
-        "description": "Utrzymuj swoje certyfikaty aktualne. Aby zapisać się na płatne wydarzenia wymagane są: Telefon, Ubezpieczenie i daty ważności, Ważne zaświadczenie lekarskie.",
-        "brevetto_label": "Certyfikat",
-        "brevetto_placeholder": "Wybierz certyfikat",
-        "brevetto_options": {
-          "none": "Brak certyfikatu",
-          "open_water": "Open Water",
-          "advanced": "Advanced",
-          "rescue": "Rescue",
-          "master": "Master",
-          "instructor": "Instructor"
-        },
-        "brevetto_expiry_label": "Ważność Certyfikatu",
-        "insurance_label": "Ubezpieczenie",
-        "insurance_placeholder": "Nazwa ubezpieczenia",
-        "insurance_expiry_label": "Ważność Ubezpieczenia",
-        "medical_expiry_label": "Ważność Zaświadczenia Lekarskiego"
-      },
-      "personal_bests": {
-        "title": "Rekordy Osobiste",
-        "description": "Zapisz swoje najlepsze wyniki w nurkowaniu na bezdechu",
-        "static_apnea_label": "Statyczne Bezdechy (minuty:sekundy)",
-        "static_apnea_placeholder": "np. 4:30",
-        "dynamic_apnea_label": "Dynamiczne Bezdechy (metry)",
-        "dynamic_apnea_placeholder": "np. 75",
-        "free_immersion_label": "Wolne Zanurzenie (metry)",
-        "free_immersion_placeholder": "np. 30",
-        "constant_weight_label": "Stały Ciężar (metry)",
-        "constant_weight_placeholder": "np. 45"
-      },
-      "company": {
-        "title": "Informacje o Firmie",
-        "description": "Zarządzaj danymi swojej firmy",
-        "fields": {
-          "company_name_label": "Nazwa Firmy",
-          "company_name_placeholder": "Nazwa Twojej firmy",
-          "vat_number_label": "NIP/UE VAT",
-          "vat_number_placeholder": "PL1234567890",
-          "company_address_label": "Adres Firmy",
-          "company_address_placeholder": "Pełny adres firmy"
-        }
-      },
-      "sponsor": {
-        "title": "Pakiety Sponsorski",
-        "description": "Odkryj nasze pakiety sponsorskie",
-        "cta_text": "Zwiększ widoczność swojej firmy, sponsorując wydarzenia w nurkowaniu na bezdechu.",
-        "cta_button": "Zobacz Pakiety"
-      }
-    },
-    "buttons": {
-      "save": "Zapisz Zmiany",
-      "saving": "Zapisywanie..."
-    },
-    "toasts": {
-      "update_success_title": "Sukces",
-      "update_success_desc": "Profil został pomyślnie zaktualizowany!",
-      "update_error_title": "Błąd",
-      "update_error_desc": "Wystąpił błąd podczas aktualizacji profilu."
-    },
-    "login_required": "Musisz być zalogowany, aby wyświetlić profil."
-  }
+	"nav": {
+		"home": "Start",
+		"events": "Wydarzenia",
+		"about": "O nas",
+		"blog": "Blog",
+		"forum": "Forum",
+		"profile": "Profil",
+		"dashboard": "Panel",
+		"logout": "Wyloguj"
+	},
+	"common": {
+		"login": "Zaloguj się",
+		"register": "Zarejestruj się",
+		"error": "Błąd",
+		"unexpected_error": "Nieoczekiwany błąd",
+		"cancel": "Anuluj",
+		"delete": "Usuń"
+	},
+	"homepage": {
+		"uncategorized_events": "Treningi",
+		"loading_events": "Ładowanie wydarzeń...",
+		"error_title": "Błąd ładowania",
+		"error_description": "Wystąpił błąd podczas ładowania wydarzeń.",
+		"retry_btn": "Spróbuj ponownie",
+		"no_events_title": "Brak dostępnych wydarzeń",
+		"no_events_description": "Obecnie brak opublikowanych wydarzeń.",
+		"no_results_title": "Nie znaleziono wydarzeń",
+		"no_results_description": "Brak nadchodzących wydarzeń pasujących do filtrów.",
+		"sponsors": { "title": "Partnerzy i Sponsorzy", "learn_more": "Dowiedz się więcej" }
+	},
+	"categories": {
+		"trainings": "Treningi",
+		"trips": "Podróże",
+		"courses": "Kursy",
+		"workshops": "Warsztaty",
+		"competitions": "Zawody",
+		"stages": "Staże"
+	},
+	"footer": {
+		"description": "Pierwsza międzynarodowa platforma poświęcona freedivingowi. Weź udział w wydarzeniach, wyjazdach i szkoleniach, łącząc się ze społecznością pasjonatów bynajmniej nie płytkich!",
+		"quick_links": "Szybkie linki",
+		"contact": "Kontakt",
+		"copyright": "Wszelkie prawa zastrzeżone."
+	},
+	"hero": {
+		"badge_text": "Odkryj świat freedivingu",
+		"title_line1": "Twoja platforma do",
+		"title_line2": "freedivingu",
+		"description": "Znajdź wydarzenia, kursy i zawody. Połącz się ze społecznością i odkryj nowe możliwości poprawy swoich wyników.",
+		"btn_explore": "Przeglądaj wydarzenia",
+		"btn_community": "Dołącz do społeczności",
+		"stats_events": "Zorganizowane wydarzenia",
+		"stats_freedivers": "Aktywni freediverzy",
+		"stats_instructors": "Certyfikowani instruktorzy"
+	},
+	"about_page": {
+		"title": "O nas",
+		"subtitle": "WeApnea to pierwsza międzynarodowa platforma poświęcona freedivingowi, zrodzona z pasji grupy freediverów, którzy chcieli stworzyć przestrzeń do dzielenia się i rozwoju dla całej społeczności.",
+		"mission_title": "Nasza misja",
+		"mission_desc": "Łączyć freediverów na całym świecie poprzez platformę, która ułatwia udział w wydarzeniach, wyjazdach i aktywnościach szkoleniowych. Chcemy uczynić freediving bardziej dostępnym i budować globalną społeczność pasjonatów.",
+		"vision_title": "Nasza wizja",
+		"vision_desc": "Stać się międzynarodowym punktem odniesienia dla freedivingu, gdzie każdy freediver znajdzie możliwości rozwoju, dzielenia się doświadczeniami i autentycznych połączeń z innymi członkami społeczności.",
+		"values_title": "Nasze wartości",
+		"values": {
+			"community_title": "Społeczność",
+			"community_desc": "Wierzymy w siłę społeczności i dzielenie się doświadczeniami, aby wspólnie rozwijać się jako freediverzy.",
+			"passion_title": "Pasja",
+			"passion_desc": "Freediving to nasza pasja i chcemy ją przekazywać poprzez wydarzenia i niezapomniane doświadczenia.",
+			"innovation_title": "Innowacja",
+			"innovation_desc": "Wykorzystujemy technologię, aby uczynić freediving bardziej dostępnym i łączyć freediverów na całym świecie."
+		},
+		"team_title": "Nasz zespół",
+		"team_desc": "Jesteśmy zespołem pasjonatów freedivingu, programistów i profesjonalistów branżowych współpracujących, aby tworzyć jak najlepsze doświadczenia dla społeczności freedivingowej."
+	},
+	"search": {
+		"placeholder": "Szukaj wydarzeń, kursów, zawodów...",
+		"active_filters": "Aktywne filtry",
+		"filter_results": "Filtruj wyniki",
+		"category": "Kategoria",
+		"all_categories": "Wszystkie kategorie",
+		"discipline": "Dyscyplina",
+		"all_disciplines": "Wszystkie dyscypliny",
+		"nation": "Kraj",
+		"all_nations": "Wszystkie kraje",
+		"date": "Data",
+		"select_month": "Wybierz miesiąc",
+		"disciplines": { "indoor": "Indoor", "outdoor": "Outdoor", "indoor_outdoor": "Indoor & Outdoor" }
+	},
+	"test": { "hello": "Cześć", "welcome": "Witamy", "goodbye": "Do widzenia" },
+	"auth": {
+		"login_title": "Witamy ponownie w WeApnea",
+		"login_subtitle": "Wpisz dane logowania, aby uzyskać dostęp do konta.",
+		"register_title": "Utwórz konto WeApnea",
+		"register_subtitle": "Dołącz do społeczności WeApnea.",
+		"back_home": "Powrót na stronę główną",
+		"login": {
+			"validation": { "email_invalid": "Nieprawidłowy adres e-mail.", "password_required": "Hasło jest wymagane." },
+			"success_title": "Zalogowano",
+			"success_desc": "Witamy ponownie w WeApnea!",
+			"error_title": "Błąd logowania",
+			"error_invalid": "Nieprawidłowe dane logowania. Spróbuj ponownie.",
+			"error_generic": "Wystąpił błąd. Spróbuj ponownie.",
+			"form": {
+				"email_label": "E-mail",
+				"email_placeholder": "ty@example.com",
+				"password_label": "Hasło",
+				"submitting": "Logowanie...",
+				"forgot_password": "Zapomniałeś hasła?"
+			}
+		},
+		"register": {
+			"validation": {
+				"role_required": "Musisz wybrać typ konta.",
+				"fullname_required": "Imię i nazwisko jest wymagane",
+				"email_invalid": "Nieprawidłowy adres e-mail.",
+				"password_min": "Hasło musi mieć co najmniej 6 znaków.",
+				"company_required": "Wszystkie pola sponsora są wymagane, jeśli rola to 'Sponsor'."
+			},
+			"success_title": "Rejestracja zakończona!",
+			"success_desc": "Sprawdź e-mail, aby potwierdzić konto i dokończyć rejestrację.",
+			"error_title": "Błąd rejestracji",
+			"error_generic": "Wystąpił błąd podczas rejestracji.",
+			"error_try_later": "Wystąpił błąd podczas rejestracji. Spróbuj ponownie później.",
+			"form": {
+				"role_label": "Typ konta",
+				"role_user": "Użytkownik",
+				"role_instructor": "Organizator",
+				"role_company": "Sponsor",
+				"fullname_label": "Imię i nazwisko",
+				"fullname_placeholder": "Jan Kowalski",
+				"email_label": "E-mail",
+				"email_placeholder": "ty@example.com",
+				"password_label": "Hasło",
+				"company_name_label": "Nazwa sponsora",
+				"company_name_placeholder": "WeApnea Sp. z o.o.",
+				"vat_number_label": "NIP",
+				"vat_number_placeholder": "PL1234567890",
+				"company_address_label": "Adres sponsora",
+				"company_address_placeholder": "ul. Morza 1, 00-001 Warszawa",
+				"submitting": "Rejestrowanie..."
+			}
+		}
+	},
+	"blog_page": {
+		"title": "Blog WeApnea",
+		"subtitle": "Odkryj najnowsze informacje ze świata freedivingu, techniki, porady i historie z naszej społeczności",
+		"search_placeholder": "Szukaj artykułów...",
+		"read_more": "Czytaj więcej",
+		"author_fallback": "Autor",
+		"no_results_title": "Nie znaleziono artykułów",
+		"no_results_desc": "Spróbuj zmienić kryteria wyszukiwania.",
+		"no_posts_title": "Brak opublikowanych artykułów",
+		"no_posts_desc": "Wróć wkrótce po nowe treści!",
+		"back_to_blog": "Powrót do Bloga",
+		"share_button": "Udostępnij",
+		"share_copied_title": "Link skopiowany!",
+		"share_copied_desc": "Link do artykułu został skopiowany do schowka.",
+		"not_found_title": "Artykuł nie znaleziony",
+		"not_found_desc": "Artykuł, którego szukasz, nie istnieje lub został usunięty.",
+		"gallery_title": "Galeria"
+	},
+	"password_reset": {
+		"email_sent_title": "E-mail wysłany",
+		"email_sent_desc": "Sprawdź skrzynkę odbiorczą, aby zobaczyć instrukcje odzyskiwania hasła.",
+		"errors": {
+			"email_invalid": "Nieprawidłowy adres e-mail.",
+			"password_min": "Hasło musi mieć co najmniej 6 znaków.",
+			"confirm_required": "Potwierdź hasło.",
+			"password_mismatch": "Hasła nie są zgodne",
+			"send_failed": "Wystąpił błąd podczas wysyłania e-maila z odzyskiwaniem.",
+			"invalid_link": "Nieprawidłowy link odzyskiwania. Poproś o nowy link.",
+			"invalid_token": "Nieprawidłowy lub wygasły token.",
+			"update_failed": "Wystąpił błąd podczas aktualizacji hasła."
+		},
+		"email_sent_heading": "E-mail wysłany!",
+		"email_sent_help": "Wysłaliśmy instrukcje resetowania hasła na Twój e-mail.",
+		"email_sent_follow": "Sprawdź skrzynkę i postępuj zgodnie z instrukcjami, aby zresetować hasło.",
+		"back_to_login": "Powrót do logowania",
+		"set_new_title": "Ustaw nowe hasło",
+		"request_title": "Odzyskaj hasło",
+		"set_new_subtitle": "Wpisz nowe hasło.",
+		"request_subtitle": "Wpisz swój adres e-mail, a wyślemy instrukcje resetowania hasła.",
+		"new_password_label": "Nowe hasło",
+		"new_password_placeholder": "Wpisz nowe hasło",
+		"confirm_password_label": "Potwierdź hasło",
+		"updating": "Aktualizowanie...",
+		"update_button": "Zaktualizuj hasło",
+		"email_label": "E-mail",
+		"email_placeholder": "ty@example.com",
+		"sending": "Wysyłanie...",
+		"send_button": "Wyślij e-mail odzyskiwania",
+		"updated_title": "Hasło zaktualizowane",
+		"updated_desc": "Twoje hasło zostało pomyślnie zaktualizowane. Możesz się teraz zalogować."
+	},
+	"not_found": {
+		"subtitle": "Ups! Strona nie znaleziona",
+		"back_home": "Powrót do strony głównej"
+	},
+	"events": {
+		"participants": "uczestników",
+		"details": "Szczegóły",
+		"count_in_category": "wydarzenia w tej kategorii",
+		"none_in_category": "Brak wydarzeń w tej kategorii"
+	},
+	"forum": {
+		"title": "Forum",
+		"subtitle": "Dyskutuj ze społecznością freedivingu",
+		"new_topic": "Nowy temat",
+		"login_to_create_topic": "Zaloguj się, aby utworzyć temat",
+		"filter": { "all": "Wszystkie" },
+		"anonymous": "Anonimowy",
+		"last_reply": "Ostatnia odpowiedź:",
+		"no_topics": {
+			"title": "Nie znaleziono tematów",
+			"generic": "Na forum nie ma jeszcze dyskusji.",
+			"in_category_prefix": "Nie ma jeszcze dyskusji w"
+		},
+		"create_first_topic": "Utwórz pierwszy temat",
+		"login_to_create_first_topic": "Zaloguj się, aby utworzyć pierwszy temat",
+		"back_to_forum": "Powrót do forum",
+		"topic_not_found": "Temat nie znaleziony",
+		"replies": "Odpowiedzi",
+		"delete_topic": {
+			"title": "Usunąć ten temat?",
+			"description": "Tej czynności nie można cofnąć. Temat i wszystkie odpowiedzi zostaną trwale usunięte."
+		},
+		"delete_reply": { "title": "Usunąć tę odpowiedź?", "description": "Tej czynności nie można cofnąć. Odpowiedź zostanie trwale usunięta." },
+		"add_reply": { "title": "Dodaj odpowiedź", "placeholder": "Napisz swoją odpowiedź...", "send": "Wyślij odpowiedź", "sending": "Wysyłanie..." },
+		"locked": { "title": "Ten temat jest zablokowany", "description": "Nie można dodawać nowych odpowiedzi." },
+		"login_cta": {
+			"title": "Dołącz do dyskusji!",
+			"description": "Musisz być zalogowany, aby odpowiedzieć na ten temat.",
+			"button": "Zaloguj się, aby odpowiedzieć"
+		},
+		"toasts": {
+			"topic_deleted": "Temat pomyślnie usunięty!",
+			"topic_delete_error_prefix": "Błąd podczas usuwania tematu: ",
+			"reply_deleted": "Odpowiedź pomyślnie usunięta!",
+			"reply_delete_error_prefix": "Błąd podczas usuwania odpowiedzi: ",
+			"reply_added": "Odpowiedź pomyślnie dodana!",
+			"reply_add_error_prefix": "Błąd podczas dodawania odpowiedzi: "
+		}
+	},
+	"common_ext": {
+		"error": "Błąd",
+		"unexpected_error": "Nieoczekiwany błąd"
+	},
+	"profile": {
+		"title": "Mój Profil",
+		"subtitle": "Zarządzaj swoimi danymi osobowymi",
+		"mobile_header_title": "Mój Profil",
+		"role_label": "Rola",
+		"roles": {
+			"user": "Użytkownik",
+			"instructor": "Organizator",
+			"company": "Sponsor"
+		},
+		"tabs": {
+			"overview": "Profil",
+			"company": "Firma",
+			"sponsor": "Sponsor"
+		},
+		"sections": {
+			"my_events": {
+				"title": "Moje Wydarzenia",
+				"description": "Zarządzaj swoimi wydarzeniami i listą życzeń",
+				"participated_button": "Uczestniczone Wydarzenia",
+				"participated_sub": "Historia wydarzeń",
+				"wishlist_button": "Lista życzeń",
+				"wishlist_sub": "Zapisane wydarzenia"
+			},
+			"personal_info": {
+				"title": "Dane Osobowe",
+				"description": "Zaktualizuj swoje dane osobowe i kontaktowe",
+				"full_name_label": "Imię i Nazwisko",
+				"full_name_placeholder": "Twoje pełne imię i nazwisko",
+				"instagram_label": "Instagram",
+				"instagram_placeholder": "@uzytkownik",
+				"phone_label": "Telefon",
+				"phone_placeholder": "+48 600 123 456",
+				"bio_label": "Bio",
+				"bio_placeholder": "Powiedz nam coś o sobie..."
+			},
+			"certifications": {
+				"title": "Certyfikaty i Ubezpieczenia",
+				"description": "Utrzymuj swoje certyfikaty aktualne. Aby zapisać się na płatne wydarzenia wymagane są: Telefon, Ubezpieczenie i daty ważności, Ważne zaświadczenie lekarskie.",
+				"brevetto_label": "Certyfikat",
+				"brevetto_placeholder": "Wybierz certyfikat",
+				"brevetto_options": {
+					"none": "Brak certyfikatu",
+					"open_water": "Open Water",
+					"advanced": "Advanced",
+					"rescue": "Rescue",
+					"master": "Master",
+					"instructor": "Instructor"
+				},
+				"brevetto_expiry_label": "Ważność Certyfikatu",
+				"insurance_label": "Ubezpieczenie",
+				"insurance_placeholder": "Nazwa ubezpieczenia",
+				"insurance_expiry_label": "Ważność Ubezpieczenia",
+				"medical_expiry_label": "Ważność Zaświadczenia Lekarskiego"
+			},
+			"personal_bests": {
+				"title": "Rekordy Osobiste",
+				"description": "Zapisz swoje najlepsze wyniki w nurkowaniu na bezdechu",
+				"static_apnea_label": "Statyczne Bezdechy (minuty:sekundy)",
+				"static_apnea_placeholder": "np. 4:30",
+				"dynamic_apnea_label": "Dynamiczne Bezdechy (metry)",
+				"dynamic_apnea_placeholder": "np. 75",
+				"free_immersion_label": "Wolne Zanurzenie (metry)",
+				"free_immersion_placeholder": "np. 30",
+				"constant_weight_label": "Stały Ciężar (metry)",
+				"constant_weight_placeholder": "np. 45"
+			},
+			"company": {
+				"title": "Informacje o Firmie",
+				"description": "Zarządzaj danymi swojej firmy",
+				"fields": {
+					"company_name_label": "Nazwa Firmy",
+					"company_name_placeholder": "Nazwa Twojej firmy",
+					"vat_number_label": "NIP/UE VAT",
+					"vat_number_placeholder": "PL1234567890",
+					"company_address_label": "Adres Firmy",
+					"company_address_placeholder": "Pełny adres firmy"
+				}
+			},
+			"sponsor": {
+				"title": "Pakiety Sponsorski",
+				"description": "Odkryj nasze pakiety sponsorskie",
+				"cta_text": "Zwiększ widoczność swojej firmy, sponsorując wydarzenia w nurkowaniu na bezdechu.",
+				"cta_button": "Zobacz Pakiety"
+			}
+		},
+		"buttons": {
+			"save": "Zapisz Zmiany",
+			"saving": "Zapisywanie..."
+		},
+		"toasts": {
+			"update_success_title": "Sukces",
+			"update_success_desc": "Profil został pomyślnie zaktualizowany!",
+			"update_error_title": "Błąd",
+			"update_error_desc": "Wystąpił błąd podczas aktualizacji profilu."
+		},
+		"login_required": "Musisz być zalogowany, aby wyświetlić profil."
+	}
 }

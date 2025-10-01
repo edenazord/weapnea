@@ -1,6 +1,6 @@
-
-// Service Worker semplificato
-const CACHE_NAME = 'apnea-app-v1';
+// Service Worker con caching limitato agli asset statici
+// Incrementa la versione per forzare l'aggiornamento dei client quando si deploya
+const CACHE_NAME = 'apnea-app-v3-20251001';
 
 self.addEventListener('install', (event) => {
   console.log('SW: Installing service worker');
@@ -25,32 +25,35 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Bypass cache for authentication and API requests
-  if (event.request.url.includes('/auth/') || 
-      event.request.url.includes('/rest/')) {
-    console.log('SW: Bypassing cache for auth/API request');
-    return;
-  }
-  
-  // For other requests, try network first
+  const req = event.request;
+  const url = new URL(req.url);
+
+  // Solo GET può essere gestito dal SW
+  if (req.method !== 'GET') return;
+
+  // Non intercettare navigazioni/HTML: lascia passare al network (sempre latest)
+  if (req.mode === 'navigate' || req.destination === 'document') return;
+
+  // Non intercettare API e autenticazione
+  if (url.pathname.startsWith('/api/') || url.pathname.includes('/auth/') || url.pathname.includes('/rest/')) return;
+
+  // Non intercettare richieste cross-origin (es. https://api.weapnea.com)
+  if (url.origin !== self.location.origin) return;
+
+  // Limita il caching solo ad asset statici noti
+  const cacheableDest = ['script', 'style', 'image', 'font'];
+  if (!cacheableDest.includes(req.destination)) return;
+
+  // Network-first per asset; in fallback usa cache
   event.respondWith(
-    fetch(event.request)
-      .then(response => {
-        // Clone the response before caching
-        const responseClone = response.clone();
-        
-        // Cache successful responses
-        if (response.status === 200) {
-          caches.open(CACHE_NAME).then(cache => {
-            cache.put(event.request, responseClone);
-          });
+    fetch(req)
+      .then((response) => {
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(req, clone));
         }
-        
         return response;
       })
-      .catch(() => {
-        // If network fails, try cache
-        return caches.match(event.request);
-      })
+      .catch(() => caches.match(req))
   );
 });
