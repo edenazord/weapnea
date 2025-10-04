@@ -59,17 +59,46 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
 
   const geocodeWithNominatim = async (address: string) => {
     try {
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+      const normalized = normalizeAddress(address);
+      // Primo tentativo: bias Italia
+      const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=it&addressdetails=1&q=${encodeURIComponent(normalized)}&limit=1`;
       const res = await fetch(url, {
         headers: {
           'Accept': 'application/json',
+          'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
           // Nominatim raccomanda un User-Agent identificativo
           'User-Agent': 'weapnea.com (contact: noreply@weapnea.com)'
         }
       });
       if (!res.ok) throw new Error('Geocoding failed');
       const data = await res.json();
-      if (!Array.isArray(data) || data.length === 0) throw new Error('No results');
+      if (!Array.isArray(data) || data.length === 0) {
+        // Secondo tentativo: senza bias paese
+  const url2 = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(normalized)}&limit=1`;
+  const res2 = await fetch(url2, { headers: { 'Accept': 'application/json', 'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7', 'User-Agent': 'weapnea.com (contact: noreply@weapnea.com)' } });
+        const data2 = res2.ok ? await res2.json() : [];
+        if (!Array.isArray(data2) || data2.length === 0) {
+          // Terzo tentativo: fallback a Photon
+          const pRes = await fetch(`https://photon.komoot.io/api/?lang=it&q=${encodeURIComponent(normalized)}&limit=1`);
+          const pJson = pRes.ok ? await pRes.json() : null;
+          const feat = pJson?.features?.[0];
+          if (feat?.geometry?.coordinates) {
+            const [lon, lat] = feat.geometry.coordinates;
+            const coords = { lat, lng: lon };
+            setCoordinates(coords);
+            initializeLeafletMap(coords);
+            return;
+          }
+          throw new Error('No results');
+        } else {
+          const lat = parseFloat(data2[0].lat);
+          const lon = parseFloat(data2[0].lon);
+          const coords = { lat, lng: lon };
+          setCoordinates(coords);
+          initializeLeafletMap(coords);
+          return;
+        }
+      }
 
       const lat = parseFloat(data[0].lat);
       const lon = parseFloat(data[0].lon);
@@ -79,6 +108,26 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
     } catch (e) {
       console.error('🗺️ OSM Geocoding error:', e);
     }
+  };
+
+  // Normalizza alcuni elementi comuni italiani per aiutare il geocoder OSM
+  const normalizeAddress = (addr: string): string => {
+    let s = addr.trim();
+    // Espansione province comuni (parziale)
+    const provinceMap: Record<string, string> = {
+      ' PD': ' Padova',
+      ' RM': ' Roma',
+      ' MI': ' Milano',
+      ' VE': ' Venezia',
+    };
+    // sostituisci pattern come ", PD" o " PD" in Padova
+    for (const abbr in provinceMap) {
+      const full = provinceMap[abbr];
+      s = s.replace(new RegExp(`,?${abbr}(,|$)`,'g'), `,${full}$1`);
+    }
+    // Rimuovi doppi spazi
+    s = s.replace(/\s{2,}/g, ' ');
+    return s;
   };
 
   const initializeLeafletMap = (coords: { lat: number; lng: number }) => {
@@ -137,6 +186,11 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
         className="w-full h-64 rounded-lg border border-gray-200 shadow-sm"
         style={{ minHeight: '256px' }}
       />
+      {!coordinates && (
+        <div className="text-xs text-gray-500">
+          Impossibile geocodificare l'indirizzo. Puoi cercarlo direttamente su OpenStreetMap.
+        </div>
+      )}
       <Button onClick={handleGetDirections} className="w-full" variant="outline">
         <Navigation className="mr-2 h-4 w-4" />
         Ottieni indicazioni
