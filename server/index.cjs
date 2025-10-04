@@ -386,9 +386,14 @@ const eventsSelect = `
     e.activity_details, e.who_we_are, e.fixed_appointment, e.instructors,
     e.instructor_certificates, e.max_participants_per_instructor, e.schedule_meeting_point,
     e.responsibility_waiver_accepted, e.privacy_accepted,
+    -- Organizer public fields (for UI)
+    e.created_by AS organizer_id,
+    COALESCE(p.company_name, p.full_name) AS organizer_name,
+    p.avatar_url AS organizer_avatar_url,
     json_build_object('name', c.name) AS categories
   FROM events e
   LEFT JOIN categories c ON c.id = e.category_id
+  LEFT JOIN profiles p ON p.id = e.created_by
 `;
 
 // Events list with basic filters
