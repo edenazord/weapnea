@@ -39,6 +39,10 @@ export interface Event {
   schedule_meeting_point?: string | null;
   responsibility_waiver_accepted?: boolean | null;
   privacy_accepted?: boolean | null;
+  // Organizer public fields (optional, provided by API to avoid extra fetches)
+  organizer_id?: string | null;
+  organizer_name?: string | null;
+  organizer_avatar_url?: string | null;
 }
 
 export type EventWithCategory = Event & {

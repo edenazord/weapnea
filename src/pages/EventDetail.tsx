@@ -120,15 +120,15 @@ const EventDetail = () => {
     });
 
         // Organizer profile query (must be declared unconditionally after the first query)
-        const organizerId = event?.organizer?.id || event?.created_by || undefined;
-            const { data: organizerProfile } = useQuery<{ id: string; full_name: string | null; company_name: string | null; avatar_url: string | null; role: string }>(
+        const organizerId = event?.organizer_id || event?.organizer?.id || event?.created_by || undefined;
+                const { data: organizerProfile } = useQuery<{ id: string; full_name: string | null; company_name: string | null; avatar_url: string | null; role: string }>(
             {
                 queryKey: ['organizer-profile', organizerId],
                 queryFn: async () => {
                     const res = await apiGet(`/api/instructors/${organizerId}`);
                     return res as any;
                 },
-                enabled: !!organizerId,
+                        enabled: !!organizerId && !event?.organizer_name,
                 staleTime: 60_000,
                     retry: false,
                     refetchOnWindowFocus: false,
@@ -279,13 +279,13 @@ const EventDetail = () => {
                         <img src={(event.image_url?.startsWith('/') ? `${backendConfig.apiBaseUrl || ''}${event.image_url}` : event.image_url) || "/placeholder.svg"} alt={event.title} className={`w-full object-cover ${isMobile ? 'h-48' : 'h-64 md:h-96'}`} />
                         <div className={`${isMobile ? 'p-4' : 'p-6 md:p-8'}`}>
                                                         {/* Organizzatore con avatar sopra al titolo */}
-                                                                                    {(organizerId) && (
+                                                                                                                {(organizerId) && (
                                                                                         <div className="mb-3 flex items-center gap-3">
                                                                                             <Link to={`/instructor/${organizerId}`} className="flex items-center gap-3 group">
                                                                     <Avatar className="h-9 w-9">
-                                                                        <AvatarImage src={organizerProfile?.avatar_url || ''} alt={organizerProfile?.full_name || organizerProfile?.company_name || 'Organizzatore'} />
+                                                                                                                                <AvatarImage src={event.organizer_avatar_url || organizerProfile?.avatar_url || ''} alt={event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || 'Organizzatore'} />
                                                                         <AvatarFallback>
-                                                                                                        {(organizerProfile?.full_name || organizerProfile?.company_name || event.organizer?.company_name || event.organizer?.full_name || 'O')
+                                                                                                                                    {(event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || event.organizer?.company_name || event.organizer?.full_name || 'O')
                                                                                 .charAt(0)
                                                                                 .toUpperCase()}
                                                                         </AvatarFallback>
@@ -293,7 +293,7 @@ const EventDetail = () => {
                                                                     <div className="flex flex-col leading-tight">
                                                                         <span className="text-xs text-gray-500">Organizzato da</span>
                                                                         <span className="text-sm font-medium text-blue-700 group-hover:underline">
-                                                                                                        {organizerProfile?.company_name || organizerProfile?.full_name || event.organizer?.company_name || event.organizer?.full_name || 'Organizzatore'}
+                                                                                                                                    {event.organizer_name || organizerProfile?.company_name || organizerProfile?.full_name || event.organizer?.company_name || event.organizer?.full_name || 'Organizzatore'}
                                                                         </span>
                                                                     </div>
                                                                 </Link>
