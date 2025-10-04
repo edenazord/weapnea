@@ -14,21 +14,39 @@ function getAuthHeader() {
 }
 
 export async function apiGet(path: string) {
-  const res = await fetch(`${getBase()}${path}`, { headers: { ...getAuthHeader() } });
-  if (!res.ok) throw new Error(`API error ${res.status}`);
+  const res = await fetch(`${getBase()}${path}`, { headers: { ...getAuthHeader(), 'Accept': 'application/json' } });
+  if (!res.ok) {
+    let detail = '';
+    try { detail = await res.text(); } catch { /* ignore parse errors */ }
+    const msg = `API GET ${path} failed: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ''}`;
+    console.error(msg);
+    throw new Error(msg);
+  }
   return res.json();
 }
 
 export async function apiSend(path: string, method: 'POST' | 'PUT' | 'DELETE', body?: unknown) {
   const res = await fetch(`${getBase()}${path}`, {
     method,
-    headers: { 'Content-Type': 'application/json', ...getAuthHeader() },
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...getAuthHeader() },
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   if (method === 'DELETE') {
-    if (!res.ok && res.status !== 204) throw new Error(`API error ${res.status}`);
+    if (!res.ok && res.status !== 204) {
+      let detail = '';
+      try { detail = await res.text(); } catch { /* ignore parse errors */ }
+      const msg = `API ${method} ${path} failed: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ''}`;
+      console.error(msg);
+      throw new Error(msg);
+    }
     return null;
   }
-  if (!res.ok) throw new Error(`API error ${res.status}`);
+  if (!res.ok) {
+    let detail = '';
+    try { detail = await res.text(); } catch { /* ignore parse errors */ }
+    const msg = `API ${method} ${path} failed: ${res.status} ${res.statusText}${detail ? ` - ${detail}` : ''}`;
+    console.error(msg, { body });
+    throw new Error(msg);
+  }
   return res.json();
 }
