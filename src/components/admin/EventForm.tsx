@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Event, Category } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import { getCategories, EU_COUNTRIES } from "@/lib/api";
+import { getCategories } from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateEventSlug } from "@/lib/seo-utils";
@@ -113,65 +113,6 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
     onSubmit(transformedValues);
   };
 
-  // Mappa il nome paese restituito da Nominatim a una delle opzioni della select (EU_COUNTRIES)
-  const normalizeCountryForSelect = (country?: string): string | null => {
-    if (!country) return null;
-    const c = country.trim();
-    // Mappa comuni IT -> EN dove necessario (o identità quando già coincide)
-    const map: Record<string, string> = {
-      'Italia': 'Italia',
-      'Italy': 'Italia',
-      'Francia': 'France',
-      'France': 'France',
-      'Germania': 'Germany',
-      'Germany': 'Germany',
-      'Spagna': 'Spain',
-      'Spain': 'Spain',
-      'Portogallo': 'Portugal',
-      'Portugal': 'Portugal',
-      'Paesi Bassi': 'Netherlands',
-      'Olanda': 'Netherlands',
-      'Netherlands': 'Netherlands',
-      'Grecia': 'Greece',
-      'Greece': 'Greece',
-      'Austria': 'Austria',
-      'Belgio': 'Belgium',
-      'Belgium': 'Belgium',
-      'Bulgaria': 'Bulgaria',
-      'Croazia': 'Croatia',
-      'Croatia': 'Croatia',
-      'Cipro': 'Cyprus',
-      'Cyprus': 'Cyprus',
-      'Repubblica Ceca': 'Czech Republic',
-      'Czechia': 'Czech Republic',
-      'Czech Republic': 'Czech Republic',
-      'Danimarca': 'Denmark',
-      'Denmark': 'Denmark',
-      'Estonia': 'Estonia',
-      'Finlandia': 'Finland',
-      'Finland': 'Finland',
-      'Irlanda': 'Ireland',
-      'Ireland': 'Ireland',
-      'Lettonia': 'Latvia',
-      'Latvia': 'Latvia',
-      'Lituania': 'Lithuania',
-      'Lithuania': 'Lithuania',
-      'Lussemburgo': 'Luxembourg',
-      'Luxembourg': 'Luxembourg',
-      'Malta': 'Malta',
-      'Polonia': 'Poland',
-      'Poland': 'Poland',
-      'Romania': 'Romania',
-      'Slovacchia': 'Slovakia',
-      'Slovakia': 'Slovakia',
-      'Slovenia': 'Slovenia',
-      'Svezia': 'Sweden',
-      'Sweden': 'Sweden',
-    };
-    const mapped = map[c] || c;
-    // Verifica che esista tra le opzioni
-    return EU_COUNTRIES.includes(mapped) ? mapped : null;
-  };
 
   const handleImageUploaded = (url: string) => {
     form.setValue('image_url', url);
@@ -445,18 +386,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           render={({ field }) => (
             <FormItem>
               <FormLabel>Nazione</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona una nazione" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {EU_COUNTRIES.map((country) => (
-                    <SelectItem key={country} value={country}>{country}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormControl><Input {...field} placeholder="es. Italia" /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -472,11 +402,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                   value={field.value || ""}
                   onChange={field.onChange}
                   onPlaceSelected={(info) => {
-                    const country = info.address?.country;
-                    const normalized = normalizeCountryForSelect(country);
-                    if (normalized) {
-                      form.setValue('nation', normalized);
-                    }
+                    const country = info.address?.country?.trim();
+                    if (country) form.setValue('nation', country);
                   }}
                   placeholder="Cerca una località..."
                 />
