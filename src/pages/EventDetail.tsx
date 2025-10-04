@@ -20,7 +20,7 @@ import { EventPaymentButton } from "@/components/EventPaymentButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiGet } from "@/lib/apiClient";
 import { ensureAbsoluteUrl } from "@/lib/utils";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const EventDetailSkeleton = () => (
@@ -563,6 +563,8 @@ const EventDetail = () => {
                     {/* Lightbox Dialog */}
                     <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
                         <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none">
+                            <DialogTitle className="sr-only">Galleria immagini</DialogTitle>
+                            <DialogDescription className="sr-only">Zoom immagine {lightboxIndex + 1} di {galleryAbs.length}</DialogDescription>
                             <div className="relative w-screen h-screen flex items-center justify-center">
                                 {/* Prev button */}
                                 {hasGallery && (
