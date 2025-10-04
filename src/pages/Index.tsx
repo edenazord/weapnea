@@ -11,7 +11,7 @@ import EventCard from "@/components/EventCard";
 import { SearchWithDropdown } from "@/components/SearchWithDropdown";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { format, parseISO, isValid } from "date-fns";
+import { format, parseISO, isValid, startOfDay } from "date-fns";
 import { localizeCategoryName } from "@/lib/i18n-utils";
 import { it } from "date-fns/locale";
 import {
@@ -114,7 +114,8 @@ const Index = () => {
       return [];
     }
     
-    const now = new Date();
+    // Considera "oggi" come inizio giornata, così gli eventi di oggi risultano ancora futuri
+    const todayStart = startOfDay(new Date());
     
     let filteredEvents = events
       .filter(event => {
@@ -122,8 +123,12 @@ const Index = () => {
           return false;
         }
         try {
-          const eventDate = parseISO(event.date);
-          return isValid(eventDate) && eventDate >= now;
+          const start = parseISO(event.date);
+          const end = event.end_date ? parseISO(event.end_date) : undefined;
+          const startOk = isValid(start) && start >= todayStart;
+          const endOk = end && isValid(end) && end >= todayStart;
+          // Includi se la data di inizio è oggi o futura, oppure se la data di fine non è ancora passata
+          return Boolean(startOk || endOk);
         } catch {
           return false;
         }
