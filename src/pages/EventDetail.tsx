@@ -16,6 +16,8 @@ import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import { GoogleMap } from "@/components/GoogleMap";
 import { EventPaymentButton } from "@/components/EventPaymentButton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { apiGet } from "@/lib/apiClient";
 
 const EventDetailSkeleton = () => (
     <div className="min-h-screen bg-blue-50">
@@ -115,6 +117,20 @@ const EventDetail = () => {
       },
       enabled: !!slug,
     });
+
+        // Organizer profile query (must be declared unconditionally after the first query)
+        const organizerId = event?.organizer?.id;
+        const { data: organizerProfile } = useQuery<{ id: string; full_name: string | null; company_name: string | null; avatar_url: string | null; role: string }>(
+            {
+                queryKey: ['organizer-profile', organizerId],
+                queryFn: async () => {
+                    const res = await apiGet(`/api/instructors/${organizerId}`);
+                    return res as any;
+                },
+                enabled: !!organizerId,
+                staleTime: 60_000,
+            }
+        );
 
     const formatEventDate = (dateString: string) => {
         try {
@@ -243,7 +259,9 @@ const EventDetail = () => {
         return <Layout>{errorContent}</Layout>;
     }
 
-    console.log("✅ EventDetail - Evento caricato con successo:", event.title);
+        console.log("✅ EventDetail - Evento caricato con successo:", event.title);
+
+    
 
     const content = (
         <div className={`${isMobile ? 'p-4' : 'container mx-auto px-4 py-8 md:py-12'}`}>
@@ -257,20 +275,31 @@ const EventDetail = () => {
                     <Card className="overflow-hidden shadow-lg">
                         <img src={event.image_url || "/placeholder.svg"} alt={event.title} className={`w-full object-cover ${isMobile ? 'h-48' : 'h-64 md:h-96'}`} />
                         <div className={`${isMobile ? 'p-4' : 'p-6 md:p-8'}`}>
-                            <h1 className={`font-bold text-blue-900 mb-2 leading-tight ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>{event.title}</h1>
+                                                        {/* Organizzatore con avatar sopra al titolo */}
+                                                        {event.organizer && (
+                                                            <div className="mb-3 flex items-center gap-3">
+                                                                <Link to={`/instructor/${event.organizer.id}`} className="flex items-center gap-3 group">
+                                                                    <Avatar className="h-9 w-9">
+                                                                        <AvatarImage src={organizerProfile?.avatar_url || ''} alt={organizerProfile?.full_name || organizerProfile?.company_name || 'Organizzatore'} />
+                                                                        <AvatarFallback>
+                                                                            {(organizerProfile?.full_name || organizerProfile?.company_name || 'O')
+                                                                                .charAt(0)
+                                                                                .toUpperCase()}
+                                                                        </AvatarFallback>
+                                                                    </Avatar>
+                                                                    <div className="flex flex-col leading-tight">
+                                                                        <span className="text-xs text-gray-500">Organizzato da</span>
+                                                                        <span className="text-sm font-medium text-blue-700 group-hover:underline">
+                                                                            {organizerProfile?.company_name || organizerProfile?.full_name || event.organizer.company_name || event.organizer.full_name || 'Organizzatore'}
+                                                                        </span>
+                                                                    </div>
+                                                                </Link>
+                                                            </div>
+                                                        )}
+
+                                                        <h1 className={`font-bold text-blue-900 mb-2 leading-tight ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>{event.title}</h1>
                             
-                            {/* Organizzatore */}
-                            {event.organizer && (
-                                <div className="mb-4">
-                                    <span className="text-gray-600 text-sm">Organizzato da </span>
-                                    <Link 
-                                        to={`/instructor/${event.organizer.id}`}
-                                        className="text-blue-600 hover:text-blue-800 text-sm font-medium hover:underline"
-                                    >
-                                        {event.organizer.company_name || event.organizer.full_name || 'Organizzatore'}
-                                    </Link>
-                                </div>
-                            )}
+                            {/* Nota: la sezione 'Organizzato da' è ora integrata sopra al titolo con avatar */}
                             
                             <div className={`prose max-w-none text-gray-700 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
                                 {event.description || "Nessuna descrizione fornita per questo evento."}
