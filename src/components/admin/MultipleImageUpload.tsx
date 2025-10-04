@@ -50,7 +50,10 @@ export function MultipleImageUpload({ onImagesChanged, currentImages }: Multiple
         }
       }
 
-      const updatedImages = [...currentImages, ...newUrls];
+  // Normalizza eventuali URL relativi restituiti dall'API (es. /public/uploads/..)
+  const apiBase = cfg.apiBaseUrl || '';
+  const normalized = newUrls.map(u => (u.startsWith('/') ? `${apiBase}${u}` : u));
+  const updatedImages = [...currentImages, ...normalized];
       onImagesChanged(updatedImages);
       toast.success(`${newUrls.length} immagini aggiunte con successo!`);
     } catch (error) {
@@ -71,7 +74,9 @@ export function MultipleImageUpload({ onImagesChanged, currentImages }: Multiple
       return;
     }
 
-    const updatedImages = [...currentImages, uploadInput.trim()];
+  const apiBase = cfg.apiBaseUrl || '';
+  const u = uploadInput.trim();
+  const updatedImages = [...currentImages, (u.startsWith('/') ? `${apiBase}${u}` : u)];
     onImagesChanged(updatedImages);
     setUploadInput("");
     toast.success("Immagine aggiunta tramite URL!");
@@ -126,7 +131,7 @@ export function MultipleImageUpload({ onImagesChanged, currentImages }: Multiple
           {currentImages.map((url, index) => (
             <div key={index} className="relative group">
               <img
-                src={url}
+                src={url.startsWith('/') ? `${cfg.apiBaseUrl || ''}${url}` : url}
                 alt={`Galleria ${index + 1}`}
                 className="w-full h-24 object-cover rounded-lg border border-gray-200"
                 onError={(e) => {

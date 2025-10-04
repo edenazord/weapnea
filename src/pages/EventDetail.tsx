@@ -18,6 +18,7 @@ import { GoogleMap } from "@/components/GoogleMap";
 import { EventPaymentButton } from "@/components/EventPaymentButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiGet } from "@/lib/apiClient";
+import { backendConfig } from "@/lib/backendConfig";
 
 const EventDetailSkeleton = () => (
     <div className="min-h-screen bg-blue-50">
@@ -119,7 +120,7 @@ const EventDetail = () => {
     });
 
         // Organizer profile query (must be declared unconditionally after the first query)
-        const organizerId = event?.organizer?.id;
+        const organizerId = event?.organizer?.id || event?.created_by || undefined;
         const { data: organizerProfile } = useQuery<{ id: string; full_name: string | null; company_name: string | null; avatar_url: string | null; role: string }>(
             {
                 queryKey: ['organizer-profile', organizerId],
@@ -273,7 +274,7 @@ const EventDetail = () => {
                 <div className={isMobile ? 'col-span-1' : 'md:col-span-2'}>
                     {/* Immagine principale e descrizione */}
                     <Card className="overflow-hidden shadow-lg">
-                        <img src={event.image_url || "/placeholder.svg"} alt={event.title} className={`w-full object-cover ${isMobile ? 'h-48' : 'h-64 md:h-96'}`} />
+                        <img src={(event.image_url?.startsWith('/') ? `${backendConfig.apiBaseUrl || ''}${event.image_url}` : event.image_url) || "/placeholder.svg"} alt={event.title} className={`w-full object-cover ${isMobile ? 'h-48' : 'h-64 md:h-96'}`} />
                         <div className={`${isMobile ? 'p-4' : 'p-6 md:p-8'}`}>
                                                         {/* Organizzatore con avatar sopra al titolo */}
                                                         {event.organizer && (
@@ -510,7 +511,7 @@ const EventDetail = () => {
                                 {event.gallery_images.map((image, index) => (
                                     <img
                                         key={index}
-                                        src={image}
+                                        src={image?.startsWith('/') ? `${backendConfig.apiBaseUrl || ''}${image}` : image}
                                         alt={`Galleria ${index + 1}`}
                                         className="w-full h-24 object-cover rounded-lg border border-gray-200"
                                         onError={(e) => {
