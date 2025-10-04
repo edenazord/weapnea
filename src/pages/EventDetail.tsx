@@ -1,5 +1,6 @@
 
 import { useParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEventById, getEventBySlug, EventWithCategory } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,8 @@ import { EventPaymentButton } from "@/components/EventPaymentButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiGet } from "@/lib/apiClient";
 import { ensureAbsoluteUrl } from "@/lib/utils";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 const EventDetailSkeleton = () => (
     <div className="min-h-screen bg-blue-50">
@@ -70,6 +73,8 @@ const EventDetail = () => {
     const { slug } = useParams<{ slug: string }>();
     const { user, loading: authLoading } = useAuth();
     const isMobile = useIsMobile();
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
 
     // Auto scroll to top on route change
     useScrollToTop();
@@ -168,6 +173,28 @@ const EventDetail = () => {
         const endDate = formatEventDate(event.end_date);
         return `${startDate} - ${endDate}`;
     };
+
+    // Lightbox helpers
+    const galleryAbs = (event?.gallery_images || []).map((g) => ensureAbsoluteUrl(g) || "");
+    const hasGallery = galleryAbs.length > 0;
+    const goPrev = () => {
+        if (!hasGallery) return;
+        setLightboxIndex((i) => (i - 1 + galleryAbs.length) % galleryAbs.length);
+    };
+    const goNext = () => {
+        if (!hasGallery) return;
+        setLightboxIndex((i) => (i + 1) % galleryAbs.length);
+    };
+    useEffect(() => {
+        if (!lightboxOpen) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'ArrowRight') goNext();
+            else if (e.key === 'ArrowLeft') goPrev();
+        };
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lightboxOpen, galleryAbs.length]);
 
     // Helper functions to format the display values
     const formatEventType = (eventType: string | null) => {
@@ -515,25 +542,68 @@ const EventDetail = () => {
                     )}
 
                     {/* Galleria immagini - rimane a destra */}
-                    {event.gallery_images && event.gallery_images.length > 0 && (
+                    {hasGallery && (
                         <Card className={`shadow-lg p-6 mt-6`}>
                             <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Galleria</h2>
                             <div className="grid grid-cols-2 gap-3">
-                                {event.gallery_images.map((image, index) => (
+                                {galleryAbs.map((src, index) => (
                                     <img
                                         key={index}
-                                        src={ensureAbsoluteUrl(image) || '/placeholder.svg'}
+                                        src={src || '/placeholder.svg'}
                                         alt={`Galleria ${index + 1}`}
-                                        className="w-full h-24 object-cover rounded-lg border border-gray-200"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            target.src = "/placeholder.svg";
-                                        }}
+                                        className="w-full h-24 object-cover rounded-lg border border-gray-200 cursor-zoom-in"
+                                        onClick={() => { setLightboxIndex(index); setLightboxOpen(true); }}
+                                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
                                     />
                                 ))}
                             </div>
                         </Card>
                     )}
+
+                    {/* Lightbox Dialog */}
+                    <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+                        <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none">
+                            <div className="relative w-screen h-screen flex items-center justify-center">
+                                {/* Prev button */}
+                                {hasGallery && (
+                                    <button
+                                        type="button"
+                                        aria-label="Immagine precedente"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60"
+                                        onClick={goPrev}
+                                    >
+                                        <ChevronLeft className="h-6 w-6" />
+                                    </button>
+                                )}
+                                {/* Image */}
+                                {hasGallery && (
+                                    <img
+                                        src={galleryAbs[lightboxIndex] || '/placeholder.svg'}
+                                        alt={`Immagine ${lightboxIndex + 1} di ${galleryAbs.length}`}
+                                        className="max-h-[90vh] max-w-[95vw] object-contain drop-shadow-2xl"
+                                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                                    />
+                                )}
+                                {/* Next button */}
+                                {hasGallery && (
+                                    <button
+                                        type="button"
+                                        aria-label="Immagine successiva"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60"
+                                        onClick={goNext}
+                                    >
+                                        <ChevronRight className="h-6 w-6" />
+                                    </button>
+                                )}
+                                {/* Counter */}
+                                {hasGallery && (
+                                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/90 bg-black/40 px-3 py-1 rounded-full text-sm">
+                                        {lightboxIndex + 1} / {galleryAbs.length}
+                                    </div>
+                                )}
+                            </div>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
         </div>

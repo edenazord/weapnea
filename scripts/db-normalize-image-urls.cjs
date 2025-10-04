@@ -17,12 +17,15 @@
     DRY_RUN=true  -> esegue ROLLBACK a fine script
 */
 
+require('dotenv').config();
 const { Pool } = require('pg');
 
 (async () => {
-  const DATABASE_URL = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  // Preferisci il DB remoto se presente (RENDER_EXTERNAL_DB_URL), altrimenti POSTGRES_URL/DATABASE_URL
+  const DATABASE_URL = process.env.RENDER_EXTERNAL_DB_URL || process.env.POSTGRES_URL || process.env.DATABASE_URL;
   const BASE = (process.env.TARGET_BASE_URL || 'https://weapnea-api.onrender.com').replace(/\/$/, '');
-  const DRY = String(process.env.DRY_RUN || '').toLowerCase() === 'true';
+  // Default DRY_RUN=true per sicurezza; impostare DRY_RUN=false per applicare le modifiche
+  const DRY = String(process.env.DRY_RUN ?? 'true').toLowerCase() === 'true';
 
   if (!DATABASE_URL) {
     console.error('[error] Missing POSTGRES_URL/DATABASE_URL');
@@ -32,6 +35,7 @@ const { Pool } = require('pg');
   const sslRequired = (
     process.env.DB_SSL === 'true' ||
     process.env.PGSSLMODE === 'require' ||
+    (DATABASE_URL && /(?:^|[?&])sslmode=require(?:&|$)/i.test(DATABASE_URL)) ||
     process.env.NODE_ENV === 'production'
   );
 
@@ -46,7 +50,7 @@ const { Pool } = require('pg');
     await client.query('BEGIN');
 
     // 1) events.image_url
-    const q1 = `UPDATE events SET image_url = CONCAT($1, image_url)
+  const q1 = `UPDATE events SET image_url = ($1::text || image_url)
                 WHERE image_url IS NOT NULL AND image_url LIKE '/%'`;
     const r1 = await client.query(q1, [BASE]);
     console.log(`[events] image_url updated rows: ${r1.rowCount}`);
@@ -56,7 +60,7 @@ const { Pool } = require('pg');
                   SELECT id, jsonb_agg(
                     CASE
                       WHEN elem ~* '^(https?:|data:|blob:)' THEN to_jsonb(elem)
-                      WHEN left(elem,1) = '/' THEN to_jsonb($1 || elem)
+                      WHEN left(elem,1) = '/' THEN to_jsonb($1::text || elem)
                       ELSE to_jsonb(elem)
                     END
                   ) AS new_gallery
@@ -78,7 +82,7 @@ const { Pool } = require('pg');
     console.log(`[events] gallery_images updated rows: ${r2.rowCount}`);
 
     // 3) blog_articles.cover_image_url
-    const q3 = `UPDATE blog_articles SET cover_image_url = CONCAT($1, cover_image_url)
+  const q3 = `UPDATE blog_articles SET cover_image_url = ($1::text || cover_image_url)
                 WHERE cover_image_url IS NOT NULL AND cover_image_url LIKE '/%'`;
     let r3 = { rowCount: 0 };
     try { r3 = await client.query(q3, [BASE]); } catch { /* table may not exist */ }
@@ -89,7 +93,7 @@ const { Pool } = require('pg');
                   SELECT id, jsonb_agg(
                     CASE
                       WHEN elem ~* '^(https?:|data:|blob:)' THEN to_jsonb(elem)
-                      WHEN left(elem,1) = '/' THEN to_jsonb($1 || elem)
+                      WHEN left(elem,1) = '/' THEN to_jsonb($1::text || elem)
                       ELSE to_jsonb(elem)
                     END
                   ) AS new_gallery
@@ -112,7 +116,7 @@ const { Pool } = require('pg');
     console.log(`[blog] gallery_images updated rows: ${r4.rowCount}`);
 
     // 5) profiles.avatar_url
-    const q5 = `UPDATE profiles SET avatar_url = CONCAT($1, avatar_url)
+  const q5 = `UPDATE profiles SET avatar_url = ($1::text || avatar_url)
                 WHERE avatar_url IS NOT NULL AND avatar_url LIKE '/%'`;
     const r5 = await client.query(q5, [BASE]);
     console.log(`[profiles] avatar_url updated rows: ${r5.rowCount}`);

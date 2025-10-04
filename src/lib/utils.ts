@@ -13,8 +13,21 @@ export function ensureAbsoluteUrl(url?: string | null, base?: string): string | 
   const u = url.trim();
   if (!u) return undefined;
   if (/^(https?:|data:|blob:)/i.test(u)) return u;
-  const api = base || backendConfig.apiBaseUrl || '';
-  return u.startsWith('/') ? `${api}${u}` : u;
+  // Se è un path sotto /public (servito dal backend Express), usa la base API
+  if (u.startsWith('/public/')) {
+    const api = base || backendConfig.apiBaseUrl || '';
+    return `${api}${u}`;
+  }
+  // Per altri path assoluti (es. /images/...), risolvi rispetto all'origin del frontend
+  try {
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      return new URL(u, window.location.origin).toString();
+    }
+  } catch {
+    // ignore
+  }
+  // Fallback conservativo
+  return u;
 }
 
 export function ensureAbsoluteUrls(urls?: (string | null | undefined)[] | null, base?: string): string[] {
