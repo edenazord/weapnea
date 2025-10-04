@@ -565,19 +565,8 @@ const EventDetail = () => {
                         <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none">
                             <DialogTitle className="sr-only">Galleria immagini</DialogTitle>
                             <DialogDescription className="sr-only">Zoom immagine {lightboxIndex + 1} di {galleryAbs.length}</DialogDescription>
-                            <div className="relative w-screen h-screen flex items-center justify-center">
-                                {/* Prev button */}
-                                {hasGallery && (
-                                    <button
-                                        type="button"
-                                        aria-label="Immagine precedente"
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60"
-                                        onClick={goPrev}
-                                    >
-                                        <ChevronLeft className="h-6 w-6" />
-                                    </button>
-                                )}
-                                {/* Image */}
+                                                        <div className="relative w-screen h-screen flex items-center justify-center">
+                                                                {/* Image */}
                                 {hasGallery && (
                                     <img
                                         src={galleryAbs[lightboxIndex] || '/placeholder.svg'}
@@ -586,23 +575,37 @@ const EventDetail = () => {
                                         onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
                                     />
                                 )}
-                                {/* Next button */}
-                                {hasGallery && (
-                                    <button
-                                        type="button"
-                                        aria-label="Immagine successiva"
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/40 text-white hover:bg-black/60"
-                                        onClick={goNext}
-                                    >
-                                        <ChevronRight className="h-6 w-6" />
-                                    </button>
-                                )}
-                                {/* Counter */}
-                                {hasGallery && (
-                                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/90 bg-black/40 px-3 py-1 rounded-full text-sm">
-                                        {lightboxIndex + 1} / {galleryAbs.length}
-                                    </div>
-                                )}
+                                                                {/* Bottom controls: prev | counter | next */}
+                                                                {hasGallery && (
+                                                                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3 text-white">
+                                                                        {/* Prev */}
+                                                                        {galleryAbs.length > 1 && (
+                                                                            <button
+                                                                                type="button"
+                                                                                aria-label="Immagine precedente"
+                                                                                className="p-2 rounded-full bg-black/40 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                                                                                onClick={goPrev}
+                                                                            >
+                                                                                <ChevronLeft className="h-5 w-5" />
+                                                                            </button>
+                                                                        )}
+                                                                        {/* Counter */}
+                                                                        <div className="bg-black/40 px-3 py-1 rounded-full text-sm text-white/90 tabular-nums">
+                                                                            {lightboxIndex + 1} / {galleryAbs.length}
+                                                                        </div>
+                                                                        {/* Next */}
+                                                                        {galleryAbs.length > 1 && (
+                                                                            <button
+                                                                                type="button"
+                                                                                aria-label="Immagine successiva"
+                                                                                className="p-2 rounded-full bg-black/40 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                                                                                onClick={goNext}
+                                                                            >
+                                                                                <ChevronRight className="h-5 w-5" />
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                             </div>
                         </DialogContent>
                     </Dialog>
