@@ -1,209 +1,344 @@
 {
-  "nav": {"home": "Главная", "events": "События", "about": "О нас", "blog": "Блог", "forum": "Форум", "profile": "Профиль", "dashboard": "Панель", "logout": "Выйти"},
-  "common": {"login": "Войти", "register": "Зарегистрироваться", "error": "Ошибка", "unexpected_error": "Неожиданная ошибка", "cancel": "Отмена", "delete": "Удалить"},
-  "homepage": {"uncategorized_events": "Тренировки", "loading_events": "Загрузка событий...", "error_title": "Ошибка загрузки", "error_description": "Произошла ошибка при загрузке событий.", "retry_btn": "Повторить", "no_events_title": "Нет доступных событий", "no_events_description": "В данный момент нет опубликованных событий.", "no_results_title": "Событий не найдено", "no_results_description": "Нет предстоящих событий, соответствующих вашим фильтрам.", "sponsors": {"title": "Партнеры и спонсоры", "learn_more": "Узнать больше"}},
-  "categories": {"trainings": "Тренировки", "trips": "Путешествия", "courses": "Курсы", "workshops": "Мастер-классы", "competitions": "Соревнования", "stages": "Стажировки"},
-  "footer": {"description": "Первая международная платформа, посвященная фридайвингу. Присоединяйтесь к событиям, поездкам и обучению, общаясь с сообществом энтузиастов, которые совсем не поверхностны!", "quick_links": "Быстрые ссылки", "contact": "Контакты", "copyright": "Все права защищены."},
-  "hero": {"badge_text": "Откройте мир фридайвинга", "title_line1": "Ваша платформа для", "title_line2": "фридайвинга", "description": "Находите события, курсы и соревнования. Общайтесь с сообществом и открывайте новые возможности для улучшения своих результатов.", "btn_explore": "Смотреть события", "btn_community": "Присоединиться к сообществу", "stats_events": "Организованные события", "stats_freedivers": "Активные фридайверы", "stats_instructors": "Сертифицированные инструкторы"},
-  "about_page": {"title": "О нас", "subtitle": "WeApnea — первая международная платформа, посвящённая фридайвингу, созданная по инициативе группы фридайверов, желавших создать пространство для обмена опытом и роста всего сообщества.", "mission_title": "Наша миссия", "mission_desc": "Соединять фридайверов по всему миру с помощью платформы, которая упрощает участие в событиях, поездках и обучении. Мы хотим сделать фридайвинг более доступным и создать глобальное сообщество энтузиастов.", "vision_title": "Наше видение", "vision_desc": "Стать международным ориентиром в мире фридайвинга, где каждый фридайвер может найти возможности для роста, обмена опытом и настоящих связей с другими участниками сообщества.", "values_title": "Наши ценности", "values": {"community_title": "Сообщество", "community_desc": "Мы верим в силу сообщества и обмен опытом, чтобы расти вместе как фридайверы.", "passion_title": "Страсть", "passion_desc": "Фридайвинг — наша страсть, и мы хотим делиться ею через события и незабываемые впечатления.", "innovation_title": "Инновации", "innovation_desc": "Мы используем технологии, чтобы сделать фридайвинг более доступным и соединять фридайверов по всему миру."}, "team_title": "Наша команда", "team_desc": "Мы — команда увлечённых фридайверов, разработчиков и специалистов отрасли, работающих вместе, чтобы создать наилучший опыт для сообщества фридайвинга."},
-  "search": {"placeholder": "Искать события, курсы, соревнования...", "active_filters": "Активные фильтры", "filter_results": "Фильтровать результаты", "category": "Категория", "all_categories": "Все категории", "discipline": "Дисциплина", "all_disciplines": "Все дисциплины", "nation": "Страна", "all_nations": "Все страны", "date": "Дата", "select_month": "Выберите месяц", "disciplines": {"indoor": "Indoor", "outdoor": "Outdoor", "indoor_outdoor": "Indoor & Outdoor"}},
-  "test": {"hello": "Привет", "welcome": "Добро пожаловать", "goodbye": "До свидания"},
-  "auth": {
-    "login_title": "С возвращением в WeApnea",
-    "login_subtitle": "Введите учетные данные для доступа к аккаунту.",
-    "register_title": "Создать аккаунт WeApnea",
-    "register_subtitle": "Присоединяйтесь к сообществу WeApnea.",
-    "back_home": "Вернуться на главную",
-    "login": {
-      "validation": {"email_invalid": "Некорректный адрес электронной почты.", "password_required": "Требуется пароль."},
-      "success_title": "Вход выполнен",
-      "success_desc": "С возвращением в WeApnea!",
-      "error_title": "Ошибка входа",
-      "error_invalid": "Неверные учетные данные. Повторите попытку.",
-      "error_generic": "Произошла ошибка. Повторите попытку.",
-      "form": {"email_label": "Email", "email_placeholder": "you@example.com", "password_label": "Пароль", "submitting": "Вход...", "forgot_password": "Забыли пароль?"}
-    },
-    "register": {
-      "validation": {"role_required": "Вы должны выбрать тип аккаунта.", "fullname_required": "Требуется полное имя", "email_invalid": "Некорректный адрес электронной почты.", "password_min": "Пароль должен содержать не менее 6 символов.", "company_required": "Все поля спонсора обязательны, если роль — 'Sponsor'."},
-      "success_title": "Регистрация завершена!",
-      "success_desc": "Проверьте почту, чтобы подтвердить аккаунт и завершить регистрацию.",
-      "error_title": "Ошибка регистрации",
-      "error_generic": "Произошла ошибка во время регистрации.",
-      "error_try_later": "Произошла ошибка во время регистрации. Повторите попытку позже.",
-      "form": {"role_label": "Тип аккаунта", "role_user": "Пользователь", "role_instructor": "Организатор", "role_company": "Спонсор", "fullname_label": "Полное имя", "fullname_placeholder": "Иван Иванов", "email_label": "Email", "email_placeholder": "you@example.com", "password_label": "Пароль", "company_name_label": "Название спонсора", "company_name_placeholder": "WeApnea LLC", "vat_number_label": "ИНН/НДС", "vat_number_placeholder": "RU1234567890", "company_address_label": "Адрес спонсора", "company_address_placeholder": "ул. Морская 1, 101000 Москва", "submitting": "Регистрация..."}
-    }
-  },
-  "blog_page": {"title": "Блог WeApnea", "subtitle": "Узнайте последние новости из мира фридайвинга, техники, советы и истории нашего сообщества", "search_placeholder": "Искать статьи...", "read_more": "Читать далее", "author_fallback": "Автор", "no_results_title": "Статей не найдено", "no_results_desc": "Попробуйте изменить параметры поиска.", "no_posts_title": "Нет опубликованных статей", "no_posts_desc": "Загляните позже за новым контентом!", "back_to_blog": "Назад к блогу", "share_button": "Поделиться", "share_copied_title": "Ссылка скопирована!", "share_copied_desc": "Ссылка на статью скопирована в буфер обмена.", "not_found_title": "Статья не найдена", "not_found_desc": "Статья, которую вы ищете, не существует или была удалена.", "gallery_title": "Галерея"},
-  "password_reset": {
-    "email_sent_title": "Письмо отправлено",
-    "email_sent_desc": "Проверьте почту для инструкций по восстановлению.",
-    "errors": {
-      "email_invalid": "Некорректный адрес электронной почты.",
-      "password_min": "Пароль должен содержать минимум 6 символов.",
-      "confirm_required": "Подтвердите пароль.",
-      "password_mismatch": "Пароли не совпадают",
-      "send_failed": "Произошла ошибка при отправке письма восстановления.",
-      "invalid_link": "Недействительная ссылка восстановления. Запросите новую.",
-      "invalid_token": "Недействительный или истекший токен.",
-      "update_failed": "Произошла ошибка при обновлении пароля."
-    },
-    "email_sent_heading": "Письмо отправлено!",
-    "email_sent_help": "Мы отправили инструкции по сбросу пароля на вашу почту.",
-    "email_sent_follow": "Проверьте почту и следуйте инструкциям для сброса пароля.",
-    "back_to_login": "Вернуться ко входу",
-    "set_new_title": "Установить новый пароль",
-    "request_title": "Восстановить пароль",
-    "set_new_subtitle": "Введите новый пароль.",
-    "request_subtitle": "Введите адрес электронной почты, и мы отправим инструкции по сбросу пароля.",
-    "new_password_label": "Новый пароль",
-    "new_password_placeholder": "Введите новый пароль",
-    "confirm_password_label": "Подтвердите пароль",
-    "updating": "Обновление...",
-    "update_button": "Обновить пароль",
-    "email_label": "Email",
-    "email_placeholder": "you@example.com",
-    "sending": "Отправка...",
-    "send_button": "Отправить письмо для восстановления",
-    "updated_title": "Пароль обновлен",
-    "updated_desc": "Ваш пароль успешно обновлен. Теперь вы можете войти."
-  },
-  "not_found": {
-    "subtitle": "Упс! Страница не найдена",
-    "back_home": "Вернуться на главную"
-  },
-  "events": {"participants": "участников", "details": "Подробнее", "count_in_category": "событий в этой категории", "none_in_category": "Нет событий в этой категории"},
-  "forum": {
-    "title": "Форум",
-    "subtitle": "Обсуждайте с сообществом фридайвинга",
-    "new_topic": "Новая тема",
-    "login_to_create_topic": "Войдите, чтобы создать тему",
-    "filter": {"all": "Все"},
-    "anonymous": "Аноним",
-    "last_reply": "Последний ответ:",
-    "no_topics": {
-      "title": "Темы не найдены",
-      "generic": "На форуме пока нет обсуждений.",
-      "in_category_prefix": "Пока нет обсуждений в"
-    },
-    "create_first_topic": "Создать первую тему",
-    "login_to_create_first_topic": "Войдите, чтобы создать первую тему",
-    "back_to_forum": "Назад к форуму",
-    "topic_not_found": "Тема не найдена",
-    "replies": "Ответы",
-    "delete_topic": {"title": "Удалить эту тему?", "description": "Это действие нельзя отменить. Тема и все ответы будут удалены безвозвратно."},
-    "delete_reply": {"title": "Удалить этот ответ?", "description": "Это действие нельзя отменить. Ответ будет удален безвозвратно."},
-    "add_reply": {"title": "Добавить ответ", "placeholder": "Напишите ваш ответ...", "send": "Отправить ответ", "sending": "Отправка..."},
-    "locked": {"title": "Эта тема заблокирована", "description": "Нельзя добавлять новые ответы."},
-    "login_cta": {"title": "Присоединяйтесь к обсуждению!", "description": "Вы должны войти в систему, чтобы ответить на эту тему.", "button": "Войти, чтобы ответить"},
-    "toasts": {
-      "topic_deleted": "Тема успешно удалена!",
-      "topic_delete_error_prefix": "Ошибка при удалении темы: ",
-      "reply_deleted": "Ответ успешно удален!",
-      "reply_delete_error_prefix": "Ошибка при удалении ответа: ",
-      "reply_added": "Ответ успешно добавлен!",
-      "reply_add_error_prefix": "Ошибка при добавлении ответа: "
-    }
-  },
-  "common_ext": {
-    "error": "Ошибка",
-    "unexpected_error": "Неожиданная ошибка"
-  },
-  "profile": {
-      "title": "Мой Профиль",
-      "subtitle": "Управляйте своей личной информацией",
-      "mobile_header_title": "Мой Профиль",
-      "role_label": "Роль",
-      "roles": {
-        "user": "Пользователь",
-        "instructor": "Организатор",
-        "company": "Спонсор"
-      },
-      "tabs": {
-        "overview": "Профиль",
-        "company": "Компания",
-        "sponsor": "Спонсор"
-      },
-      "sections": {
-        "my_events": {
-          "title": "Мои события",
-          "description": "Управляйте своими событиями и списком желаний",
-          "participated_button": "Посещенные события",
-          "participated_sub": "История событий",
-          "wishlist_button": "Избранное",
-          "wishlist_sub": "Сохраненные события"
-        },
-        "personal_info": {
-          "title": "Личная информация",
-          "description": "Обновите свои личные и контактные данные",
-          "full_name_label": "Полное имя",
-          "full_name_placeholder": "Ваше полное имя",
-          "instagram_label": "Instagram",
-          "instagram_placeholder": "@username",
-          "phone_label": "Телефон",
-          "phone_placeholder": "+7 999 123-45-67",
-          "bio_label": "Биография",
-          "bio_placeholder": "Расскажите о себе..."
-        },
-        "certifications": {
-          "title": "Сертификаты и страховки",
-          "description": "Держите свои сертификаты в актуальном состоянии. Для записи на платные события обязательны: телефон, страховка и сроки ее действия, действующая медицинская справка.",
-          "brevetto_label": "Сертификат",
-          "brevetto_placeholder": "Выберите сертификат",
-          "brevetto_options": {
-            "none": "Без сертификата",
-            "open_water": "Open Water",
-            "advanced": "Advanced",
-            "rescue": "Rescue",
-            "master": "Master",
-            "instructor": "Instructor"
-          },
-          "brevetto_expiry_label": "Срок действия сертификата",
-          "insurance_label": "Страховка",
-          "insurance_placeholder": "Название страховки",
-          "insurance_expiry_label": "Срок действия страховки",
-          "medical_expiry_label": "Срок действия мед. справки"
-        },
-        "personal_bests": {
-          "title": "Личные рекорды",
-          "description": "Записывайте свои лучшие результаты в фридайвинге",
-          "static_apnea_label": "Статическая апноэ (минуты:секунды)",
-          "static_apnea_placeholder": "напр. 4:30",
-          "dynamic_apnea_label": "Динамическая апноэ (метры)",
-          "dynamic_apnea_placeholder": "напр. 75",
-          "free_immersion_label": "Свободное погружение (метры)",
-          "free_immersion_placeholder": "напр. 30",
-          "constant_weight_label": "Постоянный вес (метры)",
-          "constant_weight_placeholder": "напр. 45"
-        },
-        "company": {
-            "title": "Информация о компании",
-            "description": "Управляйте данными вашей компании",
-            "fields": {
-              "company_name_label": "Название компании",
-              "company_name_placeholder": "Название вашей компании",
-              "vat_number_label": "ИНН/НДС",
-              "vat_number_placeholder": "RU1234567890",
-              "company_address_label": "Адрес компании",
-              "company_address_placeholder": "Полный адрес компании"
-            }
-          },
-        "sponsor": {
-          "title": "Пакеты спонсоров",
-          "description": "Ознакомьтесь с нашими пакетами спонсорства",
-          "cta_text": "Увеличьте видимость вашей компании, спонсируя события по фридайвингу.",
-          "cta_button": "Пакеты Спонсоров"
-        }
-      },
-      "buttons": {
-        "save": "Сохранить изменения",
-        "saving": "Сохранение..."
-      },
-      "toasts": {
-        "update_success_title": "Успех",
-        "update_success_desc": "Профиль успешно обновлен!",
-        "update_error_title": "Ошибка",
-        "update_error_desc": "Произошла ошибка при обновлении профиля."
-      },
-      "login_required": "Вы должны быть авторизованы, чтобы просматривать профиль."
-    }
+	"nav": {
+		"home": "Главная",
+		"events": "События",
+		"about": "О нас",
+		"blog": "Блог",
+		"forum": "Форум",
+		"profile": "Профиль",
+		"dashboard": "Панель",
+		"logout": "Выйти"
+	},
+	"common": {
+		"login": "Войти",
+		"register": "Зарегистрироваться",
+		"error": "Ошибка",
+		"unexpected_error": "Неожиданная ошибка",
+		"cancel": "Отмена",
+		"delete": "Удалить"
+	},
+	"homepage": {
+		"uncategorized_events": "Тренировки",
+		"loading_events": "Загрузка событий...",
+		"error_title": "Ошибка загрузки",
+		"error_description": "Произошла ошибка при загрузке событий.",
+		"retry_btn": "Повторить",
+		"no_events_title": "Нет доступных событий",
+		"no_events_description": "В данный момент нет опубликованных событий.",
+		"no_results_title": "Событий не найдено",
+		"no_results_description": "Нет предстоящих событий, соответствующих вашим фильтрам.",
+		"sponsors": { "title": "Партнеры и спонсоры", "learn_more": "Узнать больше" }
+	},
+	"categories": {
+		"trainings": "Тренировки",
+		"trips": "Путешествия",
+		"courses": "Курсы",
+		"workshops": "Мастер-классы",
+		"competitions": "Соревнования",
+		"stages": "Стажировки"
+	},
+	"footer": {
+		"description": "Первая международная платформа, посвященная фридайвингу. Присоединяйтесь к событиям, поездкам и обучению, общаясь с сообществом энтузиастов, которые совсем не поверхностны!",
+		"quick_links": "Быстрые ссылки",
+		"contact": "Контакты",
+		"copyright": "Все права защищены."
+	},
+	"hero": {
+		"badge_text": "Откройте мир фридайвинга",
+		"title_line1": "Ваша платформа для",
+		"title_line2": "фридайвинга",
+		"description": "Находите события, курсы и соревнования. Общайтесь с сообществом и открывайте новые возможности для улучшения своих результатов.",
+		"btn_explore": "Смотреть события",
+		"btn_community": "Присоединиться к сообществу",
+		"stats_events": "Организованные события",
+		"stats_freedivers": "Активные фридайверы",
+		"stats_instructors": "Сертифицированные инструкторы"
+	},
+	"about_page": {
+		"title": "О нас",
+		"subtitle": "WeApnea — первая международная платформа, посвящённая фридайвингу, созданная по инициативе группы фридайверов, желавших создать пространство для обмена опытом и роста всего сообщества.",
+		"mission_title": "Наша миссия",
+		"mission_desc": "Соединять фридайверов по всему миру с помощью платформы, которая упрощает участие в событиях, поездках и обучении. Мы хотим сделать фридайвинг более доступным и создать глобальное сообщество энтузиастов.",
+		"vision_title": "Наше видение",
+		"vision_desc": "Стать международным ориентиром в мире фридайвинга, где каждый фридайвер может найти возможности для роста, обмена опытом и настоящих связей с другими участниками сообщества.",
+		"values_title": "Наши ценности",
+		"values": {
+			"community_title": "Сообщество",
+			"community_desc": "Мы верим в силу сообщества и обмен опытом, чтобы расти вместе как фридайверы.",
+			"passion_title": "Страсть",
+			"passion_desc": "Фридайвинг — наша страсть, и мы хотим делиться ею через события и незабываемые впечатления.",
+			"innovation_title": "Инновации",
+			"innovation_desc": "Мы используем технологии, чтобы сделать фридайвинг более доступным и соединять фридайверов по всему миру."
+		},
+		"team_title": "Наша команда",
+		"team_desc": "Мы — команда увлечённых фридайверов, разработчиков и специалистов отрасли, работающих вместе, чтобы создать наилучший опыт для сообщества фридайвинга."
+	},
+	"search": {
+		"placeholder": "Искать события, курсы, соревнования...",
+		"active_filters": "Активные фильтры",
+		"filter_results": "Фильтровать результаты",
+		"category": "Категория",
+		"all_categories": "Все категории",
+		"discipline": "Дисциплина",
+		"all_disciplines": "Все дисциплины",
+		"nation": "Страна",
+		"all_nations": "Все страны",
+		"date": "Дата",
+		"select_month": "Выберите месяц",
+		"disciplines": { "indoor": "Indoor", "outdoor": "Outdoor", "indoor_outdoor": "Indoor & Outdoor" }
+	},
+	"test": { "hello": "Привет", "welcome": "Добро пожаловать", "goodbye": "До свидания" },
+	"auth": {
+		"login_title": "С возвращением в WeApnea",
+		"login_subtitle": "Введите учетные данные для доступа к аккаунту.",
+		"register_title": "Создать аккаунт WeApnea",
+		"register_subtitle": "Присоединяйтесь к сообществу WeApnea.",
+		"back_home": "Вернуться на главную",
+		"login": {
+			"validation": { "email_invalid": "Некорректный адрес электронной почты.", "password_required": "Требуется пароль." },
+			"success_title": "Вход выполнен",
+			"success_desc": "С возвращением в WeApnea!",
+			"error_title": "Ошибка входа",
+			"error_invalid": "Неверные учетные данные. Повторите попытку.",
+			"error_generic": "Произошла ошибка. Повторите попытку.",
+			"form": {
+				"email_label": "Email",
+				"email_placeholder": "you@example.com",
+				"password_label": "Пароль",
+				"submitting": "Вход...",
+				"forgot_password": "Забыли пароль?"
+			}
+		},
+		"register": {
+			"validation": {
+				"role_required": "Вы должны выбрать тип аккаунта.",
+				"fullname_required": "Требуется полное имя",
+				"email_invalid": "Некорректный адрес электронной почты.",
+				"password_min": "Пароль должен содержать не менее 6 символов.",
+				"company_required": "Все поля спонсора обязательны, если роль — 'Sponsor'."
+			},
+			"success_title": "Регистрация завершена!",
+			"success_desc": "Проверьте почту, чтобы подтвердить аккаунт и завершить регистрацию.",
+			"error_title": "Ошибка регистрации",
+			"error_generic": "Произошла ошибка во время регистрации.",
+			"error_try_later": "Произошла ошибка во время регистрации. Повторите попытку позже.",
+			"form": {
+				"role_label": "Тип аккаунта",
+				"role_user": "Пользователь",
+				"role_instructor": "Организатор",
+				"role_company": "Спонсор",
+				"fullname_label": "Полное имя",
+				"fullname_placeholder": "Иван Иванов",
+				"email_label": "Email",
+				"email_placeholder": "you@example.com",
+				"password_label": "Пароль",
+				"company_name_label": "Название спонсора",
+				"company_name_placeholder": "WeApnea LLC",
+				"vat_number_label": "ИНН/НДС",
+				"vat_number_placeholder": "RU1234567890",
+				"company_address_label": "Адрес спонсора",
+				"company_address_placeholder": "ул. Морская 1, 101000 Москва",
+				"submitting": "Регистрация..."
+			}
+		}
+	},
+	"blog_page": {
+		"title": "Блог WeApnea",
+		"subtitle": "Узнайте последние новости из мира фридайвинга, техники, советы и истории нашего сообщества",
+		"search_placeholder": "Искать статьи...",
+		"read_more": "Читать далее",
+		"author_fallback": "Автор",
+		"no_results_title": "Статей не найдено",
+		"no_results_desc": "Попробуйте изменить параметры поиска.",
+		"no_posts_title": "Нет опубликованных статей",
+		"no_posts_desc": "Загляните позже за новым контентом!",
+		"back_to_blog": "Назад к блогу",
+		"share_button": "Поделиться",
+		"share_copied_title": "Ссылка скопирована!",
+		"share_copied_desc": "Ссылка на статью скопирована в буфер обмена.",
+		"not_found_title": "Статья не найдена",
+		"not_found_desc": "Статья, которую вы ищете, не существует или была удалена.",
+		"gallery_title": "Галерея"
+	},
+	"password_reset": {
+		"email_sent_title": "Письмо отправлено",
+		"email_sent_desc": "Проверьте почту для инструкций по восстановлению.",
+		"errors": {
+			"email_invalid": "Некорректный адрес электронной почты.",
+			"password_min": "Пароль должен содержать минимум 6 символов.",
+			"confirm_required": "Подтвердите пароль.",
+			"password_mismatch": "Пароли не совпадают",
+			"send_failed": "Произошла ошибка при отправке письма восстановления.",
+			"invalid_link": "Недействительная ссылка восстановления. Запросите новую.",
+			"invalid_token": "Недействительный или истекший токен.",
+			"update_failed": "Произошла ошибка при обновлении пароля."
+		},
+		"email_sent_heading": "Письмо отправлено!",
+		"email_sent_help": "Мы отправили инструкции по сбросу пароля на вашу почту.",
+		"email_sent_follow": "Проверьте почту и следуйте инструкциям для сброса пароля.",
+		"back_to_login": "Вернуться ко входу",
+		"set_new_title": "Установить новый пароль",
+		"request_title": "Восстановить пароль",
+		"set_new_subtitle": "Введите новый пароль.",
+		"request_subtitle": "Введите адрес электронной почты, и мы отправим инструкции по сбросу пароля.",
+		"new_password_label": "Новый пароль",
+		"new_password_placeholder": "Введите новый пароль",
+		"confirm_password_label": "Подтвердите пароль",
+		"updating": "Обновление...",
+		"update_button": "Обновить пароль",
+		"email_label": "Email",
+		"email_placeholder": "you@example.com",
+		"sending": "Отправка...",
+		"send_button": "Отправить письмо для восстановления",
+		"updated_title": "Пароль обновлен",
+		"updated_desc": "Ваш пароль успешно обновлен. Теперь вы можете войти."
+	},
+	"not_found": {
+		"subtitle": "Упс! Страница не найдена",
+		"back_home": "Вернуться на главную"
+	},
+	"events": {
+		"participants": "участников",
+		"details": "Подробнее",
+		"count_in_category": "событий в этой категории",
+		"none_in_category": "Нет событий в этой категории"
+	},
+	"forum": {
+		"title": "Форум",
+		"subtitle": "Обсуждайте с сообществом фридайвинга",
+		"new_topic": "Новая тема",
+		"login_to_create_topic": "Войдите, чтобы создать тему",
+		"filter": { "all": "Все" },
+		"anonymous": "Аноним",
+		"last_reply": "Последний ответ:",
+		"no_topics": {
+			"title": "Темы не найдены",
+			"generic": "На форуме пока нет обсуждений.",
+			"in_category_prefix": "Пока нет обсуждений в"
+		},
+		"create_first_topic": "Создать первую тему",
+		"login_to_create_first_topic": "Войдите, чтобы создать первую тему",
+		"back_to_forum": "Назад к форуму",
+		"topic_not_found": "Тема не найдена",
+		"replies": "Ответы",
+		"delete_topic": { "title": "Удалить эту тему?", "description": "Это действие нельзя отменить. Тема и все ответы будут удалены безвозвратно." },
+		"delete_reply": { "title": "Удалить этот ответ?", "description": "Это действие нельзя отменить. Ответ будет удален безвозвратно." },
+		"add_reply": { "title": "Добавить ответ", "placeholder": "Напишите ваш ответ...", "send": "Отправить ответ", "sending": "Отправка..." },
+		"locked": { "title": "Эта тема заблокирована", "description": "Нельзя добавлять новые ответы." },
+		"login_cta": {
+			"title": "Присоединяйтесь к обсуждению!",
+			"description": "Вы должны войти в систему, чтобы ответить на эту тему.",
+			"button": "Войти, чтобы ответить"
+		},
+		"toasts": {
+			"topic_deleted": "Тема успешно удалена!",
+			"topic_delete_error_prefix": "Ошибка при удалении темы: ",
+			"reply_deleted": "Ответ успешно удален!",
+			"reply_delete_error_prefix": "Ошибка при удалении ответа: ",
+			"reply_added": "Ответ успешно добавлен!",
+			"reply_add_error_prefix": "Ошибка при добавлении ответа: "
+		}
+	},
+	"common_ext": {
+		"error": "Ошибка",
+		"unexpected_error": "Неожиданная ошибка"
+	},
+	"profile": {
+		"title": "Мой Профиль",
+		"subtitle": "Управляйте своей личной информацией",
+		"mobile_header_title": "Мой Профиль",
+		"role_label": "Роль",
+		"roles": {
+			"user": "Пользователь",
+			"instructor": "Организатор",
+			"company": "Спонсор"
+		},
+		"tabs": {
+			"overview": "Профиль",
+			"company": "Компания",
+			"sponsor": "Спонсор"
+		},
+		"sections": {
+			"my_events": {
+				"title": "Мои события",
+				"description": "Управляйте своими событиями и списком желаний",
+				"participated_button": "Посещенные события",
+				"participated_sub": "История событий",
+				"wishlist_button": "Избранное",
+				"wishlist_sub": "Сохраненные события"
+			},
+			"personal_info": {
+				"title": "Личная информация",
+				"description": "Обновите свои личные и контактные данные",
+				"full_name_label": "Полное имя",
+				"full_name_placeholder": "Ваше полное имя",
+				"instagram_label": "Instagram",
+				"instagram_placeholder": "@username",
+				"phone_label": "Телефон",
+				"phone_placeholder": "+7 999 123-45-67",
+				"bio_label": "Биография",
+				"bio_placeholder": "Расскажите о себе..."
+			},
+			"certifications": {
+				"title": "Сертификаты и страховки",
+				"description": "Держите свои сертификаты в актуальном состоянии. Для записи на платные события обязательны: телефон, страховка и сроки ее действия, действующая медицинская справка.",
+				"brevetto_label": "Сертификат",
+				"brevetto_placeholder": "Выберите сертификат",
+				"brevetto_options": {
+					"none": "Без сертификата",
+					"open_water": "Open Water",
+					"advanced": "Advanced",
+					"rescue": "Rescue",
+					"master": "Master",
+					"instructor": "Instructor"
+				},
+				"brevetto_expiry_label": "Срок действия сертификата",
+				"insurance_label": "Страховка",
+				"insurance_placeholder": "Название страховки",
+				"insurance_expiry_label": "Срок действия страховки",
+				"medical_expiry_label": "Срок действия мед. справки"
+			},
+			"personal_bests": {
+				"title": "Личные рекорды",
+				"description": "Записывайте свои лучшие результаты в фридайвинге",
+				"static_apnea_label": "Статическая апноэ (минуты:секунды)",
+				"static_apnea_placeholder": "напр. 4:30",
+				"dynamic_apnea_label": "Динамическая апноэ (метры)",
+				"dynamic_apnea_placeholder": "напр. 75",
+				"free_immersion_label": "Свободное погружение (метры)",
+				"free_immersion_placeholder": "напр. 30",
+				"constant_weight_label": "Постоянный вес (метры)",
+				"constant_weight_placeholder": "напр. 45"
+			},
+			"company": {
+				"title": "Информация о компании",
+				"description": "Управляйте данными вашей компании",
+				"fields": {
+					"company_name_label": "Название компании",
+					"company_name_placeholder": "Название вашей компании",
+					"vat_number_label": "ИНН/НДС",
+					"vat_number_placeholder": "RU1234567890",
+					"company_address_label": "Адрес компании",
+					"company_address_placeholder": "Полный адрес компании"
+				}
+			},
+			"sponsor": {
+				"title": "Пакеты спонсоров",
+				"description": "Ознакомьтесь с нашими пакетами спонсорства",
+				"cta_text": "Увеличьте видимость вашей компании, спонсируя события по фридайвингу.",
+				"cta_button": "Пакеты Спонсоров"
+			}
+		},
+		"buttons": {
+			"save": "Сохранить изменения",
+			"saving": "Сохранение..."
+		},
+		"toasts": {
+			"update_success_title": "Успех",
+			"update_success_desc": "Профиль успешно обновлен!",
+			"update_error_title": "Ошибка",
+			"update_error_desc": "Произошла ошибка при обновлении профиля."
+		},
+		"login_required": "Вы должны быть авторизованы, чтобы просматривать профиль."
+	}
 }
