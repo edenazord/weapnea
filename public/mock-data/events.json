@@ -450,7 +450,7 @@
     "end_date": "2025-09-25",
     "location": "Viale Trento, Vicenza, VI, Italia",
     "participants": 2,
-    "image_url": "http://localhost:5174/public/uploads/1758386337487-f9t8ebmf9x7.png",
+  "image_url": "https://weapnea-api.onrender.com/public/uploads/1758386337487-f9t8ebmf9x7.png",
     "category_id": "56d5d6cf-96ab-4db6-b53d-cc7d51d8ae93",
     "cost": "22221.92",
     "nation": "Austria",

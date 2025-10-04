@@ -10,6 +10,8 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+let S3Client, PutObjectCommand;
+try { ({ S3Client, PutObjectCommand } = require('@aws-sdk/client-s3')); } catch {}
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
@@ -17,7 +19,7 @@ const Stripe = require('stripe');
 const { Resend } = require('resend');
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5174;
-const DATABASE_URL = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+const DATABASE_URL = process.env.POSTGRES_URL || process.env.DATABASE_URL || process.env.RENDER_EXTERNAL_DB_URL;
 if (!DATABASE_URL) {
   console.error('Missing POSTGRES_URL env var');
   process.exit(1);
@@ -68,22 +70,41 @@ const pool = new Pool({
 })();
 
 const app = express();
+// Rispetta i proxy (Render/Ingress) per ottenere host/proto corretti
+app.set('trust proxy', true);
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 // serve static files from public (to expose uploaded images)
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 
+function getApiPublicBase(req) {
+  // Preferisci override esplicito via env (es. https://weapnea-api.onrender.com)
+  if (process.env.API_PUBLIC_BASE_URL) return process.env.API_PUBLIC_BASE_URL.replace(/\/$/, '');
+  // Altrimenti costruisci dagli header proxy-aware
+  const proto = (req.headers['x-forwarded-proto'] || req.protocol || 'http').toString().split(',')[0];
+  const host = (req.headers['x-forwarded-host'] || req.headers['host'] || '').toString().split(',')[0];
+  if (host) return `${proto}://${host}`;
+  // Fallback finale: dominio API pubblico di produzione
+  return 'https://weapnea-api.onrender.com';
+}
+
+// Upload storage driver: 'local' (default) or 's3' (S3-compatible e.g. R2, B2)
+const STORAGE_DRIVER = (process.env.STORAGE_DRIVER || 'local').toLowerCase();
 // Multer storage config for uploads
 const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDir),
-  filename: (_req, file, cb) => {
-    const ext = path.extname(file.originalname) || '.bin';
-    const name = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-    cb(null, name);
-  }
-});
+if (STORAGE_DRIVER === 'local') {
+  if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+}
+const storage = (STORAGE_DRIVER === 's3')
+  ? multer.memoryStorage()
+  : multer.diskStorage({
+      destination: (_req, _file, cb) => cb(null, uploadDir),
+      filename: (_req, file, cb) => {
+        const ext = path.extname(file.originalname) || '.bin';
+        const name = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+        cb(null, name);
+      }
+    });
 const upload = multer({ storage });
 
 // Simple token-based auth for mutation endpoints
@@ -349,9 +370,50 @@ app.put('/api/profile', requireAuth, async (req, res) => {
 app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'file is required' });
-    const baseUrl = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
-    const publicUrl = `${baseUrl}/public/uploads/${req.file.filename}`;
-    res.status(201).json({ url: publicUrl, path: `/public/uploads/${req.file.filename}` });
+    const ext = req.file.originalname ? path.extname(req.file.originalname) : '';
+    const name = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext || ''}`;
+
+    if (STORAGE_DRIVER === 's3') {
+      if (!S3Client || !PutObjectCommand) {
+        return res.status(500).json({ error: 'S3 client not installed. Please add @aws-sdk/client-s3.' });
+      }
+      const region = process.env.S3_REGION || 'auto';
+      const endpoint = process.env.S3_ENDPOINT || undefined; // e.g. https://<accountid>.r2.cloudflarestorage.com
+      const bucket = process.env.S3_BUCKET;
+      const accessKeyId = process.env.S3_ACCESS_KEY_ID;
+      const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+      const publicBase = process.env.S3_PUBLIC_BASE_URL; // e.g. https://cdn.example.com or https://<bucket>.<provider>/bucket
+      if (!bucket || !accessKeyId || !secretAccessKey || !publicBase) {
+        return res.status(500).json({ error: 'S3 configuration missing (S3_BUCKET, S3_ACCESS_KEY_ID, S3_SECRET_ACCESS_KEY, S3_PUBLIC_BASE_URL)' });
+      }
+      const s3 = new S3Client({
+        region,
+        endpoint,
+        forcePathStyle: !!endpoint, // recommended for R2/B2/minio
+        credentials: { accessKeyId, secretAccessKey },
+      });
+  const key = `uploads/${name}`;
+  const contentType = req.file.mimetype || 'application/octet-stream';
+  const putParams = { Bucket: bucket, Key: key, Body: req.file.buffer, ContentType: contentType };
+  if (process.env.S3_ACL) putParams.ACL = process.env.S3_ACL; // e.g. 'public-read' (omit for R2)
+  await s3.send(new PutObjectCommand(putParams));
+      const url = `${publicBase.replace(/\/$/, '')}/${key}`;
+      return res.status(201).json({ url, key });
+    }
+
+  // LOCAL storage (ephemeral on Render unless using a persistent disk)
+  // Costruisci URL pubblico usando host/proto della richiesta (o API_PUBLIC_BASE_URL)
+  const baseUrl = getApiPublicBase(req);
+    const destPath = path.join(uploadDir, name);
+    // If using diskStorage, file already saved; if memoryStorage (shouldn't happen here), write it
+    if (req.file.buffer && !req.file.path) {
+      fs.writeFileSync(destPath, req.file.buffer);
+    } else if (req.file.path && path.basename(req.file.path) !== name) {
+      // Ensure file name matches our computed name for predictable URLs
+      fs.renameSync(req.file.path, destPath);
+    }
+  const publicUrl = `${baseUrl}/public/uploads/${name}`;
+    res.status(201).json({ url: publicUrl, path: `/public/uploads/${name}` });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
@@ -1503,5 +1565,6 @@ app.get('/api/payments/organizer-stats', requireAuth, async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`API listening on http://localhost:${PORT}`);
+  const base = process.env.API_PUBLIC_BASE_URL || `http://0.0.0.0:${PORT}`;
+  console.log(`API listening on ${base}`);
 });

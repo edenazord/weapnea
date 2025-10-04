@@ -16,11 +16,12 @@
     "db:import:emails": "node ./scripts/db-import-emails-from-csv.cjs",
     "db:set:temp-passwords": "node ./scripts/db-set-temp-passwords.cjs",
     "db:backfill:from-dump": "node ./scripts/db-backfill-emails-from-dump.cjs",
-  "db:set:password": "node ./scripts/db-set-password.cjs",
-  "db:normalize:image-urls": "node ./scripts/db-normalize-image-urls.cjs",
+    "db:set:password": "node ./scripts/db-set-password.cjs",
+    "db:normalize:image-urls": "node ./scripts/db-normalize-image-urls.cjs",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.901.0",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",

@@ -75,6 +75,16 @@ Note API-only:
 Env backend richieste: `POSTGRES_URL`/`DATABASE_URL`, `PORT`, `JWT_SECRET`, `API_TOKEN` (opzionale), `STRIPE_SECRET_KEY`, `PUBLIC_BASE_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL`.
 Env frontend richieste: `VITE_BACKEND_MODE=api`, `VITE_API_BASE_URL`, `VITE_API_TOKEN` (per mutazioni protette lato admin/dev).
 
+Opzionale storage S3/R2 per upload (consigliato in produzione):
+- `STORAGE_DRIVER=s3`
+- `S3_REGION` (es. `auto` per R2)
+- `S3_ENDPOINT` (es. `https://<accountid>.r2.cloudflarestorage.com`)
+- `S3_BUCKET`
+- `S3_ACCESS_KEY_ID`
+- `S3_SECRET_ACCESS_KEY`
+- `S3_PUBLIC_BASE_URL` (es. `https://cdn.tuodominio.com` o `https://<bucket>.<provider>/<bucket>`)
+- `S3_ACL` opzionale (es. `public-read` se il provider supporta le ACL; omettere su R2)
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!
