@@ -76,6 +76,10 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 // serve static files from public (to expose uploaded images)
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
+// Static mount per /public/uploads anche se UPLOADS_DIR è esterno alla cartella public
+const DEFAULT_UPLOADS = path.join(__dirname, '..', 'public', 'uploads');
+const UPLOADS_DIR = process.env.UPLOADS_DIR ? path.resolve(process.env.UPLOADS_DIR) : DEFAULT_UPLOADS;
+try { app.use('/public/uploads', express.static(UPLOADS_DIR)); } catch {}
 
 function getApiPublicBase(req) {
   // Preferisci override esplicito via env (es. https://weapnea-api.onrender.com)
@@ -90,8 +94,8 @@ function getApiPublicBase(req) {
 
 // Upload storage driver: 'local' (default) or 's3' (S3-compatible e.g. R2, B2)
 const STORAGE_DRIVER = (process.env.STORAGE_DRIVER || 'local').toLowerCase();
-// Multer storage config for uploads
-const uploadDir = path.join(__dirname, '..', 'public', 'uploads');
+// Multer storage config for uploads (supporta UPLOADS_DIR, es. /data/uploads su Render)
+const uploadDir = UPLOADS_DIR;
 if (STORAGE_DRIVER === 'local') {
   if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 }

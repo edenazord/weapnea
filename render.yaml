@@ -7,11 +7,17 @@ services:
     buildCommand: npm install
     startCommand: node server/index.cjs
     healthCheckPath: /api/health
+    disk:
+      name: uploads
+      mountPath: /data
+      sizeGB: 5
     envVars:
       - key: POSTGRES_URL
         sync: false
       - key: DATABASE_URL
         sync: false
+      - key: UPLOADS_DIR
+        value: /data/uploads
       - key: STORAGE_DRIVER
         sync: false
       - key: S3_REGION

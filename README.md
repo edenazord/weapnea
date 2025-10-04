@@ -85,6 +85,12 @@ Opzionale storage S3/R2 per upload (consigliato in produzione):
 - `S3_PUBLIC_BASE_URL` (es. `https://cdn.tuodominio.com` o `https://<bucket>.<provider>/<bucket>`)
 - `S3_ACL` opzionale (es. `public-read` se il provider supporta le ACL; omettere su R2)
 
+Upload persistenti su Render senza S3 (disco persistente):
+- Imposta un disco nel servizio (vedi `render.yaml`, sezione `disk`) e assegna una dimensione (es. 5 GB)
+- Aggiungi una variabile: `UPLOADS_DIR=/data/uploads`
+- Il backend monta automaticamente `/public/uploads` su `UPLOADS_DIR`, così gli URL restano del tipo `https://<api-domain>/public/uploads/<file>` ma i file sono salvati nel disco persistente.
+- Nota: i dischi persistenti non sono disponibili su tutti i piani; verifica il piano attivo.
+
 ## Can I connect a custom domain to my Lovable project?
 
 Yes, you can!
