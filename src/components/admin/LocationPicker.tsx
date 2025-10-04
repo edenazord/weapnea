@@ -9,6 +9,7 @@ interface LocationPickerProps {
   onChange: (location: string) => void;
   placeholder?: string;
   onPlaceSelected?: (info: { label: string; address?: Record<string, string> }) => void;
+  autoResolveOnBlur?: boolean;
 }
 
 type NominatimResult = {
@@ -21,11 +22,12 @@ type NominatimResult = {
   address?: Record<string, string>;
 };
 
-export function LocationPicker({ value, onChange, placeholder = "Cerca una località...", onPlaceSelected }: LocationPickerProps) {
+export function LocationPicker({ value, onChange, placeholder = "Cerca una località...", onPlaceSelected, autoResolveOnBlur = true }: LocationPickerProps) {
   const [inputValue, setInputValue] = useState(value || '');
   const [results, setResults] = useState<NominatimResult[]>([]);
   const [showResults, setShowResults] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
+  const [lastSelectedLabel, setLastSelectedLabel] = useState<string | null>(null);
 
   useEffect(() => {
     setInputValue(value || '');
@@ -103,8 +105,58 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
     if (onPlaceSelected) {
       onPlaceSelected({ label, address: r.address });
     }
+    setLastSelectedLabel(label);
     setShowResults(false);
     setResults([]);
+  };
+
+  const fetchFirstMatch = async (q: string): Promise<NominatimResult | null> => {
+    try {
+      // Primo tentativo: bias Italia
+      const urlIT = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&countrycodes=it&q=${encodeURIComponent(q)}`;
+      const resIT = await fetch(urlIT, {
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
+          'User-Agent': 'weapnea.com (contact: noreply@weapnea.com)'
+        }
+      });
+      let data: NominatimResult[] = resIT.ok ? await resIT.json() : [];
+      if (Array.isArray(data) && data.length > 0) return data[0];
+      // Secondo tentativo: globale
+      const url = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=1&q=${encodeURIComponent(q)}`;
+      const res = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
+          'User-Agent': 'weapnea.com (contact: noreply@weapnea.com)'
+        }
+      });
+      data = res.ok ? await res.json() : [];
+      if (Array.isArray(data) && data.length > 0) return data[0];
+    } catch (e) {
+      // silenzioso
+    }
+    return null;
+  };
+
+  const handleBlur = async () => {
+    // Ritarda l'hide per consentire il click sui risultati
+    setTimeout(() => setShowResults(false), 150);
+    // Se l'utente ha appena selezionato, non fare nulla
+    if (lastSelectedLabel && inputValue.trim() === lastSelectedLabel.trim()) return;
+    if (!autoResolveOnBlur) return;
+    const q = inputValue.trim();
+    if (q.length < 2) return;
+    // Se abbiamo già risultati, prendi il primo; altrimenti tenta un lookup veloce
+    const first = results[0] || await fetchFirstMatch(q);
+    if (first) {
+      const label = formatResult(first);
+      setInputValue(label);
+      onChange(label);
+      if (onPlaceSelected) onPlaceSelected({ label, address: first.address });
+      setLastSelectedLabel(label);
+    }
   };
 
   return (
@@ -120,7 +172,7 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
               onChange(v);
             }}
             onFocus={() => results.length > 0 && setShowResults(true)}
-            onBlur={() => setTimeout(() => setShowResults(false), 150)}
+            onBlur={handleBlur}
             placeholder={placeholder}
             className="pl-10"
           />
