@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Euro, Image as ImageIcon, Target } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { EventWithCategory } from "@/lib/api";
+import { ensureAbsoluteUrl } from "@/lib/utils";
 import { localizeCategoryName } from "@/lib/i18n-utils";
 
 interface EventCardProps {
@@ -28,7 +29,7 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
     setImageError(false);
   };
 
-  const imageUrl = event.image_url;
+  const imageUrl = ensureAbsoluteUrl(event.image_url);
   const showImage = imageUrl && !imageError;
 
   const formatDiscipline = (discipline: string | null) => {

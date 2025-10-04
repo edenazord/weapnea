@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { X, Upload, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { backendConfig as cfg } from '@/lib/backendConfig';
+import { ensureAbsoluteUrl } from '@/lib/utils';
 
 interface MultipleImageUploadProps {
   onImagesChanged: (urls: string[]) => void;
@@ -131,7 +132,7 @@ export function MultipleImageUpload({ onImagesChanged, currentImages }: Multiple
           {currentImages.map((url, index) => (
             <div key={index} className="relative group">
               <img
-                src={url.startsWith('/') ? `${cfg.apiBaseUrl || ''}${url}` : url}
+                src={ensureAbsoluteUrl(url) || '/placeholder.svg'}
                 alt={`Galleria ${index + 1}`}
                 className="w-full h-24 object-cover rounded-lg border border-gray-200"
                 onError={(e) => {

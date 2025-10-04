@@ -18,7 +18,7 @@ import { GoogleMap } from "@/components/GoogleMap";
 import { EventPaymentButton } from "@/components/EventPaymentButton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiGet } from "@/lib/apiClient";
-import { backendConfig } from "@/lib/backendConfig";
+import { ensureAbsoluteUrl } from "@/lib/utils";
 
 const EventDetailSkeleton = () => (
     <div className="min-h-screen bg-blue-50">
@@ -125,8 +125,17 @@ const EventDetail = () => {
             {
                 queryKey: ['organizer-profile', organizerId],
                 queryFn: async () => {
-                    const res = await apiGet(`/api/instructors/${organizerId}`);
-                    return res as any;
+                    try {
+                        const res = await apiGet(`/api/instructors/${organizerId}`);
+                        return res as any;
+                    } catch (e: any) {
+                        const msg = (e && e.message) ? String(e.message) : '';
+                        // Se il profilo non è pubblico o non esiste, evita di propagare l'errore
+                        if (msg.includes(' 404 ') || msg.toLowerCase().includes('not found')) {
+                            return null as any;
+                        }
+                        throw e;
+                    }
                 },
                         enabled: !!organizerId && !event?.organizer_name,
                 staleTime: 60_000,
@@ -276,14 +285,14 @@ const EventDetail = () => {
                 <div className={isMobile ? 'col-span-1' : 'md:col-span-2'}>
                     {/* Immagine principale e descrizione */}
                     <Card className="overflow-hidden shadow-lg">
-                        <img src={(event.image_url?.startsWith('/') ? `${backendConfig.apiBaseUrl || ''}${event.image_url}` : event.image_url) || "/placeholder.svg"} alt={event.title} className={`w-full object-cover ${isMobile ? 'h-48' : 'h-64 md:h-96'}`} />
+                        <img src={ensureAbsoluteUrl(event.image_url) || "/placeholder.svg"} alt={event.title} className={`w-full object-cover ${isMobile ? 'h-48' : 'h-64 md:h-96'}`} />
                         <div className={`${isMobile ? 'p-4' : 'p-6 md:p-8'}`}>
                                                         {/* Organizzatore con avatar sopra al titolo */}
                                                                                                                 {(organizerId) && (
                                                                                         <div className="mb-3 flex items-center gap-3">
                                                                                             <Link to={`/instructor/${organizerId}`} className="flex items-center gap-3 group">
                                                                     <Avatar className="h-9 w-9">
-                                                                                                                                <AvatarImage src={event.organizer_avatar_url || organizerProfile?.avatar_url || ''} alt={event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || 'Organizzatore'} />
+                                                                                                                                <AvatarImage src={ensureAbsoluteUrl(event.organizer_avatar_url || organizerProfile?.avatar_url || undefined) || ''} alt={event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || 'Organizzatore'} />
                                                                         <AvatarFallback>
                                                                                                                                     {(event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || event.organizer?.company_name || event.organizer?.full_name || 'O')
                                                                                 .charAt(0)
@@ -513,7 +522,7 @@ const EventDetail = () => {
                                 {event.gallery_images.map((image, index) => (
                                     <img
                                         key={index}
-                                        src={image?.startsWith('/') ? `${backendConfig.apiBaseUrl || ''}${image}` : image}
+                                        src={ensureAbsoluteUrl(image) || '/placeholder.svg'}
                                         alt={`Galleria ${index + 1}`}
                                         className="w-full h-24 object-cover rounded-lg border border-gray-200"
                                         onError={(e) => {

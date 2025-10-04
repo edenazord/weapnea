@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { backendConfig as cfg } from '@/lib/backendConfig';
+import { ensureAbsoluteUrl } from '@/lib/utils';
 import { toast } from 'sonner';
 import { Upload, X, Image } from 'lucide-react';
 
@@ -47,9 +48,10 @@ export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved }
         body: form,
       });
       if (!res.ok) throw new Error(`Upload failed ${res.status}`);
-      const data = await res.json();
-      setPreviewUrl(data.url);
-      onImageUploaded(data.url);
+  const data = await res.json();
+  const abs = ensureAbsoluteUrl(data.url, cfg.apiBaseUrl) || data.url;
+  setPreviewUrl(abs);
+  onImageUploaded(abs);
       toast.success('Immagine caricata con successo!');
     } catch (error) {
       console.error('Error uploading image:', error);
@@ -71,7 +73,7 @@ export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved }
       {previewUrl ? (
         <div className="relative inline-block">
           <img 
-            src={previewUrl} 
+            src={ensureAbsoluteUrl(previewUrl, cfg.apiBaseUrl) || ''} 
             alt="Preview" 
             className="w-32 h-32 object-cover rounded-lg border"
             onError={(e) => {
