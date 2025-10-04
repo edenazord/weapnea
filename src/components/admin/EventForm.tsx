@@ -15,24 +15,12 @@ import { generateEventSlug } from "@/lib/seo-utils";
 import { ImageUpload } from "./ImageUpload";
 import { LocationPicker } from "./LocationPicker";
 import { MultipleImageUpload } from "./MultipleImageUpload";
+import { DISCIPLINE_OPTIONS, LEVEL_OPTIONS } from './event-constants';
 
 // Opzioni per il livello
-export const LEVEL_OPTIONS = [
-  { value: 'principiante_senza_brevetto', label: 'Principiante senza brevetto' },
-  { value: 'inesperto_con_brevetto', label: 'Inesperto con brevetto' },
-  { value: 'avanzato_con_brevetto', label: 'Avanzato con brevetto' },
-  { value: 'tutti_i_brevettati', label: 'Tutti i brevettati' },
-  { value: 'brevettati_e_non', label: 'Sia brevettati che non' }
-];
+// Opzioni spostate in event-constants.ts
 
-// Opzioni per le discipline (esportate per riuso)
-export const DISCIPLINE_OPTIONS = [
-  { value: 'indoor', label: 'Indoor' },
-  { value: 'outdoor', label: 'Outdoor' },
-  { value: 'indoor&outdoor', label: 'Indoor & Outdoor' }
-];
-
-export const eventFormSchema = z.object({
+const eventFormSchema = z.object({
   title: z.string().min(2, { message: "Il titolo è obbligatorio." }),
   slug: z.string().optional(),
   description: z.string().optional(),
@@ -80,8 +68,9 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
       description: defaultValues?.description || "",
       discipline: defaultValues?.discipline || "",
       location: defaultValues?.location || "",
-      date: defaultValues?.date || "",
-      end_date: defaultValues?.end_date || "",
+      // Normalizza per input date (YYYY-MM-DD)
+      date: (defaultValues?.date || "").toString().slice(0, 10),
+      end_date: (defaultValues?.end_date || "").toString().slice(0, 10),
       participants: defaultValues?.participants || 0,
       cost: defaultValues?.cost || 0,
       image_url: defaultValues?.image_url || "",
@@ -448,7 +437,22 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           render={({ field }) => (
             <FormItem>
               <FormLabel>Data di Fine</FormLabel>
-              <FormControl><Input type="date" {...field} /></FormControl>
+              <FormControl>
+                <Input
+                  type="date"
+                  min={form.watch('date') || undefined}
+                  {...field}
+                  onChange={(e) => {
+                    const start = form.getValues('date');
+                    const end = e.target.value;
+                    if (start && end && end < start) {
+                      form.setValue('end_date', start);
+                    } else {
+                      field.onChange(end);
+                    }
+                  }}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}

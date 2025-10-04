@@ -7,11 +7,11 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DISCIPLINE_OPTIONS, LEVEL_OPTIONS } from "./EventForm";
+import { DISCIPLINE_OPTIONS, LEVEL_OPTIONS } from "./event-constants";
 import { ImageUpload } from "./ImageUpload";
 import { LocationPicker } from "./LocationPicker";
 
-export const allenamentiFormSchema = z.object({
+const allenamentiFormSchema = z.object({
   title: z.string().min(2, { message: "Il titolo è obbligatorio." }),
   category_id: z.string().uuid(),
   discipline: z.string().min(1, { message: "La disciplina è obbligatoria." }),
@@ -59,8 +59,9 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
       schedule_meeting_point: defaultValues?.schedule_meeting_point || "",
       nation: defaultValues?.nation || "",
       location: defaultValues?.location || "",
-      date: defaultValues?.date || "",
-      end_date: defaultValues?.end_date || "",
+      // Normalizza le date a YYYY-MM-DD per gli input type="date"
+      date: (defaultValues?.date || "").toString().slice(0, 10),
+      end_date: (defaultValues?.end_date || "").toString().slice(0, 10),
       fixed_appointment: defaultValues?.fixed_appointment || false,
       instructors: defaultValues?.instructors || [{ name: "", certificate_url: "" }],
       max_participants_per_instructor: defaultValues?.max_participants_per_instructor || 6,
@@ -326,7 +327,23 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Data di Fine</FormLabel>
-                  <FormControl><Input type="date" {...field} /></FormControl>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      min={form.watch('date') || undefined}
+                      {...field}
+                      onChange={(e) => {
+                        const start = form.getValues('date');
+                        const end = e.target.value;
+                        // Impedisci una fine precedente all'inizio
+                        if (start && end && end < start) {
+                          form.setValue('end_date', start);
+                        } else {
+                          field.onChange(end);
+                        }
+                      }}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
