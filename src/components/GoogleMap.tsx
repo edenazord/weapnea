@@ -8,131 +8,113 @@ interface GoogleMapProps {
   eventTitle: string;
 }
 
+// OpenStreetMap + Leaflet (via CDN) con geocoding Nominatim (gratuito)
 export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<any | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
-  // Use the same API key as LocationPicker
-  const apiKey = 'AIzaSyAqElXam6W92Vr48oD7mFePFhbRlsON7Y4';
-
   useEffect(() => {
-    console.log('🗺️ GoogleMap: Initializing for location:', location);
-    loadGoogleMapsAPI();
+    loadLeaflet().then(() => setIsLoaded(true));
   }, []);
 
   useEffect(() => {
-    if (isLoaded && location) {
-      geocodeLocation(location);
-    }
+    if (!isLoaded || !location) return;
+    geocodeWithNominatim(location);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, location]);
 
-  const loadGoogleMapsAPI = () => {
-    if (window.google && window.google.maps) {
-      console.log('🗺️ GoogleMap: Google Maps already loaded');
-      setIsLoaded(true);
-      return;
+  const loadLeaflet = async (): Promise<void> => {
+    // Se Leaflet è già presente
+    if ((window as any).L) return;
+
+    // CSS
+    const cssId = 'leaflet-css';
+    if (!document.getElementById(cssId)) {
+      const link = document.createElement('link');
+      link.id = cssId;
+      link.rel = 'stylesheet';
+      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+      link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
+      link.crossOrigin = '';
+      document.head.appendChild(link);
     }
 
-    console.log('🗺️ GoogleMap: Loading Google Maps script...');
-    const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places`;
-    script.async = true;
-    script.onload = () => {
-      console.log('🗺️ GoogleMap: Google Maps script loaded successfully');
-      setIsLoaded(true);
-    };
-    script.onerror = () => {
-      console.error('🗺️ GoogleMap: Failed to load Google Maps script');
-    };
-    document.head.appendChild(script);
+    // JS
+    await new Promise<void>((resolve, reject) => {
+      const jsId = 'leaflet-js';
+      if (document.getElementById(jsId)) return resolve();
+      const script = document.createElement('script');
+      script.id = jsId;
+      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
+      script.crossOrigin = '';
+      script.async = true;
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error('Leaflet load failed'));
+      document.body.appendChild(script);
+    });
   };
 
-  const geocodeLocation = async (address: string) => {
-    if (!window.google || !window.google.maps) {
-      console.error('🗺️ GoogleMap: Google Maps not available for geocoding');
-      return;
-    }
-
-    const geocoder = new window.google.maps.Geocoder();
-    
+  const geocodeWithNominatim = async (address: string) => {
     try {
-      const results = await new Promise<any>((resolve, reject) => {
-        geocoder.geocode({ address }, (results: any, status: any) => {
-          if (status === window.google.maps.GeocoderStatus.OK && results && results[0]) {
-            resolve(results[0]);
-          } else {
-            reject(new Error(`Geocoding failed: ${status}`));
-          }
-        });
+      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+      const res = await fetch(url, {
+        headers: {
+          'Accept': 'application/json',
+          // Nominatim raccomanda un User-Agent identificativo
+          'User-Agent': 'weapnea.com (contact: noreply@weapnea.com)'
+        }
       });
+      if (!res.ok) throw new Error('Geocoding failed');
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) throw new Error('No results');
 
-      const coords = {
-        lat: results.geometry.location.lat(),
-        lng: results.geometry.location.lng()
-      };
-      
-      console.log('🗺️ GoogleMap: Geocoded coordinates:', coords);
+      const lat = parseFloat(data[0].lat);
+      const lon = parseFloat(data[0].lon);
+      const coords = { lat, lng: lon };
       setCoordinates(coords);
-      initializeMap(coords);
-    } catch (error) {
-      console.error('🗺️ GoogleMap: Geocoding error:', error);
+      initializeLeafletMap(coords);
+    } catch (e) {
+      console.error('🗺️ OSM Geocoding error:', e);
     }
   };
 
-  const initializeMap = (coords: { lat: number; lng: number }) => {
-    if (!mapRef.current || !window.google) return;
+  const initializeLeafletMap = (coords: { lat: number; lng: number }) => {
+    const L = (window as any).L;
+    if (!mapRef.current || !L) return;
 
-    console.log('🗺️ GoogleMap: Initializing map with coordinates:', coords);
+    // Se la mappa esiste già, aggiorno solo la view/marker
+    let map = mapInstance;
+    if (!map) {
+      map = L.map(mapRef.current).setView([coords.lat, coords.lng], 15);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+      setMapInstance(map);
+    } else {
+      map.setView([coords.lat, coords.lng], 15);
+    }
 
-    const map = new window.google.maps.Map(mapRef.current, {
-      center: coords,
-      zoom: 15,
-      mapTypeId: window.google.maps.MapTypeId.ROADMAP
-    });
-
-    // Add marker
-    const marker = new window.google.maps.Marker({
-      position: coords,
-      map: map,
-      title: eventTitle,
-      icon: {
-        url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" fill="#2563eb"/>
-          </svg>
-        `),
-        scaledSize: new window.google.maps.Size(32, 32),
-        anchor: new window.google.maps.Point(16, 32)
-      }
-    });
-
-    // Add info window
-    const infoWindow = new window.google.maps.InfoWindow({
-      content: `
-        <div style="padding: 8px; max-width: 200px;">
-          <h3 style="margin: 0 0 4px 0; font-size: 14px; font-weight: bold; color: #1f2937;">${eventTitle}</h3>
-          <p style="margin: 0; font-size: 12px; color: #6b7280;">${location}</p>
-        </div>
-      `
-    });
-
-    marker.addListener('click', () => {
-      infoWindow.open(map, marker);
-    });
-
-    setMapInstance(map);
+    // Aggiungi marker
+    L.marker([coords.lat, coords.lng]).addTo(map).bindPopup(
+      `<div style="padding: 6px; max-width: 220px;">
+        <strong style="display:block; color:#1f2937;">${escapeHtml(eventTitle)}</strong>
+        <span style="color:#4b5563; font-size:12px;">${escapeHtml(location)}</span>
+      </div>`
+    );
   };
+
+  const escapeHtml = (s: string) => s.replace(/[&<>"]+/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c] as string));
 
   const handleGetDirections = () => {
     if (coordinates) {
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${coordinates.lat},${coordinates.lng}&travelmode=driving`;
+      const url = `https://www.openstreetmap.org/?mlat=${coordinates.lat}&mlon=${coordinates.lng}#map=16/${coordinates.lat}/${coordinates.lng}`;
       window.open(url, '_blank');
     } else {
-      // Fallback to search
       const searchQuery = encodeURIComponent(location);
-      const url = `https://www.google.com/maps/search/?api=1&query=${searchQuery}`;
+      const url = `https://www.openstreetmap.org/search?query=${searchQuery}`;
       window.open(url, '_blank');
     }
   };
@@ -150,19 +132,20 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
 
   return (
     <div className="space-y-3">
-      <div 
-        ref={mapRef} 
+      <div
+        ref={mapRef}
         className="w-full h-64 rounded-lg border border-gray-200 shadow-sm"
         style={{ minHeight: '256px' }}
       />
-      <Button 
-        onClick={handleGetDirections}
-        className="w-full"
-        variant="outline"
-      >
+      <Button onClick={handleGetDirections} className="w-full" variant="outline">
         <Navigation className="mr-2 h-4 w-4" />
         Ottieni indicazioni
       </Button>
     </div>
   );
 }
+
+/*
+// Legacy Google Maps implementation (con API key): mantenuta per riuso futuro
+// Abilitare Billing su Google Cloud e ripristinare questo blocco se si vuole tornare a Google Maps.
+*/
