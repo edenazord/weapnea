@@ -300,6 +300,13 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
                   <LocationPicker
                     value={field.value || ""}
                     onChange={field.onChange}
+                    onPlaceSelected={(info) => {
+                      const country = info.address?.country?.trim();
+                      if (country) {
+                        // Scrive direttamente il testo nel campo Nazione
+                        form.setValue('nation', country);
+                      }
+                    }}
                     placeholder="Cerca una località..."
                   />
                 </FormControl>

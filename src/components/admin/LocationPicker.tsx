@@ -8,6 +8,7 @@ interface LocationPickerProps {
   value: string;
   onChange: (location: string) => void;
   placeholder?: string;
+  onPlaceSelected?: (info: { label: string; address?: Record<string, string> }) => void;
 }
 
 type NominatimResult = {
@@ -20,7 +21,7 @@ type NominatimResult = {
   address?: Record<string, string>;
 };
 
-export function LocationPicker({ value, onChange, placeholder = "Cerca una località..." }: LocationPickerProps) {
+export function LocationPicker({ value, onChange, placeholder = "Cerca una località...", onPlaceSelected }: LocationPickerProps) {
   const [inputValue, setInputValue] = useState(value || '');
   const [results, setResults] = useState<NominatimResult[]>([]);
   const [showResults, setShowResults] = useState(false);
@@ -99,6 +100,9 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
     const label = formatResult(r);
     setInputValue(label);
     onChange(label);
+    if (onPlaceSelected) {
+      onPlaceSelected({ label, address: r.address });
+    }
     setShowResults(false);
     setResults([]);
   };
