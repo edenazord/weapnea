@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Waves, Home, User, MessageSquare, FileText, Sparkles } from "lucide-react";
+import { Waves, Home, User, FileText, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Footer from "@/components/Footer";
@@ -22,8 +22,7 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
     const navItems = [
         { icon: Home, label: t('nav.home', 'Home'), path: "/" },
         { icon: FileText, label: t('nav.blog', 'Blog'), path: "/blog" },
-        { icon: MessageSquare, label: t('nav.forum', 'Forum'), path: "/forum" },
-    { icon: User, label: t('nav.profile', 'Profilo'), path: user ? "/profile" : "/auth" },
+        { icon: User, label: t('nav.profile', 'Profilo'), path: user ? "/profile" : "/auth" },
     ];
 
     return (

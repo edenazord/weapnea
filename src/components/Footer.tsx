@@ -43,6 +43,28 @@ const Footer = () => {
             </h3>
             <ul className="space-y-4">
               <li>
+              <li>
+                <Link 
+                  to="/privacy-policy" 
+                  className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
+                >
+                  <span className="relative">
+                    {t('footer.privacy', 'Privacy Policy')}
+                    <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link 
+                  to="/cookie-policy" 
+                  className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
+                >
+                  <span className="relative">
+                    {t('footer.cookies', 'Cookie Policy')}
+                    <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                  </span>
+                </Link>
+              </li>
                 <Link 
                   to="/chi-siamo" 
                   className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
@@ -75,17 +97,7 @@ const Footer = () => {
                   </span>
                 </Link>
               </li>
-              <li>
-                <Link 
-                  to="/forum" 
-                  className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
-                >
-                  <span className="relative">
-                    {t('nav.forum', 'Forum')}
-                    <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                  </span>
-                </Link>
-              </li>
+              
             </ul>
           </div>
 

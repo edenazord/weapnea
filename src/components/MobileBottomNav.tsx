@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, User, Calendar, Settings, MessageSquare, FileText } from "lucide-react";
+import { Home, User, Calendar, Settings, FileText } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -32,7 +32,6 @@ const MobileBottomNav = ({ variant = "default" }: MobileBottomNavProps) => {
         return [
           { icon: Home, label: t('nav.home', 'Home'), path: "/" },
           { icon: FileText, label: t('nav.blog', 'Blog'), path: "/blog" },
-          { icon: MessageSquare, label: t('nav.forum', 'Forum'), path: "/forum" },
           { icon: User, label: t('nav.profile', 'Profilo'), path: session ? "/profile" : "/auth" },
         ];
     }

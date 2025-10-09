@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Waves, MessageSquare, Sparkles } from "lucide-react";
+import { Waves, Sparkles } from "lucide-react";
 import { ReactNode } from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Footer from "@/components/Footer";
@@ -59,14 +59,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
                                 <span className="relative z-10">{t('nav.blog', 'Blog')}</span>
                                 <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                             </Link>
-                            <Link 
-                                to="/forum" 
-                                className="flex items-center gap-2 relative text-gray-700 hover:text-purple-600 transition-all duration-300 font-medium group"
-                            >
-                                <MessageSquare className="h-4 w-4 group-hover:text-purple-600 transition-colors duration-300" />
-                                <span className="relative z-10">{t('nav.forum', 'Forum')}</span>
-                                <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                            </Link>
+                            {/** Forum link rimosso dalla navbar **/}
                         </nav>
                         
                         <div className="flex items-center space-x-3">

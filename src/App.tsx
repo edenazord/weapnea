@@ -27,6 +27,8 @@ import OrganizerPackages from "./pages/OrganizerPackages";
 import SponsorPackages from "./pages/SponsorPackages";
 import MyEvents from "./pages/MyEvents";
 import ChiSiamo from "./pages/ChiSiamo";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import CookiePolicy from "./pages/CookiePolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const queryClient = new QueryClient({
@@ -66,6 +68,8 @@ const App = () => {
                   <Route path="/categories/:categorySlug" element={<CategoryEvents />} />
                   <Route path="/blog" element={<Blog />} />
                   <Route path="/blog/:slug" element={<BlogDetail />} />
+                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                  <Route path="/cookie-policy" element={<CookiePolicy />} />
                   <Route path="/forum" element={<Forum />} />
                   <Route path="/forum/topic/:id" element={<ForumTopic />} />
                   <Route path="/forum/new-topic" element={<NewForumTopic />} />
