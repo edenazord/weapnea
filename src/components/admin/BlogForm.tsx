@@ -17,8 +17,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { apiSend } from '@/lib/apiClient';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const formSchema = z.object({
+  language: z.enum(["it", "en"], {
+    required_error: "Seleziona una lingua",
+  }),
   title: z.string().min(2, {
     message: "Il titolo deve essere di almeno 2 caratteri.",
   }),
@@ -51,6 +55,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      language: "it",
       title: article?.title || "",
       content: article?.content || "",
       image_url: article?.image_url || "",
@@ -72,6 +77,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
     
     try {
       const articleData = {
+        language: values.language,
         title: values.title,
         content: values.content,
         cover_image_url: values.image_url || null,
@@ -107,6 +113,27 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="language"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Lingua</FormLabel>
+              <FormControl>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleziona la lingua" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="it">Italiano</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                  </SelectContent>
+                </Select>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         <FormField
           control={form.control}
           name="title"
