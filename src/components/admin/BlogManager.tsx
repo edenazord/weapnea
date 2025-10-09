@@ -29,7 +29,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const BlogManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const [language, setLanguage] = useState<'it'|'en'|''>('');
+  const [language, setLanguage] = useState<'it'|'en'|'all'>('all');
   const [showForm, setShowForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<any>(null);
   const [deleteDialog, setDeleteDialog] = useState<string | null>(null);
@@ -40,7 +40,12 @@ const BlogManager = () => {
     queryKey: ['admin-blog-articles', searchTerm, language],
     queryFn: () => {
       console.log("Fetching blog articles with search term:", searchTerm);
-      return getBlogArticles(false, searchTerm, { column: 'created_at', direction: 'desc' }, language || undefined);
+      return getBlogArticles(
+        false,
+        searchTerm,
+        { column: 'created_at', direction: 'desc' },
+        language === 'all' ? undefined : language
+      );
     },
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -130,12 +135,12 @@ const BlogManager = () => {
           />
         </div>
         <div className="flex items-center gap-2">
-          <Select value={language} onValueChange={(v) => setLanguage(v as '' | 'it' | 'en')}>
+          <Select value={language} onValueChange={(v) => setLanguage(v as 'all' | 'it' | 'en')}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Tutte le lingue" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tutte le lingue</SelectItem>
+              <SelectItem value="all">Tutte le lingue</SelectItem>
               <SelectItem value="it">Italiano</SelectItem>
               <SelectItem value="en">English</SelectItem>
             </SelectContent>
