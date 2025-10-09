@@ -4,6 +4,7 @@ import { apiGet, apiSend } from '@/lib/apiClient';
 // Tipi locali per API-only
 export type BlogArticle = {
   id: string;
+  language?: 'it' | 'en';
   title: string;
   slug: string;
   excerpt: string | null;
@@ -28,13 +29,15 @@ export type BlogArticleWithAuthor = BlogArticle & {
 export const getBlogArticles = async (
   published: boolean = true,
   searchTerm?: string,
-  sort: { column: string; direction: string } = { column: 'created_at', direction: 'desc' }
+  sort: { column: string; direction: string } = { column: 'created_at', direction: 'desc' },
+  language?: 'it' | 'en'
 ): Promise<BlogArticleWithAuthor[]> => {
   const params = new URLSearchParams();
   if (published) params.set('published', 'true');
   if (searchTerm) params.set('searchTerm', searchTerm);
   if (sort?.column) params.set('sortColumn', sort.column);
   if (sort?.direction) params.set('sortDirection', sort.direction);
+  if (language) params.set('language', language);
   const res = await apiGet(`/api/blog?${params.toString()}`);
   return res as BlogArticleWithAuthor[];
 };

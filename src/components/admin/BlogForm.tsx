@@ -38,6 +38,7 @@ const formSchema = z.object({
 interface BlogFormProps {
   article?: {
     id: string;
+    language?: 'it' | 'en';
     title: string;
     content: string;
     image_url?: string;
@@ -55,7 +56,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      language: "it",
+      language: article?.language || "it",
       title: article?.title || "",
       content: article?.content || "",
       image_url: article?.image_url || "",

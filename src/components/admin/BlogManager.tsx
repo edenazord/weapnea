@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getBlogArticles, deleteBlogArticle } from "@/lib/blog-api";
 import { Button } from "@/components/ui/button";
@@ -26,9 +25,11 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import BlogForm from "./BlogForm";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const BlogManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [language, setLanguage] = useState<'it'|'en'|''>('');
   const [showForm, setShowForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<any>(null);
   const [deleteDialog, setDeleteDialog] = useState<string | null>(null);
@@ -36,10 +37,10 @@ const BlogManager = () => {
   const queryClient = useQueryClient();
 
   const { data: articles = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-blog-articles', searchTerm],
+    queryKey: ['admin-blog-articles', searchTerm, language],
     queryFn: () => {
       console.log("Fetching blog articles with search term:", searchTerm);
-      return getBlogArticles(false, searchTerm);
+      return getBlogArticles(false, searchTerm, { column: 'created_at', direction: 'desc' }, language || undefined);
     },
     staleTime: 30 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -128,10 +129,22 @@ const BlogManager = () => {
             className="pl-10"
           />
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuovo Articolo
-        </Button>
+        <div className="flex items-center gap-2">
+          <Select value={language} onValueChange={(v) => setLanguage(v as '' | 'it' | 'en')}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Tutte le lingue" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Tutte le lingue</SelectItem>
+              <SelectItem value="it">Italiano</SelectItem>
+              <SelectItem value="en">English</SelectItem>
+            </SelectContent>
+          </Select>
+          <Button onClick={() => setShowForm(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Nuovo Articolo
+          </Button>
+        </div>
       </div>
 
       <div className="border rounded-lg">
@@ -139,6 +152,7 @@ const BlogManager = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Titolo</TableHead>
+              <TableHead>Lingua</TableHead>
               <TableHead>Stato</TableHead>
               <TableHead>Data Creazione</TableHead>
               <TableHead>Ultima Modifica</TableHead>
@@ -148,7 +162,7 @@ const BlogManager = () => {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={6} className="text-center py-8">
                   <div className="flex items-center justify-center">
                     <Loader2 className="h-6 w-6 animate-spin mr-2" />
                     Caricamento articoli...
@@ -157,7 +171,7 @@ const BlogManager = () => {
               </TableRow>
             ) : articles.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                <TableCell colSpan={6} className="text-center py-8 text-gray-500">
                   {searchTerm ? 'Nessun articolo trovato per la ricerca.' : 'Nessun articolo creato.'}
                 </TableCell>
               </TableRow>
@@ -173,6 +187,9 @@ const BlogManager = () => {
                         </div>
                       )}
                     </div>
+                  </TableCell>
+                  <TableCell className="text-sm text-gray-700">
+                    {(article.language || 'it').toUpperCase()}
                   </TableCell>
                   <TableCell>
                     <Badge variant={article.published ? "default" : "secondary"}>

@@ -1,12 +1,15 @@
 const fs = require('fs');
 const path = require('path');
+// Load .env if present
+try { require('dotenv').config(); } catch (e) {}
 const { Client } = require('pg');
 
 async function run() {
-  const conn = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  let conn = process.env.POSTGRES_URL || process.env.DATABASE_URL || process.env.RENDER_EXTERNAL_DB_URL;
+  // Fallback di sviluppo (coerente con start-api.ps1)
   if (!conn) {
-    console.error('POSTGRES_URL non impostata');
-    process.exit(1);
+    conn = 'postgres://postgres:dev@127.0.0.1:5434/postgres';
+    console.warn('POSTGRES_URL non impostata, uso fallback di sviluppo:', conn);
   }
   const shouldSSL = (
     process.env.DB_SSL === 'true' ||

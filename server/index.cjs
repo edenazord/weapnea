@@ -118,6 +118,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 // Feature flags detected at runtime
 let HAS_PERSONAL_BEST = false;
 let HAS_USER_PACKAGES = false;
+let HAS_BLOG_LANGUAGE = false;
 async function detectSchema() {
   try {
     const q = `SELECT 1 FROM information_schema.columns 
@@ -128,6 +129,27 @@ async function detectSchema() {
     const r2 = await pool.query("SELECT to_regclass('public.user_packages') as t");
     HAS_USER_PACKAGES = !!r2.rows?.[0]?.t;
     if (!HAS_USER_PACKAGES) console.warn('[startup] user_packages table NOT present');
+
+    // Ensure blog_articles.language column exists (auto-migration light)
+    try {
+      // Add column if table exists
+      await pool.query("ALTER TABLE IF EXISTS public.blog_articles ADD COLUMN IF NOT EXISTS language text NOT NULL DEFAULT 'it'");
+      // Check constraint presence
+      const c = await pool.query(`
+        SELECT 1 FROM information_schema.table_constraints 
+        WHERE table_schema='public' AND table_name='blog_articles' 
+          AND constraint_type='CHECK' AND constraint_name='blog_articles_language_check'
+      `);
+      if (c.rowCount === 0) {
+        await pool.query("ALTER TABLE public.blog_articles ADD CONSTRAINT blog_articles_language_check CHECK (language IN ('it','en'))");
+      }
+      // Verify column exists now
+      const lc = await pool.query(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='blog_articles' AND column_name='language'`);
+      HAS_BLOG_LANGUAGE = lc.rowCount > 0;
+      if (!HAS_BLOG_LANGUAGE) console.warn('[startup] blog_articles.language NOT present');
+    } catch (e) {
+      console.warn('[startup] blog language ensure failed:', e?.message || e);
+    }
   } catch (e) {
     console.warn('[startup] schema detection failed:', e?.message || e);
   }
@@ -519,13 +541,17 @@ app.get('/api/events/slug/:slug', async (req, res) => {
 // Blog endpoints
 // -----------------------------
 app.get('/api/blog', async (req, res) => {
-  const { searchTerm, published = 'true', sortColumn = 'created_at', sortDirection = 'desc' } = req.query;
+  const { searchTerm, published = 'true', sortColumn = 'created_at', sortDirection = 'desc', language } = req.query;
   const params = [];
   const clauses = [];
   if (String(published) === 'true') clauses.push('b.published = true');
   if (searchTerm && String(searchTerm).trim()) {
     params.push(`%${String(searchTerm).trim()}%`);
     clauses.push(`b.title ILIKE $${params.length}`);
+  }
+  if (language && String(language).trim()) {
+    params.push(String(language).trim());
+    clauses.push(`b.language = $${params.length}`);
   }
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
   const validCols = new Set(['created_at','title']);
@@ -584,10 +610,11 @@ app.get('/api/blog/:id', async (req, res) => {
 app.post('/api/blog', requireAuth, requireBloggerOrAdmin, async (req, res) => {
   const b = req.body || {};
   try {
-    const cols = ['title','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published','author_id'];
+    const cols = ['language','title','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published','author_id'];
     // Force author_id to current user if not admin
     const authorId = (req.user?.role === 'admin' && b.author_id) ? b.author_id : (req.user?.id || b.author_id);
     const vals = [
+      b.language || 'it',
       b.title,
       b.slug || String(b.title || '').toLowerCase().replace(/\s+/g,'-'),
       b.excerpt || null,
@@ -614,7 +641,7 @@ app.post('/api/blog', requireAuth, requireBloggerOrAdmin, async (req, res) => {
 app.put('/api/blog/:id', requireAuth, requireBloggerOrAdmin, async (req, res) => {
   const b = req.body || {};
   try {
-    const allowed = ['title','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published'];
+    const allowed = ['language','title','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published'];
     const fields = Object.keys(b).filter(k => allowed.includes(k));
     if (fields.length === 0) return res.status(400).json({ error: 'no valid fields to update' });
     const sets = fields.map((k,i)=> `${k} = $${i+1}`).join(', ');

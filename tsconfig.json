@@ -9,6 +9,9 @@
     "paths": {
       "@/*": ["./src/*"]
     },
+    "jsx": "react-jsx",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+  "types": ["react", "react-dom"],
     "noImplicitAny": false,
     "noUnusedParameters": false,
     "skipLibCheck": true,
