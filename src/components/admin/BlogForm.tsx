@@ -18,7 +18,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { apiSend } from '@/lib/apiClient';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 
 const formSchema = z.object({
   language: z.enum(["it", "en"], {
@@ -30,9 +30,7 @@ const formSchema = z.object({
   content: z.string().min(10, {
     message: "Il contenuto deve essere di almeno 10 caratteri.",
   }),
-  image_url: z.string().url({
-    message: "L'URL dell'immagine deve essere valido.",
-  }).optional(),
+  image_url: z.string().url().optional(),
   category: z.string().optional(),
 });
 
@@ -60,7 +58,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
       language: article?.language || "it",
       title: article?.title || "",
       content: article?.content || "",
-      image_url: article?.image_url || "",
+  image_url: article?.image_url || "",
       category: article?.category || "",
     },
   });
@@ -122,16 +120,15 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
             <FormItem>
               <FormLabel>Lingua</FormLabel>
               <FormControl>
-                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-6">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="it" id="lang-it" />
-                    <label htmlFor="lang-it">Italiano</label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="en" id="lang-en" />
-                    <label htmlFor="lang-en">Inglese</label>
-                  </div>
-                </RadioGroup>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Seleziona la lingua" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="it">Italiano</SelectItem>
+                    <SelectItem value="en">Inglese</SelectItem>
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -163,19 +160,20 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="image_url"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>URL Immagine</FormLabel>
-              <FormControl>
-                <Input placeholder="URL dell'immagine" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>Copertina (immagine o video)</FormLabel>
+          <FormControl>
+            <div>
+              <ImageUpload
+                supportVideo
+                currentImageUrl={form.getValues('image_url') || undefined}
+                onImageUploaded={(url) => form.setValue('image_url', url, { shouldDirty: true })}
+                onImageRemoved={() => form.setValue('image_url', '', { shouldDirty: true })}
+              />
+            </div>
+          </FormControl>
+          <FormMessage />
+        </FormItem>
         <FormField
           control={form.control}
           name="category"

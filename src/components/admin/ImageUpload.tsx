@@ -12,26 +12,40 @@ interface ImageUploadProps {
   onImageUploaded: (url: string) => void;
   currentImageUrl?: string;
   onImageRemoved: () => void;
+  supportVideo?: boolean;
+  maxImageSizeMB?: number;
+  maxVideoSizeMB?: number;
 }
 
-export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved }: ImageUploadProps) {
+export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved, supportVideo = false, maxImageSizeMB = 5, maxVideoSizeMB = 100 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
+
+  const isVideoUrl = (url?: string | null) => {
+    if (!url) return false;
+    return /\.(mp4|webm|mov)$/i.test(url.split('?')[0] || '');
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error('Il file è troppo grande. La dimensione massima è 5MB.');
+    // Validate file size
+    const maxSize = supportVideo && file.type.startsWith('video/') ? maxVideoSizeMB : maxImageSizeMB;
+    if (file.size > maxSize * 1024 * 1024) {
+      toast.error(`Il file è troppo grande. Massimo ${maxSize}MB.`);
       return;
     }
 
     // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'].concat(
+      supportVideo ? ['video/mp4', 'video/webm', 'video/quicktime'] : []
+    );
     if (!allowedTypes.includes(file.type)) {
-      toast.error('Formato file non supportato. Usa JPEG, PNG o WebP.');
+      toast.error(supportVideo
+        ? 'Formato non supportato. Immagini: JPEG, PNG, WebP. Video: MP4, WebM, MOV.'
+        : 'Formato file non supportato. Usa JPEG, PNG o WebP.'
+      );
       return;
     }
 
@@ -52,10 +66,10 @@ export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved }
   const abs = ensureAbsoluteUrl(data.url, cfg.apiBaseUrl) || data.url;
   setPreviewUrl(abs);
   onImageUploaded(abs);
-      toast.success('Immagine caricata con successo!');
+  toast.success('File caricato con successo!');
     } catch (error) {
       console.error('Error uploading image:', error);
-      toast.error('Errore durante il caricamento dell\'immagine. Riprova.');
+  toast.error('Errore durante il caricamento del file. Riprova.');
     } finally {
       setUploading(false);
     }
@@ -72,16 +86,23 @@ export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved }
       
       {previewUrl ? (
         <div className="relative inline-block">
-          <img 
-            src={ensureAbsoluteUrl(previewUrl, cfg.apiBaseUrl) || ''} 
-            alt="Preview" 
-            className="w-32 h-32 object-cover rounded-lg border"
-            onError={(e) => {
-              console.error('Error loading image:', previewUrl);
-              // If image fails to load, show broken image state
-              e.currentTarget.style.display = 'none';
-            }}
-          />
+          {isVideoUrl(previewUrl) ? (
+            <video
+              src={ensureAbsoluteUrl(previewUrl, cfg.apiBaseUrl) || ''}
+              className="w-48 h-32 object-cover rounded-lg border"
+              controls
+            />
+          ) : (
+            <img 
+              src={ensureAbsoluteUrl(previewUrl, cfg.apiBaseUrl) || ''} 
+              alt="Preview" 
+              className="w-32 h-32 object-cover rounded-lg border"
+              onError={(e) => {
+                console.error('Error loading image:', previewUrl);
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          )}
           <Button
             type="button"
             variant="destructive"
@@ -105,20 +126,22 @@ export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved }
               >
                 <span>
                   <Upload className="mr-2 h-4 w-4" />
-                  {uploading ? 'Caricamento...' : 'Carica Immagine'}
+                  {uploading ? 'Caricamento...' : (supportVideo ? 'Carica Immagine o Video' : 'Carica Immagine')}
                 </span>
               </Button>
             </Label>
             <Input
               id="image-upload"
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept={supportVideo ? "image/jpeg,image/png,image/webp,video/mp4,video/webm,video/quicktime" : "image/jpeg,image/png,image/webp"}
               onChange={handleFileUpload}
               disabled={uploading}
               className="hidden"
             />
             <p className="text-xs text-gray-500">
-              JPEG, PNG o WebP (max 5MB)
+              {supportVideo
+                ? `Immagini: JPEG, PNG, WebP (max ${maxImageSizeMB}MB). Video: MP4, WebM, MOV (max ${maxVideoSizeMB}MB).`
+                : `JPEG, PNG o WebP (max ${maxImageSizeMB}MB)`}
             </p>
           </div>
         </div>

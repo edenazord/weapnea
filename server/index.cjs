@@ -92,14 +92,14 @@ function getApiPublicBase(req) {
   return 'https://weapnea-api.onrender.com';
 }
 
-// Upload storage driver: 'local' (default) or 's3' (S3-compatible e.g. R2, B2)
+// Upload storage driver: 'local' (default), 's3' (S3-compatible e.g. R2, B2), or 'sftp'
 const STORAGE_DRIVER = (process.env.STORAGE_DRIVER || 'local').toLowerCase();
 // Multer storage config for uploads (supporta UPLOADS_DIR, es. /data/uploads su Render)
 const uploadDir = UPLOADS_DIR;
 if (STORAGE_DRIVER === 'local') {
   if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 }
-const storage = (STORAGE_DRIVER === 's3')
+const storage = (STORAGE_DRIVER === 's3' || STORAGE_DRIVER === 'sftp')
   ? multer.memoryStorage()
   : multer.diskStorage({
       destination: (_req, _file, cb) => cb(null, uploadDir),
@@ -425,6 +425,42 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
   await s3.send(new PutObjectCommand(putParams));
       const url = `${publicBase.replace(/\/$/, '')}/${key}`;
       return res.status(201).json({ url, key });
+    }
+
+    if (STORAGE_DRIVER === 'sftp') {
+      let SFTPClient;
+      try { SFTPClient = require('ssh2-sftp-client'); } catch (e) {
+        return res.status(500).json({ error: 'SFTP client not installed. Please add ssh2-sftp-client.' });
+      }
+      const sftpHost = process.env.SFTP_HOST;
+      const sftpPort = Number(process.env.SFTP_PORT || 22);
+      const sftpUser = process.env.SFTP_USERNAME || process.env.SFTP_USER;
+      const sftpPass = process.env.SFTP_PASSWORD || process.env.SFTP_PASS;
+  const sftpBaseDir = process.env.SFTP_BASE_DIR || '/weapnea/uploads';
+      const publicBase = process.env.SFTP_PUBLIC_BASE_URL; // es: https://example.com/public/uploads
+      if (!sftpHost || !sftpUser || !sftpPass || !publicBase) {
+        return res.status(500).json({ error: 'SFTP configuration missing (SFTP_HOST, SFTP_USERNAME, SFTP_PASSWORD, SFTP_PUBLIC_BASE_URL)' });
+      }
+      const remoteDir = sftpBaseDir.replace(/\/$/, '');
+      const remotePath = `${remoteDir}/${name}`;
+      const sftp = new SFTPClient();
+      try {
+        await sftp.connect({ host: sftpHost, port: sftpPort, username: sftpUser, password: sftpPass });
+        // Ensure directory exists
+        const dirExists = await sftp.exists(remoteDir);
+        if (!dirExists) {
+          await sftp.mkdir(remoteDir, true);
+        }
+        const buffer = req.file.buffer || (req.file.path ? fs.readFileSync(req.file.path) : null);
+        if (!buffer) throw new Error('Missing file buffer');
+        await sftp.put(buffer, remotePath);
+      } catch (err) {
+        try { await sftp.end(); } catch {}
+        return res.status(500).json({ error: `SFTP upload failed: ${String(err?.message || err)}` });
+      }
+      try { await sftp.end(); } catch {}
+      const url = `${publicBase.replace(/\/$/, '')}/${name}`;
+      return res.status(201).json({ url, path: url });
     }
 
   // LOCAL storage (ephemeral on Render unless using a persistent disk)
