@@ -436,10 +436,12 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
       const sftpPort = Number(process.env.SFTP_PORT || 22);
       const sftpUser = process.env.SFTP_USERNAME || process.env.SFTP_USER;
       const sftpPass = process.env.SFTP_PASSWORD || process.env.SFTP_PASS;
-  const sftpBaseDir = process.env.SFTP_BASE_DIR || '/weapnea/uploads';
-      const publicBase = process.env.SFTP_PUBLIC_BASE_URL; // es: https://example.com/public/uploads
-      if (!sftpHost || !sftpUser || !sftpPass || !publicBase) {
-        return res.status(500).json({ error: 'SFTP configuration missing (SFTP_HOST, SFTP_USERNAME, SFTP_PASSWORD, SFTP_PUBLIC_BASE_URL)' });
+      const sftpBaseDir = process.env.SFTP_BASE_DIR || '/weapnea/uploads';
+      const publicBaseEnv = process.env.SFTP_PUBLIC_BASE_URL; // es: https://example.com/uploads
+      const publicDomain = process.env.SFTP_PUBLIC_DOMAIN || sftpHost;
+      const remoteRoot = process.env.SFTP_REMOTE_ROOT || '/weapnea';
+      if (!sftpHost || !sftpUser || !sftpPass) {
+        return res.status(500).json({ error: 'SFTP configuration missing (SFTP_HOST, SFTP_USERNAME, SFTP_PASSWORD)' });
       }
       const remoteDir = sftpBaseDir.replace(/\/$/, '');
       const remotePath = `${remoteDir}/${name}`;
@@ -459,7 +461,16 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
         return res.status(500).json({ error: `SFTP upload failed: ${String(err?.message || err)}` });
       }
       try { await sftp.end(); } catch {}
-      const url = `${publicBase.replace(/\/$/, '')}/${name}`;
+      // Costruzione URL pubblico: preferisci SFTP_PUBLIC_BASE_URL se presente,
+      // altrimenti deduci da host e struttura directory (assumendo webroot == SFTP_REMOTE_ROOT)
+      let deducedBasePath = '/uploads';
+      if (sftpBaseDir.startsWith(remoteRoot)) {
+        deducedBasePath = sftpBaseDir.slice(remoteRoot.length);
+        if (!deducedBasePath.startsWith('/')) deducedBasePath = `/${deducedBasePath}`;
+      }
+      const computedBase = `https://${publicDomain}${deducedBasePath}`;
+      const finalBase = (publicBaseEnv || computedBase).replace(/\/$/, '');
+      const url = `${finalBase}/${name}`;
       return res.status(201).json({ url, path: url });
     }
 
