@@ -18,7 +18,10 @@
     "db:backfill:from-dump": "node ./scripts/db-backfill-emails-from-dump.cjs",
     "db:set:password": "node ./scripts/db-set-password.cjs",
     "db:normalize:image-urls": "node ./scripts/db-normalize-image-urls.cjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:vercel": "node ./scripts/deploy-vercel.mjs",
+    "deploy:render": "node ./scripts/deploy-render.mjs",
+    "deploy:all": "npm run deploy:vercel && npm run deploy:render"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.901.0",
