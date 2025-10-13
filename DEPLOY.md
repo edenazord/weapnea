@@ -13,6 +13,9 @@ This project runs as two parts:
   - `POSTGRES_URL` = your managed Postgres connection string
   - `PORT` = 10000 (Render assigns `$PORT`; you can omit and let the platform set it)
   - `API_TOKEN` = a long random string (optional but recommended)
+  - Storage (uploads): choose one of the following
+    - Local disk on Render: set `STORAGE_DRIVER=local` and ensure `disk` is configured in `render.yaml` with `UPLOADS_DIR=/data/uploads` (files served from `https://<api-domain>/public/uploads/...`).
+    - SFTP (recommended if you want files on your hosting): set `STORAGE_DRIVER=sftp` and configure variables below.
 
 2. Networking
 - Expose HTTP
@@ -25,6 +28,31 @@ This project runs as two parts:
 - Add a Postgres plugin and copy the connection URL to `POSTGRES_URL`.
 - Create a service from this repo; set `START` to `node server/index.cjs` or use Nixpacks default.
 - Set `API_TOKEN`.
+
+## Upload storage: SFTP configuration
+
+If you want uploaded images/videos to be stored on your FTP hosting (and served from your main website), configure the SFTP driver:
+
+1. In `render.yaml` we set `STORAGE_DRIVER: sftp` and declared the following env vars (do not commit secrets; set them in Render dashboard):
+  - `SFTP_HOST` (e.g. access-XXXX.webspace-host.com)
+  - `SFTP_PORT` (22)
+  - `SFTP_USERNAME`
+  - `SFTP_PASSWORD`
+  - `SFTP_BASE_DIR` (remote uploads directory, e.g. `/weapnea/uploads`)
+  - `SFTP_REMOTE_ROOT` (web root, e.g. `/weapnea`)
+  - One of:
+    - `SFTP_PUBLIC_BASE_URL` (full public base URL, e.g. `https://weapnea.it/uploads`)
+    - or `SFTP_PUBLIC_DOMAIN` (domain only, e.g. `weapnea.it` — the server will infer `/uploads` from `SFTP_BASE_DIR` vs `SFTP_REMOTE_ROOT`).
+
+2. After setting env vars, redeploy the backend. The upload endpoint `/api/upload` will:
+  - upload files to `SFTP_BASE_DIR` via SFTP
+  - return a public URL like `https://<domain>/uploads/<filename>`
+
+3. Frontend components (e.g. ImageUpload) already convert relative URLs to absolute using the API base when necessary.
+
+Notes:
+- If you keep `STORAGE_DRIVER=local`, on Render you must attach a persistent disk (see `render.yaml`) or files will be ephemeral.
+- Avoid committing any credentials (use `.env` locally or the provider dashboard in production).
 
 ## Frontend (Vercel example)
 

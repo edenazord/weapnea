@@ -16,9 +16,31 @@ services:
         sync: false
       - key: DATABASE_URL
         sync: false
+      # Se usi storage locale su Render, resta valido UPLOADS_DIR con disco persistente.
+      # Per usare SFTP per gli upload (consigliato per servire i file dal tuo hosting), imposta STORAGE_DRIVER=sftp
       - key: UPLOADS_DIR
         value: /data/uploads
       - key: STORAGE_DRIVER
+        value: sftp
+      # Config SFTP (inserisci i valori reali dal tuo provider nel dashboard di Render ove indicato sync:false)
+      - key: SFTP_HOST
+        sync: false
+      - key: SFTP_PORT
+        value: 22
+      - key: SFTP_USERNAME
+        sync: false
+      - key: SFTP_PASSWORD
+        sync: false
+      # Directory remota: di default /weapnea/uploads secondo il tuo hosting
+      - key: SFTP_BASE_DIR
+        value: /weapnea/uploads
+      # Web root remoto: usato per dedurre il path pubblico (/uploads)
+      - key: SFTP_REMOTE_ROOT
+        value: /weapnea
+      # Imposta uno dei due: BASE_URL completo oppure solo dominio pubblico
+      - key: SFTP_PUBLIC_BASE_URL
+        sync: false
+      - key: SFTP_PUBLIC_DOMAIN
         sync: false
       - key: S3_REGION
         sync: false
