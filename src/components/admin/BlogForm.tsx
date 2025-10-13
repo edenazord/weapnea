@@ -18,6 +18,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { apiSend } from '@/lib/apiClient';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
   language: z.enum(["it", "en"], {
@@ -121,15 +122,16 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
             <FormItem>
               <FormLabel>Lingua</FormLabel>
               <FormControl>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Seleziona la lingua" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="it">Italiano</SelectItem>
-                    <SelectItem value="en">English</SelectItem>
-                  </SelectContent>
-                </Select>
+                <RadioGroup onValueChange={field.onChange} value={field.value} className="flex gap-6">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="it" id="lang-it" />
+                    <label htmlFor="lang-it">Italiano</label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="en" id="lang-en" />
+                    <label htmlFor="lang-en">Inglese</label>
+                  </div>
+                </RadioGroup>
               </FormControl>
               <FormMessage />
             </FormItem>

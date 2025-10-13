@@ -142,7 +142,7 @@ const BlogManager = () => {
             <SelectContent>
               <SelectItem value="all">Tutte le lingue</SelectItem>
               <SelectItem value="it">Italiano</SelectItem>
-              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="en">Inglese</SelectItem>
             </SelectContent>
           </Select>
           <Button onClick={() => setShowForm(true)}>
