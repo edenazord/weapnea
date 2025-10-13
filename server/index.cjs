@@ -131,27 +131,29 @@ async function detectSchema() {
     if (!HAS_USER_PACKAGES) console.warn('[startup] user_packages table NOT present');
 
     // Ensure blog_articles.language column exists (auto-migration light)
-    try {
-      // Add column if table exists
-      await pool.query("ALTER TABLE IF EXISTS public.blog_articles ADD COLUMN IF NOT EXISTS language text NOT NULL DEFAULT 'it'");
-      // Check constraint presence
-      const c = await pool.query(`
-        SELECT 1 FROM information_schema.table_constraints 
-        WHERE table_schema='public' AND table_name='blog_articles' 
-          AND constraint_type='CHECK' AND constraint_name='blog_articles_language_check'
-      `);
-      if (c.rowCount === 0) {
-        await pool.query("ALTER TABLE public.blog_articles ADD CONSTRAINT blog_articles_language_check CHECK (language IN ('it','en'))");
-      }
-      // Verify column exists now
-      const lc = await pool.query(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='blog_articles' AND column_name='language'`);
-      HAS_BLOG_LANGUAGE = lc.rowCount > 0;
-      if (!HAS_BLOG_LANGUAGE) console.warn('[startup] blog_articles.language NOT present');
-    } catch (e) {
-      console.warn('[startup] blog language ensure failed:', e?.message || e);
-    }
+    await ensureBlogLanguageColumn();
   } catch (e) {
     console.warn('[startup] schema detection failed:', e?.message || e);
+  }
+}
+
+// Lightweight ensure for blog language column/constraint (idempotent)
+async function ensureBlogLanguageColumn() {
+  try {
+    await pool.query("ALTER TABLE IF EXISTS public.blog_articles ADD COLUMN IF NOT EXISTS language text NOT NULL DEFAULT 'it'");
+    const c = await pool.query(`
+      SELECT 1 FROM information_schema.table_constraints 
+      WHERE table_schema='public' AND table_name='blog_articles' 
+        AND constraint_type='CHECK' AND constraint_name='blog_articles_language_check'
+    `);
+    if (c.rowCount === 0) {
+      await pool.query("ALTER TABLE public.blog_articles ADD CONSTRAINT blog_articles_language_check CHECK (language IN ('it','en'))");
+    }
+    const lc = await pool.query(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='blog_articles' AND column_name='language'`);
+    HAS_BLOG_LANGUAGE = lc.rowCount > 0;
+    if (!HAS_BLOG_LANGUAGE) console.warn('[ensure] blog_articles.language NOT present after ensure');
+  } catch (e) {
+    console.warn('[blog] ensure language column failed:', e?.message || e);
   }
 }
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
@@ -588,6 +590,8 @@ app.get('/api/events/slug/:slug', async (req, res) => {
 // Blog endpoints
 // -----------------------------
 app.get('/api/blog', async (req, res) => {
+  // Ensure column exists to avoid runtime errors on fresh DBs
+  await ensureBlogLanguageColumn();
   const { searchTerm, published = 'true', sortColumn = 'created_at', sortDirection = 'desc', language } = req.query;
   const params = [];
   const clauses = [];
@@ -621,6 +625,7 @@ app.get('/api/blog', async (req, res) => {
 });
 
 app.get('/api/blog/slug/:slug', async (req, res) => {
+  await ensureBlogLanguageColumn();
   const sql = `
     SELECT b.*, json_build_object('full_name', p.full_name) AS profiles
     FROM blog_articles b
@@ -638,6 +643,7 @@ app.get('/api/blog/slug/:slug', async (req, res) => {
 });
 
 app.get('/api/blog/:id', async (req, res) => {
+  await ensureBlogLanguageColumn();
   const sql = `
     SELECT b.*, json_build_object('full_name', p.full_name) AS profiles
     FROM blog_articles b
@@ -655,6 +661,7 @@ app.get('/api/blog/:id', async (req, res) => {
 });
 
 app.post('/api/blog', requireAuth, requireBloggerOrAdmin, async (req, res) => {
+  await ensureBlogLanguageColumn();
   const b = req.body || {};
   try {
     const cols = ['language','title','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published','author_id'];
@@ -686,6 +693,7 @@ app.post('/api/blog', requireAuth, requireBloggerOrAdmin, async (req, res) => {
 });
 
 app.put('/api/blog/:id', requireAuth, requireBloggerOrAdmin, async (req, res) => {
+  await ensureBlogLanguageColumn();
   const b = req.body || {};
   try {
     const allowed = ['language','title','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published'];
