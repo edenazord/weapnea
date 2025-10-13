@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EventsManager from "@/components/admin/EventsManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import BlogManager from "@/components/admin/BlogManager";
-import ForumCategoriesManager from "@/components/admin/ForumCategoriesManager";
+// Forum disabilitato temporaneamente
 import UsersManager from "@/components/admin/UsersManager";
 import PasswordTokensManager from "@/components/admin/PasswordTokensManager";
 import UserPackagesManager from "@/components/admin/UserPackagesManager";
@@ -55,17 +55,7 @@ const AdminDashboard = () => {
                         </CardContent>
                     </Card>
                 );
-            case "forum":
-                return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Gestione Categorie Forum</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ForumCategoriesManager />
-                        </CardContent>
-                    </Card>
-                );
+            // forum: sezione rimossa
             case "users":
                 return (
                     <Card>
@@ -151,11 +141,10 @@ const AdminDashboard = () => {
             </div>
             
             <Tabs defaultValue="events">
-                <TabsList className="grid w-full grid-cols-7">
+                <TabsList className="grid w-full grid-cols-6">
                     <TabsTrigger value="events">Eventi</TabsTrigger>
                     <TabsTrigger value="categories">Categorie</TabsTrigger>
                     <TabsTrigger value="blog">Blog</TabsTrigger>
-                    <TabsTrigger value="forum">Forum</TabsTrigger>
                     <TabsTrigger value="users">Utenti</TabsTrigger>
                     <TabsTrigger value="packages">Pacchetti</TabsTrigger>
                     <TabsTrigger value="tokens">Token</TabsTrigger>
@@ -190,16 +179,7 @@ const AdminDashboard = () => {
                         </CardContent>
                     </Card>
                 </TabsContent>
-                <TabsContent value="forum">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Gestione Categorie Forum</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <ForumCategoriesManager />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
+                {/* forum: contenuto rimosso */}
                 <TabsContent value="users">
                      <Card>
                         <CardHeader>

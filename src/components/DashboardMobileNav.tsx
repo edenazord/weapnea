@@ -10,7 +10,6 @@ const DashboardMobileNav = ({ activeTab, onTabChange }: DashboardMobileNavProps)
     { id: "events", icon: Calendar, label: "Eventi" },
     { id: "categories", icon: FolderTree, label: "Categorie" },
     { id: "blog", icon: FileText, label: "Blog" },
-    { id: "forum", icon: MessageSquare, label: "Forum" },
     { id: "users", icon: Users, label: "Utenti" },
     { id: "packages", icon: Package, label: "Pacchetti" },
     { id: "tokens", icon: Key, label: "Token" },
