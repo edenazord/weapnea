@@ -26,7 +26,6 @@ const formSchema = z.object({
   title: z.string().min(2, { message: "Il titolo deve essere di almeno 2 caratteri." }),
   content: z.string().min(10, { message: "Il contenuto deve essere di almeno 10 caratteri." }),
   image_url: z.string().url().optional(),
-  category: z.string().optional(),
 });
 
 interface BlogFormProps {
@@ -97,7 +96,6 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
       content: article?.content || "",
       // mappiamo cover_image_url nel campo di form image_url
       image_url: article?.cover_image_url || "",
-      category: article?.category || "",
     },
   });
 
@@ -109,7 +107,6 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
         title: article.title || '',
         content: article.content || '',
         image_url: article.cover_image_url || '',
-        category: article.category || '',
       });
     } else {
       form.reset({
@@ -117,7 +114,6 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
         title: '',
         content: '',
         image_url: '',
-        category: '',
       });
     }
   }, [article, form]);
@@ -236,19 +232,6 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
           </FormControl>
           <FormMessage />
         </FormItem>
-        <FormField
-          control={form.control}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Categoria</FormLabel>
-              <FormControl>
-                <Input placeholder="Categoria" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="ghost" onClick={onCancel}>
             Annulla
