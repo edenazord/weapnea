@@ -1498,47 +1498,6 @@ app.put('/api/admin/users/:id/profile', requireAuth, requireAdmin, async (req, r
   }
 });
 
-// ---------------------------------
-// Admin debug: storage configuration
-// ---------------------------------
-app.get('/api/admin/debug/storage', requireAuth, requireAdmin, async (_req, res) => {
-  try {
-    const driver = STORAGE_DRIVER;
-    const sftpHost = process.env.SFTP_HOST || null;
-    const sftpUser = process.env.SFTP_USERNAME || process.env.SFTP_USER || null;
-    const sftpBaseDir = process.env.SFTP_BASE_DIR || null;
-    const sftpRemoteRoot = process.env.SFTP_REMOTE_ROOT || null;
-    const sftpPublicBase = process.env.SFTP_PUBLIC_BASE_URL || null;
-    const sftpPublicDomain = process.env.SFTP_PUBLIC_DOMAIN || null;
-    const sftpPassPresent = !!(process.env.SFTP_PASSWORD || process.env.SFTP_PASS);
-    const sftpConfigComplete = !!(sftpHost && sftpUser && sftpPassPresent);
-    const effectiveUploadsDir = UPLOADS_DIR;
-    let publicStrategy = 'local';
-    if (driver === 's3') publicStrategy = 's3';
-    else if (driver === 'sftp' && sftpConfigComplete) publicStrategy = 'sftp';
-    else if (driver === 'sftp' && !sftpConfigComplete) publicStrategy = 'fallback-local';
-    res.json({
-      driver,
-      publicStrategy,
-      sftp: {
-        host: sftpHost,
-        user: sftpUser,
-        passwordPresent: sftpPassPresent,
-        baseDir: sftpBaseDir,
-        remoteRoot: sftpRemoteRoot,
-        publicBaseUrl: sftpPublicBase,
-        publicDomain: sftpPublicDomain,
-        configComplete: sftpConfigComplete,
-      },
-      uploadsDirMounted: effectiveUploadsDir,
-      apiPublicBaseUrl: process.env.API_PUBLIC_BASE_URL || null,
-      storageDriverEnv: process.env.STORAGE_DRIVER || null,
-    });
-  } catch (e) {
-    res.status(500).json({ error: String(e?.message || e) });
-  }
-});
-
 app.delete('/api/admin/users/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { rowCount } = await pool.query('DELETE FROM profiles WHERE id = $1', [req.params.id]);
