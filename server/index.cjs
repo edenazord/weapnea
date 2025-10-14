@@ -141,14 +141,40 @@ async function detectSchema() {
 async function ensureBlogLanguageColumn() {
   try {
     await pool.query("ALTER TABLE IF EXISTS public.blog_articles ADD COLUMN IF NOT EXISTS language text NOT NULL DEFAULT 'it'");
-    const c = await pool.query(`
-      SELECT 1 FROM information_schema.table_constraints 
-      WHERE table_schema='public' AND table_name='blog_articles' 
-        AND constraint_type='CHECK' AND constraint_name='blog_articles_language_check'
+
+    // Elenco lingue consentite configurabile via env, fallback a set ampliato
+    const allowedLangs = (process.env.BLOG_LANGUAGES || 'it,en,es,fr,pl,ru')
+      .split(',')
+      .map(s => s.trim().toLowerCase())
+      .filter(Boolean);
+    const uniqueLangs = Array.from(new Set(allowedLangs));
+    const checkList = uniqueLangs.map(l => `'${l.replace(/'/g, "''")}'`).join(',');
+    const expectedDef = `CHECK ((language = ANY (ARRAY[${checkList}])))`;
+
+    // Recupera constraint esistente (se presente)
+    const existing = await pool.query(`
+      SELECT conname, pg_get_constraintdef(c.oid) as def
+      FROM pg_constraint c
+      JOIN pg_class t ON c.conrelid = t.oid
+      JOIN pg_namespace n ON n.oid = t.relnamespace
+      WHERE n.nspname = 'public' AND t.relname = 'blog_articles' AND conname = 'blog_articles_language_check' AND contype = 'c'
     `);
-    if (c.rowCount === 0) {
-      await pool.query("ALTER TABLE public.blog_articles ADD CONSTRAINT blog_articles_language_check CHECK (language IN ('it','en'))");
+
+    if (existing.rowCount === 0) {
+      await pool.query(`ALTER TABLE public.blog_articles ADD CONSTRAINT blog_articles_language_check CHECK (language IN (${checkList}))`);
+      console.log('[blog] added language check constraint with', uniqueLangs);
+    } else {
+      const currentDef = existing.rows[0].def; // es. CHECK ((language = ANY (ARRAY['it'::text, 'en'::text])))
+      // Normalizziamo rimuovendo cast ::text e spazi per confronto semplice
+      const normalize = (s) => s.replace(/::text/g, '').replace(/\s+/g, ' ').trim();
+      if (!normalize(currentDef).includes(normalize(checkList))) {
+        // Se non include tutte le lingue attese, ricreiamo il constraint
+        console.log('[blog] updating language constraint from', currentDef, 'to', uniqueLangs);
+        await pool.query('ALTER TABLE public.blog_articles DROP CONSTRAINT blog_articles_language_check');
+        await pool.query(`ALTER TABLE public.blog_articles ADD CONSTRAINT blog_articles_language_check CHECK (language IN (${checkList}))`);
+      }
     }
+
     const lc = await pool.query(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='blog_articles' AND column_name='language'`);
     HAS_BLOG_LANGUAGE = lc.rowCount > 0;
     if (!HAS_BLOG_LANGUAGE) console.warn('[ensure] blog_articles.language NOT present after ensure');
