@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -40,8 +40,9 @@ interface BlogFormProps {
     language?: 'it' | 'en';
     title: string;
     content: string;
-    image_url?: string;
+    cover_image_url?: string | null; // campo reale restituito dall'API
     category?: string;
+    slug?: string; // facoltativo, utile per non rigenerare slug se già esistente
   };
   onSave: () => void;
   onCancel: () => void;
@@ -58,10 +59,32 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
       language: article?.language || "it",
       title: article?.title || "",
       content: article?.content || "",
-  image_url: article?.image_url || "",
+      // mappiamo cover_image_url nel campo di form image_url
+      image_url: article?.cover_image_url || "",
       category: article?.category || "",
     },
   });
+
+  // Quando cambia l'articolo (apertura dialog in edit), resettiamo i valori del form
+  useEffect(() => {
+    if (article) {
+      form.reset({
+        language: article.language || 'it',
+        title: article.title || '',
+        content: article.content || '',
+        image_url: article.cover_image_url || '',
+        category: article.category || '',
+      });
+    } else {
+      form.reset({
+        language: 'it',
+        title: '',
+        content: '',
+        image_url: '',
+        category: '',
+      });
+    }
+  }, [article, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!user) {
@@ -76,13 +99,15 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
     setIsSubmitting(true);
     
     try {
+      const generatedSlug = values.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
       const articleData = {
         language: values.language,
         title: values.title,
         content: values.content,
         cover_image_url: values.image_url || null,
         author_id: user.id,
-        slug: values.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, ''),
+        // Se siamo in edit manteniamo lo slug esistente (evita 404 su link già pubblicati)
+        slug: article?.slug || generatedSlug,
         // published lasciato invariato lato server (default false)
       };
 
