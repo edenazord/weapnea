@@ -400,8 +400,20 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
     if (!req.file) return res.status(400).json({ error: 'file is required' });
     const ext = req.file.originalname ? path.extname(req.file.originalname) : '';
     const name = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext || ''}`;
+    // Determina driver effettivo (fallback automatico se SFTP configurato male)
+    const driver = STORAGE_DRIVER;
+    const sftpConfigMissing = (
+      driver === 'sftp' && (
+        !process.env.SFTP_HOST ||
+        !(process.env.SFTP_USERNAME || process.env.SFTP_USER) ||
+        !(process.env.SFTP_PASSWORD || process.env.SFTP_PASS)
+      )
+    );
+    if (sftpConfigMissing) {
+      console.warn('[upload] STORAGE_DRIVER=sftp ma variabili SFTP mancanti (SFTP_HOST / USERNAME / PASSWORD). Fallback a storage locale.');
+    }
 
-    if (STORAGE_DRIVER === 's3') {
+    if (driver === 's3') {
       if (!S3Client || !PutObjectCommand) {
         return res.status(500).json({ error: 'S3 client not installed. Please add @aws-sdk/client-s3.' });
       }
@@ -429,7 +441,7 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
       return res.status(201).json({ url, key });
     }
 
-    if (STORAGE_DRIVER === 'sftp') {
+    if (driver === 'sftp' && !sftpConfigMissing) {
       let SFTPClient;
       try { SFTPClient = require('ssh2-sftp-client'); } catch (e) {
         return res.status(500).json({ error: 'SFTP client not installed. Please add ssh2-sftp-client.' });
