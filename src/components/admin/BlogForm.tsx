@@ -48,8 +48,17 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const [languages, setLanguages] = useState<{ code: string; native_name: string; name?: string }[]>([]);
-  const [loadingLanguages, setLoadingLanguages] = useState(true);
+  // Fallback immediato: mostriamo subito tutte le lingue previste
+  const fallbackLangs: { code: string; native_name: string; name?: string }[] = [
+    { code: 'it', native_name: 'Italiano', name: 'Italian' },
+    { code: 'en', native_name: 'English', name: 'English' },
+    { code: 'es', native_name: 'Español', name: 'Spanish' },
+    { code: 'fr', native_name: 'Français', name: 'French' },
+    { code: 'pl', native_name: 'Polski', name: 'Polish' },
+    { code: 'ru', native_name: 'Русский', name: 'Russian' },
+  ];
+  const [languages, setLanguages] = useState<{ code: string; native_name: string; name?: string }[]>(fallbackLangs);
+  const [loadingLanguages, setLoadingLanguages] = useState(false);
   const loadedRef = useRef(false);
 
   useEffect(() => {
@@ -59,6 +68,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
     const url = base.endsWith('/') ? `${base}locales/languages.json` : `${base}/locales/languages.json`;
     const absolute = new URL(url, window.location.origin).toString();
     const load = async () => {
+      setLoadingLanguages(true);
       try {
         const res = await fetch(absolute, { cache: 'no-store' });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -71,11 +81,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
         }
       } catch (e) {
         console.error('Errore caricamento lingue', e);
-        // fallback
-        setLanguages([
-          { code: 'it', native_name: 'Italiano', name: 'Italian' },
-          { code: 'en', native_name: 'English', name: 'English' },
-        ]);
+        // fallback già presente (fallbackLangs)
       } finally {
         setLoadingLanguages(false);
       }
@@ -175,9 +181,9 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
             <FormItem>
               <FormLabel>Lingua</FormLabel>
               <FormControl>
-                <Select onValueChange={field.onChange} value={field.value} disabled={loadingLanguages}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder={loadingLanguages ? 'Caricamento...' : 'Seleziona la lingua'} />
+                    <SelectValue placeholder={'Seleziona la lingua'} />
                   </SelectTrigger>
                   <SelectContent>
                     {languages.map(l => (
