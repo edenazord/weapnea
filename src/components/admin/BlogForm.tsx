@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { apiSend } from '@/lib/apiClient';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+// Rimuoviamo il Select custom per affidabilità nelle opzioni lingua
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
 // Schema semplice: validiamo solo che la lingua sia stringa non vuota
@@ -181,18 +181,17 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
             <FormItem>
               <FormLabel htmlFor="blog-language-select">Lingua</FormLabel>
               <FormControl>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger id="blog-language-select" className="w-[200px]" aria-describedby="blog-language-help">
-                    <SelectValue placeholder={'Seleziona la lingua'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {languages.map(l => (
-                      <SelectItem key={l.code} value={l.code}>{l.native_name || l.name || l.code}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  id="blog-language-select"
+                  className="w-[220px] border rounded-md h-10 px-3 text-sm bg-background"
+                  value={field.value}
+                  onChange={(e) => field.onChange(e.target.value)}
+                >
+                  {languages.map(l => (
+                    <option key={l.code} value={l.code}>{l.native_name || l.name || l.code}</option>
+                  ))}
+                </select>
               </FormControl>
-              <p id="blog-language-help" className="sr-only">Seleziona la lingua dell'articolo</p>
               <FormMessage />
             </FormItem>
           )}
