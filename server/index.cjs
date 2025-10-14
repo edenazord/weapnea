@@ -454,6 +454,7 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
       const publicBaseEnv = process.env.SFTP_PUBLIC_BASE_URL; // es: https://example.com/uploads
       const publicDomain = process.env.SFTP_PUBLIC_DOMAIN || sftpHost;
       const remoteRoot = process.env.SFTP_REMOTE_ROOT || '/weapnea';
+      const sftpDebug = String(process.env.SFTP_DEBUG || 'false').toLowerCase() === 'true';
       if (!sftpHost || !sftpUser || !sftpPass) {
         return res.status(500).json({ error: 'SFTP configuration missing (SFTP_HOST, SFTP_USERNAME, SFTP_PASSWORD)' });
       }
@@ -478,6 +479,9 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
         if (process.env.SFTP_CHMOD_FILES) {
           try { await sftp.chmod(remotePath, process.env.SFTP_CHMOD_FILES); } catch (e) { console.warn('[sftp] chmod file failed', e?.message); }
         }
+        if (sftpDebug) {
+          console.log('[sftp] uploaded', { remotePath, size: buffer.length, chmodFile: process.env.SFTP_CHMOD_FILES || null, chmodDir: process.env.SFTP_CHMOD_DIRS || null });
+        }
       } catch (err) {
         try { await sftp.end(); } catch {}
         return res.status(500).json({ error: `SFTP upload failed: ${String(err?.message || err)}` });
@@ -493,6 +497,9 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
       const computedBase = `https://${publicDomain}${deducedBasePath}`;
       const finalBase = (publicBaseEnv || computedBase).replace(/\/$/, '');
       const url = `${finalBase}/${name}`;
+      if (sftpDebug) {
+        console.log('[sftp] final URL', { finalBase, url, remoteRoot, sftpBaseDir, deducedBasePath });
+      }
       return res.status(201).json({ url, path: url });
     }
 
