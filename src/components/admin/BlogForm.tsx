@@ -179,11 +179,11 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
           name="language"
           render={({ field }) => (
             <FormItem>
-              <FormLabel htmlFor="blog-language-select">Lingua</FormLabel>
+              <FormLabel htmlFor="blog-language-select" className="block mb-1">Lingua</FormLabel>
               <FormControl>
                 <select
                   id="blog-language-select"
-                  className="w-[220px] border rounded-md h-10 px-3 text-sm bg-background"
+                  className="w-[220px] border rounded-md h-10 px-3 text-sm bg-background mt-1"
                   value={field.value}
                   onChange={(e) => field.onChange(e.target.value)}
                 >
