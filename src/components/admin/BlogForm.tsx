@@ -20,10 +20,9 @@ import { apiSend } from '@/lib/apiClient';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
-const formSchema = z.object({
-  language: z.enum(["it", "en"], {
-    required_error: "Seleziona una lingua",
-  }),
+// Lo schema sarà inizializzato dopo aver caricato le lingue; usiamo refine runtime.
+const dynamicBaseSchema = {
+  language: z.string().min(2, { message: 'Lingua richiesta' }),
   title: z.string().min(2, {
     message: "Il titolo deve essere di almeno 2 caratteri.",
   }),
@@ -32,7 +31,10 @@ const formSchema = z.object({
   }),
   image_url: z.string().url().optional(),
   category: z.string().optional(),
-});
+};
+
+// Placeholder, verrà sostituito una volta caricate le lingue (con refine)
+let formSchema = z.object(dynamicBaseSchema).refine(() => true);
 
 interface BlogFormProps {
   article?: {
@@ -52,6 +54,42 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [languages, setLanguages] = useState<{ code: string; native_name: string; name?: string }[]>([]);
+  const [schemaReady, setSchemaReady] = useState(false);
+
+  useEffect(() => {
+    // Carica lista lingue dinamicamente dal public
+    const load = async () => {
+      try {
+        const res = await fetch('/locales/languages.json');
+        if (!res.ok) throw new Error('Impossibile caricare languages.json');
+        const data = await res.json();
+        setLanguages(data);
+        const codes = data.map((l: any) => l.code);
+        // Ricostruisce lo schema validando che il codice sia tra quelli caricati
+        formSchema = z.object(dynamicBaseSchema).refine((val) => codes.includes(val.language), {
+          message: 'Lingua non supportata',
+          path: ['language'],
+        });
+        setSchemaReady(true);
+      } catch (e) {
+        console.error('Errore caricamento lingue', e);
+        // fallback a it/en se fallisce
+        const codes = ['it','en'];
+        formSchema = z.object(dynamicBaseSchema).refine((val) => codes.includes(val.language), {
+          message: 'Lingua non supportata',
+          path: ['language'],
+        });
+        setLanguages([
+          { code: 'it', native_name: 'Italiano', name: 'Italian' },
+          { code: 'en', native_name: 'English', name: 'English' },
+        ]);
+        setSchemaReady(true);
+      }
+    };
+    load();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -138,27 +176,33 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
-          name="language"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Lingua</FormLabel>
-              <FormControl>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="w-[200px]">
-                    <SelectValue placeholder="Seleziona la lingua" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="it">Italiano</SelectItem>
-                    <SelectItem value="en">Inglese</SelectItem>
-                  </SelectContent>
-                </Select>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {schemaReady && (
+          <FormField
+            control={form.control}
+            name="language"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Lingua</FormLabel>
+                <FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <SelectTrigger className="w-[200px]">
+                      <SelectValue placeholder="Seleziona la lingua" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {languages.map(l => (
+                        <SelectItem key={l.code} value={l.code}>{l.native_name || l.name || l.code}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        {!schemaReady && (
+          <div className="text-sm text-gray-500">Caricamento lingue...</div>
+        )}
         <FormField
           control={form.control}
           name="title"
