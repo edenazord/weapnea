@@ -179,10 +179,10 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
           name="language"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Lingua</FormLabel>
+              <FormLabel htmlFor="blog-language-select">Lingua</FormLabel>
               <FormControl>
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <SelectTrigger className="w-[200px]">
+                  <SelectTrigger id="blog-language-select" className="w-[200px]" aria-describedby="blog-language-help">
                     <SelectValue placeholder={'Seleziona la lingua'} />
                   </SelectTrigger>
                   <SelectContent>
@@ -192,6 +192,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
                   </SelectContent>
                 </Select>
               </FormControl>
+              <p id="blog-language-help" className="sr-only">Seleziona la lingua dell'articolo</p>
               <FormMessage />
             </FormItem>
           )}
