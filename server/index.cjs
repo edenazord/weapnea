@@ -466,10 +466,18 @@ app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => 
         const dirExists = await sftp.exists(remoteDir);
         if (!dirExists) {
           await sftp.mkdir(remoteDir, true);
+          // Applica permessi directory se richiesto
+          if (process.env.SFTP_CHMOD_DIRS) {
+            try { await sftp.chmod(remoteDir, process.env.SFTP_CHMOD_DIRS); } catch (e) { console.warn('[sftp] chmod dir failed', e?.message); }
+          }
         }
         const buffer = req.file.buffer || (req.file.path ? fs.readFileSync(req.file.path) : null);
         if (!buffer) throw new Error('Missing file buffer');
         await sftp.put(buffer, remotePath);
+        // Imposta permessi file se configurato
+        if (process.env.SFTP_CHMOD_FILES) {
+          try { await sftp.chmod(remotePath, process.env.SFTP_CHMOD_FILES); } catch (e) { console.warn('[sftp] chmod file failed', e?.message); }
+        }
       } catch (err) {
         try { await sftp.end(); } catch {}
         return res.status(500).json({ error: `SFTP upload failed: ${String(err?.message || err)}` });
