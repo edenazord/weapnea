@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { parseISO, isValid, startOfDay } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getEvents, createEvent, updateEvent, deleteEvent, EventWithCategory, Event, getCategories } from "@/lib/api";
+import { getEvents, createEvent, updateEvent, deleteEvent, EventWithCategory, Event, getCategories, getSetting } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -42,6 +42,12 @@ export default function EventsManager() {
   const { data: categories } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
+  });
+
+  // Posizione salvata per "Eventi Passati"
+  const { data: pastPos } = useQuery({
+    queryKey: ["settings", "past_events_category_position"],
+    queryFn: () => getSetting<{ index: number }>("past_events_category_position"),
   });
 
   // Trova la categoria "Allenamenti"
@@ -268,20 +274,39 @@ export default function EventsManager() {
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-56">
                 <SelectValue placeholder="Filtra per categoria" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Tutti gli eventi</SelectItem>
-                <SelectItem value="past">Eventi Passati</SelectItem>
-                {allenamentiCategory && (
-                  <SelectItem value="allenamenti">Allenamenti Condivisi</SelectItem>
-                )}
-                {categories?.filter(cat => !cat.name.toLowerCase().includes('allenamenti')).map(category => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
+                  <SelectItem value="all">Tutti gli eventi</SelectItem>
+                  {(() => {
+                    // Costruisci la lista ordinata: categorie reali per order_index, inserendo synthetic "past" all'indice salvato.
+                    const realCats = (categories || []).slice().sort((a, b) => a.order_index - b.order_index);
+                    const items: Array<{ type: 'real' | 'past' | 'allenamenti'; id: string; name: string }>
+                      = realCats.map(c => ({ type: 'real', id: c.id, name: c.name }));
+
+                    const pastIndex = (pastPos?.value && typeof pastPos.value.index === 'number')
+                      ? Math.max(0, Math.min(pastPos.value.index, items.length))
+                      : items.length;
+
+                    // Inserisci Past
+                    items.splice(pastIndex, 0, { type: 'past', id: 'past', name: 'Eventi Passati' });
+
+                    // Opzionalmente: se esiste Allenamenti, garantisci che appaia con label dedicata ma rispettando l'ordine naturale
+                    // Qui manteniamo anche un item dedicato se presente tra le categorie reali, evitando duplicati nel mapping
+
+                    return items.map((it) => (
+                      <SelectItem key={`${it.type}-${it.id}`} value={it.id === 'past' ? 'past' : it.id}>
+                        {it.type === 'past' ? 'Eventi Passati' : it.name}
+                      </SelectItem>
+                    ));
+                  })()}
+                  {allenamentiCategory && (
+                    // In caso Allenamenti sia una categoria reale già nella lista sopra, evitiamo doppione
+                    categories?.some(c => c.id === allenamentiCategory.id) ? null : (
+                      <SelectItem value="allenamenti">Allenamenti Condivisi</SelectItem>
+                    )
+                  )}
               </SelectContent>
             </Select>
           </div>
