@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
+import { parseISO, isValid, startOfDay } from "date-fns";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEvents, createEvent, updateEvent, deleteEvent, EventWithCategory, Event, getCategories } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { EventForm, eventFormSchema } from "./EventForm";
-import { AllenamentiForm, allenamentiFormSchema } from "./AllenamentiForm";
+import { EventForm } from "./EventForm";
+import { AllenamentiForm } from "./AllenamentiForm";
 import { toast } from "sonner";
 import { Edit, Trash2, Plus, Search, ArrowUp, ArrowDown, Users, Filter } from "lucide-react";
 import { EventParticipantsModal } from "@/components/EventParticipantsModal";
@@ -54,8 +55,21 @@ export default function EventsManager() {
   });
 
   // Filtra eventi in base alla categoria selezionata
+  const isEventPast = (event: EventWithCategory) => {
+    if (!event?.date) return false;
+    try {
+      const todayStart = startOfDay(new Date());
+      const start = parseISO(event.date);
+      const end = event.end_date ? parseISO(event.end_date) : undefined;
+      const startPast = isValid(start) && start < todayStart;
+      const endPast = end && isValid(end) && end < todayStart;
+      return Boolean(endPast || (!end && startPast));
+    } catch { return false; }
+  };
+
   const events = allEvents?.filter(event => {
     if (categoryFilter === "all") return true;
+    if (categoryFilter === "past") return isEventPast(event);
     if (categoryFilter === "allenamenti") return event.category_id === allenamentiCategory?.id;
     return event.category_id === categoryFilter;
   });
@@ -98,7 +112,7 @@ export default function EventsManager() {
     },
   });
 
-  const handleEventFormSubmit = async (values: z.infer<typeof eventFormSchema>) => {
+  const handleEventFormSubmit = async (values: any) => {
     const eventData = {
       title: values.title,
       slug: values.slug,
@@ -135,7 +149,7 @@ export default function EventsManager() {
     }
   };
 
-  const handleAllenamentiFormSubmit = (values: z.infer<typeof allenamentiFormSchema>) => {
+  const handleAllenamentiFormSubmit = (values: any) => {
     const eventData = {
       title: values.title,
       slug: values.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
@@ -259,6 +273,7 @@ export default function EventsManager() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tutti gli eventi</SelectItem>
+                <SelectItem value="past">Eventi Passati</SelectItem>
                 {allenamentiCategory && (
                   <SelectItem value="allenamenti">Allenamenti Condivisi</SelectItem>
                 )}
