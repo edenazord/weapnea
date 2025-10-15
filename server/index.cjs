@@ -357,7 +357,9 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
   if (!HAS_PERSONAL_BEST) { await ensurePersonalBestColumnAtRuntime(); }
-  const pb = HAS_PERSONAL_BEST ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best" : '';
+  const pb = HAS_PERSONAL_BEST
+    ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best"
+    : ", '{}'::jsonb AS personal_best";
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
@@ -388,7 +390,9 @@ app.get('/api/profile', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
   if (!HAS_PERSONAL_BEST) { await ensurePersonalBestColumnAtRuntime(); }
-  const pb = HAS_PERSONAL_BEST ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best" : '';
+  const pb = HAS_PERSONAL_BEST
+    ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best"
+    : ", '{}'::jsonb AS personal_best";
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
