@@ -22,7 +22,6 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
                             <Waves className="h-8 w-8 text-blue-600" />
                             <span className="text-2xl font-bold text-blue-900">WeApnea</span>
                             <Shield className="h-5 w-5 text-orange-500 ml-2" />
-                            <span className="text-sm text-orange-600 font-medium">Admin</span>
                         </Link>
                         
                         <div className="flex items-center space-x-3">
