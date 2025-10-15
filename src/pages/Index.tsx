@@ -155,6 +155,31 @@ const Index = () => {
     });
   }, [events, categoryFilter, disciplineFilter]);
 
+  // Eventi passati (tutti gli eventi con fine prima di oggi; se end_date manca, in base alla start)
+  const pastEvents = useMemo(() => {
+    if (!events || !Array.isArray(events)) return [];
+    const todayStart = startOfDay(new Date());
+    return events
+      .filter(event => {
+        if (!event || !event.date) return false;
+        try {
+          const start = parseISO(event.date);
+          const end = event.end_date ? parseISO(event.end_date) : undefined;
+          const startPast = isValid(start) && start < todayStart;
+          const endPast = end && isValid(end) && end < todayStart;
+          return Boolean(endPast || (!end && startPast));
+        } catch {
+          return false;
+        }
+      })
+      .sort((a, b) => {
+        // più recenti prima
+        const aDate = parseISO(a.end_date || a.date!);
+        const bDate = parseISO(b.end_date || b.date!);
+        return bDate.getTime() - aDate.getTime();
+      });
+  }, [events]);
+
   // Raggruppamento eventi per categoria
   const eventsByCategory = useMemo(() => {
     if (!upcomingEvents) return [];
@@ -197,9 +222,19 @@ const Index = () => {
       });
     }
 
+    // Aggiungi gruppo "Eventi Passati" in coda, se presenti
+    if (pastEvents.length > 0) {
+      grouped.push({
+        id: 'past-events',
+        name: t('homepage.past_events', 'Eventi Passati'),
+        order_index: 1000,
+        events: pastEvents
+      });
+    }
+
     console.log('📊 Final grouped categories:', grouped);
     return grouped;
-  }, [categories, upcomingEvents, t]);
+  }, [categories, upcomingEvents, pastEvents, t]);
 
   const handleRetry = () => {
     console.log("🔄 Retrying queries...");

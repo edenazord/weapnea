@@ -9,8 +9,8 @@ import { PlusCircle, Calendar, Users, BarChart3, Edit, Trash2, Package, Crown, F
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { EventForm, eventFormSchema } from "@/components/admin/EventForm";
-import { AllenamentiForm, allenamentiFormSchema } from "@/components/admin/AllenamentiForm";
+import { EventForm } from "@/components/admin/EventForm";
+import { AllenamentiForm } from "@/components/admin/AllenamentiForm";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { createEvent, getEvents, updateEvent, deleteEvent, EventWithCategory, Event, getCategories } from "@/lib/api";
 import { getOrganizerStats } from "@/lib/payments-api";
@@ -20,6 +20,7 @@ import { toast } from "sonner";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import * as z from "zod";
+import { parseISO, isValid, startOfDay } from "date-fns";
 
 
 const Dashboard = () => {
@@ -111,7 +112,7 @@ const Dashboard = () => {
         cat.name.toLowerCase().includes('allenamenti')
     );
 
-    const handleAllenamentiFormSubmit = (values: z.infer<typeof allenamentiFormSchema>) => {
+    const handleAllenamentiFormSubmit = (values: any) => {
         console.log('🏃‍♂️ AllenamentiForm submit triggered with values:', values);
         console.log('📋 allenamentiCategory:', allenamentiCategory);
         
@@ -161,7 +162,7 @@ const Dashboard = () => {
         }
     };
 
-    const handleFormSubmit = (values: z.infer<typeof eventFormSchema>) => {
+    const handleFormSubmit = (values: any) => {
         const eventData = {
             title: values.title,
             slug: values.slug || values.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
@@ -774,6 +775,75 @@ const Dashboard = () => {
                                 <PlusCircle className="mr-2 h-4 w-4" />
                                 {isMobile ? 'Primo Evento' : 'Crea il tuo primo evento'}
                             </Button>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* Past Events Section */}
+            <Card>
+                <CardHeader>
+                    <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>Eventi Passati</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    {isLoadingEvents ? (
+                        <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
+                            <p className="text-gray-600">Caricamento eventi...</p>
+                        </div>
+                    ) : userEvents && userEvents.length > 0 ? (
+                        (() => {
+                            const todayStart = startOfDay(new Date());
+                            const past = (userEvents || []).filter(e => {
+                                if (!e.date) return false;
+                                try {
+                                    const start = parseISO(e.date);
+                                    const end = e.end_date ? parseISO(e.end_date) : undefined;
+                                    const startPast = isValid(start) && start < todayStart;
+                                    const endPast = end && isValid(end) && end < todayStart;
+                                    return Boolean(endPast || (!end && startPast));
+                                } catch { return false; }
+                            }).sort((a,b) => {
+                                const aDate = parseISO(a.end_date || a.date!);
+                                const bDate = parseISO(b.end_date || b.date!);
+                                return bDate.getTime() - aDate.getTime();
+                            });
+                            if (past.length === 0) {
+                                return (
+                                    <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
+                                        <Calendar className={`text-gray-400 mx-auto mb-4 ${isMobile ? 'h-12 w-12' : 'h-16 w-16'}`} />
+                                        <h3 className={`font-semibold text-gray-600 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>Nessun evento passato</h3>
+                                        <p className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-base'}`}>Quando gli eventi si concluderanno, appariranno qui.</p>
+                                    </div>
+                                );
+                            }
+                            return (
+                                <div className="space-y-4">
+                                    {past.map((event: EventWithCategory) => (
+                                        <div key={event.id} className="border rounded-lg p-4 flex justify-between items-start">
+                                            <div className="flex-1">
+                                                <h3 className="font-semibold text-lg">{event.title}</h3>
+                                                <p className="text-sm text-gray-600 mt-1">
+                                                    {event.categories?.name} • {formatDateRange(event.date, event.end_date)}
+                                                </p>
+                                                {event.location && (
+                                                    <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
+                                                )}
+                                            </div>
+                                            <div className="flex gap-2 ml-4">
+                                                <Button asChild variant="outline" size="sm">
+                                                    <Link to={`/events/${event.slug}`}>Dettagli</Link>
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            );
+                        })()
+                    ) : (
+                        <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
+                            <Calendar className={`text-gray-400 mx-auto mb-4 ${isMobile ? 'h-12 w-12' : 'h-16 w-16'}`} />
+                            <h3 className={`font-semibold text-gray-600 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>Nessun evento passato</h3>
+                            <p className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-base'}`}>Quando gli eventi si concluderanno, appariranno qui.</p>
                         </div>
                     )}
                 </CardContent>
