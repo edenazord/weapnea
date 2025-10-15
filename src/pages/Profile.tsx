@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 // import { supabase } from "@/integrations/supabase/client";
-import { apiSend } from "@/lib/apiClient";
+import { apiSend, apiGet } from "@/lib/apiClient";
 import { backendConfig } from "@/lib/backendConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,7 @@ import { DatePicker } from "@/components/DatePicker";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { UserCircle, FileText, Calendar, Shield, Building, Heart } from "lucide-react";
+import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -22,6 +22,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 // import ProfileMobileNav from "@/components/ProfileMobileNav";
+import { format, parseISO, isValid } from "date-fns";
+import { it as itLocale } from "date-fns/locale";
 
 type PersonalBest = {
   static_apnea?: string;
@@ -60,6 +62,40 @@ const Profile = () => {
     constant_weight: "",
   });
 
+  type EventItem = {
+    id: string;
+    title: string;
+    date?: string;
+    end_date?: string;
+    location?: string;
+    image_url?: string;
+    slug: string;
+  };
+  type EventParticipation = {
+    id: string;
+    status: string;
+    registered_at: string;
+    events: EventItem;
+  };
+  const [participations, setParticipations] = useState<EventParticipation[]>([]);
+  const [isLoadingParticipations, setIsLoadingParticipations] = useState(false);
+
+  const formatEventDate = (start?: string, end?: string) => {
+    if (start) {
+      const s = parseISO(start);
+      if (isValid(s)) {
+        if (end) {
+          const e = parseISO(end);
+          if (isValid(e) && e.getTime() !== s.getTime()) {
+            return `${format(s, 'dd/MM/yyyy', { locale: itLocale })} - ${format(e, 'dd/MM/yyyy', { locale: itLocale })}`;
+          }
+        }
+        return format(s, 'dd/MM/yyyy', { locale: itLocale });
+      }
+    }
+    return t('events.date_tbd', 'Data da definire');
+  };
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -88,6 +124,22 @@ const Profile = () => {
         });
       }
     }
+  }, [user]);
+
+  useEffect(() => {
+    const loadParticipations = async () => {
+      if (!user) return;
+      try {
+        setIsLoadingParticipations(true);
+        const rows = await apiGet('/api/me/participations');
+        setParticipations(Array.isArray(rows) ? rows : []);
+      } catch (e) {
+        // opzionale: toast di errore
+      } finally {
+        setIsLoadingParticipations(false);
+      }
+    };
+    loadParticipations();
   }, [user]);
 
   const handleInputChange = (field: string, value: string) => {
@@ -232,7 +284,6 @@ const Profile = () => {
 
           <form onSubmit={handleSubmit}>
             <TabsContent value="events">
-              {/* Eventi */}
               <Card>
                 <CardHeader>
                   <CardTitle>{t('profile.sections.my_events.title', 'I Miei Eventi')}</CardTitle>
@@ -240,19 +291,54 @@ const Profile = () => {
                     {t('profile.sections.my_events.description', 'Gestisci i tuoi eventi')}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <Button asChild variant="outline" className="h-24 flex-col">
-                      <Link to="/my-events">
-                        <Calendar className="h-8 w-8 mb-2" />
-                        <span className="font-semibold">{t('profile.sections.my_events.participated_button', 'Eventi Partecipati')}</span>
-                        <span className="text-sm text-gray-500">{t('profile.sections.my_events.participated_sub', 'Cronologia eventi')}</span>
-                      </Link>
-                    </Button>
-                  </div>
+                <CardContent>
+                  {isLoadingParticipations ? (
+                    <div className="py-8 text-center text-gray-500">{t('common.loading', 'Caricamento...')}</div>
+                  ) : participations.length > 0 ? (
+                    <div className="grid gap-4">
+                      {participations.map((p) => (
+                        <div key={p.id} className="flex items-center justify-between p-4 border rounded-lg">
+                          <div className="flex items-center gap-4">
+                            {p.events.image_url && (
+                              <img src={p.events.image_url} alt={p.events.title} className="w-16 h-16 object-cover rounded-lg" />
+                            )}
+                            <div>
+                              <h3 className="font-semibold">{p.events.title}</h3>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                <Calendar className="h-4 w-4" />
+                                {formatEventDate(p.events.date, p.events.end_date)}
+                                {p.events.location && (
+                                  <>
+                                    <MapPin className="h-4 w-4 ml-2" />
+                                    {p.events.location}
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button asChild variant="outline" size="sm">
+                              <Link to={`/events/${p.events.slug}`}>
+                                <Eye className="h-4 w-4 mr-1" />
+                                {t('common.view', 'Visualizza')}
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('profile.no_participations', 'Nessun evento iscritto')}</h3>
+                      <p className="text-gray-500 mb-6">{t('profile.no_participations_hint', 'Non hai ancora effettuato iscrizioni.')}</p>
+                      <Button asChild>
+                        <Link to="/">{t('profile.discover_events', 'Scopri gli eventi')}</Link>
+                      </Button>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-
             </TabsContent>
 
             <TabsContent value="personal">
@@ -438,44 +524,7 @@ const Profile = () => {
               </Card>
             </TabsContent>
 
-            {user.role === 'company' && (
-              <TabsContent value="company">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('profile.sections.company.title', 'Informazioni Azienda')}</CardTitle>
-                    <CardDescription>
-                      {t('profile.sections.company.description', 'Gestisci i dati della tua azienda')}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-6">
-                    {renderCompanyFields()}
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            )}
-
-            {user.role === 'company' && (
-              <TabsContent value="sponsor">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('profile.sections.sponsor.title', 'Pacchetti Sponsor')}</CardTitle>
-                    <CardDescription>
-                      {t('profile.sections.sponsor.description', 'Scopri i nostri pacchetti di sponsorizzazione')}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-gray-600">
-                      {t('profile.sections.sponsor.cta_text', 'Aumenta la visibilità della tua azienda sponsorizzando eventi di apnea.')}
-                    </p>
-                    <Button asChild className="w-full">
-                      <Link to="/sponsor-packages">
-                        {t('profile.sections.sponsor.cta_button', 'Scopri i Pacchetti Sponsor')}
-                      </Link>
-                    </Button>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            )}
+            {/* Company-specific extra content can be added here if needed */}
 
             <div className="flex justify-end mt-6">
               <Button type="submit" disabled={loading} className="w-full md:w-auto">
