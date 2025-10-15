@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Loader2, CreditCard } from "lucide-react";
@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { backendConfig } from "@/lib/backendConfig";
 import { getPublicConfig } from "@/lib/publicConfig";
+import { useQuery } from "@tanstack/react-query";
 
 interface EventPaymentButtonProps {
   eventId: string;
@@ -30,6 +31,26 @@ export const EventPaymentButton = ({
   const { user } = useAuth();
   const navigate = useNavigate();
   const [eventsFree, setEventsFree] = useState(false);
+  const { data: myParticipations } = useQuery({
+    queryKey: ["me", "participations"],
+    queryFn: async () => {
+      const token = localStorage.getItem('api_token') || import.meta.env.VITE_API_TOKEN;
+      const res = await fetch(`${backendConfig.apiBaseUrl || ''}/api/me/participations`, {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      if (!res.ok) return [] as Array<{ event_id: string }>; // silenzioso
+      const rows = await res.json().catch(() => []);
+      return Array.isArray(rows) ? rows : [];
+    },
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+  const isAlreadyRegistered = useMemo(() => {
+    return Array.isArray(myParticipations) && myParticipations.some((p: any) => p.event_id === eventId);
+  }, [myParticipations, eventId]);
 
   useEffect(() => {
     let mounted = true;
@@ -110,7 +131,7 @@ export const EventPaymentButton = ({
     <>
     <Button 
       onClick={handlePayment}
-      disabled={disabled || isLoading}
+      disabled={disabled || isLoading || isAlreadyRegistered}
       className={className}
     >
       {isLoading ? (
@@ -121,7 +142,9 @@ export const EventPaymentButton = ({
       ) : (
         <>
           <CreditCard className="mr-2 h-4 w-4" />
-          {!eventsFree && eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti Gratis'}
+          {isAlreadyRegistered
+            ? 'Già iscritto'
+            : (!eventsFree && eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti Gratis')}
         </>
       )}
     </Button>

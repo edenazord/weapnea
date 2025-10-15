@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import type { EventWithCategory } from "@/lib/api";
 import { ensureAbsoluteUrl } from "@/lib/utils";
 import { localizeCategoryName } from "@/lib/i18n-utils";
+import { getPublicConfig } from "@/lib/publicConfig";
 
 interface EventCardProps {
   event: EventWithCategory;
@@ -18,6 +19,7 @@ interface EventCardProps {
 
 const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
   const [imageError, setImageError] = useState(false);
+  const [eventsFree, setEventsFree] = useState(false);
   const { t } = useLanguage();
   
   const handleImageError = () => {
@@ -31,6 +33,12 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
 
   const imageUrl = ensureAbsoluteUrl(event.image_url);
   const showImage = imageUrl && !imageError;
+
+  useEffect(() => {
+    let mounted = true;
+    getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   const formatDiscipline = (discipline: string | null) => {
     if (!discipline) return null;
@@ -118,7 +126,7 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
               </div>
             )}
 
-            {event.cost && event.cost > 0 && (
+            {!eventsFree && event.cost && event.cost > 0 && (
               <div className="flex items-center gap-1 text-xs font-medium text-green-600">
                 <Euro className="h-4 w-4 flex-shrink-0" />
                 <span>{event.cost}</span>

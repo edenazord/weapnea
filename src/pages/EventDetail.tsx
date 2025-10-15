@@ -448,7 +448,7 @@ const EventDetail = () => {
                                     </div>
                                 </div>
                             )}
-                            {!eventsFree && (
+                                                        {!eventsFree && (
                               <div className="flex items-start">
                                   <CreditCard className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                   <div>
