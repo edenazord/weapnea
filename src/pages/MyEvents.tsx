@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Eye } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link } from "react-router-dom";
 import { apiGet } from "@/lib/apiClient";
 import { toast } from "sonner";
+import { format, parseISO, isValid } from "date-fns";
+import { it as itLocale } from "date-fns/locale";
 
 interface Event {
   id: string;
@@ -116,7 +117,7 @@ const MyEvents = () => {
                         <h3 className="font-semibold">{participation.events.title}</h3>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                           <Calendar className="h-4 w-4" />
-                          {participation.events.date}
+                          {formatEventDate(participation.events.date, participation.events.end_date)}
                           {participation.events.location && (
                             <>
                               <MapPin className="h-4 w-4 ml-2" />
@@ -127,9 +128,6 @@ const MyEvents = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant={participation.status === 'confirmed' ? 'default' : 'secondary'}>
-                        {participation.status}
-                      </Badge>
                       <Button asChild variant="outline" size="sm">
                         <Link to={`/events/${participation.events.slug}`}>
                           <Eye className="h-4 w-4 mr-1" />
@@ -160,5 +158,34 @@ const MyEvents = () => {
     </div>
   );
 };
+
+function formatEventDate(dateStr?: string, endStr?: string): string {
+  if (!dateStr) return '';
+  const d = parseISO(String(dateStr));
+  const fmt = (dt: Date) => format(dt, 'dd/MM/yyyy', { locale: itLocale });
+  if (!isValid(d)) {
+    // fallback semplice: primi 10 caratteri o stringa intera
+    const base = String(dateStr);
+    const a = base.length >= 10 ? base.slice(0, 10) : base;
+    if (endStr) {
+      const e = String(endStr);
+      const b = e.length >= 10 ? e.slice(0, 10) : e;
+      return `${a} – ${b}`;
+    }
+    return a;
+  }
+
+  if (endStr) {
+    const e = parseISO(String(endStr));
+    if (isValid(e)) {
+      // range date
+      const a = fmt(d);
+      const b = fmt(e);
+      if (a !== b) return `${a} – ${b}`;
+      return a;
+    }
+  }
+  return fmt(d);
+}
 
 export default MyEvents;
