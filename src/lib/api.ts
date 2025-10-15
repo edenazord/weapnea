@@ -158,3 +158,15 @@ export const updateCategoryOrder = async (categoryId: string, newOrderIndex: num
 export const reorderCategories = async (categoryIds: string[]): Promise<void> => {
   await apiSend(`/api/categories/reorder`, 'POST', { ids: categoryIds });
 };
+
+// App settings API (generic key-value)
+export type SettingResponse<T = unknown> = { key: string; value: T | null };
+
+export const getSetting = async <T = unknown>(key: string): Promise<SettingResponse<T>> => {
+  const res = await apiGet(`/api/settings/${encodeURIComponent(key)}`);
+  return res as SettingResponse<T>;
+};
+
+export const setSetting = async (key: string, value: unknown): Promise<void> => {
+  await apiSend(`/api/settings/${encodeURIComponent(key)}`, 'PUT', { value });
+};

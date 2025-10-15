@@ -21,6 +21,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
+import { getPublicConfig } from "@/lib/publicConfig";
 
 const Index = () => {
   console.log('Index component rendering...');
@@ -89,6 +90,13 @@ const Index = () => {
     gcTime: 120000,
     retry: 1,
     refetchOnWindowFocus: false,
+  });
+
+  // Fetch public-config to know where to place the Past Events group
+  const { data: publicCfg } = useQuery({
+    queryKey: ["public-config"],
+    queryFn: getPublicConfig,
+    staleTime: 60000,
   });
 
   const isLoading = eventsLoading || nationsLoading || categoriesLoading;
@@ -187,28 +195,46 @@ const Index = () => {
     console.log('🏷️ Categories available:', categories);
     console.log('📅 Upcoming events:', upcomingEvents);
     
-    const grouped = [];
+    const grouped: any[] = [];
     
-    // Prima aggiungi le categorie esistenti con i loro eventi
+    // Categorie esistenti con i loro eventi, ordinate per order_index
+    let categorizedGroups: any[] = [];
     if (categories) {
-      const categorizedGroups = categories
-        .map(category => {
-          const categoryEvents = upcomingEvents.filter(event => 
-            event.category_id === category.id
-          );
-          
-          console.log(`📂 Category "${category.name}" (order: ${category.order_index}):`, categoryEvents.length, 'events');
-          
-          return {
-            ...category,
-            events: categoryEvents
-          };
-        })
-        .filter(category => category.events.length > 0) // Solo categorie con eventi
-        .sort((a, b) => (a.order_index || 0) - (b.order_index || 0)); // Ordina per order_index
-      
-      grouped.push(...categorizedGroups);
+      categorizedGroups = categories
+      .map(category => {
+        const categoryEvents = upcomingEvents.filter(event => 
+          event.category_id === category.id
+        );
+        
+        console.log(`📂 Category "${category.name}" (order: ${category.order_index}):`, categoryEvents.length, 'events');
+        
+        return {
+          ...category,
+          events: categoryEvents
+        };
+      })
+      .filter(category => category.events.length > 0)
+      .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
     }
+
+    // Inserisci il gruppo "Eventi Passati" tra le categorie (prima degli "Allenamenti")
+    if (pastEvents.length > 0) {
+      const pastGroup = {
+        id: 'past-events',
+        name: t('homepage.past_events', 'Eventi Passati'),
+        order_index: typeof publicCfg?.pastEventsCategoryPosition === 'number' ? publicCfg.pastEventsCategoryPosition : 1000,
+        events: pastEvents
+      };
+      if (typeof publicCfg?.pastEventsCategoryPosition === 'number') {
+        const pos = Math.min(Math.max(publicCfg.pastEventsCategoryPosition, 0), categorizedGroups.length);
+        categorizedGroups.splice(pos, 0, pastGroup);
+      } else {
+        categorizedGroups.push(pastGroup);
+      }
+    }
+
+    // Aggiungi le categorie (incluse eventualmente "Eventi Passati")
+    grouped.push(...categorizedGroups);
     
     // Poi aggiungi gli eventi senza categoria (allenamenti)
     const uncategorizedEvents = upcomingEvents.filter(event => !event.category_id);
@@ -222,19 +248,11 @@ const Index = () => {
       });
     }
 
-    // Aggiungi gruppo "Eventi Passati" in coda, se presenti
-    if (pastEvents.length > 0) {
-      grouped.push({
-        id: 'past-events',
-        name: t('homepage.past_events', 'Eventi Passati'),
-        order_index: 1000,
-        events: pastEvents
-      });
-    }
+    // Nota: "Eventi Passati" è già stato inserito tra le categorie sopra
 
     console.log('📊 Final grouped categories:', grouped);
     return grouped;
-  }, [categories, upcomingEvents, pastEvents, t]);
+  }, [categories, upcomingEvents, pastEvents, t, publicCfg]);
 
   const handleRetry = () => {
     console.log("🔄 Retrying queries...");

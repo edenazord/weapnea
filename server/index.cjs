@@ -43,6 +43,14 @@ const pool = new Pool({
   try {
     // Ensure optional columns/tables exist to avoid runtime failures if migrations weren't applied yet
     await pool.query("ALTER TABLE IF NOT EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
+    // Simple key-value app settings store (for UI-configurable options like past-events position)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.app_settings (
+        key text PRIMARY KEY,
+        value jsonb NOT NULL,
+        updated_at timestamptz NOT NULL DEFAULT now()
+      );
+    `);
     await pool.query(`
       CREATE EXTENSION IF NOT EXISTS pgcrypto;
       CREATE TABLE IF NOT EXISTS public.user_packages (
@@ -198,6 +206,33 @@ const EVENTS_FREE_MODE = String(process.env.EVENTS_FREE_MODE || '').toLowerCase(
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'WeApnea <noreply@example.com>';
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+
+// --- App settings helpers ---
+async function getSettingValue(key, defaultValue = null) {
+  try {
+    const { rows } = await pool.query('SELECT value FROM public.app_settings WHERE key = $1', [key]);
+    if (rows[0] && rows[0].value !== undefined && rows[0].value !== null) return rows[0].value;
+    return defaultValue;
+  } catch (e) {
+    console.warn('[settings] get failed:', key, e?.message || e);
+    return defaultValue;
+  }
+}
+
+async function setSettingValue(key, value) {
+  try {
+    await pool.query(
+      `INSERT INTO public.app_settings(key, value, updated_at)
+       VALUES ($1, $2, now())
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
+      [key, value]
+    );
+    return { ok: true };
+  } catch (e) {
+    console.warn('[settings] set failed:', key, e?.message || e);
+    throw e;
+  }
+}
 
 async function sendEmail({ to, subject, html }) {
   if (!resend) {
@@ -588,9 +623,33 @@ app.get('/api/categories', async (_req, res) => {
 
 // Public config for frontend feature flags
 app.get('/api/public-config', async (_req, res) => {
-  res.json({
-    eventsFreeMode: EVENTS_FREE_MODE,
-  });
+  try {
+    const pos = await getSettingValue('past_events_category_position', null);
+    res.json({
+      eventsFreeMode: EVENTS_FREE_MODE,
+      pastEventsCategoryPosition: (pos && typeof pos.index === 'number') ? pos.index : null,
+    });
+  } catch (e) {
+    res.json({ eventsFreeMode: EVENTS_FREE_MODE, pastEventsCategoryPosition: null });
+  }
+});
+
+// Settings API (protected)
+app.get('/api/settings/:key', requireAuth, async (req, res) => {
+  const key = String(req.params.key);
+  const val = await getSettingValue(key, null);
+  res.json({ key, value: val });
+});
+
+app.put('/api/settings/:key', requireAuth, async (req, res) => {
+  const key = String(req.params.key);
+  const value = req.body?.value;
+  try {
+    await setSettingValue(key, value);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
 });
 
 // Helper to build SELECT for events including category name

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getCategories, createCategory, updateCategory, deleteCategory, reorderCategories, CategoryWithEventCount } from "@/lib/api";
+import { getCategories, createCategory, updateCategory, deleteCategory, reorderCategories, CategoryWithEventCount, getSetting, setSetting } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -19,6 +19,12 @@ export default function CategoriesManager() {
   const { data: categories, isLoading } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
+  });
+
+  // Read current saved position for the synthetic "Eventi Passati" category
+  const { data: pastPos } = useQuery({
+    queryKey: ["settings", "past-events-position"],
+    queryFn: () => getSetting<{ index: number }>("past_events_category_position"),
   });
 
   const mutationOptions = {
@@ -87,12 +93,30 @@ export default function CategoriesManager() {
   if (isLoading) return <div>Caricamento categorie...</div>;
 
   if (isReorderMode && categories) {
-    const draggableItems = categories.map(cat => ({ id: cat.id, name: cat.name }));
-    
+    // Build list with a synthetic 'past-events' item
+    const syntheticId = "__past_events__";
+    const baseItems = categories.map(cat => ({ id: cat.id, name: cat.name }));
+    const insertIndex = (pastPos?.value && typeof pastPos.value.index === 'number') ? pastPos.value.index : baseItems.length; // default at end
+    const itemsWithPast = [...baseItems];
+    itemsWithPast.splice(Math.min(Math.max(insertIndex, 0), baseItems.length), 0, {
+      id: syntheticId,
+      name: "Eventi Passati",
+    });
+
+    const handleReorder = async (itemIds: string[]) => {
+      // Extract synthetic index and persist via settings; pass only real IDs to reorder API
+      const idx = itemIds.indexOf(syntheticId);
+      const realIds = itemIds.filter(id => id !== syntheticId);
+      // Persist categories order
+      await reorderMutation.mutateAsync(realIds);
+      // Persist past-events position
+      await setSetting("past_events_category_position", { index: idx });
+    };
+
     return (
       <DraggableList
-        items={draggableItems}
-        onReorder={(itemIds) => reorderMutation.mutateAsync(itemIds)}
+        items={itemsWithPast}
+        onReorder={(itemIds) => handleReorder(itemIds)}
         onCancel={() => setIsReorderMode(false)}
       />
     );
