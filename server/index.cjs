@@ -118,6 +118,15 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 // Feature flags detected at runtime
 let HAS_PERSONAL_BEST = false;
 let HAS_USER_PACKAGES = false;
+
+async function ensurePersonalBestColumnAtRuntime() {
+  try {
+    await pool.query("ALTER TABLE IF NOT EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
+    HAS_PERSONAL_BEST = true;
+  } catch (e) {
+    console.warn('[personal_best] ensure column failed:', e?.message || e);
+  }
+}
 let HAS_BLOG_LANGUAGE = false;
 async function detectSchema() {
   try {
@@ -347,6 +356,7 @@ app.post('/api/auth/reset-password', async (req, res) => {
 app.get('/api/auth/me', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
+  if (!HAS_PERSONAL_BEST) { await ensurePersonalBestColumnAtRuntime(); }
   const pb = HAS_PERSONAL_BEST ? ', personal_best' : '';
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
@@ -377,6 +387,7 @@ app.get('/api/health', async (_, res) => {
 app.get('/api/profile', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
+  if (!HAS_PERSONAL_BEST) { await ensurePersonalBestColumnAtRuntime(); }
   const pb = HAS_PERSONAL_BEST ? ', personal_best' : '';
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
@@ -396,6 +407,7 @@ app.get('/api/profile', requireAuth, async (req, res) => {
 app.put('/api/profile', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
+    if (!HAS_PERSONAL_BEST) { await ensurePersonalBestColumnAtRuntime(); }
     const allowed = [
       'full_name','avatar_url','bio','brevetto','scadenza_brevetto','scadenza_certificato_medico',
       'assicurazione','scadenza_assicurazione','instagram_contact',
