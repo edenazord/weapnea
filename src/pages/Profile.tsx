@@ -25,12 +25,22 @@ import MobileLayout from "@/components/MobileLayout";
 import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
 
-type PersonalBest = {
-  static_apnea?: string;
-  dynamic_apnea?: string;
-  free_immersion?: string;
-  constant_weight?: string;
-};
+type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
+type BestEntry = { discipline: BestDiscipline; value: string };
+type PersonalBest = Record<string, string> | BestEntry[];
+
+const DISCIPLINES: { code: BestDiscipline; label: string; hint: string }[] = [
+  { code: 'STA', label: 'Apnea Statica', hint: 'mm:ss' },
+  { code: 'DYN', label: 'Apnea Dinamica', hint: 'metri' },
+  { code: 'DYNB', label: 'Apnea Dinamica Bipinne', hint: 'metri' },
+  { code: 'DNF', label: 'Apnea Dinamica senza pinne', hint: 'metri' },
+  { code: 'FIM', label: 'Free Immersion', hint: 'metri' },
+  { code: 'CWT', label: 'Peso Costante (monopinna)', hint: 'metri' },
+  { code: 'CWTB', label: 'Peso Costante (bipinne)', hint: 'metri' },
+  { code: 'CNF', label: 'Costante senza pinne', hint: 'metri' },
+  { code: 'VWT', label: 'Variable Weight', hint: 'metri' },
+  { code: 'NLT', label: 'No Limits', hint: 'metri' },
+];
 
 const Profile = () => {
   const { user, refreshProfile } = useAuth();
@@ -55,12 +65,7 @@ const Profile = () => {
     company_address: "",
   });
 
-  const [personalBest, setPersonalBest] = useState({
-    static_apnea: "",
-    dynamic_apnea: "",
-    free_immersion: "",
-    constant_weight: "",
-  });
+  const [bestEntries, setBestEntries] = useState<BestEntry[]>([]);
 
   type EventItem = {
     id: string;
@@ -115,13 +120,31 @@ const Profile = () => {
       });
 
       if (user.personal_best) {
-        const pb = user.personal_best as PersonalBest;
-        setPersonalBest({
-          static_apnea: pb.static_apnea || "",
-          dynamic_apnea: pb.dynamic_apnea || "",
-          free_immersion: pb.free_immersion || "",
-          constant_weight: pb.constant_weight || "",
-        });
+        const pb = user.personal_best as any;
+        let entries: BestEntry[] = [];
+        if (Array.isArray(pb)) {
+          entries = pb.filter((e: any) => e?.discipline && e?.value).map((e: any) => ({ discipline: e.discipline as BestDiscipline, value: String(e.value) }));
+        } else if (pb && typeof pb === 'object') {
+          // Map legacy keys if present
+          const mapLegacy: Record<string, BestDiscipline> = {
+            static_apnea: 'STA',
+            dynamic_apnea: 'DYN',
+            free_immersion: 'FIM',
+            constant_weight: 'CWT',
+          };
+          for (const [k, v] of Object.entries(pb)) {
+            const code = (mapLegacy[k] || k) as BestDiscipline;
+            if ((DISCIPLINES as any).some((d: any) => d.code === code) && v) {
+              entries.push({ discipline: code, value: String(v) });
+            }
+          }
+        }
+        // Ensure stable order by DISCIPLINES
+        const order: Record<string, number> = Object.fromEntries(DISCIPLINES.map((d, i) => [d.code, i]));
+        entries.sort((a, b) => (order[a.discipline] ?? 999) - (order[b.discipline] ?? 999));
+        setBestEntries(entries);
+      } else {
+        setBestEntries([]);
       }
     }
   }, [user]);
@@ -146,8 +169,18 @@ const Profile = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handlePersonalBestChange = (field: string, value: string) => {
-    setPersonalBest(prev => ({ ...prev, [field]: value }));
+  const handleBestChange = (idx: number, patch: Partial<BestEntry>) => {
+    setBestEntries(prev => prev.map((e, i) => (i === idx ? { ...e, ...patch } : e)));
+  };
+
+  const addBest = () => {
+    const used = new Set(bestEntries.map(b => b.discipline));
+    const next = DISCIPLINES.find(d => !used.has(d.code));
+    if (next) setBestEntries(prev => [...prev, { discipline: next.code, value: '' }]);
+  };
+
+  const removeBest = (idx: number) => {
+    setBestEntries(prev => prev.filter((_, i) => i !== idx));
   };
 
   const handleAvatarUpdate = (url: string) => {
@@ -173,7 +206,19 @@ const Profile = () => {
         company_name: formData.company_name || null,
         vat_number: formData.vat_number || null,
         company_address: formData.company_address || null,
-        personal_best: personalBest,
+        personal_best: (() => {
+          // Save as object { CODE: value }, keeping legacy keys for the classic four for backward compatibility
+          const obj: Record<string, string> = {};
+          for (const e of bestEntries) {
+            if (e.value && e.discipline) obj[e.discipline] = e.value;
+          }
+          // Legacy aliasing
+          if (obj['STA'] !== undefined) obj['static_apnea'] = obj['STA'];
+          if (obj['DYN'] !== undefined) obj['dynamic_apnea'] = obj['DYN'];
+          if (obj['FIM'] !== undefined) obj['free_immersion'] = obj['FIM'];
+          if (obj['CWT'] !== undefined) obj['constant_weight'] = obj['CWT'];
+          return obj;
+        })(),
       };
 
   const res = await apiSend('/api/profile', 'PUT', dataToUpdate);
@@ -478,48 +523,59 @@ const Profile = () => {
                     {t('profile.sections.personal_bests.description', 'Registra i tuoi migliori risultati in apnea')}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="static_apnea">{t('profile.sections.personal_bests.static_apnea_label', 'Apnea Statica (minuti:secondi)')}</Label>
-                      <Input
-                        id="static_apnea"
-                        value={personalBest.static_apnea}
-                        onChange={(e) => handlePersonalBestChange('static_apnea', e.target.value)}
-                        placeholder={t('profile.sections.personal_bests.static_apnea_placeholder', 'es. 4:30')}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="dynamic_apnea">{t('profile.sections.personal_bests.dynamic_apnea_label', 'Apnea Dinamica (metri)')}</Label>
-                      <Input
-                        id="dynamic_apnea"
-                        value={personalBest.dynamic_apnea}
-                        onChange={(e) => handlePersonalBestChange('dynamic_apnea', e.target.value)}
-                        placeholder={t('profile.sections.personal_bests.dynamic_apnea_placeholder', 'es. 75')}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="free_immersion">{t('profile.sections.personal_bests.free_immersion_label', 'Immersione Libera (metri)')}</Label>
-                      <Input
-                        id="free_immersion"
-                        value={personalBest.free_immersion}
-                        onChange={(e) => handlePersonalBestChange('free_immersion', e.target.value)}
-                        placeholder={t('profile.sections.personal_bests.free_immersion_placeholder', 'es. 30')}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="constant_weight">{t('profile.sections.personal_bests.constant_weight_label', 'Peso Costante (metri)')}</Label>
-                      <Input
-                        id="constant_weight"
-                        value={personalBest.constant_weight}
-                        onChange={(e) => handlePersonalBestChange('constant_weight', e.target.value)}
-                        placeholder={t('profile.sections.personal_bests.constant_weight_placeholder', 'es. 45')}
-                      />
-                    </div>
-                  </div>
+                <CardContent className="space-y-4">
+                  {bestEntries.length === 0 && (
+                    <p className="text-sm text-muted-foreground">{t('profile.sections.personal_bests.empty', 'Nessun record inserito. Aggiungi il primo!')}</p>
+                  )}
+                  {bestEntries.map((entry, idx) => {
+                    const used = new Set(bestEntries.map((b, i) => i === idx ? undefined : b.discipline));
+                    return (
+                      <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
+                        <div className="md:col-span-4">
+                          <Label>{t('profile.sections.personal_bests.discipline', 'Disciplina')}</Label>
+                          <Select value={entry.discipline} onValueChange={(v) => handleBestChange(idx, { discipline: v as BestDiscipline })}>
+                            <SelectTrigger>
+                              <SelectValue placeholder={t('profile.sections.personal_bests.discipline_placeholder', 'Seleziona disciplina')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {DISCIPLINES.map(d => (
+                                <SelectItem key={d.code} value={d.code} disabled={used.has(d.code)}>
+                                  {d.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="md:col-span-6">
+                          <Label>{t('profile.sections.personal_bests.value', 'Valore')}</Label>
+                          <Input
+                            value={entry.value}
+                            onChange={(e) => handleBestChange(idx, { value: e.target.value })}
+                            placeholder={(() => {
+                              const d = DISCIPLINES.find(d => d.code === entry.discipline);
+                              return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_placeholder', 'es. 4:30') : t('profile.sections.personal_bests.meters_placeholder', 'es. 75');
+                            })()}
+                          />
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {(() => {
+                              const d = DISCIPLINES.find(d => d.code === entry.discipline);
+                              return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_hint', 'Formato consigliato: mm:ss') : t('profile.sections.personal_bests.meters_hint', 'Formato consigliato: metri interi (es. 75)');
+                            })()}
+                          </p>
+                        </div>
+                        <div className="md:col-span-2 flex gap-2">
+                          <Button type="button" variant="destructive" className="w-full" onClick={() => removeBest(idx)}>
+                            {t('common.delete', 'Elimina')}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  {bestEntries.length < DISCIPLINES.length && (
+                    <Button type="button" variant="outline" onClick={addBest}>
+                      {t('profile.sections.personal_bests.add', 'Aggiungi record')}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
