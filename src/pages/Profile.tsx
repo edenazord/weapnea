@@ -36,7 +36,7 @@ const Profile = () => {
   const isMobile = useIsMobile();
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState("events");
   const [formData, setFormData] = useState({
     full_name: "",
     bio: "",
@@ -211,35 +211,33 @@ const Profile = () => {
         {/* Ruolo rimosso su richiesta */}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {!isMobile && (
-            <TabsList className={`grid w-full ${user.role === 'company' ? 'grid-cols-3' : 'grid-cols-1'}`}>
-              <TabsTrigger value="overview">
-                <UserCircle className="h-4 w-4 mr-2" />
-                {t('profile.tabs.overview', 'Profilo')}
-              </TabsTrigger>
-              {user.role === 'company' && (
-                <>
-                  <TabsTrigger value="company">
-                    <Building className="h-4 w-4 mr-2" />
-                    {t('profile.tabs.company', 'Azienda')}
-                  </TabsTrigger>
-                  <TabsTrigger value="sponsor">
-                    <Heart className="h-4 w-4 mr-2" />
-                    {t('profile.tabs.sponsor', 'Sponsor')}
-                  </TabsTrigger>
-                </>
-              )}
-            </TabsList>
-          )}
+          <TabsList className="w-full overflow-x-auto flex gap-2 md:grid md:grid-cols-4">
+            <TabsTrigger value="events" className="whitespace-nowrap">
+              <Calendar className="h-4 w-4 mr-2" />
+              {t('profile.tabs.events', 'Eventi')}
+            </TabsTrigger>
+            <TabsTrigger value="personal" className="whitespace-nowrap">
+              <UserCircle className="h-4 w-4 mr-2" />
+              {t('profile.tabs.personal', 'Personali')}
+            </TabsTrigger>
+            <TabsTrigger value="certs" className="whitespace-nowrap">
+              <Shield className="h-4 w-4 mr-2" />
+              {t('profile.tabs.certs', 'Certificazioni')}
+            </TabsTrigger>
+            <TabsTrigger value="bests" className="whitespace-nowrap">
+              <FileText className="h-4 w-4 mr-2" />
+              {t('profile.tabs.bests', 'Record')}
+            </TabsTrigger>
+          </TabsList>
 
           <form onSubmit={handleSubmit}>
-            <TabsContent value="overview">
+            <TabsContent value="events">
               {/* Eventi */}
               <Card>
                 <CardHeader>
                   <CardTitle>{t('profile.sections.my_events.title', 'I Miei Eventi')}</CardTitle>
                   <CardDescription>
-                    {t('profile.sections.my_events.description', 'Gestisci i tuoi eventi e la tua wishlist')}
+                    {t('profile.sections.my_events.description', 'Gestisci i tuoi eventi')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -251,19 +249,14 @@ const Profile = () => {
                         <span className="text-sm text-gray-500">{t('profile.sections.my_events.participated_sub', 'Cronologia eventi')}</span>
                       </Link>
                     </Button>
-                    <Button asChild variant="outline" className="h-24 flex-col">
-                      <Link to="/my-events?tab=wishlist">
-                        <Heart className="h-8 w-8 mb-2" />
-                        <span className="font-semibold">{t('profile.sections.my_events.wishlist_button', 'Wishlist')}</span>
-                        <span className="text-sm text-gray-500">{t('profile.sections.my_events.wishlist_sub', 'Eventi salvati')}</span>
-                      </Link>
-                    </Button>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Personali */}
-              <Card className="mt-6">
+            </TabsContent>
+
+            <TabsContent value="personal">
+              <Card>
                 <CardHeader>
                   <CardTitle>{t('profile.sections.personal_info.title', 'Informazioni Personali')}</CardTitle>
                   <CardDescription>
@@ -320,8 +313,10 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Certificazioni */}
-              <Card className="mt-6">
+            </TabsContent>
+
+            <TabsContent value="certs">
+              <Card>
                   <CardHeader>
                   <CardTitle>{t('profile.sections.certifications.title', 'Certificazioni e Assicurazioni')}</CardTitle>
                   <CardDescription>
@@ -387,8 +382,10 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Record */}
-              <Card className="mt-6">
+            </TabsContent>
+
+            <TabsContent value="bests">
+              <Card>
                 <CardHeader>
                   <CardTitle>{t('profile.sections.personal_bests.title', 'Record Personali')}</CardTitle>
                   <CardDescription>
