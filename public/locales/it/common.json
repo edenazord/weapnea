@@ -36,12 +36,12 @@
     "trainings": "Allenamenti",
     "trips": "Viaggi",
     "courses": "Corsi",
-    "workshops": "Workshop",
-    "competitions": "Competizioni",
+    "workshops": "Stage & Workshop",
+    "competitions": "Gare",
     "stages": "Stage"
   },
   "footer": {
-    "description": "La prima piattaforma internazionale dedicata all'apnea. Partecipa a eventi, viaggi e attività formative collegandoti con una community di appassionati non proprio superficiale!",
+    "description": "Partecipa, crea, condividi con la nostra community. Dai respiro ad un’apnea più accessibile, visibile e connessa.",
     "quick_links": "Link Rapidi",
     "contact": "Contatti",
     "copyright": "Tutti i diritti riservati."
@@ -59,7 +59,7 @@
   },
   "about_page": {
     "title": "Chi Siamo",
-    "subtitle": "WeApnea è la prima piattaforma internazionale dedicata all'apnea, nata dalla passione di un gruppo di apneisti che ha voluto creare uno spazio di condivisione e crescita per tutta la community.",
+"subtitle": "WeApnea è la prima piattaforma dedicata agli eventi di apnea in Italia.\nLa community si compone di atleti, istruttori, allenatori ed appassionati di apnea indoor e outdoor. Abbiamo vissuto per anni una realtà poco connessa: eventi dispersi tra forum, gruppi social e passaparola. Nessun punto di riferimento unico per trovare stage, workshop, corsi, opportunità formative, viaggi e dare la giusta visibilità e democraticità al nostro sport.\nCosì questo punto di riferimento, questo contenitore, abbiamo deciso di costruirlo noi.\nWeApnea nasce con un obiettivo preciso: rendere l’apnea più accessibile, visibile e connessa.\nCosa puoi trovare qui?\ngli eventi di apnea organizzati da istruttori certificati o scuole di apnea\nallenamenti condivisi da istruttori certificati\nCollaborazioni e vantaggi con brand e partner del settore\nProgetti speciali per far crescere la community\n\nNon siamo una federazione. Non siamo un social qualunque.\nSiamo un punto d’incontro. Un acceleratore per chi vuole vivere l’apnea come un percorso di crescita in acqua e dentro di sé.\nE questo è solo l’inizio.",
     "mission_title": "La Nostra Mission",
     "mission_desc": "Connettere apneisti di tutto il mondo attraverso una piattaforma che facilita la partecipazione a eventi, viaggi e attività formative. Vogliamo rendere l'apnea più accessibile e creare una community globale di appassionati.",
     "vision_title": "La Nostra Vision",
@@ -122,7 +122,7 @@
     "login_subtitle": "Inserisci le tue credenziali per accedere al tuo account.",
     "register_title": "Crea un account WeApnea",
     "register_subtitle": "Unisciti alla community di WeApnea.",
-    "back_home": "Torna alla Homepage",
+    "back_home": "Torna alla Home",
     "login": {
       "validation": {
         "email_invalid": "Indirizzo email non valido.",

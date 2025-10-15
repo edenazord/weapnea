@@ -1,367 +1,362 @@
 {
-	"nav": {
-		"home": "Home",
-		"events": "Events",
-		"about": "About",
-		"blog": "Blog",
-		"forum": "Forum",
-		"profile": "Profile",
-		"dashboard": "Dashboard",
-		"logout": "Log out"
-	},
-	"common": {
-		"login": "Log in",
-		"register": "Sign up",
-		"error": "Error",
-		"unexpected_error": "Unexpected error",
-		"cancel": "Cancel",
-		"delete": "Delete"
-	},
-	"homepage": {
-		"uncategorized_events": "Training",
-		"loading_events": "Loading events...",
-		"error_title": "Loading error",
-		"error_description": "An error occurred while loading events.",
-		"retry_btn": "Retry",
-		"no_events_title": "No events available",
-		"no_events_description": "There are no events published at the moment.",
-		"no_results_title": "No events found",
-		"no_results_description": "There are no upcoming events matching your filters.",
-		"sponsors": { "title": "Partners & Sponsors", "learn_more": "Learn more" }
-	},
-	"categories": {
-		"trainings": "Trainings",
-		"trips": "Trips",
-		"courses": "Courses",
-		"workshops": "Workshops",
-		"competitions": "Competitions",
-		"stages": "Stages"
-	},
-	"footer": {
-		"description": "The first international platform dedicated to freediving. Join events, trips and training activities while connecting with a community of enthusiasts who are anything but shallow!",
-		"quick_links": "Quick Links",
-		"contact": "Contacts",
-		"copyright": "All rights reserved."
-	},
-	"hero": {
-		"badge_text": "Discover the world of freediving",
-		"title_line1": "Your platform for",
-		"title_line2": "freediving",
-		"description": "Find events, courses and competitions. Connect with the community and discover new opportunities to improve your performance.",
-		"btn_explore": "Explore Events",
-		"btn_community": "Join the Community",
-		"stats_events": "Events Organized",
-		"stats_freedivers": "Active Freedivers",
-		"stats_instructors": "Certified Instructors"
-	},
-	"about_page": {
-		"title": "About Us",
-		"subtitle": "WeApnea is the first international platform dedicated to freediving, born from the passion of a group of freedivers who wanted to create a space for sharing and growth for the whole community.",
-		"mission_title": "Our Mission",
-		"mission_desc": "Connect freedivers around the world through a platform that makes it easy to join events, trips and training activities. We want to make freediving more accessible and foster a global community of enthusiasts.",
-		"vision_title": "Our Vision",
-		"vision_desc": "Become the international point of reference for freediving, where every freediver can find opportunities for growth, shared experiences and genuine connections with others in the community.",
-		"values_title": "Our Values",
-		"values": {
-			"community_title": "Community",
-			"community_desc": "We believe in the power of community and sharing experiences to grow together as freedivers.",
-			"passion_title": "Passion",
-			"passion_desc": "Freediving is our passion and we want to share it through events and unforgettable experiences.",
-			"innovation_title": "Innovation",
-			"innovation_desc": "We use technology to make freediving more accessible and to connect freedivers across the world."
-		},
-		"team_title": "Our Team",
-		"team_desc": "We are a team of passionate freedivers, developers and industry professionals working together to create the best possible experience for the freediving community."
-	},
-	"blog_page": {
-		"title": "WeApnea Blog",
-		"subtitle": "Discover the latest news from the world of freediving, techniques, tips and stories from our community",
-		"search_placeholder": "Search articles...",
-		"read_more": "Read more",
-		"author_fallback": "Author",
-		"no_results_title": "No articles found",
-		"no_results_desc": "Try changing the search terms.",
-		"no_posts_title": "No articles published",
-		"no_posts_desc": "Check back soon for new content!",
-		"back_to_blog": "Back to Blog",
-		"share_button": "Share",
-		"share_copied_title": "Link copied!",
-		"share_copied_desc": "The article link has been copied to the clipboard.",
-		"not_found_title": "Article not found",
-		"not_found_desc": "The article you are looking for does not exist or has been removed.",
-		"gallery_title": "Gallery"
-	},
-	"search": {
-		"placeholder": "Search events, courses, competitions...",
-		"active_filters": "Active filters",
-		"filter_results": "Filter your results",
-		"category": "Category",
-		"all_categories": "All Categories",
-		"discipline": "Discipline",
-		"all_disciplines": "All Disciplines",
-		"nation": "Nation",
-		"all_nations": "All Nations",
-		"date": "Date",
-		"select_month": "Select month",
-		"disciplines": { "indoor": "Indoor", "outdoor": "Outdoor", "indoor_outdoor": "Indoor & Outdoor" }
-	},
-	"test": {
-		"hello": "Hello",
-		"welcome": "Welcome",
-		"goodbye": "Goodbye"
-	},
-	"auth": {
-		"login_title": "Welcome back to WeApnea",
-		"login_subtitle": "Enter your credentials to access your account.",
-		"register_title": "Create a WeApnea account",
-		"register_subtitle": "Join the WeApnea community.",
-		"back_home": "Back to Homepage",
-		"login": {
-			"validation": {
-				"email_invalid": "Invalid email address.",
-				"password_required": "Password is required."
-			},
-			"success_title": "Logged in",
-			"success_desc": "Welcome back to WeApnea!",
-			"error_title": "Login error",
-			"error_invalid": "Invalid credentials. Please try again.",
-			"error_generic": "An error occurred. Please try again.",
-			"form": {
-				"email_label": "Email",
-				"email_placeholder": "you@example.com",
-				"password_label": "Password",
-				"submitting": "Signing in...",
-				"forgot_password": "Forgot your password?"
-			}
-		},
-		"register": {
-			"validation": {
-				"role_required": "You must select an account type.",
-				"fullname_required": "Full name is required",
-				"email_invalid": "Invalid email address.",
-				"password_min": "Password must be at least 6 characters.",
-				"company_required": "All sponsor fields are required if role is 'Sponsor'."
-			},
-			"success_title": "Registration complete!",
-			"success_desc": "Check your email to confirm your account and complete registration.",
-			"error_title": "Registration error",
-			"error_generic": "An error occurred during registration.",
-			"error_try_later": "An error occurred during registration. Please try again later.",
-			"form": {
-				"role_label": "Account type",
-				"role_user": "User",
-				"role_instructor": "Organizer",
-				"role_company": "Sponsor",
-				"fullname_label": "Full name",
-				"fullname_placeholder": "John Doe",
-				"email_label": "Email",
-				"email_placeholder": "you@example.com",
-				"password_label": "Password",
-				"company_name_label": "Sponsor name",
-				"company_name_placeholder": "WeApnea LLC",
-				"vat_number_label": "VAT number",
-				"vat_number_placeholder": "GB123456789",
-				"company_address_label": "Sponsor address",
-				"company_address_placeholder": "1 Ocean Ave, 10001 Rome",
-				"submitting": "Registering..."
-			}
-		}
-	},
-	"password_reset": {
-		"email_sent_title": "Email sent",
-		"email_sent_desc": "Check your inbox for password recovery instructions.",
-		"errors": {
-			"email_invalid": "Invalid email address.",
-			"password_min": "Password must be at least 6 characters.",
-			"confirm_required": "Please confirm your password.",
-			"password_mismatch": "Passwords do not match",
-			"send_failed": "An error occurred while sending the recovery email.",
-			"invalid_link": "Invalid recovery link. Request a new recovery link.",
-			"invalid_token": "Invalid or expired token.",
-			"update_failed": "An error occurred while updating the password."
-		},
-		"email_sent_heading": "Email Sent!",
-		"email_sent_help": "We've sent password reset instructions to your email.",
-		"email_sent_follow": "Check your inbox and follow the instructions to reset your password.",
-		"back_to_login": "Back to Login",
-		"set_new_title": "Set New Password",
-		"request_title": "Recover Password",
-		"set_new_subtitle": "Enter your new password.",
-		"request_subtitle": "Enter your email address and we'll send you instructions to reset your password.",
-		"new_password_label": "New Password",
-		"new_password_placeholder": "Enter new password",
-		"confirm_password_label": "Confirm Password",
-		"updating": "Updating...",
-		"update_button": "Update Password",
-		"email_label": "Email",
-		"email_placeholder": "you@example.com",
-		"sending": "Sending...",
-		"send_button": "Send Recovery Email",
-		"updated_title": "Password updated",
-		"updated_desc": "Your password has been updated successfully. You can now log in with the new password."
-	},
-	"not_found": {
-		"subtitle": "Oops! Page not found",
-		"back_home": "Return to Home"
-	},
-	"events": {
-		"participants": "participants",
-		"details": "Details",
-		"count_in_category": "events in this category",
-		"none_in_category": "No events available in this category"
-	},
-	"forum": {
-		"title": "Forum",
-		"subtitle": "Discuss with the freediving community",
-		"new_topic": "New Topic",
-		"login_to_create_topic": "Log in to create a topic",
-		"filter": {
-			"all": "All"
-		},
-		"anonymous": "Anonymous",
-		"last_reply": "Last reply:",
-		"no_topics": {
-			"title": "No topics found",
-			"generic": "There are no discussions in the forum yet.",
-			"in_category_prefix": "There are no discussions yet in"
-		},
-		"create_first_topic": "Create the first topic",
-		"login_to_create_first_topic": "Log in to create the first topic",
-		"back_to_forum": "Back to Forum",
-		"topic_not_found": "Topic not found",
-		"replies": "Replies",
-		"delete_topic": {
-			"title": "Delete this topic?",
-			"description": "This action cannot be undone. The topic and all its replies will be permanently deleted."
-		},
-		"delete_reply": {
-			"title": "Delete this reply?",
-			"description": "This action cannot be undone. The reply will be permanently deleted."
-		},
-		"add_reply": {
-			"title": "Add a reply",
-			"placeholder": "Write your reply...",
-			"send": "Send Reply",
-			"sending": "Sending..."
-		},
-		"locked": {
-			"title": "This topic is locked",
-			"description": "It is not possible to add new replies."
-		},
-		"login_cta": {
-			"title": "Join the conversation!",
-			"description": "You must be authenticated to reply to this topic.",
-			"button": "Log in to reply"
-		},
-		"toasts": {
-			"topic_deleted": "Topic deleted successfully!",
-			"topic_delete_error_prefix": "Error deleting topic: ",
-			"reply_deleted": "Reply deleted successfully!",
-			"reply_delete_error_prefix": "Error deleting reply: ",
-			"reply_added": "Reply added successfully!",
-			"reply_add_error_prefix": "Error adding reply: "
-		}
-	},
-	"common_ext": {
-		"error": "Error",
-		"unexpected_error": "Unexpected error"
-	},
-	"profile": {
-		"title": "My Profile",
-		"subtitle": "Manage your personal information",
-		"mobile_header_title": "My Profile",
-		"role_label": "Role",
-		"roles": {
-			"user": "User",
-			"instructor": "Organizer",
-			"company": "Sponsor"
-		},
-		"tabs": {
-			"overview": "Profile",
-			"company": "Company",
-			"sponsor": "Sponsor"
-		},
-		"sections": {
-			"my_events": {
-				"title": "My Events",
-				"description": "Manage your events and wishlist",
-				"participated_button": "Participated Events",
-				"participated_sub": "Event history",
-				"wishlist_button": "Wishlist",
-				"wishlist_sub": "Saved events"
-			},
-			"personal_info": {
-				"title": "Personal Information",
-				"description": "Update your personal and contact information",
-				"full_name_label": "Full Name",
-				"full_name_placeholder": "Your full name",
-				"instagram_label": "Instagram",
-				"instagram_placeholder": "@username",
-				"phone_label": "Phone",
-				"phone_placeholder": "+1 555 1234567",
-				"bio_label": "Bio",
-				"bio_placeholder": "Tell us something about you..."
-			},
-			"certifications": {
-				"title": "Certifications and Insurance",
-				"description": "Keep your certifications up to date. To enroll in paid events you must provide: Phone, Insurance and its expiry dates, a valid medical certificate.",
-				"brevetto_label": "Certification",
-				"brevetto_placeholder": "Select certification",
-				"brevetto_options": {
-					"none": "No certification",
-					"open_water": "Open Water",
-					"advanced": "Advanced",
-					"rescue": "Rescue",
-					"master": "Master",
-					"instructor": "Instructor"
-				},
-				"brevetto_expiry_label": "Certification Expiry",
-				"insurance_label": "Insurance",
-				"insurance_placeholder": "Insurance name",
-				"insurance_expiry_label": "Insurance Expiry",
-				"medical_expiry_label": "Medical Certificate Expiry"
-			},
-			"personal_bests": {
-				"title": "Personal Bests",
-				"description": "Record your best freediving results",
-				"static_apnea_label": "Static Apnea (minutes:seconds)",
-				"static_apnea_placeholder": "e.g. 4:30",
-				"dynamic_apnea_label": "Dynamic Apnea (meters)",
-				"dynamic_apnea_placeholder": "e.g. 75",
-				"free_immersion_label": "Free Immersion (meters)",
-				"free_immersion_placeholder": "e.g. 30",
-				"constant_weight_label": "Constant Weight (meters)",
-				"constant_weight_placeholder": "e.g. 45"
-			},
-			"company": {
-				"title": "Company Information",
-				"description": "Manage your company data",
-				"fields": {
-					"company_name_label": "Company Name",
-					"company_name_placeholder": "Your company name",
-					"vat_number_label": "VAT number",
-					"vat_number_placeholder": "GB123456789",
-					"company_address_label": "Company Address",
-					"company_address_placeholder": "Full company address"
-				}
-			},
-			"sponsor": {
-				"title": "Sponsor Packages",
-				"description": "Discover our sponsorship packages",
-				"cta_text": "Increase your company's visibility by sponsoring freediving events.",
-				"cta_button": "Discover Sponsor Packages"
-			}
-		},
-		"buttons": {
-			"save": "Save Changes",
-			"saving": "Saving..."
-		},
-		"toasts": {
-			"update_success_title": "Success",
-			"update_success_desc": "Profile updated successfully!",
-			"update_error_title": "Error",
-			"update_error_desc": "An error occurred while updating the profile."
-		},
-		"login_required": "You must be authenticated to view the profile."
-	}
+  "nav": {
+    "home": "Home",
+    "events": "Events",
+    "about": "About",
+    "blog": "Blog",
+    "forum": "Forum",
+  "profile": "Profile",
+  "dashboard": "Dashboard",
+  "logout": "Log out"
+  },
+  "common": {
+  "login": "Log in",
+  "register": "Sign up",
+  "error": "Error",
+  "unexpected_error": "Unexpected error",
+  "cancel": "Cancel",
+  "delete": "Delete"
+  },
+  "homepage": {
+    "uncategorized_events": "Trainings",
+    "loading_events": "Loading events...",
+    "error_title": "Loading error",
+    "error_description": "An error occurred while loading events.",
+    "retry_btn": "Retry",
+    "no_events_title": "No events available",
+    "no_events_description": "There are no events published at the moment.",
+    "no_results_title": "No events found",
+  "no_results_description": "There are no upcoming events matching your filters.",
+  "sponsors": {"title": "Partners & Sponsors", "learn_more": "Learn more"}
+  },
+  "categories": {
+    "trainings": "Trainings",
+    "trips": "Trips",
+    "courses": "Courses",
+    "workshops": "Stage & Workshops",
+    "competitions": "Competitions",
+    "stages": "Stages"
+  },
+  "footer": {
+    "description": "Join, create, and share with our community. Give life to a freer, more accessible, visible, and connected apnea!",
+    "quick_links": "Pages",
+    "contact": "Contacts",
+    "copyright": "All rights reserved."
+  },
+  "hero": {
+    "badge_text": "Discover the world of freediving",
+    "title_line1": "Your platform for",
+    "title_line2": "freediving",
+    "description": "Find events, courses and competitions. Connect with the community and discover new opportunities to improve your performance.",
+    "btn_explore": "Explore Events",
+    "btn_community": "Join the Community",
+    "stats_events": "Events Organized",
+    "stats_freedivers": "Active Freedivers",
+    "stats_instructors": "Certified Instructors"
+  },
+  "about_page": {
+    "title": "About Us",
+    "subtitle": "WeApnea is the first platform dedicated to freediving events in Italy.\nThe community is made up of athletes, instructors, coaches, and enthusiasts of both indoor and outdoor freediving. For years, we lived in a fragmented reality — with events scattered across forums, social groups, and word of mouth. There was no single reference point to find stages, workshops, courses, training opportunities, trips, and to give our sport the visibility and inclusiveness it deserves.\nSo we decided to build that reference point ourselves.\n\nWeApnea was born with a clear goal: to make freediving more accessible, visible, and connected.\n\nWhat can you find here?\nFreediving events organized by certified instructors or schools\nTraining sessions shared by certified instructors\nCollaborations and benefits with brands and partners in the industry\nSpecial projects to help the community grow\n\nWe are not a federation. We are not just another social platform.\nWe are a meeting point — an accelerator for those who want to experience freediving as a journey of growth, both in the water and within themselves.\nAnd this is only the beginning",
+    "mission_title": "Our Mission",
+    "mission_desc": "Connect freedivers around the world through a platform that makes it easy to join events, trips and training activities. We want to make freediving more accessible and foster a global community of enthusiasts.",
+    "vision_title": "Our Vision",
+    "vision_desc": "Become the international point of reference for freediving, where every freediver can find opportunities for growth, shared experiences and genuine connections with others in the community.",
+    "values_title": "Our Values",
+    "values": {
+      "community_title": "Community",
+      "community_desc": "We believe in the power of community and sharing experiences to grow together as freedivers.",
+      "passion_title": "Passion",
+      "passion_desc": "Freediving is our passion and we want to share it through events and unforgettable experiences.",
+      "innovation_title": "Innovation",
+      "innovation_desc": "We use technology to make freediving more accessible and to connect freedivers across the world."
+    },
+    "team_title": "Our Team",
+    "team_desc": "We are a team of passionate freedivers, developers and industry professionals working together to create the best possible experience for the freediving community."
+  },
+  "blog_page": {
+    "title": "WeApnea Blog",
+    "subtitle": "Discover the latest news from the world of freediving, techniques, tips and stories from our community",
+    "search_placeholder": "Search articles...",
+    "read_more": "Read more",
+    "author_fallback": "Author",
+    "no_results_title": "No articles found",
+    "no_results_desc": "Try changing the search terms.",
+    "no_posts_title": "No articles published",
+    "no_posts_desc": "Check back soon for new content!",
+    "back_to_blog": "Back to Blog",
+    "share_button": "Share",
+    "share_copied_title": "Link copied!",
+    "share_copied_desc": "The article link has been copied to the clipboard.",
+    "not_found_title": "Article not found",
+    "not_found_desc": "The article you are looking for does not exist or has been removed.",
+    "gallery_title": "Gallery"
+  },
+  "search": {
+    "placeholder": "Search events, courses, competitions...",
+    "active_filters": "Active filters",
+    "filter_results": "Filter your results",
+    "category": "Category",
+    "all_categories": "All Categories",
+    "discipline": "Discipline",
+    "all_disciplines": "All Disciplines",
+    "nation": "Country",
+    "all_nations": "All Countries",
+    "date": "Date",
+  "select_month": "Select month",
+  "disciplines": {"indoor": "Indoor", "outdoor": "Outdoor", "indoor_outdoor": "Indoor & Outdoor"}
+  },
+  "test": {
+    "hello": "Hello",
+    "welcome": "Welcome",
+    "goodbye": "Goodbye"
+  },
+  "auth": {
+    "login_title": "Welcome back to WeApnea",
+    "login_subtitle": "Enter your credentials to access your account.",
+    "register_title": "Create a WeApnea account",
+    "register_subtitle": "Join the WeApnea community.",
+    "back_home": "Back to Homepage",
+    "login": {
+      "validation": {
+        "email_invalid": "Invalid email address.",
+        "password_required": "Password is required."
+      },
+      "success_title": "Logged in",
+      "success_desc": "Welcome back to WeApnea!",
+      "error_title": "Login error",
+      "error_invalid": "Invalid credentials. Please try again.",
+      "error_generic": "An error occurred. Please try again.",
+      "form": {
+        "email_label": "Email",
+        "email_placeholder": "you@example.com",
+        "password_label": "Password",
+        "submitting": "Signing in...",
+        "forgot_password": "Forgot your password?"
+      }
+    },
+    "register": {
+      "validation": {
+        "role_required": "You must select an account type.",
+        "fullname_required": "Full name is required",
+        "email_invalid": "Invalid email address.",
+        "password_min": "Password must be at least 6 characters.",
+        "company_required": "All sponsor fields are required if role is 'Sponsor'."
+      },
+      "success_title": "Registration complete!",
+      "success_desc": "Check your email to confirm your account and complete registration.",
+      "error_title": "Registration error",
+      "error_generic": "An error occurred during registration.",
+      "error_try_later": "An error occurred during registration. Please try again later.",
+      "form": {
+        "role_label": "Account type",
+        "role_user": "User",
+        "role_instructor": "Organizer",
+        "role_company": "Sponsor",
+        "fullname_label": "Full name",
+        "fullname_placeholder": "John Doe",
+        "email_label": "Email",
+        "email_placeholder": "you@example.com",
+        "password_label": "Password",
+        "company_name_label": "Sponsor name",
+        "company_name_placeholder": "WeApnea LLC",
+        "vat_number_label": "VAT number",
+        "vat_number_placeholder": "GB123456789",
+        "company_address_label": "Sponsor address",
+        "company_address_placeholder": "1 Ocean Ave, 10001 Rome",
+        "submitting": "Registering..."
+      }
+    }
+  },
+  "password_reset": {
+    "email_sent_title": "Email sent",
+    "email_sent_desc": "Check your inbox for password recovery instructions.",
+    "errors": {
+      "email_invalid": "Invalid email address.",
+      "password_min": "Password must be at least 6 characters.",
+      "confirm_required": "Please confirm your password.",
+      "password_mismatch": "Passwords do not match",
+      "send_failed": "An error occurred while sending the recovery email.",
+      "invalid_link": "Invalid recovery link. Request a new recovery link.",
+      "invalid_token": "Invalid or expired token.",
+      "update_failed": "An error occurred while updating the password."
+    },
+    "email_sent_heading": "Email Sent!",
+    "email_sent_help": "We've sent password reset instructions to your email.",
+    "email_sent_follow": "Check your inbox and follow the instructions to reset your password.",
+    "back_to_login": "Back to Login",
+    "set_new_title": "Set New Password",
+    "request_title": "Recover Password",
+    "set_new_subtitle": "Enter your new password.",
+    "request_subtitle": "Enter your email address and we'll send you instructions to reset your password.",
+    "new_password_label": "New Password",
+    "new_password_placeholder": "Enter new password",
+    "confirm_password_label": "Confirm Password",
+    "updating": "Updating...",
+    "update_button": "Update Password",
+    "email_label": "Email",
+    "email_placeholder": "you@example.com",
+    "sending": "Sending...",
+    "send_button": "Send Recovery Email",
+    "updated_title": "Password updated",
+    "updated_desc": "Your password has been updated successfully. You can now log in with the new password."
+  },
+  "not_found": {
+    "subtitle": "Oops! Page not found",
+    "back_home": "Return to Home"
+  },
+  "events": {"participants": "participants", "details": "Details", "count_in_category": "events in this category", "none_in_category": "No events available in this category"},
+  "forum": {
+    "title": "Forum",
+    "subtitle": "Discuss with the freediving community",
+    "new_topic": "New Topic",
+    "login_to_create_topic": "Log in to create a topic",
+    "filter": {
+      "all": "All"
+    },
+    "anonymous": "Anonymous",
+    "last_reply": "Last reply:",
+    "no_topics": {
+      "title": "No topics found",
+      "generic": "There are no discussions in the forum yet.",
+      "in_category_prefix": "There are no discussions yet in"
+    },
+    "create_first_topic": "Create the first topic",
+    "login_to_create_first_topic": "Log in to create the first topic",
+    "back_to_forum": "Back to Forum",
+    "topic_not_found": "Topic not found",
+    "replies": "Replies",
+    "delete_topic": {
+      "title": "Delete this topic?",
+      "description": "This action cannot be undone. The topic and all its replies will be permanently deleted."
+    },
+    "delete_reply": {
+      "title": "Delete this reply?",
+      "description": "This action cannot be undone. The reply will be permanently deleted."
+    },
+    "add_reply": {
+      "title": "Add a reply",
+      "placeholder": "Write your reply...",
+      "send": "Send Reply",
+      "sending": "Sending..."
+    },
+    "locked": {
+      "title": "This topic is locked",
+      "description": "It is not possible to add new replies."
+    },
+    "login_cta": {
+      "title": "Join the conversation!",
+      "description": "You must be authenticated to reply to this topic.",
+      "button": "Log in to reply"
+    },
+    "toasts": {
+      "topic_deleted": "Topic deleted successfully!",
+      "topic_delete_error_prefix": "Error deleting topic: ",
+      "reply_deleted": "Reply deleted successfully!",
+      "reply_delete_error_prefix": "Error deleting reply: ",
+      "reply_added": "Reply added successfully!",
+      "reply_add_error_prefix": "Error adding reply: "
+    }
+  },
+  "common_ext": {
+    "error": "Error",
+    "unexpected_error": "Unexpected error"
+  },
+  "profile": {
+    "title": "My Profile",
+    "subtitle": "Manage your personal information",
+    "mobile_header_title": "My Profile",
+    "role_label": "Role",
+    "roles": {
+      "user": "User",
+      "instructor": "Organizer",
+      "company": "Sponsor"
+    },
+    "tabs": {
+      "overview": "Profile",
+      "company": "Company",
+      "sponsor": "Sponsor"
+    },
+    "sections": {
+      "my_events": {
+        "title": "My Events",
+        "description": "Manage your events and wishlist",
+        "participated_button": "Participated Events",
+        "participated_sub": "Event history",
+        "wishlist_button": "Wishlist",
+        "wishlist_sub": "Saved events"
+      },
+      "personal_info": {
+        "title": "Personal Information",
+        "description": "Update your personal and contact information",
+        "full_name_label": "Full Name",
+        "full_name_placeholder": "Your full name",
+        "instagram_label": "Instagram",
+        "instagram_placeholder": "@username",
+        "phone_label": "Phone",
+        "phone_placeholder": "+1 555 1234567",
+        "bio_label": "Bio",
+        "bio_placeholder": "Tell us something about you..."
+      },
+      "certifications": {
+        "title": "Certifications and Insurance",
+        "description": "Keep your certifications up to date. To enroll in paid events you must provide: Phone, Insurance and its expiry dates, a valid medical certificate.",
+        "brevetto_label": "Certification",
+        "brevetto_placeholder": "Select certification",
+        "brevetto_options": {
+          "none": "No certification",
+          "open_water": "Open Water",
+          "advanced": "Advanced",
+          "rescue": "Rescue",
+          "master": "Master",
+          "instructor": "Instructor"
+        },
+        "brevetto_expiry_label": "Certification Expiry",
+        "insurance_label": "Insurance",
+        "insurance_placeholder": "Insurance name",
+        "insurance_expiry_label": "Insurance Expiry",
+        "medical_expiry_label": "Medical Certificate Expiry"
+      },
+      "personal_bests": {
+        "title": "Personal Bests",
+        "description": "Record your best freediving results",
+        "static_apnea_label": "Static Apnea (minutes:seconds)",
+        "static_apnea_placeholder": "e.g. 4:30",
+        "dynamic_apnea_label": "Dynamic Apnea (meters)",
+        "dynamic_apnea_placeholder": "e.g. 75",
+        "free_immersion_label": "Free Immersion (meters)",
+        "free_immersion_placeholder": "e.g. 30",
+        "constant_weight_label": "Constant Weight (meters)",
+        "constant_weight_placeholder": "e.g. 45"
+      },
+      "company": {
+        "title": "Company Information",
+        "description": "Manage your company data",
+        "fields": {
+          "company_name_label": "Company Name",
+          "company_name_placeholder": "Your company name",
+          "vat_number_label": "VAT number",
+          "vat_number_placeholder": "GB123456789",
+          "company_address_label": "Company Address",
+          "company_address_placeholder": "Full company address"
+        }
+      },
+      "sponsor": {
+        "title": "Sponsor Packages",
+        "description": "Discover our sponsorship packages",
+        "cta_text": "Increase your company's visibility by sponsoring freediving events.",
+        "cta_button": "Discover Sponsor Packages"
+      }
+    },
+    "buttons": {
+      "save": "Save Changes",
+      "saving": "Saving..."
+    },
+    "toasts": {
+      "update_success_title": "Success",
+      "update_success_desc": "Profile updated successfully!",
+      "update_error_title": "Error",
+      "update_error_desc": "An error occurred while updating the profile."
+    },
+    "login_required": "You must be authenticated to view the profile."
+  }
 }
