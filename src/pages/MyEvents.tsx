@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Eye } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
@@ -96,12 +96,6 @@ const MyEvents = () => {
         </div>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Eventi a cui sei iscritto</CardTitle>
-            <CardDescription>
-              Cronologia delle tue iscrizioni agli eventi
-            </CardDescription>
-          </CardHeader>
           <CardContent>
             {participations.length > 0 ? (
               <div className="grid gap-4">
