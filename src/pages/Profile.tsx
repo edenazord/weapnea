@@ -14,6 +14,7 @@ import { DatePicker } from "@/components/DatePicker";
 import { AvatarUpload } from "@/components/AvatarUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link } from "react-router-dom";
@@ -181,6 +182,14 @@ const Profile = () => {
 
   const removeBest = (idx: number) => {
     setBestEntries(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const isValidBest = (e: BestEntry) => {
+    if (!e?.value) return true; // empty allowed
+    if (e.discipline === 'STA') {
+      return /^\d{1,2}:\d{2}$/.test(e.value.trim());
+    }
+    return /^\d{1,3}(?:\.\d+)?$/.test(e.value.trim());
   };
 
   const handleAvatarUpdate = (url: string) => {
@@ -524,58 +533,74 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  {bestEntries.length === 0 && (
-                    <p className="text-sm text-muted-foreground">{t('profile.sections.personal_bests.empty', 'Nessun record inserito. Aggiungi il primo!')}</p>
-                  )}
-                  {bestEntries.map((entry, idx) => {
-                    const used = new Set(bestEntries.map((b, i) => i === idx ? undefined : b.discipline));
-                    return (
-                      <div key={idx} className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-                        <div className="md:col-span-4">
-                          <Label>{t('profile.sections.personal_bests.discipline', 'Disciplina')}</Label>
-                          <Select value={entry.discipline} onValueChange={(v) => handleBestChange(idx, { discipline: v as BestDiscipline })}>
-                            <SelectTrigger>
-                              <SelectValue placeholder={t('profile.sections.personal_bests.discipline_placeholder', 'Seleziona disciplina')} />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {DISCIPLINES.map(d => (
-                                <SelectItem key={d.code} value={d.code} disabled={used.has(d.code)}>
-                                  {d.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="md:col-span-6">
-                          <Label>{t('profile.sections.personal_bests.value', 'Valore')}</Label>
-                          <Input
-                            value={entry.value}
-                            onChange={(e) => handleBestChange(idx, { value: e.target.value })}
-                            placeholder={(() => {
-                              const d = DISCIPLINES.find(d => d.code === entry.discipline);
-                              return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_placeholder', 'es. 4:30') : t('profile.sections.personal_bests.meters_placeholder', 'es. 75');
-                            })()}
-                          />
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {(() => {
-                              const d = DISCIPLINES.find(d => d.code === entry.discipline);
-                              return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_hint', 'Formato consigliato: mm:ss') : t('profile.sections.personal_bests.meters_hint', 'Formato consigliato: metri interi (es. 75)');
-                            })()}
-                          </p>
-                        </div>
-                        <div className="md:col-span-2 flex gap-2">
-                          <Button type="button" variant="destructive" className="w-full" onClick={() => removeBest(idx)}>
-                            {t('common.delete', 'Elimina')}
-                          </Button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                  {bestEntries.length < DISCIPLINES.length && (
-                    <Button type="button" variant="outline" onClick={addBest}>
-                      {t('profile.sections.personal_bests.add', 'Aggiungi record')}
-                    </Button>
-                  )}
+                  <div className="flex justify-between items-center">
+                    <p className="text-sm text-muted-foreground">
+                      {t('profile.sections.personal_bests.helper', 'Inserisci i tuoi migliori risultati: tempo in mm:ss per STA, metri per le altre discipline.')}
+                    </p>
+                    {bestEntries.length < DISCIPLINES.length && (
+                      <Button type="button" variant="outline" onClick={addBest}>
+                        {t('profile.sections.personal_bests.add', 'Aggiungi record')}
+                      </Button>
+                    )}
+                  </div>
+                  <Table>
+                    {bestEntries.length === 0 && (
+                      <TableCaption>{t('profile.sections.personal_bests.empty', 'Nessun record inserito. Aggiungi il primo!')}</TableCaption>
+                    )}
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-[40%]">{t('profile.sections.personal_bests.discipline', 'Disciplina')}</TableHead>
+                        <TableHead>{t('profile.sections.personal_bests.value', 'Valore')}</TableHead>
+                        <TableHead className="w-[120px] text-right">{t('common.actions', 'Azioni')}</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {bestEntries.map((entry, idx) => {
+                        const used = new Set(bestEntries.map((b, i) => i === idx ? undefined : b.discipline));
+                        const invalid = !isValidBest(entry);
+                        const hint = (() => {
+                          const d = DISCIPLINES.find(d => d.code === entry.discipline);
+                          return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_hint', 'Formato consigliato: mm:ss') : t('profile.sections.personal_bests.meters_hint', 'Formato consigliato: metri interi (es. 75)');
+                        })();
+                        const placeholder = (() => {
+                          const d = DISCIPLINES.find(d => d.code === entry.discipline);
+                          return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_placeholder', 'es. 4:30') : t('profile.sections.personal_bests.meters_placeholder', 'es. 75');
+                        })();
+                        return (
+                          <TableRow key={idx}>
+                            <TableCell>
+                              <Select value={entry.discipline} onValueChange={(v) => handleBestChange(idx, { discipline: v as BestDiscipline })}>
+                                <SelectTrigger>
+                                  <SelectValue placeholder={t('profile.sections.personal_bests.discipline_placeholder', 'Seleziona disciplina')} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {DISCIPLINES.map(d => (
+                                    <SelectItem key={d.code} value={d.code} disabled={used.has(d.code)}>
+                                      {d.label}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                            <TableCell>
+                              <Input
+                                value={entry.value}
+                                onChange={(e) => handleBestChange(idx, { value: e.target.value })}
+                                placeholder={placeholder}
+                                className={invalid && entry.value ? 'border-destructive' : ''}
+                              />
+                              <p className={`text-xs mt-1 ${invalid && entry.value ? 'text-destructive' : 'text-muted-foreground'}`}>{hint}</p>
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button type="button" variant="destructive" onClick={() => removeBest(idx)}>
+                                {t('common.delete', 'Elimina')}
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
                 </CardContent>
               </Card>
             </TabsContent>

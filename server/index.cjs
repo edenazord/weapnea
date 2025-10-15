@@ -424,7 +424,10 @@ app.put('/api/profile', requireAuth, async (req, res) => {
       }
       return p[k];
     });
-    const sets = fields.map((k,i)=> `${k} = $${i+1}`).join(', ');
+    const sets = fields.map((k,i)=> {
+      if (k === 'personal_best') return `${k} = $${i+1}::jsonb`;
+      return `${k} = $${i+1}`;
+    }).join(', ');
     const sql = `UPDATE profiles SET ${sets}, updated_at = now() WHERE id = $${fields.length+1} RETURNING *`;
     const { rows } = await pool.query(sql, [...values, req.user.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
