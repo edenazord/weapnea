@@ -9,6 +9,7 @@ import { apiGet } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
+import Layout from "@/components/Layout";
 
 interface Event {
   id: string;
@@ -78,6 +79,7 @@ const MyEvents = () => {
   }
 
   return (
+    <Layout>
     <div className="container mx-auto py-8 px-4">
       <div className="max-w-6xl mx-auto">
         {/* Back Button */}
@@ -156,6 +158,7 @@ const MyEvents = () => {
         </Card>
       </div>
     </div>
+    </Layout>
   );
 };
 
