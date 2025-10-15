@@ -16,6 +16,8 @@ import { ImageUpload } from "./ImageUpload";
 import { LocationPicker } from "./LocationPicker";
 import { MultipleImageUpload } from "./MultipleImageUpload";
 import { DISCIPLINE_OPTIONS, LEVEL_OPTIONS } from './event-constants';
+import { useEffect, useState } from 'react';
+import { getPublicConfig } from '@/lib/publicConfig';
 
 // Opzioni per il livello
 // Opzioni spostate in event-constants.ts
@@ -54,6 +56,13 @@ type EventFormProps = {
 export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps) {
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
+  const [eventsFree, setEventsFree] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   const { data: categories, isLoading: isLoadingCategories } = useQuery({
     queryKey: ["categories"],
@@ -98,6 +107,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
     // Transform empty strings to null for new fields
     const transformedValues = {
       ...values,
+      // If free mode, enforce null cost server-side
+      cost: eventsFree ? null : values.cost,
       level: values.level && values.level.trim() !== '' ? values.level : null,
       activity_description: values.activity_description && values.activity_description.trim() !== '' ? values.activity_description : null,
       language: values.language && values.language.trim() !== '' ? values.language : null,
@@ -464,17 +475,19 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="cost"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Costo (€)</FormLabel>
-              <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {!eventsFree && (
+          <FormField
+            control={form.control}
+            name="cost"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Costo (€)</FormLabel>
+                <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Immagini</h3>

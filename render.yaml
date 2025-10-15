@@ -70,3 +70,6 @@ services:
         sync: false
       - key: API_PUBLIC_BASE_URL
         sync: false
+      # Modalità eventi gratuiti (true/false): se true, nasconde il costo e registra gratis
+      - key: EVENTS_FREE_MODE
+        value: "true"

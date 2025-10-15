@@ -184,6 +184,8 @@ async function ensureBlogLanguageColumn() {
 }
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
+// Global toggle: make all events free (bypass checkout)
+const EVENTS_FREE_MODE = String(process.env.EVENTS_FREE_MODE || '').toLowerCase() === 'true';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'WeApnea <noreply@example.com>';
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
@@ -565,6 +567,13 @@ app.get('/api/categories', async (_req, res) => {
   }
 });
 
+// Public config for frontend feature flags
+app.get('/api/public-config', async (_req, res) => {
+  res.json({
+    eventsFreeMode: EVENTS_FREE_MODE,
+  });
+});
+
 // Helper to build SELECT for events including category name
 const eventsSelect = `
   SELECT 
@@ -611,7 +620,9 @@ app.get('/api/events', async (req, res) => {
   const sql = `${eventsSelect} ${where} ${orderBy}`;
   try {
     const { rows } = await pool.query(sql, params);
-    res.json(rows);
+    // If free mode is enabled, surface cost as 0 to the client
+    const out = EVENTS_FREE_MODE ? rows.map(r => ({ ...r, cost: 0 })) : rows;
+    res.json(out);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
@@ -622,7 +633,9 @@ app.get('/api/events/:id', async (req, res) => {
   try {
     const { rows } = await pool.query(sql, [req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
+    const row = rows[0];
+    if (EVENTS_FREE_MODE) row.cost = 0;
+    res.json(row);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
@@ -633,7 +646,9 @@ app.get('/api/events/slug/:slug', async (req, res) => {
   try {
     const { rows } = await pool.query(sql, [req.params.slug]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
+    const row = rows[0];
+    if (EVENTS_FREE_MODE) row.cost = 0;
+    res.json(row);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
@@ -957,6 +972,10 @@ app.post('/api/events', requireAuth, async (req, res) => {
 // Payments: create checkout session for event
 app.post('/api/payments/create-checkout-session', requireAuth, async (req, res) => {
   try {
+    // If free mode is ON, prevent starting a paid checkout
+    if (EVENTS_FREE_MODE) {
+      return res.status(400).json({ error: 'free_mode_enabled' });
+    }
     // Enforce user profile requirements before starting payment
     if (!req.user?.id) {
       return res.status(401).json({ error: 'Login required' });
@@ -1698,6 +1717,43 @@ app.get('/api/payments/organizer-stats', requireAuth, async (req, res) => {
       totalRevenue,
       paymentsByEvent: Array.from(byEvent.values())
     });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Register to an event for free (used when EVENTS_FREE_MODE=true or event cost is 0)
+app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
+  const eventId = req.params.id;
+  try {
+    // Ensure event exists
+    const { rows: evRows } = await pool.query('SELECT id, title, cost FROM events WHERE id = $1 LIMIT 1', [eventId]);
+    const ev = evRows[0];
+    if (!ev) return res.status(404).json({ error: 'Event not found' });
+
+    // If global free mode is off, allow only when event cost is null/0
+    if (!EVENTS_FREE_MODE) {
+      const cost = Number(ev.cost || 0);
+      if (cost > 0) return res.status(400).json({ error: 'Event is not free' });
+    }
+
+    // Avoid duplicate registrations
+    const { rows: existing } = await pool.query(
+      `SELECT id FROM event_payments WHERE event_id = $1 AND user_id = $2 AND status = 'paid' LIMIT 1`,
+      [eventId, req.user.id]
+    );
+    if (existing[0]) {
+      return res.json({ ok: true, alreadyRegistered: true });
+    }
+
+    // Insert a zero-amount paid record to reuse existing participants logic
+    const { rows } = await pool.query(
+      `INSERT INTO event_payments(event_id, user_id, amount, status, paid_at)
+       VALUES ($1, $2, 0, 'paid', now())
+       RETURNING id`,
+      [eventId, req.user.id]
+    );
+    res.status(201).json({ ok: true, id: rows[0]?.id || null });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }

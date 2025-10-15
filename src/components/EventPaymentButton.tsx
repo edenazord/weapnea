@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Loader2, CreditCard } from "lucide-react";
@@ -6,6 +6,8 @@ import { startCheckout } from "@/lib/payments-api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { backendConfig } from "@/lib/backendConfig";
+import { getPublicConfig } from "@/lib/publicConfig";
 
 interface EventPaymentButtonProps {
   eventId: string;
@@ -27,6 +29,13 @@ export const EventPaymentButton = ({
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [eventsFree, setEventsFree] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => {});
+    return () => { mounted = false; };
+  }, []);
 
   const handlePayment = async () => {
   if (!user) {
@@ -37,7 +46,7 @@ export const EventPaymentButton = ({
 
     setIsLoading(true);
     try {
-      if (eventCost > 0) {
+  if (!eventsFree && eventCost > 0) {
         // Gating lato UI: campi profilo obbligatori per eventi a pagamento
         const missing: string[] = [];
         const today = new Date();
@@ -64,9 +73,30 @@ export const EventPaymentButton = ({
         window.location.href = url;
         toast.success("Reindirizzamento al pagamento...");
       } else {
-        // Evento gratuito - iscrizione diretta
-        // TODO: Implementare iscrizione diretta per eventi gratuiti
-        toast.success("Iscrizione completata!");
+        // Evento gratuito - iscrizione diretta tramite API
+        const token = localStorage.getItem('api_token') || import.meta.env.VITE_API_TOKEN;
+        const res = await fetch(`${backendConfig.apiBaseUrl || ''}/api/events/${encodeURIComponent(eventId)}/register-free`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          if (data?.error === 'Event is not free') {
+            toast.error('Questo evento non è gratuito.');
+          } else if (data?.error === 'Event not found') {
+            toast.error('Evento non trovato.');
+          } else if (data?.error === 'Login required') {
+            navigate('/auth');
+            return;
+          } else {
+            toast.error('Impossibile completare l\'iscrizione.');
+          }
+          return;
+        }
+        toast.success('Iscrizione completata!');
       }
     } catch (error) {
       console.error("Error creating checkout:", error);
@@ -91,7 +121,7 @@ export const EventPaymentButton = ({
       ) : (
         <>
           <CreditCard className="mr-2 h-4 w-4" />
-          {eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti Gratis'}
+          {!eventsFree && eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti Gratis'}
         </>
       )}
     </Button>

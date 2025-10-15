@@ -17,6 +17,7 @@ import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import { GoogleMap } from "@/components/GoogleMap";
 import { EventPaymentButton } from "@/components/EventPaymentButton";
+import { getPublicConfig } from "@/lib/publicConfig";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiGet } from "@/lib/apiClient";
 import { ensureAbsoluteUrl } from "@/lib/utils";
@@ -75,6 +76,13 @@ const EventDetail = () => {
     const isMobile = useIsMobile();
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [eventsFree, setEventsFree] = useState(false);
+
+    useEffect(() => {
+        let mounted = true;
+        getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => {});
+        return () => { mounted = false; };
+    }, []);
 
     // Auto scroll to top on route change
     useScrollToTop();
@@ -442,13 +450,15 @@ const EventDetail = () => {
                                     </div>
                                 </div>
                             )}
-                            <div className="flex items-start">
-                                <CreditCard className="h-5 w-5 mr-3 mt-1 text-blue-600" />
-                                <div>
-                                    <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Costo</p>
-                                    <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{event.cost != null && event.cost > 0 ? `${event.cost}€` : 'Gratuito'}</p>
-                                </div>
-                            </div>
+                            {!eventsFree && (
+                              <div className="flex items-start">
+                                  <CreditCard className="h-5 w-5 mr-3 mt-1 text-blue-600" />
+                                  <div>
+                                      <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Costo</p>
+                                      <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{event.cost != null && event.cost > 0 ? `${event.cost}€` : 'Gratuito'}</p>
+                                  </div>
+                              </div>
+                            )}
                             {event.nation && (
                                 <div className="flex items-start">
                                     <Globe className="h-5 w-5 mr-3 mt-1 text-blue-600" />
