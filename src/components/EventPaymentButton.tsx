@@ -30,7 +30,8 @@ export const EventPaymentButton = ({
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [eventsFree, setEventsFree] = useState(false);
+  // null = sconosciuto; evita testo con prezzo fino a quando non carichiamo la config
+  const [eventsFree, setEventsFree] = useState<boolean | null>(null);
   const { data: myParticipations } = useQuery({
     queryKey: ["me", "participations"],
     queryFn: async () => {
@@ -54,7 +55,7 @@ export const EventPaymentButton = ({
 
   useEffect(() => {
     let mounted = true;
-    getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => {});
+    getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => { if (mounted) setEventsFree(null); });
     return () => { mounted = false; };
   }, []);
 
@@ -144,7 +145,7 @@ export const EventPaymentButton = ({
           <CreditCard className="mr-2 h-4 w-4" />
           {isAlreadyRegistered
             ? 'Già iscritto'
-            : (!eventsFree && eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti Gratis')}
+            : (eventsFree === false && eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti Gratis')}
         </>
       )}
     </Button>

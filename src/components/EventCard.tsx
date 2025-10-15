@@ -19,7 +19,8 @@ interface EventCardProps {
 
 const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
   const [imageError, setImageError] = useState(false);
-  const [eventsFree, setEventsFree] = useState(false);
+  // null = sconosciuto (evita lampeggio del prezzo prima di caricare la config)
+  const [eventsFree, setEventsFree] = useState<boolean | null>(null);
   const { t } = useLanguage();
   
   const handleImageError = () => {
@@ -36,7 +37,9 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
 
   useEffect(() => {
     let mounted = true;
-    getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => {});
+    getPublicConfig()
+      .then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); })
+      .catch(() => { if (mounted) setEventsFree(null); });
     return () => { mounted = false; };
   }, []);
 
@@ -126,7 +129,7 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
               </div>
             )}
 
-            {!eventsFree && event.cost && event.cost > 0 && (
+            {eventsFree === false && event.cost && event.cost > 0 && (
               <div className="flex items-center gap-1 text-xs font-medium text-green-600">
                 <Euro className="h-4 w-4 flex-shrink-0" />
                 <span>{event.cost}</span>

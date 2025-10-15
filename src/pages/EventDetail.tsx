@@ -76,11 +76,12 @@ const EventDetail = () => {
     const isMobile = useIsMobile();
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
-    const [eventsFree, setEventsFree] = useState(false);
+    // null = sconosciuto; evita di mostrare prezzo finché non abbiamo la config
+    const [eventsFree, setEventsFree] = useState<boolean | null>(null);
 
     useEffect(() => {
         let mounted = true;
-        getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => {});
+    getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => { if (mounted) setEventsFree(null); });
         return () => { mounted = false; };
     }, []);
 
@@ -448,7 +449,7 @@ const EventDetail = () => {
                                     </div>
                                 </div>
                             )}
-                                                        {!eventsFree && (
+                                                        {eventsFree === false && (
                               <div className="flex items-start">
                                   <CreditCard className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                   <div>
