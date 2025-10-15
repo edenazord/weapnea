@@ -308,8 +308,6 @@ const EventDetail = () => {
 
         console.log("✅ EventDetail - Evento caricato con successo:", event.title);
 
-    
-
     const content = (
         <div className={`${isMobile ? 'p-4' : 'container mx-auto px-4 py-8 md:py-12'}`}>
             <Button variant="ghost" asChild className={`mb-6 ${isMobile ? '' : '-ml-4'}`}>
