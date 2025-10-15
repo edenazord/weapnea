@@ -208,13 +208,7 @@ const Profile = () => {
           </div>
         )}
 
-        {!isMobile && (
-          <div className="mb-6">
-            <Badge variant="secondary" className="text-sm">
-              {t('profile.role_label', 'Ruolo')}: {t(`profile.roles.${user.role ?? 'user'}`, String(user.role))}
-            </Badge>
-          </div>
-        )}
+        {/* Ruolo rimosso su richiesta */}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {!isMobile && (

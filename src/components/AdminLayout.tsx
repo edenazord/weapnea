@@ -5,7 +5,7 @@ import { UserNav } from "@/components/UserNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Waves, Shield } from "lucide-react";
+import { Waves } from "lucide-react";
 import { ReactNode } from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
@@ -21,7 +21,6 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
                         <Link to="/" className="flex items-center space-x-2">
                             <Waves className="h-8 w-8 text-blue-600" />
                             <span className="text-2xl font-bold text-blue-900">WeApnea</span>
-                            <Shield className="h-5 w-5 text-orange-500 ml-2" />
                         </Link>
                         
                         <div className="flex items-center space-x-3">
