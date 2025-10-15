@@ -21,9 +21,17 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import * as z from "zod";
 import { parseISO, isValid, startOfDay } from "date-fns";
+import { useEffect, useState } from "react";
+import { getPublicConfig } from "@/lib/publicConfig";
 
 
 const Dashboard = () => {
+    const [eventsFree, setEventsFree] = useState(false);
+    useEffect(() => {
+        let mounted = true;
+        getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => {});
+        return () => { mounted = false; };
+    }, []);
     const { profile } = useAuth();
     const isMobile = useIsMobile();
     const queryClient = useQueryClient();
@@ -326,11 +334,13 @@ const Dashboard = () => {
                                                         )}
                                                         <div className="flex gap-4 mt-2 text-xs text-gray-500">
                                                             <span>👥 {organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0} iscritti</span>
-                                                            {event.cost && event.cost > 0 ? (
+                                                            {eventsFree ? (
+                                                                <span>💰 Gratuito</span>
+                                                            ) : (event.cost && event.cost > 0 ? (
                                                                 <span>💰 €{event.cost}</span>
                                                             ) : (
                                                                 <span>💰 Gratuito</span>
-                                                            )}
+                                                            ))}
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-1 ml-2">
@@ -709,11 +719,13 @@ const Dashboard = () => {
                                         )}
                                         <div className="flex gap-4 mt-2 text-xs text-gray-500">
                                             <span>👥 {organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0} iscritti paganti</span>
-                                            {event.cost && event.cost > 0 ? (
+                                            {eventsFree ? (
+                                                <span>💰 Gratuito</span>
+                                            ) : (event.cost && event.cost > 0 ? (
                                                 <span>💰 €{event.cost}</span>
                                             ) : (
                                                 <span>💰 Gratuito</span>
-                                            )}
+                                            ))}
                                         </div>
                                     </div>
                                     <div className="flex gap-2 ml-4">
