@@ -312,11 +312,20 @@ const Dashboard = () => {
                                         {event.location && (
                                             <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
                                         )}
-                                        <div className="flex gap-4 mt-2 text-xs text-gray-500">
+                                        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                            {/* Iscritti totali (free mode o generico) */}
+                                            <span className="inline-flex items-center gap-1" title={`Iscritti: ${event.participants ?? 0}`}>
+                                                <Users className="h-3.5 w-3.5" />
+                                                <span>{event.participants ?? 0} iscritti</span>
+                                            </span>
+                                            {/* In paid mode si può ancora mostrare i paganti come info aggiuntiva */}
                                             {eventsFree !== true && (
-                                                <span>👥 {organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0} iscritti paganti</span>
+                                                <span className="inline-flex items-center gap-1" title="Iscritti paganti registrati via pagamento">
+                                                    <span className="opacity-70">(paganti: {organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0})</span>
+                                                </span>
                                             )}
-                                            <span>💰 Gratuito</span>
+                                            {/* Prezzo + recap a destra */}
+                                            <span className="ml-auto text-gray-600">💰 Gratuito • Totale: {event.participants ?? 0}</span>
                                         </div>
                                     </div>
                                     <div className="flex gap-2 ml-4">
@@ -325,6 +334,10 @@ const Dashboard = () => {
                                             <Link to={`/events/${event.slug}`}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
                                             </Link>
+                                        </Button>
+                                        {/* Icona iscritti (solo visuale, mostra tooltip con totale) */}
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" title={`Iscritti: ${event.participants ?? 0}`}>
+                                            <Users className="h-4 w-4 text-blue-600" />
                                         </Button>
                                         {eventsFree !== true && (
                                             <EventParticipantsModal
@@ -427,6 +440,10 @@ const Dashboard = () => {
                                                     <Link to={`/events/${event.slug}`}>
                                                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
                                                     </Link>
+                                                </Button>
+                                                {/* Icona iscritti (tooltip con totale) */}
+                                                <Button variant="ghost" size="icon" className="h-8 w-8" title={`Iscritti: ${event.participants ?? 0}`}>
+                                                    <Users className="h-4 w-4 text-blue-600" />
                                                 </Button>
                                                 <Button asChild variant="outline" size="sm">
                                                     <Link to={`/events/${event.slug}`}>Dettagli</Link>
