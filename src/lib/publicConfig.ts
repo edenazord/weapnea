@@ -26,7 +26,8 @@ export async function getPublicConfig(): Promise<PublicConfig> {
     const envForce = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_FORCE_EVENTS_FREE)
       ? String((import.meta as any).env.VITE_FORCE_EVENTS_FREE).toLowerCase() === 'true'
       : false;
-    cached = { eventsFreeMode: envForce ? true : false, pastEventsCategoryPosition: null };
+    // Fallback sicuro: considera eventi gratuiti se non riusciamo a leggere la config
+    cached = { eventsFreeMode: envForce ? true : true, pastEventsCategoryPosition: null };
     return cached;
   }
 }
