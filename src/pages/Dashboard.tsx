@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, Calendar, Users, BarChart3, Edit, Trash2, Package, Crown, FolderTree, FileText, MessageSquare, Key } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { EventForm } from "@/components/admin/EventForm";
 import { AllenamentiForm } from "@/components/admin/AllenamentiForm";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
@@ -314,7 +314,7 @@ const Dashboard = () => {
                                             <span>💰 Gratuito</span>
                                         </div>
                                     </div>
-                                    <div className="flex gap-2 ml-4">
+                                                        <div className="flex gap-2 ml-4">
                                         {eventsFree !== true && (
                                             <EventParticipantsModal
                                                 eventId={event.id}
@@ -325,13 +325,27 @@ const Dashboard = () => {
                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditEvent(event)}>
                                             <Edit className="h-4 w-4" />
                                         </Button>
-                                        <AlertDialog>
-                                            <AlertDialogCancel asChild>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </AlertDialogCancel>
-                                        </AlertDialog>
+                                                            <AlertDialog>
+                                                                <AlertDialogTrigger asChild>
+                                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700">
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </AlertDialogTrigger>
+                                                                <AlertDialogContent>
+                                                                    <AlertDialogHeader>
+                                                                        <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                                                                        <AlertDialogDescription>
+                                                                            Questa azione non può essere annullata. L'evento "{event.title}" sarà eliminato permanentemente.
+                                                                        </AlertDialogDescription>
+                                                                    </AlertDialogHeader>
+                                                                    <AlertDialogFooter>
+                                                                        <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                                                        <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => handleDeleteEvent(event.id)}>
+                                                                            Elimina
+                                                                        </AlertDialogAction>
+                                                                    </AlertDialogFooter>
+                                                                </AlertDialogContent>
+                                                            </AlertDialog>
                                     </div>
                                 </div>
                             ))}
