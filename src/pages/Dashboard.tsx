@@ -25,7 +25,7 @@ import { getPublicConfig } from "@/lib/publicConfig";
 
 
 const Dashboard = () => {
-    const [eventsFree, setEventsFree] = useState(false);
+    const [eventsFree, setEventsFree] = useState<boolean | null>(null);
     useEffect(() => {
         let mounted = true;
         getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => {});
@@ -51,7 +51,7 @@ const Dashboard = () => {
     const { data: organizerStats, isLoading: isLoadingStats } = useQuery({
         queryKey: ["organizer-stats", profile?.id],
         queryFn: () => getOrganizerStats(profile?.id || ''),
-        enabled: !!profile?.id,
+        enabled: !!profile?.id && eventsFree !== true,
     });
 
     // Query per recuperare i pacchetti dell'utente
@@ -112,7 +112,7 @@ const Dashboard = () => {
         pkg.package_type === 'organizer' && pkg.status === 'active'
     );
     
-    const canCreateEvents = hasActiveOrganizerPackage || profile?.role === 'admin';
+    const canCreateEvents = (eventsFree === true) || hasActiveOrganizerPackage || profile?.role === 'admin';
 
     // Trova la categoria "Allenamenti"
     const allenamentiCategory = categories?.find(cat => 
@@ -285,6 +285,7 @@ const Dashboard = () => {
                                 </CardContent>
                             </Card>
                             
+                            {eventsFree !== true && (
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="font-medium text-sm">Partecipanti</CardTitle>
@@ -295,7 +296,9 @@ const Dashboard = () => {
                                     <p className="text-muted-foreground text-xs">Iscritti paganti</p>
                                 </CardContent>
                             </Card>
+                            )}
 
+                            {eventsFree !== true && (
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="font-medium text-sm">Guadagni</CardTitle>
@@ -306,6 +309,7 @@ const Dashboard = () => {
                                     <p className="text-muted-foreground text-xs">Ricavi reali</p>
                                 </CardContent>
                             </Card>
+                            )}
                         </div>
 
                         {/* Events List */}
@@ -332,22 +336,20 @@ const Dashboard = () => {
                                                             <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
                                                         )}
                                                         <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                                                            <span>👥 {organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0} iscritti</span>
-                                                            {eventsFree ? (
-                                                                <span>💰 Gratuito</span>
-                                                            ) : (event.cost && event.cost > 0 ? (
-                                                                <span>💰 €{event.cost}</span>
-                                                            ) : (
-                                                                <span>💰 Gratuito</span>
-                                                            ))}
+                                                            {eventsFree !== true && (
+                                                                <span>� {organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0} iscritti paganti</span>
+                                                            )}
+                                                            <span>💰 Gratuito</span>
                                                         </div>
                                                     </div>
                                                     <div className="flex gap-1 ml-2">
-                                                        <EventParticipantsModal
-                                                            eventId={event.id}
-                                                            eventTitle={event.title}
-                                                            participantCount={organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0}
-                                                        />
+                                                        {eventsFree !== true && (
+                                                            <EventParticipantsModal
+                                                                eventId={event.id}
+                                                                eventTitle={event.title}
+                                                                participantCount={organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0}
+                                                            />
+                                                        )}
                                                         <Button 
                                                             variant="ghost" 
                                                             size="icon" 
@@ -593,7 +595,8 @@ const Dashboard = () => {
                     </SheetContent>
                 </Sheet>
 
-                {/* Dialog per pacchetti */}
+                {/* Dialog per pacchetti - nascosto in free mode */}
+                {eventsFree !== true && (
                 <AlertDialog open={showPackagePrompt} onOpenChange={setShowPackagePrompt}>
                         <AlertDialogContent>
                             <AlertDialogHeader>
@@ -620,6 +623,7 @@ const Dashboard = () => {
                             </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
+                )}
             </div>
 
             {/* Stats Cards - responsive grid */}
@@ -683,14 +687,18 @@ const Dashboard = () => {
                         <Calendar className="h-5 w-5 text-blue-600" />
                         <span className="text-xs font-medium text-blue-700">Eventi</span>
                     </Button>
-                    <Button variant="ghost" className="h-auto p-3 flex flex-col items-center space-y-2 bg-green-50 hover:bg-green-100 border border-green-100">
-                        <Users className="h-5 w-5 text-green-600" />
-                        <span className="text-xs font-medium text-green-700">Partecipanti</span>
-                    </Button>
-                    <Button variant="ghost" className="h-auto p-3 flex flex-col items-center space-y-2 bg-purple-50 hover:bg-purple-100 border border-purple-100">
-                        <BarChart3 className="h-5 w-5 text-purple-600" />
-                        <span className="text-xs font-medium text-purple-700">Statistiche</span>
-                    </Button>
+                    {eventsFree !== true && (
+                        <>
+                            <Button variant="ghost" className="h-auto p-3 flex flex-col items-center space-y-2 bg-green-50 hover:bg-green-100 border border-green-100">
+                                <Users className="h-5 w-5 text-green-600" />
+                                <span className="text-xs font-medium text-green-700">Partecipanti</span>
+                            </Button>
+                            <Button variant="ghost" className="h-auto p-3 flex flex-col items-center space-y-2 bg-purple-50 hover:bg-purple-100 border border-purple-100">
+                                <BarChart3 className="h-5 w-5 text-purple-600" />
+                                <span className="text-xs font-medium text-purple-700">Statistiche</span>
+                            </Button>
+                        </>
+                    )}
                 </div>
             )}
 
@@ -717,22 +725,20 @@ const Dashboard = () => {
                                             <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
                                         )}
                                         <div className="flex gap-4 mt-2 text-xs text-gray-500">
-                                            <span>👥 {organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0} iscritti paganti</span>
-                                            {eventsFree ? (
-                                                <span>💰 Gratuito</span>
-                                            ) : (event.cost && event.cost > 0 ? (
-                                                <span>💰 €{event.cost}</span>
-                                            ) : (
-                                                <span>💰 Gratuito</span>
-                                            ))}
+                                            {eventsFree !== true && (
+                                                <span>👥 {organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0} iscritti paganti</span>
+                                            )}
+                                            <span>💰 Gratuito</span>
                                         </div>
                                     </div>
                                     <div className="flex gap-2 ml-4">
-                                        <EventParticipantsModal
-                                            eventId={event.id}
-                                            eventTitle={event.title}
-                                            participantCount={organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0}
-                                        />
+                                        {eventsFree !== true && (
+                                            <EventParticipantsModal
+                                                eventId={event.id}
+                                                eventTitle={event.title}
+                                                participantCount={organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0}
+                                            />
+                                        )}
                                         <Button 
                                             variant="ghost" 
                                             size="icon" 
@@ -910,7 +916,8 @@ const Dashboard = () => {
                     </SheetContent>
                 </Sheet>
 
-                {/* Dialog per pacchetti */}
+                {/* Dialog per pacchetti - nascosto in free mode */}
+                {eventsFree !== true && (
                 <AlertDialog open={showPackagePrompt} onOpenChange={setShowPackagePrompt}>
                     <AlertDialogContent>
                         <AlertDialogHeader>
@@ -937,6 +944,7 @@ const Dashboard = () => {
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
+                )}
                 
                 <DashboardMobileNav 
                     activeTab={activeTab} 
