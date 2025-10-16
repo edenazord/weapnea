@@ -68,7 +68,8 @@ export const EventPaymentButton = ({
 
     setIsLoading(true);
     try {
-  if (!eventsFree && eventCost > 0) {
+  // Consenti pagamento solo quando sappiamo con certezza che la free mode è DISATTIVA.
+  if (eventsFree === false && eventCost > 0) {
         // Gating lato UI: campi profilo obbligatori per eventi a pagamento
         const missing: string[] = [];
         const today = new Date();
