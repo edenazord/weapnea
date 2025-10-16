@@ -26,6 +26,7 @@ import MobileLayout from "@/components/MobileLayout";
 import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
 type BestEntry = { discipline: BestDiscipline; value: string };
@@ -675,10 +676,6 @@ const Profile = () => {
                       {bestEntries.map((entry, idx) => {
                         const used = new Set(bestEntries.map((b, i) => i === idx ? undefined : b.discipline));
                         const invalid = !isValidBest(entry);
-                        const hint = (() => {
-                          const d = DISCIPLINES.find(d => d.code === entry.discipline);
-                          return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_hint', 'Formato consigliato: mm:ss') : t('profile.sections.personal_bests.meters_hint', 'Formato consigliato: metri interi (es. 75)');
-                        })();
                         const placeholder = (() => {
                           const d = DISCIPLINES.find(d => d.code === entry.discipline);
                           return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_placeholder', 'es. 4:30') : t('profile.sections.personal_bests.meters_placeholder', 'es. 75');
@@ -700,13 +697,27 @@ const Profile = () => {
                               </Select>
                             </TableCell>
                             <TableCell>
-                              <Input
-                                value={entry.value}
-                                onChange={(e) => handleBestChange(idx, { value: e.target.value })}
-                                placeholder={placeholder}
-                                className={invalid && entry.value ? 'border-destructive' : ''}
-                              />
-                              <p className={`text-xs mt-1 ${invalid && entry.value ? 'text-destructive' : 'text-muted-foreground'}`}>{hint}</p>
+                              {invalid && entry.value ? (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Input
+                                      value={entry.value}
+                                      onChange={(e) => handleBestChange(idx, { value: e.target.value })}
+                                      placeholder={placeholder}
+                                      className='border-destructive'
+                                    />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {entry.discipline === 'STA' ? 'Formato: mm:ss (es. 4:30)' : 'Formato: metri interi o con decimali (es. 75)'}
+                                  </TooltipContent>
+                                </Tooltip>
+                              ) : (
+                                <Input
+                                  value={entry.value}
+                                  onChange={(e) => handleBestChange(idx, { value: e.target.value })}
+                                  placeholder={placeholder}
+                                />
+                              )}
                             </TableCell>
                             <TableCell className="text-right">
                               <Button type="button" variant="destructive" onClick={() => removeBest(idx)}>

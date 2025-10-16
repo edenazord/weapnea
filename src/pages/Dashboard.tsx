@@ -17,7 +17,6 @@ import { getOrganizerStats } from "@/lib/payments-api";
 import { EventParticipantsModal } from "@/components/EventParticipantsModal";
 import { getUserPackages } from "@/lib/packages-api";
 import { toast } from "sonner";
-import { useState } from "react";
 import { Link } from "react-router-dom";
 import * as z from "zod";
 import { parseISO, isValid, startOfDay } from "date-fns";
