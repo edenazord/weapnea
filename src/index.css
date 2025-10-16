@@ -154,6 +154,12 @@
     background: white;
     border-radius: 10px;
   }
+
+  /* Assicura che il menu di Google Places Autocomplete sia visibile e cliccabile sopra gli overlay */
+  .pac-container {
+    z-index: 99999 !important;
+    pointer-events: auto !important;
+  }
 }
 
 @keyframes floating {
