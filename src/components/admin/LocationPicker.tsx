@@ -19,8 +19,10 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
   const [isReady, setIsReady] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const widgetRef = useRef<HTMLElement | null>(null);
   const autocompleteRef = useRef<any | null>(null);
   const lastSelectTs = useRef<number>(0);
+  const initializedRef = useRef<boolean>(false);
 
   useEffect(() => {
     setInputValue(value || '');
@@ -33,30 +35,38 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
       setIsActivating(true);
       await loadGoogleMaps();
       const g = (window as any).google;
-      if (inputRef.current && g && g.maps && g.maps.places) {
-        const opts: any = {
-          // restituisci i campi necessari per aggiornare input e nazione
-          fields: ['formatted_address', 'name', 'address_components', 'geometry'],
-        };
-        const ac = new g.maps.places.Autocomplete(inputRef.current, opts);
-        ac.addListener('place_changed', () => {
-          const place = ac.getPlace();
-          const label = place.formatted_address || place.name || inputRef.current?.value || '';
+      if (g && g.maps && g.maps.places && inputRef.current && !initializedRef.current) {
+        // Nuovo elemento ufficiale PlaceAutocompleteElement
+        const el: any = new g.maps.places.PlaceAutocompleteElement();
+        // Collega il nostro input esistente
+        el.inputElement = inputRef.current;
+        // Campi che ci servono quando cambia il place
+        el.fields = ['formatted_address','name','address_components','geometry'];
+        const handler = () => {
+          const place = el.value?.place || el.place || el.value || {};
+          const label = place.formattedAddress || place.displayName || place.formatted_address || place.name || inputRef.current?.value || '';
           lastSelectTs.current = Date.now();
           setInputValue(label);
           onChange(label);
           if (onPlaceSelected) {
             const comps: AddressComponents = {};
-            (place.address_components || []).forEach((c: any) => {
-              const key = (c.types && c.types[0]) || c.short_name || 'unknown';
-              comps[key] = c.long_name || c.short_name;
+            const addr = place.addressComponents || place.address_components || [];
+            addr.forEach((c: any) => {
+              const key = (Array.isArray(c.types) && c.types[0]) || c.shortText || c.short_name || 'unknown';
+              comps[key] = c.longText || c.long_name || c.shortText || c.short_name;
             });
             onPlaceSelected({ label, address: comps });
           }
-          // Chiudi il menu e rimuovi focus per evitare riaperture
-          inputRef.current?.blur();
-        });
-        autocompleteRef.current = ac;
+        };
+        // L'elemento deve essere nel DOM per funzionare correttamente
+        document.body.appendChild(el);
+        widgetRef.current = el as HTMLElement;
+        // Ascolta sia 'placechange' che varianti gmp per compatibilità
+        el.addEventListener('placechange', handler as EventListener);
+        el.addEventListener('gmp-placechange', handler as EventListener);
+        // Segnaposto per gating init
+        autocompleteRef.current = el;
+        initializedRef.current = true;
         setIsReady(true);
       }
     } catch (e) {
@@ -70,29 +80,36 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
   // Evita che il blur dell'input interrompa la selezione: previeni il mousedown sui suggerimenti
   // Affidati al click native di Google: niente prevenzione globale degli eventi
   useEffect(() => {
-    const onMouseDownCapture = (e: MouseEvent) => {
-      const t = e.target as HTMLElement | null;
-      if (!t) return;
-      // Se si clicca nello spazio vuoto del container (non su .pac-item), evita blur prematuro
-      const isContainer = t.classList?.contains('pac-container') || !!t.closest('.pac-container');
-      const isItem = !!t.closest('.pac-item');
-      if (isContainer && !isItem) {
-        e.preventDefault();
-      } else if (isItem) {
-        // Selezione affidabile: se place_changed non arriva entro 300ms, simula Enter
-        const start = Date.now();
-        const id = window.setTimeout(() => {
-          if (Date.now() - start >= 290 && document.activeElement === inputRef.current) {
-            const ev = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
-            inputRef.current?.dispatchEvent(ev);
-          }
-        }, 300);
-        // cleanup automatico al prossimo ciclo
-        window.setTimeout(() => clearTimeout(id), 1000);
+    const onPointerDownCapture = (e: Event) => {
+      const path = (e as any).composedPath ? (e as any).composedPath() : undefined;
+      const target = e.target as HTMLElement | null;
+      const insideWidget = (path && widgetRef.current && path.includes(widgetRef.current)) || (target && widgetRef.current && widgetRef.current.contains(target));
+      if (insideWidget) {
+        // Evita che il click nei suggerimenti venga interpretato come outside-click dal modal
+        e.stopPropagation();
       }
     };
-    document.addEventListener('mousedown', onMouseDownCapture, true);
-    return () => document.removeEventListener('mousedown', onMouseDownCapture, true);
+    document.addEventListener('pointerdown', onPointerDownCapture, true);
+    document.addEventListener('mousedown', onPointerDownCapture, true);
+    document.addEventListener('touchstart', onPointerDownCapture as any, { capture: true, passive: false } as any);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDownCapture, true);
+      document.removeEventListener('mousedown', onPointerDownCapture, true);
+      document.removeEventListener('touchstart', onPointerDownCapture as any, { capture: true } as any);
+    };
+  }, []);
+
+  // Cleanup del widget al smontaggio del componente
+  useEffect(() => {
+    return () => {
+      if (widgetRef.current) {
+        try {
+          widgetRef.current.remove();
+        } catch {
+          // ignore
+        }
+      }
+    };
   }, []);
 
   return (
