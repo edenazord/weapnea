@@ -71,7 +71,11 @@ const pool = new Pool({
       CREATE INDEX IF NOT EXISTS idx_user_packages_status ON public.user_packages(status);
     `);
     await detectSchema();
-    console.log('[startup] ensured/detected flags:', { HAS_PERSONAL_BEST, HAS_USER_PACKAGES });
+    if (!HAS_PUBLIC_PROFILE_FIELDS) {
+      await ensurePublicProfileColumnsAtRuntime();
+      await detectSchema();
+    }
+    console.log('[startup] ensured/detected flags:', { HAS_PERSONAL_BEST, HAS_USER_PACKAGES, HAS_PUBLIC_PROFILE_FIELDS });
   } catch (e) {
     console.error('[startup] ensure/detect schema failed:', e?.message || e);
   }
@@ -126,6 +130,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 // Feature flags detected at runtime
 let HAS_PERSONAL_BEST = false;
 let HAS_USER_PACKAGES = false;
+let HAS_PUBLIC_PROFILE_FIELDS = false;
 
 async function ensurePersonalBestColumnAtRuntime() {
   try {
@@ -133,6 +138,32 @@ async function ensurePersonalBestColumnAtRuntime() {
     HAS_PERSONAL_BEST = true;
   } catch (e) {
     console.warn('[personal_best] ensure column failed:', e?.message || e);
+  }
+}
+async function ensurePublicProfileColumnsAtRuntime() {
+  try {
+    await pool.query(`
+      ALTER TABLE IF NOT EXISTS public.profiles
+        ADD COLUMN IF NOT EXISTS public_profile_enabled boolean DEFAULT false,
+        ADD COLUMN IF NOT EXISTS public_slug text,
+        ADD COLUMN IF NOT EXISTS public_show_bio boolean DEFAULT true,
+        ADD COLUMN IF NOT EXISTS public_show_instagram boolean DEFAULT true,
+        ADD COLUMN IF NOT EXISTS public_show_company_info boolean DEFAULT true,
+        ADD COLUMN IF NOT EXISTS public_show_certifications boolean DEFAULT true;
+    `);
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_indexes WHERE schemaname='public' AND indexname='uniq_profiles_public_slug_lower'
+        ) THEN
+          EXECUTE 'CREATE UNIQUE INDEX uniq_profiles_public_slug_lower ON public.profiles (lower(public_slug)) WHERE public_slug IS NOT NULL';
+        END IF;
+      END$$;
+    `);
+    HAS_PUBLIC_PROFILE_FIELDS = true;
+  } catch (e) {
+    console.warn('[public_profile] ensure columns failed:', e?.message || e);
   }
 }
 let HAS_BLOG_LANGUAGE = false;
@@ -149,6 +180,11 @@ async function detectSchema() {
 
     // Ensure blog_articles.language column exists (auto-migration light)
     await ensureBlogLanguageColumn();
+
+    // Detect public profile fields presence
+    const r3 = await pool.query(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='public_profile_enabled'`);
+    HAS_PUBLIC_PROFILE_FIELDS = r3.rowCount > 0;
+    if (!HAS_PUBLIC_PROFILE_FIELDS) console.warn('[startup] profiles.public_profile_* NOT present');
   } catch (e) {
     console.warn('[startup] schema detection failed:', e?.message || e);
   }
@@ -395,12 +431,14 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
   const pb = HAS_PERSONAL_BEST
     ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best"
     : ", '{}'::jsonb AS personal_best";
+  const pub = HAS_PUBLIC_PROFILE_FIELDS
+    ? ", COALESCE(public_profile_enabled,false) AS public_profile_enabled, public_slug, COALESCE(public_show_bio,true) AS public_show_bio, COALESCE(public_show_instagram,true) AS public_show_instagram, COALESCE(public_show_company_info,true) AS public_show_company_info, COALESCE(public_show_certifications,true) AS public_show_certifications"
+    : ", false AS public_profile_enabled, NULL::text AS public_slug, true AS public_show_bio, true AS public_show_instagram, true AS public_show_company_info, true AS public_show_certifications";
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
     assicurazione, scadenza_assicurazione, instagram_contact${pb},
-    company_name, vat_number, company_address, phone,
-    public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications
+    company_name, vat_number, company_address, phone${pub}
      FROM profiles WHERE id = $1 LIMIT 1`;
   const { rows } = await pool.query(sql, [req.user.id]);
     const user = rows[0];
@@ -429,12 +467,14 @@ app.get('/api/profile', requireAuth, async (req, res) => {
   const pb = HAS_PERSONAL_BEST
     ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best"
     : ", '{}'::jsonb AS personal_best";
+  const pub = HAS_PUBLIC_PROFILE_FIELDS
+    ? ", COALESCE(public_profile_enabled,false) AS public_profile_enabled, public_slug, COALESCE(public_show_bio,true) AS public_show_bio, COALESCE(public_show_instagram,true) AS public_show_instagram, COALESCE(public_show_company_info,true) AS public_show_company_info, COALESCE(public_show_certifications,true) AS public_show_certifications"
+    : ", false AS public_profile_enabled, NULL::text AS public_slug, true AS public_show_bio, true AS public_show_instagram, true AS public_show_company_info, true AS public_show_certifications";
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
     assicurazione, scadenza_assicurazione, instagram_contact${pb},
-    company_name, vat_number, company_address, phone,
-    public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications
+    company_name, vat_number, company_address, phone${pub}
      FROM profiles WHERE id = $1 LIMIT 1`;
   const { rows } = await pool.query(sql, [req.user.id]);
     const user = rows[0];
@@ -657,7 +697,11 @@ app.put('/api/settings/:key', requireAuth, async (req, res) => {
 });
 
 // Helper to build SELECT for events including category name
-const eventsSelect = `
+function eventsSelect() {
+  const organizerExtras = HAS_PUBLIC_PROFILE_FIELDS
+    ? `COALESCE(p.public_profile_enabled, false) AS organizer_public_enabled, p.public_slug AS organizer_public_slug,`
+    : `false AS organizer_public_enabled, NULL::text AS organizer_public_slug,`;
+  return `
   SELECT 
     e.id, e.created_at, e.title, e.slug, e.description, e.date, e.end_date,
     e.location, e.participants, e.image_url, e.category_id, e.cost, e.nation,
@@ -671,13 +715,12 @@ const eventsSelect = `
     e.created_by AS organizer_id,
     COALESCE(p.company_name, p.full_name) AS organizer_name,
     p.avatar_url AS organizer_avatar_url,
-    COALESCE(p.public_profile_enabled, false) AS organizer_public_enabled,
-    p.public_slug AS organizer_public_slug,
+    ${organizerExtras}
     json_build_object('name', c.name) AS categories
   FROM events e
   LEFT JOIN categories c ON c.id = e.category_id
   LEFT JOIN profiles p ON p.id = e.created_by
-`;
+`;}
 
 // Events list with basic filters
 app.get('/api/events', async (req, res) => {
@@ -701,7 +744,7 @@ app.get('/api/events', async (req, res) => {
   const col = validCols.has(String(sortColumn)) ? String(sortColumn) : 'date';
   const dir = String(sortDirection).toLowerCase() === 'desc' ? 'DESC' : 'ASC';
   const orderBy = col === 'category' ? `ORDER BY c.name ${dir}` : `ORDER BY e.${col} ${dir}`;
-  const sql = `${eventsSelect} ${where} ${orderBy}`;
+  const sql = `${eventsSelect()} ${where} ${orderBy}`;
   try {
     const { rows } = await pool.query(sql, params);
     // If free mode is enabled, surface cost as 0 to the client
@@ -713,7 +756,7 @@ app.get('/api/events', async (req, res) => {
 });
 
 app.get('/api/events/:id', async (req, res) => {
-  const sql = `${eventsSelect} WHERE e.id = $1 LIMIT 1`;
+  const sql = `${eventsSelect()} WHERE e.id = $1 LIMIT 1`;
   try {
     const { rows } = await pool.query(sql, [req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
@@ -726,7 +769,7 @@ app.get('/api/events/:id', async (req, res) => {
 });
 
 app.get('/api/events/slug/:slug', async (req, res) => {
-  const sql = `${eventsSelect} WHERE e.slug = $1 LIMIT 1`;
+  const sql = `${eventsSelect()} WHERE e.slug = $1 LIMIT 1`;
   try {
     const { rows } = await pool.query(sql, [req.params.slug]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
@@ -892,6 +935,9 @@ app.get('/api/instructors/:id', async (req, res) => {
 
 // Public instructor/company profile by slug (SEO-friendly)
 app.get('/api/instructors/slug/:slug', async (req, res) => {
+  if (!HAS_PUBLIC_PROFILE_FIELDS) {
+    return res.status(404).json({ error: 'Not found' });
+  }
   try {
     const { rows } = await pool.query(
       `SELECT 
