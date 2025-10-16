@@ -489,13 +489,17 @@ app.put('/api/profile', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
     if (!HAS_PERSONAL_BEST) { await ensurePersonalBestColumnAtRuntime(); }
+    if (!HAS_PUBLIC_PROFILE_FIELDS) {
+      try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
+    }
     const allowed = [
       'full_name','avatar_url','bio','brevetto','scadenza_brevetto','scadenza_certificato_medico',
       'assicurazione','scadenza_assicurazione','instagram_contact',
-      'company_name','vat_number','company_address','phone',
-      // public profile flags
-      'public_profile_enabled','public_slug','public_show_bio','public_show_instagram','public_show_company_info','public_show_certifications'
+      'company_name','vat_number','company_address','phone'
     ];
+    if (HAS_PUBLIC_PROFILE_FIELDS) {
+      allowed.push('public_profile_enabled','public_slug','public_show_bio','public_show_instagram','public_show_company_info','public_show_certifications');
+    }
     if (HAS_PERSONAL_BEST) allowed.push('personal_best');
     const p = req.body || {};
     const fields = Object.keys(p).filter(k => allowed.includes(k));
