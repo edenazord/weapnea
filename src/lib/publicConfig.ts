@@ -10,17 +10,23 @@ let cached: PublicConfig | null = null;
 export async function getPublicConfig(): Promise<PublicConfig> {
   if (cached) return cached;
   try {
+    const envForce = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_FORCE_EVENTS_FREE)
+      ? String((import.meta as any).env.VITE_FORCE_EVENTS_FREE).toLowerCase() === 'true'
+      : false;
     const res = await fetch(`${backendConfig.apiBaseUrl || ''}/api/public-config`, { cache: 'no-store' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     cached = {
-      eventsFreeMode: Boolean(data?.eventsFreeMode),
+      eventsFreeMode: envForce ? true : Boolean(data?.eventsFreeMode),
       pastEventsCategoryPosition: (typeof data?.pastEventsCategoryPosition === 'number') ? data.pastEventsCategoryPosition : null,
     };
     return cached;
   } catch {
     // Fallback: no flags
-    cached = { eventsFreeMode: false, pastEventsCategoryPosition: null };
+    const envForce = (typeof import.meta !== 'undefined' && (import.meta as any).env?.VITE_FORCE_EVENTS_FREE)
+      ? String((import.meta as any).env.VITE_FORCE_EVENTS_FREE).toLowerCase() === 'true'
+      : false;
+    cached = { eventsFreeMode: envForce ? true : false, pastEventsCategoryPosition: null };
     return cached;
   }
 }
