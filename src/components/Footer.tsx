@@ -17,7 +17,7 @@ const Footer = () => {
       </div>
       
       <div className="relative container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           {/* Logo e descrizione */}
           <div className="col-span-1 md:col-span-2">
             <Link to="/" className="flex items-center space-x-3 mb-6 group">
@@ -43,30 +43,8 @@ const Footer = () => {
             </h3>
             <ul className="space-y-4">
               <li>
-              <li>
-                <Link 
-                  to="/privacy-policy" 
-                  className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
-                >
-                  <span className="relative">
-                    {t('footer.privacy', 'Privacy Policy')}
-                    <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                  </span>
-                </Link>
-              </li>
-              <li>
-                <Link 
-                  to="/cookie-policy" 
-                  className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
-                >
-                  <span className="relative">
-                    {t('footer.cookies', 'Cookie Policy')}
-                    <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-                  </span>
-                </Link>
-              </li>
-                <Link 
-                  to="/chi-siamo" 
+                <Link
+                  to="/chi-siamo"
                   className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
                 >
                   <span className="relative">
@@ -76,8 +54,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link 
-                  to="/eventi-imminenti" 
+                <Link
+                  to="/eventi-imminenti"
                   className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
                 >
                   <span className="relative">
@@ -87,8 +65,8 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link 
-                  to="/blog" 
+                <Link
+                  to="/blog"
                   className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
                 >
                   <span className="relative">
@@ -97,7 +75,37 @@ const Footer = () => {
                   </span>
                 </Link>
               </li>
-              
+            </ul>
+          </div>
+
+          {/* Policy */}
+          <div className="space-y-4">
+            <h3 className="font-bold text-xl mb-6 bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
+              {t('footer.policy', 'Policy')}
+            </h3>
+            <ul className="space-y-4">
+              <li>
+                <Link
+                  to="/privacy-policy"
+                  className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
+                >
+                  <span className="relative">
+                    {t('footer.privacy', 'Privacy Policy')}
+                    <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                  </span>
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/cookie-policy"
+                  className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
+                >
+                  <span className="relative">
+                    {t('footer.cookies', 'Cookie Policy')}
+                    <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                  </span>
+                </Link>
+              </li>
             </ul>
           </div>
 
