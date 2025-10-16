@@ -157,10 +157,14 @@ const Profile = () => {
             free_immersion: 'FIM',
             constant_weight: 'CWT',
           };
+          const seen = new Set<BestDiscipline>();
           for (const [k, v] of Object.entries(pb)) {
             const code = (mapLegacy[k] || k) as BestDiscipline;
             if ((DISCIPLINES as any).some((d: any) => d.code === code) && v) {
-              entries.push({ discipline: code, value: String(v) });
+              if (!seen.has(code)) {
+                entries.push({ discipline: code, value: String(v) });
+                seen.add(code);
+              }
             }
           }
         }
@@ -246,10 +250,6 @@ const Profile = () => {
           for (const e of bestEntries) {
             if (e.value && e.discipline) obj[e.discipline] = e.value;
           }
-          if (obj['STA'] !== undefined) obj['static_apnea'] = obj['STA'];
-          if (obj['DYN'] !== undefined) obj['dynamic_apnea'] = obj['DYN'];
-          if (obj['FIM'] !== undefined) obj['free_immersion'] = obj['FIM'];
-          if (obj['CWT'] !== undefined) obj['constant_weight'] = obj['CWT'];
           return obj;
         })(),
       };
