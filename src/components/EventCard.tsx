@@ -70,11 +70,7 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-          {eventsFree === true && (
-            <div className="absolute top-2 right-2 bg-green-600 text-white text-[10px] px-2 py-0.5 rounded-full shadow">
-              Gratuito
-            </div>
-          )}
+          {/* Badge 'Gratuito' rimosso in free mode */}
         </div>
       )}
       

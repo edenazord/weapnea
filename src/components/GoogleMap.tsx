@@ -2,13 +2,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Navigation } from 'lucide-react';
+import { loadGoogleMaps } from '@/lib/googleMapsLoader';
 
 interface GoogleMapProps {
   location: string;
   eventTitle: string;
 }
 
-// OpenStreetMap + Leaflet (via CDN) con geocoding Nominatim (gratuito)
 export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
@@ -16,154 +16,77 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
 
   useEffect(() => {
-    loadLeaflet().then(() => setIsLoaded(true));
+    let cancelled = false;
+    loadGoogleMaps()
+      .then(() => {
+        if (!cancelled) setIsLoaded(true);
+      })
+      .catch((e) => {
+        console.error('Google Maps load error:', e);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     if (!isLoaded || !location) return;
-    geocodeWithNominatim(location);
+    geocodeWithGoogle(location);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoaded, location]);
 
-  const loadLeaflet = async (): Promise<void> => {
-    // Se Leaflet è già presente
-    if ((window as any).L) return;
+  const geocodeWithGoogle = (address: string) => {
+    try {
+      const g = (window as any).google;
+      if (!g || !g.maps) return;
+      const geocoder = new g.maps.Geocoder();
+      geocoder.geocode({ address, region: 'IT' }, (results: any, status: any) => {
+        if (status === 'OK' && results && results[0]) {
+          const loc = results[0].geometry.location;
+          const coords = { lat: loc.lat(), lng: loc.lng() };
+          setCoordinates(coords);
+          initializeGoogleMap(coords);
+        } else {
+          console.warn('Geocoding fallito:', status);
+        }
+      });
+    } catch (e) {
+      console.error('Google Geocoding error:', e);
+    }
+  };
 
-    // CSS
-    const cssId = 'leaflet-css';
-    if (!document.getElementById(cssId)) {
-      const link = document.createElement('link');
-      link.id = cssId;
-      link.rel = 'stylesheet';
-      link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-      link.integrity = 'sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=';
-      link.crossOrigin = '';
-      document.head.appendChild(link);
+  const initializeGoogleMap = (coords: { lat: number; lng: number }) => {
+    const g = (window as any).google;
+    if (!mapRef.current || !g || !g.maps) return;
+
+    let map = mapInstance;
+    if (!map) {
+      map = new g.maps.Map(mapRef.current, {
+        center: coords,
+        zoom: 15,
+        fullscreenControl: false,
+        mapTypeControl: false,
+        streetViewControl: false,
+      });
+      setMapInstance(map);
+    } else {
+      map.setCenter(coords);
+      map.setZoom(15);
     }
 
-    // JS
-    await new Promise<void>((resolve, reject) => {
-      const jsId = 'leaflet-js';
-      if (document.getElementById(jsId)) return resolve();
-      const script = document.createElement('script');
-      script.id = jsId;
-      script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-      script.integrity = 'sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=';
-      script.crossOrigin = '';
-      script.async = true;
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Leaflet load failed'));
-      document.body.appendChild(script);
+    new g.maps.Marker({
+      position: coords,
+      map,
+      title: eventTitle,
     });
   };
 
-  const geocodeWithNominatim = async (address: string) => {
-    try {
-      const normalized = normalizeAddress(address);
-      // Primo tentativo: bias Italia
-      const url = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=it&addressdetails=1&q=${encodeURIComponent(normalized)}&limit=1`;
-      const res = await fetch(url, {
-        headers: {
-          'Accept': 'application/json',
-          'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7',
-          // Nominatim raccomanda un User-Agent identificativo
-          'User-Agent': 'weapnea.com (contact: noreply@weapnea.com)'
-        }
-      });
-      if (!res.ok) throw new Error('Geocoding failed');
-      const data = await res.json();
-      if (!Array.isArray(data) || data.length === 0) {
-        // Secondo tentativo: senza bias paese
-  const url2 = `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(normalized)}&limit=1`;
-  const res2 = await fetch(url2, { headers: { 'Accept': 'application/json', 'Accept-Language': 'it-IT,it;q=0.9,en-US;q=0.8,en;q=0.7', 'User-Agent': 'weapnea.com (contact: noreply@weapnea.com)' } });
-        const data2 = res2.ok ? await res2.json() : [];
-        if (!Array.isArray(data2) || data2.length === 0) {
-          // Terzo tentativo: fallback a Photon
-          const pRes = await fetch(`https://photon.komoot.io/api/?lang=it&q=${encodeURIComponent(normalized)}&limit=1`);
-          const pJson = pRes.ok ? await pRes.json() : null;
-          const feat = pJson?.features?.[0];
-          if (feat?.geometry?.coordinates) {
-            const [lon, lat] = feat.geometry.coordinates;
-            const coords = { lat, lng: lon };
-            setCoordinates(coords);
-            initializeLeafletMap(coords);
-            return;
-          }
-          throw new Error('No results');
-        } else {
-          const lat = parseFloat(data2[0].lat);
-          const lon = parseFloat(data2[0].lon);
-          const coords = { lat, lng: lon };
-          setCoordinates(coords);
-          initializeLeafletMap(coords);
-          return;
-        }
-      }
-
-      const lat = parseFloat(data[0].lat);
-      const lon = parseFloat(data[0].lon);
-      const coords = { lat, lng: lon };
-      setCoordinates(coords);
-      initializeLeafletMap(coords);
-    } catch (e) {
-      console.error('🗺️ OSM Geocoding error:', e);
-    }
-  };
-
-  // Normalizza alcuni elementi comuni italiani per aiutare il geocoder OSM
-  const normalizeAddress = (addr: string): string => {
-    let s = addr.trim();
-    // Espansione province comuni (parziale)
-    const provinceMap: Record<string, string> = {
-      ' PD': ' Padova',
-      ' RM': ' Roma',
-      ' MI': ' Milano',
-      ' VE': ' Venezia',
-    };
-    // sostituisci pattern come ", PD" o " PD" in Padova
-    for (const abbr in provinceMap) {
-      const full = provinceMap[abbr];
-      s = s.replace(new RegExp(`,?${abbr}(,|$)`,'g'), `,${full}$1`);
-    }
-    // Rimuovi doppi spazi
-    s = s.replace(/\s{2,}/g, ' ');
-    return s;
-  };
-
-  const initializeLeafletMap = (coords: { lat: number; lng: number }) => {
-    const L = (window as any).L;
-    if (!mapRef.current || !L) return;
-
-    // Se la mappa esiste già, aggiorno solo la view/marker
-    let map = mapInstance;
-    if (!map) {
-      map = L.map(mapRef.current).setView([coords.lat, coords.lng], 15);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(map);
-      setMapInstance(map);
-    } else {
-      map.setView([coords.lat, coords.lng], 15);
-    }
-
-    // Aggiungi marker
-    L.marker([coords.lat, coords.lng]).addTo(map).bindPopup(
-      `<div style="padding: 6px; max-width: 220px;">
-        <strong style="display:block; color:#1f2937;">${escapeHtml(eventTitle)}</strong>
-        <span style="color:#4b5563; font-size:12px;">${escapeHtml(location)}</span>
-      </div>`
-    );
-  };
-
-  const escapeHtml = (s: string) => s.replace(/[&<>"]+/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c] as string));
-
   const handleGetDirections = () => {
     if (coordinates) {
-      const url = `https://www.openstreetmap.org/?mlat=${coordinates.lat}&mlon=${coordinates.lng}#map=16/${coordinates.lat}/${coordinates.lng}`;
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${coordinates.lat},${coordinates.lng}`;
       window.open(url, '_blank');
     } else {
-      const searchQuery = encodeURIComponent(location);
-      const url = `https://www.openstreetmap.org/search?query=${searchQuery}`;
+      const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
       window.open(url, '_blank');
     }
   };
@@ -188,7 +111,7 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
       />
       {!coordinates && (
         <div className="text-xs text-gray-500">
-          Impossibile geocodificare l'indirizzo. Puoi cercarlo direttamente su OpenStreetMap.
+          Impossibile geocodificare l'indirizzo. Puoi cercarlo direttamente su Google Maps.
         </div>
       )}
       <Button onClick={handleGetDirections} className="w-full" variant="outline">
@@ -200,6 +123,5 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
 }
 
 /*
-// Legacy Google Maps implementation (con API key): mantenuta per riuso futuro
-// Abilitare Billing su Google Cloud e ripristinare questo blocco se si vuole tornare a Google Maps.
+// Legacy OSM/Leaflet implementation: rimosso in favore di Google Maps
 */
