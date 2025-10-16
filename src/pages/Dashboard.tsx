@@ -3,7 +3,7 @@ import DashboardMobileNav from "@/components/DashboardMobileNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Calendar, Users, BarChart3, Edit, Trash2, Package, Crown, FolderTree, FileText, MessageSquare, Key } from "lucide-react";
+import { PlusCircle, Calendar, Users, BarChart3, Edit, Trash2, Package, FolderTree, FileText, MessageSquare, Key } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -16,7 +16,8 @@ import { EventParticipantsModal } from "@/components/EventParticipantsModal";
 import { getUserPackages } from "@/lib/packages-api";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import { parseISO, isValid, startOfDay } from "date-fns";
+import { parseISO, isValid, startOfDay, format } from "date-fns";
+import { it as itLocale } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { getPublicConfig } from "@/lib/publicConfig";
 
@@ -161,8 +162,16 @@ const Dashboard = () => {
 
     const formatDateRange = (startDate: string | null, endDate: string | null) => {
         if (!startDate) return 'N/A';
-        if (!endDate || endDate === startDate) return startDate;
-        return `${startDate} - ${endDate}`;
+        try {
+            const start = parseISO(startDate);
+            const startStr = isValid(start) ? format(start, 'd MMMM yyyy', { locale: itLocale }) : startDate;
+            if (!endDate || endDate === startDate) return startStr;
+            const end = parseISO(endDate);
+            const endStr = isValid(end) ? format(end, 'd MMMM yyyy', { locale: itLocale }) : endDate;
+            return `${startStr} - ${endStr}`;
+        } catch {
+            return endDate && endDate !== startDate ? `${startDate} - ${endDate}` : startDate;
+        }
     };
 
     const content = (
@@ -180,11 +189,7 @@ const Dashboard = () => {
                         <Button variant="secondary" className={`${isMobile ? 'flex-1 text-sm' : 'w-auto'} bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700`} onClick={handleCreateAllenamentiClick}>
                             <Users className="mr-2 h-4 w-4" /> {isMobile ? 'Allenamento' : 'Crea Allenamento Condiviso'}
                         </Button>
-                        <Button variant="outline" className={`${isMobile ? 'flex-1 text-sm' : 'w-auto'}`} asChild>
-                            <Link to="/sponsor-packages">
-                                <Crown className="mr-2 h-4 w-4" /> Diventa Sponsor
-                            </Link>
-                        </Button>
+                        {/* Pulsante "Diventa Sponsor" rimosso */}
                     </div>
                 </div>
 
@@ -314,7 +319,13 @@ const Dashboard = () => {
                                             <span>💰 Gratuito</span>
                                         </div>
                                     </div>
-                                                        <div className="flex gap-2 ml-4">
+                                    <div className="flex gap-2 ml-4">
+                                        {/* Link rapido alla pagina evento */}
+                                        <Button asChild variant="ghost" size="icon" className="h-8 w-8" title="Apri evento">
+                                            <Link to={`/events/${event.slug}`}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
+                                            </Link>
+                                        </Button>
                                         {eventsFree !== true && (
                                             <EventParticipantsModal
                                                 eventId={event.id}
@@ -411,6 +422,12 @@ const Dashboard = () => {
                                                 )}
                                             </div>
                                             <div className="flex gap-2 ml-4">
+                                                {/* Link rapido alla pagina evento */}
+                                                <Button asChild variant="ghost" size="icon" title="Apri evento">
+                                                    <Link to={`/events/${event.slug}`}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
+                                                    </Link>
+                                                </Button>
                                                 <Button asChild variant="outline" size="sm">
                                                     <Link to={`/events/${event.slug}`}>Dettagli</Link>
                                                 </Button>
