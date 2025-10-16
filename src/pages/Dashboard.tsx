@@ -3,7 +3,7 @@ import DashboardMobileNav from "@/components/DashboardMobileNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Calendar, Users, BarChart3, Edit, Trash2, Package, FolderTree, FileText, MessageSquare, Key } from "lucide-react";
+import { PlusCircle, Calendar, Users, BarChart3, Edit, Trash2, Package, FolderTree, FileText, MessageSquare, Key, Clock } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -37,6 +37,7 @@ const Dashboard = () => {
     const [showPackagePrompt, setShowPackagePrompt] = useState(false);
     const [isAllenamentiMode, setIsAllenamentiMode] = useState(false);
     const [activeTab, setActiveTab] = useState("events");
+    const [eventFilter, setEventFilter] = useState<'all' | 'active' | 'past'>('all');
     
     const { data: userEvents, isLoading: isLoadingEvents } = useQuery({
         queryKey: ["events", "user", profile?.id],
@@ -174,6 +175,38 @@ const Dashboard = () => {
         }
     };
 
+    // Precalcolo insiemi attivi/passati
+    const todayStart = startOfDay(new Date());
+    const activeEvents = (userEvents || []).filter(e => {
+        if (!e.date) return false;
+        try {
+            const start = parseISO(e.date);
+            const end = e.end_date ? parseISO(e.end_date) : undefined;
+            const startUpcomingOrToday = isValid(start) && start >= todayStart;
+            const endUpcomingOrToday = end && isValid(end) && end >= todayStart;
+            // Attivo se in corso o futuro: fine >= oggi oppure (senza fine e inizio >= oggi)
+            return Boolean(endUpcomingOrToday || (!end && startUpcomingOrToday));
+        } catch {
+            return false;
+        }
+    });
+    const pastEvents = (userEvents || []).filter(e => {
+        if (!e.date) return false;
+        try {
+            const start = parseISO(e.date);
+            const end = e.end_date ? parseISO(e.end_date) : undefined;
+            const startPast = isValid(start) && start < todayStart;
+            const endPast = end && isValid(end) && end < todayStart;
+            return Boolean(endPast || (!end && startPast));
+        } catch {
+            return false;
+        }
+    }).sort((a, b) => {
+        const aDate = parseISO(a.end_date || a.date!);
+        const bDate = parseISO(b.end_date || b.date!);
+        return bDate.getTime() - aDate.getTime();
+    });
+
     const content = (
         <div className={`space-y-6 ${isMobile ? 'pb-24' : ''}`}>
             <div className="space-y-3">
@@ -242,7 +275,7 @@ const Dashboard = () => {
                         <Calendar className={`text-muted-foreground ${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
                     </CardHeader>
                     <CardContent>
-                        <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{userEvents?.length || 0}</div>
+                        <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{activeEvents.length}</div>
                         <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>Eventi totali</p>
                     </CardContent>
                 </Card>
@@ -293,6 +326,39 @@ const Dashboard = () => {
                 </div>
             )}
 
+            {/* Filtri visualizzazione eventi */}
+            <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'}`}>
+                <Card
+                    className={`cursor-pointer transition ${eventFilter === 'active' ? 'ring-2 ring-blue-600 border-blue-600 bg-blue-50' : 'hover:bg-gray-50'}`}
+                    onClick={() => setEventFilter(eventFilter === 'active' ? 'all' : 'active')}
+                    title="Mostra solo eventi attivi"
+                >
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className={isMobile ? 'text-sm' : 'text-sm'}>Eventi Attivi</CardTitle>
+                        <Calendar className="h-4 w-4 text-blue-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{activeEvents.length}</div>
+                        <p className="text-xs text-muted-foreground">Clicca per filtrare</p>
+                    </CardContent>
+                </Card>
+                <Card
+                    className={`cursor-pointer transition ${eventFilter === 'past' ? 'ring-2 ring-blue-600 border-blue-600 bg-blue-50' : 'hover:bg-gray-50'}`}
+                    onClick={() => setEventFilter(eventFilter === 'past' ? 'all' : 'past')}
+                    title="Mostra solo eventi passati"
+                >
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className={isMobile ? 'text-sm' : 'text-sm'}>Eventi Passati</CardTitle>
+                        <Clock className="h-4 w-4 text-blue-600" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{pastEvents.length}</div>
+                        <p className="text-xs text-muted-foreground">Clicca per filtrare</p>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {(eventFilter === 'all' || eventFilter === 'active') && (
             <Card>
                 <CardHeader>
                     <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>I tuoi eventi</CardTitle>
@@ -302,9 +368,9 @@ const Dashboard = () => {
                         <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
                             <p className="text-gray-600">Caricamento eventi...</p>
                         </div>
-                    ) : userEvents && userEvents.length > 0 ? (
+                    ) : activeEvents && activeEvents.length > 0 ? (
                         <div className="space-y-4">
-                            {userEvents.map((event: EventWithCategory) => (
+                            {activeEvents.map((event: EventWithCategory) => (
                                 <div key={event.id} className="border rounded-lg p-4 flex justify-between items-start">
                                     <div className="flex-1">
                                         <h3 className="font-semibold text-lg">{event.title}</h3>
@@ -335,7 +401,7 @@ const Dashboard = () => {
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
                                             </Link>
                                         </Button>
-                                        {/* Icona iscritti (solo visuale, mostra tooltip con totale) */}
+                                        {/* Icona iscritti (tooltip con totale) */}
                                         <Button variant="ghost" size="icon" className="h-8 w-8" title={`Iscritti: ${event.participants ?? 0}`}>
                                             <Users className="h-4 w-4 text-blue-600" />
                                         </Button>
@@ -349,27 +415,27 @@ const Dashboard = () => {
                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditEvent(event)}>
                                             <Edit className="h-4 w-4" />
                                         </Button>
-                                                            <AlertDialog>
-                                                                <AlertDialogTrigger asChild>
-                                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700">
-                                                                        <Trash2 className="h-4 w-4" />
-                                                                    </Button>
-                                                                </AlertDialogTrigger>
-                                                                <AlertDialogContent>
-                                                                    <AlertDialogHeader>
-                                                                        <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
-                                                                        <AlertDialogDescription>
-                                                                            Questa azione non può essere annullata. L'evento "{event.title}" sarà eliminato permanentemente.
-                                                                        </AlertDialogDescription>
-                                                                    </AlertDialogHeader>
-                                                                    <AlertDialogFooter>
-                                                                        <AlertDialogCancel>Annulla</AlertDialogCancel>
-                                                                        <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => handleDeleteEvent(event.id)}>
-                                                                            Elimina
-                                                                        </AlertDialogAction>
-                                                                    </AlertDialogFooter>
-                                                                </AlertDialogContent>
-                                                            </AlertDialog>
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-red-600 hover:text-red-700">
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                                                    <AlertDialogDescription>
+                                                        Questa azione non può essere annullata. L'evento "{event.title}" sarà eliminato permanentemente.
+                                                    </AlertDialogDescription>
+                                                </AlertDialogHeader>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                                    <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => handleDeleteEvent(event.id)}>
+                                                        Elimina
+                                                    </AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
                                     </div>
                                 </div>
                             ))}
@@ -387,7 +453,9 @@ const Dashboard = () => {
                     )}
                 </CardContent>
             </Card>
+            )}
 
+            {(eventFilter === 'all' || eventFilter === 'past') && (
             <Card>
                 <CardHeader>
                     <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>Eventi Passati</CardTitle>
@@ -397,63 +465,35 @@ const Dashboard = () => {
                         <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
                             <p className="text-gray-600">Caricamento eventi...</p>
                         </div>
-                    ) : userEvents && userEvents.length > 0 ? (
-                        (() => {
-                            const todayStart = startOfDay(new Date());
-                            const past = (userEvents || []).filter(e => {
-                                if (!e.date) return false;
-                                try {
-                                    const start = parseISO(e.date);
-                                    const end = e.end_date ? parseISO(e.end_date) : undefined;
-                                    const startPast = isValid(start) && start < todayStart;
-                                    const endPast = end && isValid(end) && end < todayStart;
-                                    return Boolean(endPast || (!end && startPast));
-                                } catch { return false; }
-                            }).sort((a,b) => {
-                                const aDate = parseISO(a.end_date || a.date!);
-                                const bDate = parseISO(b.end_date || b.date!);
-                                return bDate.getTime() - aDate.getTime();
-                            });
-                            if (past.length === 0) {
-                                return (
-                                    <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
-                                        <Calendar className={`text-gray-400 mx-auto mb-4 ${isMobile ? 'h-12 w-12' : 'h-16 w-16'}`} />
-                                        <h3 className={`font-semibold text-gray-600 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>Nessun evento passato</h3>
-                                        <p className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-base'}`}>Quando gli eventi si concluderanno, appariranno qui.</p>
+                    ) : pastEvents && pastEvents.length > 0 ? (
+                        <div className="space-y-4">
+                            {pastEvents.map((event: EventWithCategory) => (
+                                <div key={event.id} className="border rounded-lg p-4 flex justify-between items-start">
+                                    <div className="flex-1">
+                                        <h3 className="font-semibold text-lg">{event.title}</h3>
+                                        <p className="text-sm text-gray-600 mt-1">{event.categories?.name} • {formatDateRange(event.date, event.end_date)}</p>
+                                        {event.location && (
+                                            <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
+                                        )}
                                     </div>
-                                );
-                            }
-                            return (
-                                <div className="space-y-4">
-                                    {past.map((event: EventWithCategory) => (
-                                        <div key={event.id} className="border rounded-lg p-4 flex justify-between items-start">
-                                            <div className="flex-1">
-                                                <h3 className="font-semibold text-lg">{event.title}</h3>
-                                                <p className="text-sm text-gray-600 mt-1">{event.categories?.name} • {formatDateRange(event.date, event.end_date)}</p>
-                                                {event.location && (
-                                                    <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
-                                                )}
-                                            </div>
-                                            <div className="flex gap-2 ml-4">
-                                                {/* Link rapido alla pagina evento */}
-                                                <Button asChild variant="ghost" size="icon" title="Apri evento">
-                                                    <Link to={`/events/${event.slug}`}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
-                                                    </Link>
-                                                </Button>
-                                                {/* Icona iscritti (tooltip con totale) */}
-                                                <Button variant="ghost" size="icon" className="h-8 w-8" title={`Iscritti: ${event.participants ?? 0}`}>
-                                                    <Users className="h-4 w-4 text-blue-600" />
-                                                </Button>
-                                                <Button asChild variant="outline" size="sm">
-                                                    <Link to={`/events/${event.slug}`}>Dettagli</Link>
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                    <div className="flex gap-2 ml-4">
+                                        {/* Link rapido alla pagina evento */}
+                                        <Button asChild variant="ghost" size="icon" title="Apri evento">
+                                            <Link to={`/events/${event.slug}`}>
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
+                                            </Link>
+                                        </Button>
+                                        {/* Icona iscritti (tooltip con totale) */}
+                                        <Button variant="ghost" size="icon" className="h-8 w-8" title={`Iscritti: ${event.participants ?? 0}`}>
+                                            <Users className="h-4 w-4 text-blue-600" />
+                                        </Button>
+                                        <Button asChild variant="outline" size="sm">
+                                            <Link to={`/events/${event.slug}`}>Dettagli</Link>
+                                        </Button>
+                                    </div>
                                 </div>
-                            );
-                        })()
+                            ))}
+                        </div>
                     ) : (
                         <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
                             <Calendar className={`text-gray-400 mx-auto mb-4 ${isMobile ? 'h-12 w-12' : 'h-16 w-16'}`} />
@@ -463,9 +503,10 @@ const Dashboard = () => {
                     )}
                 </CardContent>
             </Card>
+            )}
         </div>
     );
-
+    
     if (isMobile) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
@@ -522,3 +563,4 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
+ 
