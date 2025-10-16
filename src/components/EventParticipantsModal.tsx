@@ -60,7 +60,7 @@ export const EventParticipantsModal = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-blue-600" />
-            Partecipanti Paganti
+            Partecipanti
           </DialogTitle>
           <p className="text-sm text-gray-600">
             {eventTitle}
@@ -79,7 +79,7 @@ export const EventParticipantsModal = ({
           ) : !participants || participants.length === 0 ? (
             <div className="text-center py-8">
               <Users className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-500 text-sm">Nessun partecipante pagante</p>
+              <p className="text-gray-500 text-sm">Nessun partecipante</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -115,17 +115,18 @@ export const EventParticipantsModal = ({
                       </p>
                     )}
                     
-                    <div className="flex items-center gap-3 mt-1">
-                      <Badge variant="secondary" className="text-xs">
-                        <Euro className="h-3 w-3 mr-1" />
-                        €{participant.amount.toFixed(2)}
-                      </Badge>
-                      
-                      <span className="text-xs text-gray-500 flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {format(new Date(participant.paid_at), "dd MMM yy", { locale: it })}
-                      </span>
-                    </div>
+                    {participant.amount ? (
+                      <div className="flex items-center gap-3 mt-1">
+                        <Badge variant="secondary" className="text-xs">
+                          <Euro className="h-3 w-3 mr-1" />
+                          €{participant.amount.toFixed(2)}
+                        </Badge>
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {format(new Date(participant.paid_at), "dd MMM yy", { locale: it })}
+                        </span>
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               ))}
@@ -139,12 +140,14 @@ export const EventParticipantsModal = ({
               <span className="text-gray-600">Totale partecipanti:</span>
               <span className="font-medium">{participants.length}</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600">Ricavo totale:</span>
-              <span className="font-medium text-green-600">
-                €{participants.reduce((sum, p) => sum + p.amount, 0).toFixed(2)}
-              </span>
-            </div>
+            {participants.some(p => p.amount) && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600">Ricavo totale:</span>
+                <span className="font-medium text-green-600">
+                  €{participants.reduce((sum, p) => sum + (p.amount || 0), 0).toFixed(2)}
+                </span>
+              </div>
+            )}
           </div>
         )}
       </DialogContent>

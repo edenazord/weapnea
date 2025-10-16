@@ -268,18 +268,8 @@ const Dashboard = () => {
                 )}
             </div>
 
-            <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-3'}`}>
-                <Card>
-                    <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-2' : 'pb-2'}`}>
-                        <CardTitle className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>Eventi Attivi</CardTitle>
-                        <Calendar className={`text-muted-foreground ${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
-                    </CardHeader>
-                    <CardContent>
-                        <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{activeEvents.length}</div>
-                        <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>Eventi totali</p>
-                    </CardContent>
-                </Card>
-                {eventsFree !== true && (
+            {eventsFree !== true && (
+                <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
                     <Card>
                         <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-2' : 'pb-2'}`}>
                             <CardTitle className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>Partecipanti</CardTitle>
@@ -290,8 +280,6 @@ const Dashboard = () => {
                             <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>Iscritti paganti</p>
                         </CardContent>
                     </Card>
-                )}
-                {eventsFree !== true && (
                     <Card>
                         <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-2' : 'pb-2'}`}>
                             <CardTitle className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>Guadagni</CardTitle>
@@ -302,8 +290,8 @@ const Dashboard = () => {
                             <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>Ricavi reali</p>
                         </CardContent>
                     </Card>
-                )}
-            </div>
+                </div>
+            )}
 
             {isMobile && (
                 <div className="grid grid-cols-3 gap-3">
@@ -379,19 +367,7 @@ const Dashboard = () => {
                                             <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
                                         )}
                                         <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                            {/* Iscritti totali (free mode o generico) */}
-                                            <span className="inline-flex items-center gap-1" title={`Iscritti: ${event.participants ?? 0}`}>
-                                                <Users className="h-3.5 w-3.5" />
-                                                <span>{event.participants ?? 0} iscritti</span>
-                                            </span>
-                                            {/* In paid mode si può ancora mostrare i paganti come info aggiuntiva */}
-                                            {eventsFree !== true && (
-                                                <span className="inline-flex items-center gap-1" title="Iscritti paganti registrati via pagamento">
-                                                    <span className="opacity-70">(paganti: {organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0})</span>
-                                                </span>
-                                            )}
-                                            {/* Prezzo + recap a destra */}
-                                            <span className="ml-auto text-gray-600">💰 Gratuito • Totale: {event.participants ?? 0}</span>
+                                            <span className="ml-auto text-gray-600">💰 Gratuito</span>
                                         </div>
                                     </div>
                                     <div className="flex gap-2 ml-4">
@@ -401,17 +377,11 @@ const Dashboard = () => {
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
                                             </Link>
                                         </Button>
-                                        {/* Icona iscritti (tooltip con totale) */}
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" title={`Iscritti: ${event.participants ?? 0}`}>
-                                            <Users className="h-4 w-4 text-blue-600" />
-                                        </Button>
-                                        {eventsFree !== true && (
-                                            <EventParticipantsModal
-                                                eventId={event.id}
-                                                eventTitle={event.title}
-                                                participantCount={organizerStats?.paymentsByEvent?.find(p => p.eventId === event.id)?.totalPaidParticipants || 0}
-                                            />
-                                        )}
+                                        {/* Icona iscritti: apre modal con lista */}
+                                        <EventParticipantsModal
+                                            eventId={event.id}
+                                            eventTitle={event.title}
+                                        />
                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditEvent(event)}>
                                             <Edit className="h-4 w-4" />
                                         </Button>
@@ -483,10 +453,8 @@ const Dashboard = () => {
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
                                             </Link>
                                         </Button>
-                                        {/* Icona iscritti (tooltip con totale) */}
-                                        <Button variant="ghost" size="icon" className="h-8 w-8" title={`Iscritti: ${event.participants ?? 0}`}>
-                                            <Users className="h-4 w-4 text-blue-600" />
-                                        </Button>
+                                                {/* Icona iscritti: apre modal con lista */}
+                                                <EventParticipantsModal eventId={event.id} eventTitle={event.title} />
                                         <Button asChild variant="outline" size="sm">
                                             <Link to={`/events/${event.slug}`}>Dettagli</Link>
                                         </Button>
