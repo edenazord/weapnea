@@ -20,6 +20,7 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
   const [isActivating, setIsActivating] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const autocompleteRef = useRef<any | null>(null);
+  const lastSelectTs = useRef<number>(0);
 
   useEffect(() => {
     setInputValue(value || '');
@@ -33,11 +34,15 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
       await loadGoogleMaps();
       const g = (window as any).google;
       if (inputRef.current && g && g.maps && g.maps.places) {
-        const opts: any = { /* nessuna restrizione: indirizzi e luoghi globali */ };
+        const opts: any = {
+          // restituisci i campi necessari per aggiornare input e nazione
+          fields: ['formatted_address', 'name', 'address_components', 'geometry'],
+        };
         const ac = new g.maps.places.Autocomplete(inputRef.current, opts);
         ac.addListener('place_changed', () => {
           const place = ac.getPlace();
           const label = place.formatted_address || place.name || inputRef.current?.value || '';
+          lastSelectTs.current = Date.now();
           setInputValue(label);
           onChange(label);
           if (onPlaceSelected) {
@@ -48,6 +53,8 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
             });
             onPlaceSelected({ label, address: comps });
           }
+          // Chiudi il menu e rimuovi focus per evitare riaperture
+          inputRef.current?.blur();
         });
         autocompleteRef.current = ac;
         setIsReady(true);
@@ -73,10 +80,20 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
                 // Inizializza solo quando l'utente inizia a digitare
                 ensureAutocomplete();
               }
+              if (Date.now() - lastSelectTs.current < 300) {
+                // Evita che un onChange immediatamente successivo alla selezione sovrascriva il valore scelto
+                return;
+              }
               setInputValue(v);
               onChange(v);
             }}
-            onKeyDown={() => { if (!autocompleteRef.current) ensureAutocomplete(); }}
+            onKeyDown={(e) => {
+              if (!autocompleteRef.current) ensureAutocomplete();
+              if (e.key === 'Enter') {
+                // Evita submit del form quando si seleziona un suggerimento
+                e.preventDefault();
+              }
+            }}
             onBlur={() => { /* Nessun auto-resolve: gestito da Places */ }}
             autoComplete="off"
             placeholder={placeholder}
