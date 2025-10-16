@@ -23,6 +23,7 @@ import ForumTopic from "./pages/ForumTopic";
 import NewForumTopic from "./pages/NewForumTopic";
 import Profile from "./pages/Profile";
 import InstructorProfile from "./pages/InstructorProfile";
+import InstructorPublicProfile from "./pages/InstructorPublicProfile";
 import OrganizerPackages from "./pages/OrganizerPackages";
 import SponsorPackages from "./pages/SponsorPackages";
 import MyEvents from "./pages/MyEvents";
@@ -63,7 +64,10 @@ const App = () => {
                   <Route path="/auth/confirm" element={<AuthConfirm />} />
                   <Route path="/password-reset" element={<PasswordResetPage />} />
                   <Route path="/events/:slug" element={<EventDetail />} />
-                  <Route path="/instructor/:id" element={<InstructorProfile />} />
+                  {/* Public SEO-friendly route by slug must come before the id route if patterns overlap */}
+                  <Route path="/instructor/:slug" element={<InstructorPublicProfile />} />
+                  {/* Internal/admin route by id moved under /instructor/id/:id to avoid ambiguity */}
+                  <Route path="/instructor/id/:id" element={<InstructorProfile />} />
                   <Route path="/eventi-imminenti" element={<UpcomingEvents />} />
                   <Route path="/categories/:categorySlug" element={<CategoryEvents />} />
                   <Route path="/blog" element={<Blog />} />

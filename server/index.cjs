@@ -399,7 +399,8 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
     assicurazione, scadenza_assicurazione, instagram_contact${pb},
-    company_name, vat_number, company_address, phone
+    company_name, vat_number, company_address, phone,
+    public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications
      FROM profiles WHERE id = $1 LIMIT 1`;
   const { rows } = await pool.query(sql, [req.user.id]);
     const user = rows[0];
@@ -432,7 +433,8 @@ app.get('/api/profile', requireAuth, async (req, res) => {
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
     assicurazione, scadenza_assicurazione, instagram_contact${pb},
-    company_name, vat_number, company_address, phone
+    company_name, vat_number, company_address, phone,
+    public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications
      FROM profiles WHERE id = $1 LIMIT 1`;
   const { rows } = await pool.query(sql, [req.user.id]);
     const user = rows[0];
@@ -450,7 +452,9 @@ app.put('/api/profile', requireAuth, async (req, res) => {
     const allowed = [
       'full_name','avatar_url','bio','brevetto','scadenza_brevetto','scadenza_certificato_medico',
       'assicurazione','scadenza_assicurazione','instagram_contact',
-      'company_name','vat_number','company_address','phone'
+      'company_name','vat_number','company_address','phone',
+      // public profile flags
+      'public_profile_enabled','public_slug','public_show_bio','public_show_instagram','public_show_company_info','public_show_certifications'
     ];
     if (HAS_PERSONAL_BEST) allowed.push('personal_best');
     const p = req.body || {};
@@ -667,6 +671,8 @@ const eventsSelect = `
     e.created_by AS organizer_id,
     COALESCE(p.company_name, p.full_name) AS organizer_name,
     p.avatar_url AS organizer_avatar_url,
+    COALESCE(p.public_profile_enabled, false) AS organizer_public_enabled,
+    p.public_slug AS organizer_public_slug,
     json_build_object('name', c.name) AS categories
   FROM events e
   LEFT JOIN categories c ON c.id = e.category_id
@@ -876,6 +882,30 @@ app.get('/api/instructors/:id', async (req, res) => {
        WHERE id = $1 AND role IN ('instructor','company') AND COALESCE(is_active, true) = true
        LIMIT 1`,
       [req.params.id]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+    res.json(rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Public instructor/company profile by slug (SEO-friendly)
+app.get('/api/instructors/slug/:slug', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT 
+        id, full_name, company_name, bio, avatar_url, instagram_contact, role,
+        brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
+        scadenza_certificato_medico, company_address, vat_number,
+        public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications
+       FROM profiles
+       WHERE lower(public_slug) = lower($1)
+         AND role IN ('instructor','company')
+         AND COALESCE(is_active, true) = true
+         AND COALESCE(public_profile_enabled, false) = true
+       LIMIT 1`,
+      [req.params.slug]
     );
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);

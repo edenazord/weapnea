@@ -25,6 +25,7 @@ import MobileLayout from "@/components/MobileLayout";
 // import ProfileMobileNav from "@/components/ProfileMobileNav";
 import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
+import { Switch } from "@/components/ui/switch";
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
 type BestEntry = { discipline: BestDiscipline; value: string };
@@ -59,11 +60,17 @@ const Profile = () => {
     assicurazione: "",
     scadenza_assicurazione: "",
     instagram_contact: "",
-  phone: "",
+    phone: "",
     avatar_url: "",
     company_name: "",
     vat_number: "",
     company_address: "",
+    public_profile_enabled: false,
+    public_slug: "",
+    public_show_bio: true,
+    public_show_instagram: true,
+    public_show_company_info: true,
+    public_show_certifications: true,
   });
 
   const [bestEntries, setBestEntries] = useState<BestEntry[]>([]);
@@ -92,7 +99,7 @@ const Profile = () => {
       if (isValid(s)) {
         if (end) {
           const e = parseISO(end);
-          if (isValid(e) && e.getTime() !== s.getTime()) {
+          if (isValid(e)) {
             return `${format(s, 'dd/MM/yyyy', { locale: itLocale })} - ${format(e, 'dd/MM/yyyy', { locale: itLocale })}`;
           }
         }
@@ -101,6 +108,17 @@ const Profile = () => {
     }
     return t('events.date_tbd', 'Data da definire');
   };
+
+  const slugify = (s: string) =>
+    s
+      .toLowerCase()
+      .trim()
+      .replace(/[@._]/g, '-')
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 80);
 
   useEffect(() => {
     if (user) {
@@ -112,12 +130,18 @@ const Profile = () => {
         scadenza_certificato_medico: user.scadenza_certificato_medico || "",
         assicurazione: user.assicurazione || "",
         scadenza_assicurazione: user.scadenza_assicurazione || "",
-  instagram_contact: user.instagram_contact || "",
-  phone: (user as any).phone || "",
+        instagram_contact: user.instagram_contact || "",
+        phone: (user as any).phone || "",
         avatar_url: user.avatar_url || "",
         company_name: user.company_name || "",
         vat_number: user.vat_number || "",
         company_address: user.company_address || "",
+        public_profile_enabled: (user as any).public_profile_enabled ?? false,
+        public_slug: (user as any).public_slug || "",
+        public_show_bio: (user as any).public_show_bio ?? true,
+        public_show_instagram: (user as any).public_show_instagram ?? true,
+        public_show_company_info: (user as any).public_show_company_info ?? true,
+        public_show_certifications: (user as any).public_show_certifications ?? true,
       });
 
       if (user.personal_best) {
@@ -202,8 +226,10 @@ const Profile = () => {
 
     setLoading(true);
     try {
-      const dataToUpdate = {
+      const slug = formData.public_slug?.trim() ? slugify(formData.public_slug) : "";
+      const dataToUpdate: any = {
         ...formData,
+        public_slug: slug || null,
         scadenza_brevetto: formData.scadenza_brevetto || null,
         scadenza_certificato_medico: formData.scadenza_certificato_medico || null,
         scadenza_assicurazione: formData.scadenza_assicurazione || null,
@@ -216,12 +242,10 @@ const Profile = () => {
         vat_number: formData.vat_number || null,
         company_address: formData.company_address || null,
         personal_best: (() => {
-          // Save as object { CODE: value }, keeping legacy keys for the classic four for backward compatibility
           const obj: Record<string, string> = {};
           for (const e of bestEntries) {
             if (e.value && e.discipline) obj[e.discipline] = e.value;
           }
-          // Legacy aliasing
           if (obj['STA'] !== undefined) obj['static_apnea'] = obj['STA'];
           if (obj['DYN'] !== undefined) obj['dynamic_apnea'] = obj['DYN'];
           if (obj['FIM'] !== undefined) obj['free_immersion'] = obj['FIM'];
@@ -230,8 +254,8 @@ const Profile = () => {
         })(),
       };
 
-  const res = await apiSend('/api/profile', 'PUT', dataToUpdate);
-  if (!res?.user) throw new Error('Update failed');
+      const res = await apiSend('/api/profile', 'PUT', dataToUpdate);
+      if (!res?.user) throw new Error('Update failed');
 
       toast({
         title: t('profile.toasts.update_success_title', 'Successo'),
@@ -454,6 +478,99 @@ const Profile = () => {
               </Card>
 
             </TabsContent>
+
+            {/* Profilo Pubblico - visibile per istruttori/aziende */}
+            {(user.role === 'instructor' || user.role === 'company') && (
+              <TabsContent value="personal">
+                <Card className="mt-6">
+                  <CardHeader>
+                    <CardTitle>Profilo Pubblico</CardTitle>
+                    <CardDescription>
+                      Rendi visibile una pagina pubblica del tuo profilo su un URL parlante. Puoi scegliere cosa mostrare.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-5">
+                    <div className="flex items-center justify-between py-2">
+                      <div>
+                        <Label htmlFor="public_profile_enabled">Attiva profilo pubblico</Label>
+                        <p className="text-sm text-muted-foreground">La pagina sarà visibile su /instructor/slug</p>
+                      </div>
+                      <Switch
+                        id="public_profile_enabled"
+                        checked={formData.public_profile_enabled}
+                        onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_profile_enabled: Boolean(v) }))}
+                      />
+                    </div>
+
+                    <div>
+                      <Label htmlFor="public_slug">Slug pubblico</Label>
+                      <Input
+                        id="public_slug"
+                        value={formData.public_slug}
+                        onChange={(e) => setFormData(prev => ({ ...prev, public_slug: slugify(e.target.value) }))}
+                        placeholder="es. nome-cognome"
+                        disabled={!formData.public_profile_enabled}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">URL: /instructor/{formData.public_slug || '<slug>'}</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center justify-between border rounded-md p-3">
+                        <div>
+                          <Label htmlFor="public_show_bio">Mostra biografia</Label>
+                          <p className="text-xs text-muted-foreground">La tua bio nella pagina pubblica</p>
+                        </div>
+                        <Switch
+                          id="public_show_bio"
+                          checked={formData.public_show_bio}
+                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_bio: Boolean(v) }))}
+                          disabled={!formData.public_profile_enabled}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between border rounded-md p-3">
+                        <div>
+                          <Label htmlFor="public_show_instagram">Mostra Instagram</Label>
+                          <p className="text-xs text-muted-foreground">Link al profilo Instagram</p>
+                        </div>
+                        <Switch
+                          id="public_show_instagram"
+                          checked={formData.public_show_instagram}
+                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_instagram: Boolean(v) }))}
+                          disabled={!formData.public_profile_enabled}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between border rounded-md p-3">
+                        <div>
+                          <Label htmlFor="public_show_company_info">Mostra info aziendali</Label>
+                          <p className="text-xs text-muted-foreground">Indirizzo e P.IVA (solo aziende)</p>
+                        </div>
+                        <Switch
+                          id="public_show_company_info"
+                          checked={formData.public_show_company_info}
+                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_company_info: Boolean(v) }))}
+                          disabled={!formData.public_profile_enabled}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between border rounded-md p-3">
+                        <div>
+                          <Label htmlFor="public_show_certifications">Mostra certificazioni</Label>
+                          <p className="text-xs text-muted-foreground">Brevetto e assicurazione</p>
+                        </div>
+                        <Switch
+                          id="public_show_certifications"
+                          checked={formData.public_show_certifications}
+                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_certifications: Boolean(v) }))}
+                          disabled={!formData.public_profile_enabled}
+                        />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
 
             <TabsContent value="certs">
               <Card>

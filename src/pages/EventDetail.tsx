@@ -324,7 +324,7 @@ const EventDetail = () => {
                                                         {/* Organizzatore con avatar sopra al titolo */}
                                                                                                                 {(organizerId) && (
                                                                                         <div className="mb-3 flex items-center gap-3">
-                                                                                            <Link to={`/instructor/${organizerId}`} className="flex items-center gap-3 group">
+                                                                                            <Link to={(event as any).organizer_public_enabled && (event as any).organizer_public_slug ? `/instructor/${(event as any).organizer_public_slug}` : `/instructor/id/${organizerId}`} className="flex items-center gap-3 group">
                                                                     <Avatar className="h-9 w-9">
                                                                                                                                 <AvatarImage src={ensureAbsoluteUrl(event.organizer_avatar_url || organizerProfile?.avatar_url || undefined) || ''} alt={event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || 'Organizzatore'} />
                                                                         <AvatarFallback>
