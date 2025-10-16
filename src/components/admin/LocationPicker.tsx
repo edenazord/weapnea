@@ -67,6 +67,31 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
     }
   };
 
+  // Evita che il blur dell'input interrompa la selezione: previeni il mousedown sui suggerimenti
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      if (!target) return;
+      const item = target.closest('.pac-item') as HTMLElement | null;
+      if (item || target.closest('.pac-container')) {
+        // Impedisci che l'input perda focus prima che Google gestisca la selezione
+        e.preventDefault();
+        // Forza il click sull'item per assicurare la selezione
+        if (item) {
+          item.click();
+        }
+      }
+    };
+    document.addEventListener('mousedown', handler, true);
+    document.addEventListener('touchstart', handler, { capture: true, passive: false } as any);
+    document.addEventListener('pointerdown', handler, true);
+    return () => {
+      document.removeEventListener('mousedown', handler, true);
+      document.removeEventListener('touchstart', handler as any, { capture: true } as any);
+      document.removeEventListener('pointerdown', handler, true);
+    };
+  }, []);
+
   return (
     <div className="space-y-2">
       <div className="relative">

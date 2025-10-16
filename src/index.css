@@ -160,6 +160,12 @@
     z-index: 99999 !important;
     pointer-events: auto !important;
   }
+  .pac-item, .pac-item span {
+    pointer-events: auto !important;
+  }
+  input.pac-target-input {
+    pointer-events: auto !important;
+  }
 }
 
 @keyframes floating {
