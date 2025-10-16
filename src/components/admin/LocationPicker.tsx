@@ -68,28 +68,31 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
   };
 
   // Evita che il blur dell'input interrompa la selezione: previeni il mousedown sui suggerimenti
+  // Affidati al click native di Google: niente prevenzione globale degli eventi
   useEffect(() => {
-    const handler = (e: Event) => {
-      const target = e.target as HTMLElement | null;
-      if (!target) return;
-      const item = target.closest('.pac-item') as HTMLElement | null;
-      if (item || target.closest('.pac-container')) {
-        // Impedisci che l'input perda focus prima che Google gestisca la selezione
+    const onMouseDownCapture = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      // Se si clicca nello spazio vuoto del container (non su .pac-item), evita blur prematuro
+      const isContainer = t.classList?.contains('pac-container') || !!t.closest('.pac-container');
+      const isItem = !!t.closest('.pac-item');
+      if (isContainer && !isItem) {
         e.preventDefault();
-        // Forza il click sull'item per assicurare la selezione
-        if (item) {
-          item.click();
-        }
+      } else if (isItem) {
+        // Selezione affidabile: se place_changed non arriva entro 300ms, simula Enter
+        const start = Date.now();
+        const id = window.setTimeout(() => {
+          if (Date.now() - start >= 290 && document.activeElement === inputRef.current) {
+            const ev = new KeyboardEvent('keydown', { key: 'Enter', bubbles: true });
+            inputRef.current?.dispatchEvent(ev);
+          }
+        }, 300);
+        // cleanup automatico al prossimo ciclo
+        window.setTimeout(() => clearTimeout(id), 1000);
       }
     };
-    document.addEventListener('mousedown', handler, true);
-    document.addEventListener('touchstart', handler, { capture: true, passive: false } as any);
-    document.addEventListener('pointerdown', handler, true);
-    return () => {
-      document.removeEventListener('mousedown', handler, true);
-      document.removeEventListener('touchstart', handler as any, { capture: true } as any);
-      document.removeEventListener('pointerdown', handler, true);
-    };
+    document.addEventListener('mousedown', onMouseDownCapture, true);
+    return () => document.removeEventListener('mousedown', onMouseDownCapture, true);
   }, []);
 
   return (
