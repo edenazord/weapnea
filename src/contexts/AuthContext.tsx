@@ -28,6 +28,9 @@ interface CustomUser {
   public_show_instagram?: boolean;
   public_show_company_info?: boolean;
   public_show_certifications?: boolean;
+  public_show_events?: boolean;
+  public_show_records?: boolean;
+  public_show_personal?: boolean;
 }
 
 type AuthContextType = {

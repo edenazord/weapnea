@@ -70,10 +70,13 @@ const Profile = () => {
     company_address: "",
     public_profile_enabled: false,
     public_slug: "",
-    public_show_bio: true,
-    public_show_instagram: true,
-    public_show_company_info: true,
-    public_show_certifications: true,
+  public_show_bio: true,
+  public_show_instagram: true,
+  public_show_company_info: true,
+  public_show_certifications: true,
+  public_show_events: true,
+  public_show_records: true,
+  public_show_personal: true,
   });
 
   const [bestEntries, setBestEntries] = useState<BestEntry[]>([]);
@@ -143,10 +146,13 @@ const Profile = () => {
         company_address: user.company_address || "",
         public_profile_enabled: (user as any).public_profile_enabled ?? false,
         public_slug: (user as any).public_slug || "",
-        public_show_bio: (user as any).public_show_bio ?? true,
-        public_show_instagram: (user as any).public_show_instagram ?? true,
-        public_show_company_info: (user as any).public_show_company_info ?? true,
-        public_show_certifications: (user as any).public_show_certifications ?? true,
+  public_show_bio: (user as any).public_show_bio ?? true,
+  public_show_instagram: (user as any).public_show_instagram ?? true,
+  public_show_company_info: (user as any).public_show_company_info ?? true,
+  public_show_certifications: (user as any).public_show_certifications ?? true,
+  public_show_events: (user as any).public_show_events ?? true,
+  public_show_records: (user as any).public_show_records ?? true,
+  public_show_personal: (user as any).public_show_personal ?? true,
       });
 
       if (user.personal_best) {
@@ -634,6 +640,57 @@ const Profile = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
+                          <Label htmlFor="public_show_events">Mostra tab Eventi</Label>
+                          <p className="text-xs text-muted-foreground">Rende visibile la sezione Eventi nella pagina pubblica</p>
+                        </div>
+                        <Switch
+                          id="public_show_events"
+                          checked={formData.public_show_events}
+                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_events: Boolean(v) }))}
+                          disabled={!formData.public_profile_enabled}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between border rounded-md p-3">
+                        <div>
+                          <Label htmlFor="public_show_personal">Mostra tab Personali</Label>
+                          <p className="text-xs text-muted-foreground">Bio, Instagram e info aziendali (se attive)</p>
+                        </div>
+                        <Switch
+                          id="public_show_personal"
+                          checked={formData.public_show_personal}
+                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_personal: Boolean(v) }))}
+                          disabled={!formData.public_profile_enabled}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between border rounded-md p-3">
+                        <div>
+                          <Label htmlFor="public_show_certifications">Mostra tab Certificazioni</Label>
+                          <p className="text-xs text-muted-foreground">Brevetto e assicurazione</p>
+                        </div>
+                        <Switch
+                          id="public_show_certifications"
+                          checked={formData.public_show_certifications}
+                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_certifications: Boolean(v) }))}
+                          disabled={!formData.public_profile_enabled}
+                        />
+                      </div>
+
+                      <div className="flex items-center justify-between border rounded-md p-3">
+                        <div>
+                          <Label htmlFor="public_show_records">Mostra tab Record</Label>
+                          <p className="text-xs text-muted-foreground">Record personali dalla sezione "Record"</p>
+                        </div>
+                        <Switch
+                          id="public_show_records"
+                          checked={formData.public_show_records}
+                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_records: Boolean(v) }))}
+                          disabled={!formData.public_profile_enabled}
+                        />
+                      </div>
+                      <div className="flex items-center justify-between border rounded-md p-3">
+                        <div>
                           <Label htmlFor="public_show_bio">Mostra biografia</Label>
                           <p className="text-xs text-muted-foreground">La tua bio nella pagina pubblica</p>
                         </div>
@@ -671,18 +728,6 @@ const Profile = () => {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between border rounded-md p-3">
-                        <div>
-                          <Label htmlFor="public_show_certifications">Mostra certificazioni</Label>
-                          <p className="text-xs text-muted-foreground">Brevetto e assicurazione</p>
-                        </div>
-                        <Switch
-                          id="public_show_certifications"
-                          checked={formData.public_show_certifications}
-                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_certifications: Boolean(v) }))}
-                          disabled={!formData.public_profile_enabled}
-                        />
-                      </div>
                     </div>
                   </CardContent>
                 </Card>

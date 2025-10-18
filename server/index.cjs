@@ -215,7 +215,10 @@ async function ensurePublicProfileColumnsAtRuntime() {
         ADD COLUMN IF NOT EXISTS public_show_bio boolean DEFAULT true,
         ADD COLUMN IF NOT EXISTS public_show_instagram boolean DEFAULT true,
         ADD COLUMN IF NOT EXISTS public_show_company_info boolean DEFAULT true,
-        ADD COLUMN IF NOT EXISTS public_show_certifications boolean DEFAULT true;
+        ADD COLUMN IF NOT EXISTS public_show_certifications boolean DEFAULT true,
+        ADD COLUMN IF NOT EXISTS public_show_events boolean DEFAULT true,
+        ADD COLUMN IF NOT EXISTS public_show_records boolean DEFAULT true,
+        ADD COLUMN IF NOT EXISTS public_show_personal boolean DEFAULT true;
     `);
     await pool.query(`
       DO $$
@@ -574,8 +577,8 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best"
     : ", '{}'::jsonb AS personal_best";
   const pub = HAS_PUBLIC_PROFILE_FIELDS
-    ? ", COALESCE(public_profile_enabled,false) AS public_profile_enabled, public_slug, COALESCE(public_show_bio,true) AS public_show_bio, COALESCE(public_show_instagram,true) AS public_show_instagram, COALESCE(public_show_company_info,true) AS public_show_company_info, COALESCE(public_show_certifications,true) AS public_show_certifications"
-    : ", false AS public_profile_enabled, NULL::text AS public_slug, true AS public_show_bio, true AS public_show_instagram, true AS public_show_company_info, true AS public_show_certifications";
+    ? ", COALESCE(public_profile_enabled,false) AS public_profile_enabled, public_slug, COALESCE(public_show_bio,true) AS public_show_bio, COALESCE(public_show_instagram,true) AS public_show_instagram, COALESCE(public_show_company_info,true) AS public_show_company_info, COALESCE(public_show_certifications,true) AS public_show_certifications, COALESCE(public_show_events,true) AS public_show_events, COALESCE(public_show_records,true) AS public_show_records, COALESCE(public_show_personal,true) AS public_show_personal"
+    : ", false AS public_profile_enabled, NULL::text AS public_slug, true AS public_show_bio, true AS public_show_instagram, true AS public_show_company_info, true AS public_show_certifications, true AS public_show_events, true AS public_show_records, true AS public_show_personal";
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
@@ -614,8 +617,8 @@ app.get('/api/profile', requireAuth, async (req, res) => {
     ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best"
     : ", '{}'::jsonb AS personal_best";
   const pub = HAS_PUBLIC_PROFILE_FIELDS
-    ? ", COALESCE(public_profile_enabled,false) AS public_profile_enabled, public_slug, COALESCE(public_show_bio,true) AS public_show_bio, COALESCE(public_show_instagram,true) AS public_show_instagram, COALESCE(public_show_company_info,true) AS public_show_company_info, COALESCE(public_show_certifications,true) AS public_show_certifications"
-    : ", false AS public_profile_enabled, NULL::text AS public_slug, true AS public_show_bio, true AS public_show_instagram, true AS public_show_company_info, true AS public_show_certifications";
+    ? ", COALESCE(public_profile_enabled,false) AS public_profile_enabled, public_slug, COALESCE(public_show_bio,true) AS public_show_bio, COALESCE(public_show_instagram,true) AS public_show_instagram, COALESCE(public_show_company_info,true) AS public_show_company_info, COALESCE(public_show_certifications,true) AS public_show_certifications, COALESCE(public_show_events,true) AS public_show_events, COALESCE(public_show_records,true) AS public_show_records, COALESCE(public_show_personal,true) AS public_show_personal"
+    : ", false AS public_profile_enabled, NULL::text AS public_slug, true AS public_show_bio, true AS public_show_instagram, true AS public_show_company_info, true AS public_show_certifications, true AS public_show_events, true AS public_show_records, true AS public_show_personal";
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
@@ -635,6 +638,9 @@ app.get('/api/profile', requireAuth, async (req, res) => {
         user.public_show_instagram = pp.show_instagram !== false;
         user.public_show_company_info = pp.show_company_info !== false;
         user.public_show_certifications = pp.show_certifications !== false;
+        user.public_show_events = pp.show_events !== false;
+        user.public_show_records = pp.show_records !== false;
+        user.public_show_personal = pp.show_personal !== false;
       }
     }
     res.json({ user });
@@ -656,7 +662,7 @@ app.put('/api/profile', requireAuth, async (req, res) => {
       'company_name','vat_number','company_address','phone'
     ];
     // Accetta sempre i flag pubblici; se le colonne mancassero, effettueremo un ensure e un retry sotto
-    allowed.push('public_profile_enabled','public_slug','public_show_bio','public_show_instagram','public_show_company_info','public_show_certifications');
+  allowed.push('public_profile_enabled','public_slug','public_show_bio','public_show_instagram','public_show_company_info','public_show_certifications','public_show_events','public_show_records','public_show_personal');
     if (HAS_PERSONAL_BEST) allowed.push('personal_best');
     const p = req.body || {};
     // Sanitizza/normalizza slug lato server (sicurezza/coerenza)
@@ -706,7 +712,10 @@ app.put('/api/profile', requireAuth, async (req, res) => {
           msg.toLowerCase().includes('public_show_bio') ||
           msg.toLowerCase().includes('public_show_instagram') ||
           msg.toLowerCase().includes('public_show_company_info') ||
-          msg.toLowerCase().includes('public_show_certifications')
+          msg.toLowerCase().includes('public_show_certifications') ||
+          msg.toLowerCase().includes('public_show_events') ||
+          msg.toLowerCase().includes('public_show_records') ||
+          msg.toLowerCase().includes('public_show_personal')
         )) {
           if (!withEnsure) {
             return runUpdate(true);
@@ -720,6 +729,9 @@ app.put('/api/profile', requireAuth, async (req, res) => {
           if (fields.includes('public_show_instagram')) pp.show_instagram = !!p.public_show_instagram;
           if (fields.includes('public_show_company_info')) pp.show_company_info = !!p.public_show_company_info;
           if (fields.includes('public_show_certifications')) pp.show_certifications = !!p.public_show_certifications;
+          if (fields.includes('public_show_events')) pp.show_events = !!p.public_show_events;
+          if (fields.includes('public_show_records')) pp.show_records = !!p.public_show_records;
+          if (fields.includes('public_show_personal')) pp.show_personal = !!p.public_show_personal;
           // Gestione slug fallback con unicità su app_settings
           if (fields.includes('public_slug')) {
             const newSlug = (p.public_slug || '').toString().trim().toLowerCase();
@@ -746,6 +758,9 @@ app.put('/api/profile', requireAuth, async (req, res) => {
           userRow.public_show_instagram = pp.show_instagram !== false;
           userRow.public_show_company_info = pp.show_company_info !== false;
           userRow.public_show_certifications = pp.show_certifications !== false;
+          userRow.public_show_events = pp.show_events !== false;
+          userRow.public_show_records = pp.show_records !== false;
+          userRow.public_show_personal = pp.show_personal !== false;
           return [userRow];
         }
         throw e;
@@ -1230,6 +1245,17 @@ app.get('/api/instructors/:id', async (req, res) => {
   }
 });
 
+// Public: instructor events by user id
+app.get('/api/instructors/:id/events', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`${eventsSelect()} WHERE e.created_by = $1 ORDER BY e.date DESC NULLS LAST`, [req.params.id]);
+    const out = EVENTS_FREE_MODE ? rows.map(r => ({ ...r, cost: 0 })) : rows;
+    res.json(out);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 // Public instructor/company profile by slug (SEO-friendly)
 app.get('/api/instructors/slug/:slug', async (req, res) => {
   try {
@@ -1241,8 +1267,8 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
           `SELECT 
             id, full_name, company_name, bio, avatar_url, instagram_contact, role,
             brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
-            scadenza_certificato_medico, company_address, vat_number,
-            public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications
+            scadenza_certificato_medico, company_address, vat_number, personal_best,
+            public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications, public_show_events, public_show_records, public_show_personal
            FROM profiles
            WHERE lower(public_slug) = lower($1)
              AND COALESCE(is_active, true) = true
@@ -1262,7 +1288,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
     const { rows: baseRows } = await pool.query(
       `SELECT id, full_name, company_name, bio, avatar_url, instagram_contact, role,
               brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
-              scadenza_certificato_medico, company_address, vat_number,
+              scadenza_certificato_medico, company_address, vat_number, personal_best,
               COALESCE(is_active, true) AS is_active
          FROM profiles WHERE id = $1 LIMIT 1`,
       [ownerId]
@@ -1289,14 +1315,41 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
       scadenza_certificato_medico: base.scadenza_certificato_medico,
       company_address: base.company_address,
       vat_number: base.vat_number,
+      personal_best: base.personal_best || null,
       public_profile_enabled: true,
       public_slug: pp.slug || slug,
       public_show_bio: pp.show_bio !== false,
       public_show_instagram: pp.show_instagram !== false,
       public_show_company_info: pp.show_company_info !== false,
       public_show_certifications: pp.show_certifications !== false,
+      public_show_events: pp.show_events !== false,
+      public_show_records: pp.show_records !== false,
+      public_show_personal: pp.show_personal !== false,
     };
     return res.json(out);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Public: instructor events by slug
+app.get('/api/instructors/slug/:slug/events', async (req, res) => {
+  try {
+    const slug = String(req.params.slug || '').trim().toLowerCase();
+    let ownerId = null;
+    if (HAS_PUBLIC_PROFILE_FIELDS) {
+      try {
+        const { rows } = await pool.query(`SELECT id FROM profiles WHERE lower(public_slug) = lower($1) AND COALESCE(public_profile_enabled,false) = true LIMIT 1`, [slug]);
+        if (rows[0]) ownerId = rows[0].id;
+      } catch (_) {}
+    }
+    if (!ownerId) {
+      ownerId = await getSlugOwner(slug);
+    }
+    if (!ownerId) return res.status(404).json({ error: 'Not found' });
+    const { rows } = await pool.query(`${eventsSelect()} WHERE e.created_by = $1 ORDER BY e.date DESC NULLS LAST`, [ownerId]);
+    const out = EVENTS_FREE_MODE ? rows.map(r => ({ ...r, cost: 0 })) : rows;
+    res.json(out);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }

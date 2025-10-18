@@ -3,12 +3,13 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Instagram, Award, Shield, User } from "lucide-react";
+import { ArrowLeft, MapPin, Instagram, Award, Shield, User, Calendar, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
+import EventCard from "@/components/EventCard";
 
 type PublicInstructor = {
   id: string;
@@ -31,6 +32,10 @@ type PublicInstructor = {
   public_show_instagram?: boolean;
   public_show_company_info?: boolean;
   public_show_certifications?: boolean;
+  public_show_events?: boolean;
+  public_show_records?: boolean;
+  public_show_personal?: boolean;
+  personal_best?: Record<string, string> | null;
 };
 
 export default function InstructorPublicProfile() {
@@ -43,6 +48,16 @@ export default function InstructorPublicProfile() {
       if (!slug) throw new Error('Slug mancante');
       const res = await apiGet(`/api/instructors/slug/${encodeURIComponent(slug)}`);
       return res as PublicInstructor;
+    },
+    enabled: !!slug,
+  });
+
+  const { data: events, isLoading: loadingEvents } = useQuery<any[]>({
+    queryKey: ['public-instructor-events', slug],
+    queryFn: async () => {
+      if (!slug) return [];
+      const res = await apiGet(`/api/instructors/slug/${encodeURIComponent(slug)}/events`);
+      return Array.isArray(res) ? res : [];
     },
     enabled: !!slug,
   });
@@ -122,18 +137,50 @@ export default function InstructorPublicProfile() {
           )}
         </div>
         <div className="lg:col-span-2 space-y-6">
-          {data.public_show_bio !== false && data.bio && (
+          {data.public_show_personal !== false && data.public_show_bio !== false && data.bio && (
             <Card>
               <CardHeader><CardTitle className="text-xl">Chi sono</CardTitle></CardHeader>
               <CardContent><div className="prose max-w-none text-gray-700 whitespace-pre-wrap">{data.bio}</div></CardContent>
             </Card>
           )}
-          {data.public_show_certifications !== false && (data.brevetto || data.assicurazione || data.scadenza_certificato_medico) && (
+          {data.public_show_personal !== false && data.public_show_certifications !== false && (data.brevetto || data.assicurazione || data.scadenza_certificato_medico) && (
             <Card>
               <CardHeader><CardTitle className="text-xl">Certificazioni</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {data.brevetto && (<div><div className="flex items-center mb-2"><Award className="w-4 h-4 mr-2 text-blue-600"/><p className="font-semibold text-gray-800">Brevetto</p></div><p className="text-gray-600 ml-6">{data.brevetto}</p></div>)}
                 {data.assicurazione && (<div><div className="flex items-center mb-2"><Shield className="w-4 h-4 mr-2 text-green-600"/><p className="font-semibold text-gray-800">Assicurazione</p></div><p className="text-gray-600 ml-6">{data.assicurazione}</p></div>)}
+              </CardContent>
+            </Card>
+          )}
+
+          {data.public_show_events !== false && (
+            <Card>
+              <CardHeader><CardTitle className="text-xl flex items-center"><Calendar className="w-5 h-5 mr-2"/>Eventi</CardTitle></CardHeader>
+              <CardContent>
+                {loadingEvents ? (
+                  <div className="py-4 text-gray-500">Caricamento eventi...</div>
+                ) : (events && events.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {events.map((e) => (
+                      <EventCard key={e.id} event={e} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="py-2 text-gray-500">Nessun evento pubblicato</div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          {data.public_show_records !== false && data.personal_best && Object.keys(data.personal_best).length > 0 && (
+            <Card>
+              <CardHeader><CardTitle className="text-xl flex items-center"><Target className="w-5 h-5 mr-2"/>Record</CardTitle></CardHeader>
+              <CardContent>
+                <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                  {Object.entries(data.personal_best).map(([disc, val]) => (
+                    <li key={disc}><span className="font-semibold mr-1">{disc.toUpperCase()}:</span> {String(val)}</li>
+                  ))}
+                </ul>
               </CardContent>
             </Card>
           )}
