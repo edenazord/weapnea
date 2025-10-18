@@ -1232,26 +1232,72 @@ app.get('/api/instructors/:id', async (req, res) => {
 
 // Public instructor/company profile by slug (SEO-friendly)
 app.get('/api/instructors/slug/:slug', async (req, res) => {
-  if (!HAS_PUBLIC_PROFILE_FIELDS) {
-    return res.status(404).json({ error: 'Not found' });
-  }
   try {
-    const { rows } = await pool.query(
-      `SELECT 
-        id, full_name, company_name, bio, avatar_url, instagram_contact, role,
-        brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
-        scadenza_certificato_medico, company_address, vat_number,
-        public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications
-       FROM profiles
-       WHERE lower(public_slug) = lower($1)
-         AND role IN ('instructor','company')
-         AND COALESCE(is_active, true) = true
-         AND COALESCE(public_profile_enabled, false) = true
-       LIMIT 1`,
-      [req.params.slug]
+    const slug = String(req.params.slug || '').trim().toLowerCase();
+    // 1) Prova via colonne native, se presenti
+    if (HAS_PUBLIC_PROFILE_FIELDS) {
+      try {
+        const { rows } = await pool.query(
+          `SELECT 
+            id, full_name, company_name, bio, avatar_url, instagram_contact, role,
+            brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
+            scadenza_certificato_medico, company_address, vat_number,
+            public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications
+           FROM profiles
+           WHERE lower(public_slug) = lower($1)
+             AND role IN ('instructor','company')
+             AND COALESCE(is_active, true) = true
+             AND COALESCE(public_profile_enabled, false) = true
+           LIMIT 1`,
+          [slug]
+        );
+        if (rows[0]) return res.json(rows[0]);
+      } catch (e) {
+        // Se la colonna mancasse, andiamo a fallback
+      }
+    }
+    // 2) Fallback: mappa slug->user in app_settings
+    const ownerId = await getSlugOwner(slug);
+    if (!ownerId) return res.status(404).json({ error: 'Not found' });
+    // recupera profilo base
+    const { rows: baseRows } = await pool.query(
+      `SELECT id, full_name, company_name, bio, avatar_url, instagram_contact, role,
+              brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
+              scadenza_certificato_medico, company_address, vat_number,
+              COALESCE(is_active, true) AS is_active
+         FROM profiles WHERE id = $1 LIMIT 1`,
+      [ownerId]
     );
-    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
+    const base = baseRows[0];
+    if (!base || !['instructor','company'].includes(base.role) || !base.is_active) {
+      return res.status(404).json({ error: 'Not found' });
+    }
+    const pp = await getPublicProfileSettings(ownerId);
+    if (!pp || !pp.enabled) return res.status(404).json({ error: 'Not found' });
+    // costruiamo payload unificato con flag da fallback
+    const out = {
+      id: base.id,
+      full_name: base.full_name,
+      company_name: base.company_name,
+      bio: base.bio,
+      avatar_url: base.avatar_url,
+      instagram_contact: base.instagram_contact,
+      role: base.role,
+      brevetto: base.brevetto,
+      scadenza_brevetto: base.scadenza_brevetto,
+      assicurazione: base.assicurazione,
+      scadenza_assicurazione: base.scadenza_assicurazione,
+      scadenza_certificato_medico: base.scadenza_certificato_medico,
+      company_address: base.company_address,
+      vat_number: base.vat_number,
+      public_profile_enabled: true,
+      public_slug: pp.slug || slug,
+      public_show_bio: pp.show_bio !== false,
+      public_show_instagram: pp.show_instagram !== false,
+      public_show_company_info: pp.show_company_info !== false,
+      public_show_certifications: pp.show_certifications !== false,
+    };
+    return res.json(out);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
