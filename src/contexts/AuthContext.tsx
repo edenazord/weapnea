@@ -21,6 +21,13 @@ interface CustomUser {
   vat_number?: string | null;
   company_address?: string | null;
   phone?: string | null;
+  // Public profile fields (optional, ensured at runtime by API)
+  public_profile_enabled?: boolean;
+  public_slug?: string | null;
+  public_show_bio?: boolean;
+  public_show_instagram?: boolean;
+  public_show_company_info?: boolean;
+  public_show_certifications?: boolean;
 }
 
 type AuthContextType = {

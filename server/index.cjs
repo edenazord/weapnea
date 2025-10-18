@@ -464,6 +464,10 @@ app.get('/api/profile', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
   if (!HAS_PERSONAL_BEST) { await ensurePersonalBestColumnAtRuntime(); }
+  // Prova a garantire le colonne del profilo pubblico anche in GET
+  if (!HAS_PUBLIC_PROFILE_FIELDS) {
+    try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
+  }
   const pb = HAS_PERSONAL_BEST
     ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best"
     : ", '{}'::jsonb AS personal_best";
@@ -502,6 +506,18 @@ app.put('/api/profile', requireAuth, async (req, res) => {
     }
     if (HAS_PERSONAL_BEST) allowed.push('personal_best');
     const p = req.body || {};
+    // Sanitizza/normalizza slug lato server (sicurezza/coerenza)
+    if (typeof p.public_slug === 'string') {
+      p.public_slug = p.public_slug
+        .toLowerCase()
+        .trim()
+        .replace(/[@._]/g, '-')
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 80) || null;
+    }
     const fields = Object.keys(p).filter(k => allowed.includes(k));
     if (fields.length === 0) return res.status(400).json({ error: 'no valid fields to update' });
     // Serialize JSON fields
@@ -516,11 +532,54 @@ app.put('/api/profile', requireAuth, async (req, res) => {
       return `${k} = $${i+1}`;
     }).join(', ');
     const sql = `UPDATE profiles SET ${sets}, updated_at = now() WHERE id = $${fields.length+1} RETURNING *`;
-    const { rows } = await pool.query(sql, [...values, req.user.id]);
+    let rows;
+    try {
+      ({ rows } = await pool.query(sql, [...values, req.user.id]));
+    } catch (e) {
+      const code = e && e.code;
+      const msg = String(e?.message || '');
+      // unique violation on lower(public_slug) index
+      if (code === '23505' || msg.includes('uniq_profiles_public_slug_lower')) {
+        return res.status(409).json({ error: 'public_slug conflict' });
+      }
+      throw e;
+    }
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json({ user: rows[0] });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Slug availability (auth required to identify own slug). Consider all profiles, even if public disabled.
+app.get('/api/profile/slug-availability/:slug', requireAuth, async (req, res) => {
+  const raw = String(req.params.slug || '').trim();
+  if (!raw) return res.status(400).json({ available: false, error: 'empty slug' });
+  // Normalizza come lato update
+  const slug = raw
+    .toLowerCase()
+    .trim()
+    .replace(/[@._]/g, '-')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80);
+  if (!slug) return res.status(400).json({ available: false, error: 'invalid slug' });
+  try {
+    if (!HAS_PUBLIC_PROFILE_FIELDS) {
+      try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
+    }
+    const { rows } = await pool.query(
+      `SELECT id FROM profiles WHERE lower(public_slug) = lower($1) LIMIT 1`,
+      [slug]
+    );
+    const row = rows[0];
+    if (!row) return res.json({ available: true, mine: false });
+    const mine = row.id === req.user?.id;
+    return res.json({ available: mine, mine });
+  } catch (e) {
+    return res.status(500).json({ available: false, error: String(e?.message || e) });
   }
 });
 

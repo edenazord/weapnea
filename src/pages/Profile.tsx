@@ -192,20 +192,14 @@ const Profile = () => {
       if (!slug) { setSlugStatus('idle'); return; }
       setSlugStatus('checking');
       try {
-        // Endpoint di verifica: ritorna 200 con {available:boolean}
-        // Se non esiste un endpoint dedicato, tentiamo un GET sul profilo pubblico:
-        // - 200: se appartiene ad un altro utente => taken; se appartiene a noi => available
-        // - 404: available
-        const res = await apiGet(`/api/instructors/slug/${encodeURIComponent(slug)}`).catch((e:any) => e);
+        // Usa endpoint dedicato di availability
+        const avail = await apiGet(`/api/profile/slug-availability/${encodeURIComponent(slug)}`).catch((e:any) => e);
         if (cancelled) return;
-        if (res && typeof res === 'object' && res.id) {
-          // Se è il nostro profilo, accettiamo lo slug
-          if (res.id === user?.id) setSlugStatus('available'); else setSlugStatus('taken');
-        } else if (res instanceof Error) {
-          const msg = String(res.message || '');
-          if (msg.includes(' 404 ') || msg.toLowerCase().includes('not found')) setSlugStatus('available'); else setSlugStatus('error');
+        if (avail && typeof avail === 'object' && 'available' in avail) {
+          setSlugStatus(avail.available ? 'available' : 'taken');
+        } else if (avail instanceof Error) {
+          setSlugStatus('error');
         } else {
-          // risposta inattesa => consideriamo errore
           setSlugStatus('error');
         }
       } catch {
@@ -863,7 +857,7 @@ const Profile = () => {
                 disabled={
                   loading || (
                     formData.public_profile_enabled && (
-                      !formData.public_slug?.trim() || slugStatus === 'taken'
+                      !formData.public_slug?.trim() || slugStatus === 'taken' || slugStatus === 'checking'
                     )
                   )
                 }
