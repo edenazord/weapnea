@@ -266,6 +266,18 @@ const Profile = () => {
     e.preventDefault();
     if (!user) return;
 
+    // Blocca submit se lo slug è preso da altri
+    if (formData.public_profile_enabled) {
+      if (!formData.public_slug?.trim()) {
+        toast({ title: 'Slug mancante', description: 'Inserisci uno slug per il profilo pubblico oppure disattiva la visibilità.', variant: 'destructive' });
+        return;
+      }
+      if (slugStatus === 'taken' || slugStatus === 'checking') {
+        toast({ title: 'Slug non disponibile', description: 'Scegli uno slug diverso, quello attuale è già occupato.', variant: 'destructive' });
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       const slug = formData.public_slug?.trim() ? slugify(formData.public_slug) : "";
@@ -292,7 +304,19 @@ const Profile = () => {
         })(),
       };
 
-      const res = await apiSend('/api/profile', 'PUT', dataToUpdate);
+      let res: any;
+      try {
+        res = await apiSend('/api/profile', 'PUT', dataToUpdate);
+      } catch (err: any) {
+        const msg = String(err?.message || '');
+        // Gestione lato client di un possibile 409 dal server per slug già occupato
+        if (msg.includes(' 409 ') || msg.toLowerCase().includes('conflict')) {
+          toast({ title: 'Slug in conflitto', description: 'Lo slug scelto è già in uso. Scegline un altro e riprova.', variant: 'destructive' });
+          setSlugStatus('taken');
+          throw err;
+        }
+        throw err;
+      }
       if (!res?.user) throw new Error('Update failed');
 
       toast({

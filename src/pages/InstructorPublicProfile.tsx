@@ -63,6 +63,21 @@ export default function InstructorPublicProfile() {
     };
   }, [data?.public_slug]);
 
+  // Meta description dinamica basata su full_name/bio
+  useEffect(() => {
+    if (!data) return;
+    const title = data.full_name || data.company_name || 'Istruttore/Organizzatore di apnea';
+    const bio = (data.bio || '').replace(/\s+/g, ' ').trim();
+    const descriptor = bio ? `${bio.slice(0, 160)}` : `Profilo di ${title} su WeApnea: informazioni, contatti e attività.`;
+    let meta: HTMLMetaElement | null = document.querySelector('meta[name="description"]');
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.setAttribute('name', 'description');
+      document.head.appendChild(meta);
+    }
+    meta.setAttribute('content', descriptor);
+  }, [data]);
+
   const content = isLoading ? (
     <div className="min-h-[50vh] flex items-center justify-center text-gray-500">Caricamento...</div>
   ) : error || !data ? (
