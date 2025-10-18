@@ -17,6 +17,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Stripe = require('stripe');
 const { Resend } = require('resend');
+const fsp = require('fs/promises');
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5174;
 const DATABASE_URL = process.env.POSTGRES_URL || process.env.DATABASE_URL || process.env.RENDER_EXTERNAL_DB_URL;
@@ -37,9 +38,72 @@ const pool = new Pool({
   ssl: sslRequired ? { rejectUnauthorized: false } : false,
 });
 
+// --- Automatic SQL migrations runner (idempotent) ---
+async function runMigrationsAtStartup() {
+  // Allow disabling via env if needed
+  if (String(process.env.AUTO_MIGRATE_DB || 'true').toLowerCase() !== 'true') {
+    console.log('[migrate] AUTO_MIGRATE_DB=false, skipping');
+    return;
+  }
+  try {
+    const client = await pool.connect();
+    try {
+      await client.query(`CREATE TABLE IF NOT EXISTS public._migrations (
+        id SERIAL PRIMARY KEY,
+        filename TEXT UNIQUE NOT NULL,
+        applied_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )`);
+
+      // Detect migrations directory: env MIGRATIONS_DIR or default to scripts/migrations
+      const defaultDir = path.join(__dirname, '..', 'scripts', 'migrations');
+      const migrationsDir = process.env.MIGRATIONS_DIR ? path.resolve(process.env.MIGRATIONS_DIR) : defaultDir;
+      let files = [];
+      try {
+        const entries = await fsp.readdir(migrationsDir);
+        files = entries.filter(f => f.endsWith('.sql')).sort((a, b) => a.localeCompare(b));
+      } catch (e) {
+        console.warn('[migrate] migrations dir not found:', migrationsDir);
+      }
+      if (!files.length) {
+        console.log('[migrate] no migrations to apply');
+        client.release();
+        return;
+      }
+
+      const { rows } = await client.query('SELECT filename FROM public._migrations');
+      const done = new Set(rows.map(r => r.filename));
+
+      for (const fname of files) {
+        if (done.has(fname)) continue;
+        const full = path.join(migrationsDir, fname);
+        let sql;
+        try { sql = await fsp.readFile(full, 'utf8'); } catch (e) { console.warn('[migrate] cannot read', full, e?.message || e); continue; }
+        console.log('[migrate] applying', fname);
+        try {
+          await client.query('BEGIN');
+          await client.query(sql);
+          await client.query('INSERT INTO public._migrations(filename) VALUES($1)', [fname]);
+          await client.query('COMMIT');
+          console.log('[migrate] ✓', fname);
+        } catch (e) {
+          await client.query('ROLLBACK');
+          console.error('[migrate] failed', fname, e?.message || e);
+          // Don't crash the server; continue to allow runtime ensures to fix critical bits
+        }
+      }
+    } finally {
+      client.release();
+    }
+  } catch (e) {
+    console.warn('[migrate] startup migrations error:', e?.message || e);
+  }
+}
+
 // Ensure required schema bits exist (safe to run at startup)
 (async () => {
   try {
+    // Run full SQL migrations first (idempotent)
+    await runMigrationsAtStartup();
     // Ensure optional columns/tables exist to avoid runtime failures if migrations weren't applied yet
     await pool.query("ALTER TABLE IF NOT EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
     // Simple key-value app settings store (for UI-configurable options like past-events position)
