@@ -280,10 +280,21 @@ const Profile = () => {
 
     setLoading(true);
     try {
-      const slug = formData.public_slug?.trim() ? slugify(formData.public_slug) : "";
+      // Autogenera slug se visibilità attiva e slug mancante
+      let computedSlug = formData.public_slug?.trim() ? slugify(formData.public_slug) : "";
+      if (formData.public_profile_enabled && !computedSlug) {
+        const base = formData.full_name || formData.company_name || user.email?.split('@')[0] || '';
+        computedSlug = slugify(base);
+        if (!computedSlug) {
+          throw new Error('Slug mancante');
+        }
+      }
+      if (formData.public_profile_enabled && slugStatus === 'taken') {
+        throw new Error('Slug non disponibile');
+      }
       const dataToUpdate: any = {
         ...formData,
-        public_slug: slug || null,
+        public_slug: computedSlug || null,
         scadenza_brevetto: formData.scadenza_brevetto || null,
         scadenza_certificato_medico: formData.scadenza_certificato_medico || null,
         scadenza_assicurazione: formData.scadenza_assicurazione || null,
@@ -565,7 +576,17 @@ const Profile = () => {
                       <Switch
                         id="public_profile_enabled"
                         checked={formData.public_profile_enabled}
-                        onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_profile_enabled: Boolean(v) }))}
+                        onCheckedChange={(v) => {
+                          const enabled = Boolean(v);
+                          setFormData(prev => {
+                            let nextSlug = prev.public_slug;
+                            if (enabled && (!nextSlug || !nextSlug.trim())) {
+                              const base = prev.full_name || prev.company_name || user?.email?.split('@')[0] || '';
+                              nextSlug = slugify(base);
+                            }
+                            return { ...prev, public_profile_enabled: enabled, public_slug: nextSlug };
+                          });
+                        }}
                       />
                     </div>
 
@@ -837,7 +858,17 @@ const Profile = () => {
             {/* Company-specific extra content can be added here if needed */}
 
             <div className="flex justify-end mt-6">
-              <Button type="submit" disabled={loading} className="w-full md:w-auto">
+              <Button
+                type="submit"
+                disabled={
+                  loading || (
+                    formData.public_profile_enabled && (
+                      !formData.public_slug?.trim() || slugStatus === 'taken'
+                    )
+                  )
+                }
+                className="w-full md:w-auto"
+              >
                 {loading ? t('profile.buttons.saving', 'Salvando...') : t('profile.buttons.save', 'Salva Modifiche')}
               </Button>
             </div>
