@@ -181,9 +181,10 @@ async function detectSchema() {
     // Ensure blog_articles.language column exists (auto-migration light)
     await ensureBlogLanguageColumn();
 
-    // Detect public profile fields presence
-    const r3 = await pool.query(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='public_profile_enabled'`);
-    HAS_PUBLIC_PROFILE_FIELDS = r3.rowCount > 0;
+    // Detect public profile fields presence (require both enabled flag and slug column)
+    const r3a = await pool.query(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='public_profile_enabled'`);
+    const r3b = await pool.query(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='public_slug'`);
+    HAS_PUBLIC_PROFILE_FIELDS = (r3a.rowCount > 0) && (r3b.rowCount > 0);
     if (!HAS_PUBLIC_PROFILE_FIELDS) console.warn('[startup] profiles.public_profile_* NOT present');
   } catch (e) {
     console.warn('[startup] schema detection failed:', e?.message || e);
@@ -570,11 +571,26 @@ app.get('/api/profile/slug-availability/:slug', requireAuth, async (req, res) =>
     if (!HAS_PUBLIC_PROFILE_FIELDS) {
       try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
     }
-    const { rows } = await pool.query(
-      `SELECT id FROM profiles WHERE lower(public_slug) = lower($1) LIMIT 1`,
-      [slug]
-    );
-    const row = rows[0];
+    const doQuery = async () => {
+      const { rows } = await pool.query(
+        `SELECT id FROM profiles WHERE lower(public_slug) = lower($1) LIMIT 1`,
+        [slug]
+      );
+      return rows[0];
+    };
+    let row;
+    try {
+      row = await doQuery();
+    } catch (e) {
+      const msg = String(e?.message || '');
+      if (msg.toLowerCase().includes('column') && msg.toLowerCase().includes('public_slug')) {
+        // Prova a creare le colonne e ritenta una volta
+        try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
+        row = await doQuery();
+      } else {
+        throw e;
+      }
+    }
     if (!row) return res.json({ available: true, mine: false });
     const mine = row.id === req.user?.id;
     return res.json({ available: mine, mine });
