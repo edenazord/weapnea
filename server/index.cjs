@@ -150,7 +150,8 @@ app.set('trust proxy', true);
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 // Rispondi ai preflight CORS per tutte le route
-app.options('*', cors({ origin: true, credentials: true }));
+// Express 5 non accetta '*' come path: usa una RegExp per catturare tutte le OPTIONS
+app.options(/.*/, cors({ origin: true, credentials: true }));
 // serve static files from public (to expose uploaded images)
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 // Static mount per /public/uploads anche se UPLOADS_DIR è esterno alla cartella public
