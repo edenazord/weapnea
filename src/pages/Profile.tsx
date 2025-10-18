@@ -28,6 +28,7 @@ import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import { useDebounce } from "@/hooks/useDebounce";
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
 type BestEntry = { discipline: BestDiscipline; value: string };
@@ -76,6 +77,8 @@ const Profile = () => {
   });
 
   const [bestEntries, setBestEntries] = useState<BestEntry[]>([]);
+  const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken" | "error">("idle");
+  const debouncedPublicSlug = useDebounce(formData.public_slug, 400);
 
   type EventItem = {
     id: string;
@@ -179,6 +182,39 @@ const Profile = () => {
       }
     }
   }, [user]);
+
+  // Live check disponibilità slug pubblico
+  useEffect(() => {
+    let cancelled = false;
+    async function check() {
+      if (!formData.public_profile_enabled) { setSlugStatus('idle'); return; }
+      const slug = debouncedPublicSlug?.trim();
+      if (!slug) { setSlugStatus('idle'); return; }
+      setSlugStatus('checking');
+      try {
+        // Endpoint di verifica: ritorna 200 con {available:boolean}
+        // Se non esiste un endpoint dedicato, tentiamo un GET sul profilo pubblico:
+        // - 200: se appartiene ad un altro utente => taken; se appartiene a noi => available
+        // - 404: available
+        const res = await apiGet(`/api/instructors/slug/${encodeURIComponent(slug)}`).catch((e:any) => e);
+        if (cancelled) return;
+        if (res && typeof res === 'object' && res.id) {
+          // Se è il nostro profilo, accettiamo lo slug
+          if (res.id === user?.id) setSlugStatus('available'); else setSlugStatus('taken');
+        } else if (res instanceof Error) {
+          const msg = String(res.message || '');
+          if (msg.includes(' 404 ') || msg.toLowerCase().includes('not found')) setSlugStatus('available'); else setSlugStatus('error');
+        } else {
+          // risposta inattesa => consideriamo errore
+          setSlugStatus('error');
+        }
+      } catch {
+        if (!cancelled) setSlugStatus('error');
+      }
+    }
+    check();
+    return () => { cancelled = true; };
+  }, [debouncedPublicSlug, formData.public_profile_enabled, user?.id]);
 
   useEffect(() => {
     const loadParticipations = async () => {
@@ -520,6 +556,17 @@ const Profile = () => {
                       />
                       <div className="flex items-center gap-3 mt-2">
                         <p className="text-xs text-muted-foreground">URL: /instructor/{formData.public_slug || '<slug>'}</p>
+                        {formData.public_profile_enabled && (
+                          slugStatus === 'checking' ? (
+                            <span className="text-xs text-blue-600">Verifica disponibilità...</span>
+                          ) : slugStatus === 'available' ? (
+                            <span className="text-xs text-green-600">Disponibile</span>
+                          ) : slugStatus === 'taken' ? (
+                            <span className="text-xs text-red-600">Non disponibile</span>
+                          ) : slugStatus === 'error' ? (
+                            <span className="text-xs text-amber-600">Impossibile verificare ora</span>
+                          ) : null
+                        )}
                         {formData.public_profile_enabled && formData.public_slug && (
                           <>
                             <Button asChild size="sm" variant="outline">

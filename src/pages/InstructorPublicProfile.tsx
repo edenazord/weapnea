@@ -1,4 +1,5 @@
 import { useParams, Link } from "react-router-dom";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,22 @@ export default function InstructorPublicProfile() {
     },
     enabled: !!slug,
   });
+
+  // Set canonical URL dynamically when data is available
+  useEffect(() => {
+    if (!data?.public_slug) return;
+    const canonicalHref = `${window.location.origin}/instructor/${data.public_slug}`;
+    let link: HTMLLinkElement | null = document.querySelector('link[rel="canonical"]');
+    if (!link) {
+      link = document.createElement('link');
+      link.setAttribute('rel', 'canonical');
+      document.head.appendChild(link);
+    }
+    link.setAttribute('href', canonicalHref);
+    return () => {
+      // opzionale: non rimuoviamo il canonical, lasciamo l'ultimo valore settato
+    };
+  }, [data?.public_slug]);
 
   const content = isLoading ? (
     <div className="min-h-[50vh] flex items-center justify-center text-gray-500">Caricamento...</div>
