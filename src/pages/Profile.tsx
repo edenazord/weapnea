@@ -18,6 +18,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link } from "react-router-dom";
+import { buildFriendlyEventPath } from "@/lib/seo-utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
@@ -397,7 +398,7 @@ const Profile = () => {
                           </div>
                           <div className="flex items-center gap-2">
                             <Button asChild variant="outline" size="sm">
-                              <Link to={`/events/${p.events.slug}`}>
+                              <Link to={buildFriendlyEventPath(p.events.slug)}>
                                 <Eye className="h-4 w-4 mr-1" />
                                 {t('common.view', 'Visualizza')}
                               </Link>

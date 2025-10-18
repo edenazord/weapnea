@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Eye } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link } from "react-router-dom";
+import { buildFriendlyEventPath } from "@/lib/seo-utils";
 import { apiGet } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { format, parseISO, isValid } from "date-fns";
@@ -125,7 +126,7 @@ const MyEvents = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button asChild variant="outline" size="sm">
-                        <Link to={`/events/${participation.events.slug}`}>
+                        <Link to={buildFriendlyEventPath(participation.events.slug)}>
                           <Eye className="h-4 w-4 mr-1" />
                           Visualizza
                         </Link>

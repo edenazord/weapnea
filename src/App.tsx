@@ -12,12 +12,15 @@ import AuthPage from "./pages/Auth";
 import AuthConfirm from "./pages/AuthConfirm";
 import PasswordResetPage from "./pages/PasswordReset";
 import EventDetail from "./pages/EventDetail";
+import { Navigate, useParams } from "react-router-dom";
+import { buildFriendlyEventPath } from "@/lib/seo-utils";
 import Dashboard from "./pages/Dashboard";
 import AdminDashboard from "./pages/Admin";
 import UpcomingEvents from "./pages/UpcomingEvents";
 import CategoryEvents from "./pages/CategoryEvents";
 import Blog from "./pages/Blog";
 import BlogDetail from "./pages/BlogDetail";
+import { parseFriendlyBlogSlug } from "@/lib/seo-utils";
 import Forum from "./pages/Forum";
 import ForumTopic from "./pages/ForumTopic";
 import NewForumTopic from "./pages/NewForumTopic";
@@ -45,6 +48,13 @@ const queryClient = new QueryClient({
 
 console.log('App component loading...');
 
+// Redirect component: legacy /events/:slug -> SEO-friendly path
+const LegacyEventRedirect = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const target = slug ? buildFriendlyEventPath(slug) : "/";
+  return <Navigate to={target} replace />;
+};
+
 const App = () => {
   console.log('App component rendering...');
   
@@ -63,7 +73,10 @@ const App = () => {
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/auth/confirm" element={<AuthConfirm />} />
                   <Route path="/password-reset" element={<PasswordResetPage />} />
-                  <Route path="/events/:slug" element={<EventDetail />} />
+                  {/* Legacy path: redirect to friendly URL */}
+                  <Route path="/events/:slug" element={<LegacyEventRedirect />} />
+                  {/* SEO-friendly public event route (root-level, single segment) */}
+                  <Route path=":slug" element={<EventDetail />} />
                   {/* Public SEO-friendly route by slug must come before the id route if patterns overlap */}
                   <Route path="/instructor/:slug" element={<InstructorPublicProfile />} />
                   {/* Internal/admin route by id moved under /instructor/id/:id to avoid ambiguity */}
@@ -71,6 +84,7 @@ const App = () => {
                   <Route path="/eventi-imminenti" element={<UpcomingEvents />} />
                   <Route path="/categories/:categorySlug" element={<CategoryEvents />} />
                   <Route path="/blog" element={<Blog />} />
+                  {/* Blog detail with friendly slug support */}
                   <Route path="/blog/:slug" element={<BlogDetail />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/cookie-policy" element={<CookiePolicy />} />

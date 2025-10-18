@@ -10,6 +10,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getBlogArticles } from "@/lib/blog-api";
 import { Link } from "react-router-dom";
+import { buildFriendlyBlogPath } from "@/lib/seo-utils";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -103,7 +104,7 @@ const Blog = () => {
                 </div>
                 
                 <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300">
-                  <Link to={`/blog/${article.slug}`}>
+                  <Link to={buildFriendlyBlogPath(article.slug, article.created_at)}>
                     {article.title}
                   </Link>
                 </h3>
@@ -128,7 +129,7 @@ const Blog = () => {
                 </div>
                 
                 <Button asChild className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 rounded-full">
-                  <Link to={`/blog/${article.slug}`}>{t('blog_page.read_more', 'Leggi di più')}</Link>
+                  <Link to={buildFriendlyBlogPath(article.slug, article.created_at)}>{t('blog_page.read_more', 'Leggi di più')}</Link>
                 </Button>
               </CardContent>
             </Card>

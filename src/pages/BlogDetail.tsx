@@ -7,6 +7,7 @@ import { Calendar, User, ArrowLeft, Share2, Sparkles } from "lucide-react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { getBlogArticleBySlug } from "@/lib/blog-api";
+import { parseFriendlyBlogSlug } from "@/lib/seo-utils";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
@@ -18,10 +19,13 @@ const BlogDetail = () => {
   const { toast } = useToast();
   const { t } = useLanguage();
 
+  // Supporta slug SEO-friendly "/blog/DD-mese-YYYY-titolo" estraendo solo lo slug del titolo
+  const effectiveSlug = slug ? (parseFriendlyBlogSlug(slug)?.titleSlug ?? slug) : undefined;
+
   const { data: article, isLoading, error } = useQuery({
-    queryKey: ['blog-article', slug],
-    queryFn: () => getBlogArticleBySlug(slug!),
-    enabled: !!slug,
+    queryKey: ['blog-article', effectiveSlug],
+    queryFn: () => getBlogArticleBySlug(effectiveSlug!),
+    enabled: !!effectiveSlug,
   });
 
   const formatDate = (dateString: string) => {

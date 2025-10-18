@@ -23,6 +23,7 @@ import { apiGet } from "@/lib/apiClient";
 import { ensureAbsoluteUrl } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { friendlyToCanonicalSlug } from "@/lib/seo-utils";
 
 const EventDetailSkeleton = () => (
     <div className="min-h-screen bg-blue-50">
@@ -90,7 +91,7 @@ const EventDetail = () => {
 
     console.log("🔍 EventDetail - Parametro slug ricevuto dalla URL:", slug);
 
-    const { data: event, isLoading, isError, error } = useQuery<EventWithCategory>({
+        const { data: event, isLoading, isError, error } = useQuery<EventWithCategory>({
       queryKey: ['event', slug],
       queryFn: async () => {
         if (!slug) {
@@ -98,11 +99,13 @@ const EventDetail = () => {
           throw new Error('Slug evento mancante');
         }
         
-        console.log("🔍 EventDetail - Tentativo di recupero evento con slug:", slug);
+                // Normalizza slug: supporta sia canonico (YYYY-MM-DD-...) sia friendly (DD-mese-YYYY-...)
+                const maybeCanonical = friendlyToCanonicalSlug(slug) || slug;
+                console.log("🔍 EventDetail - Tentativo di recupero evento con slug:", slug, "-> normalizzato:", maybeCanonical);
         
         // Verifica se è un UUID o uno slug
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        const isUUID = uuidRegex.test(slug);
+                const isUUID = uuidRegex.test(maybeCanonical);
         
         console.log("🔍 EventDetail - Is UUID?", isUUID);
         
@@ -110,27 +113,27 @@ const EventDetail = () => {
           // Se è un UUID, cerca per ID
           console.log("📍 EventDetail - Ricerca per ID UUID");
           try {
-            const eventById = await getEventById(slug);
+                        const eventById = await getEventById(maybeCanonical);
             console.log("✅ EventDetail - Evento trovato per ID:", eventById.title, "Slug:", eventById.slug);
             return eventById;
           } catch (idError) {
             console.error("❌ EventDetail - Errore ricerca per ID:", idError);
-            throw new Error(`Evento non trovato per ID: ${slug}`);
+                        throw new Error(`Evento non trovato per ID: ${maybeCanonical}`);
           }
         } else {
           // Se non è un UUID, prova prima con lo slug
           console.log("📍 EventDetail - Ricerca per slug");
           try {
-            const eventBySlug = await getEventBySlug(slug);
+                        const eventBySlug = await getEventBySlug(maybeCanonical);
             console.log("✅ EventDetail - Evento trovato per slug:", eventBySlug.title, "ID:", eventBySlug.id);
             return eventBySlug;
           } catch (slugError) {
             console.error("❌ EventDetail - Errore ricerca per slug:", slugError);
-            throw new Error(`Evento non trovato per slug: ${slug}`);
+                        throw new Error(`Evento non trovato per slug: ${maybeCanonical}`);
           }
         }
       },
-      enabled: !!slug,
+            enabled: !!slug,
     });
 
         // Organizer profile query (must be declared unconditionally after the first query)

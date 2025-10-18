@@ -16,6 +16,7 @@ import { EventParticipantsModal } from "@/components/EventParticipantsModal";
 import { getUserPackages } from "@/lib/packages-api";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
+import { buildFriendlyEventPath } from "@/lib/seo-utils";
 import { parseISO, isValid, startOfDay, format } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
 import { useEffect, useState } from "react";
@@ -373,7 +374,7 @@ const Dashboard = () => {
                                     <div className="flex gap-2 ml-4">
                                         {/* Link rapido alla pagina evento */}
                                         <Button asChild variant="ghost" size="icon" className="h-8 w-8" title="Apri evento">
-                                            <Link to={`/events/${event.slug}`}>
+                                            <Link to={buildFriendlyEventPath(event.slug)}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
                                             </Link>
                                         </Button>
@@ -456,7 +457,7 @@ const Dashboard = () => {
                                                 {/* Icona iscritti: apre modal con lista */}
                                                 <EventParticipantsModal eventId={event.id} eventTitle={event.title} />
                                         <Button asChild variant="outline" size="sm">
-                                            <Link to={`/events/${event.slug}`}>Dettagli</Link>
+                                            <Link to={buildFriendlyEventPath(event.slug)}>Dettagli</Link>
                                         </Button>
                                     </div>
                                 </div>

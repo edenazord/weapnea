@@ -8,6 +8,7 @@ import { Calendar, MapPin, Users, Euro, Image as ImageIcon, Target } from "lucid
 import { Link } from "react-router-dom";
 import type { EventWithCategory } from "@/lib/api";
 import { ensureAbsoluteUrl } from "@/lib/utils";
+import { buildFriendlyEventPath } from "@/lib/seo-utils";
 import { localizeCategoryName } from "@/lib/i18n-utils";
 import { getPublicConfig } from "@/lib/publicConfig";
 
@@ -139,7 +140,7 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
           </div>
         </div>
 
-        <Link to={`/events/${event.slug}`} className="block mt-2">
+  <Link to={buildFriendlyEventPath(event.slug)} className="block mt-2">
           <Button 
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs"
             size="sm"

@@ -146,7 +146,7 @@ export const EventPaymentButton = ({
           <CreditCard className="mr-2 h-4 w-4" />
           {isAlreadyRegistered
             ? 'Già iscritto'
-            : (eventsFree === false && eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti Gratis')}
+            : (eventsFree === false && eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti')}
         </>
       )}
     </Button>
