@@ -1245,7 +1245,6 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
             public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications
            FROM profiles
            WHERE lower(public_slug) = lower($1)
-             AND role IN ('instructor','company')
              AND COALESCE(is_active, true) = true
              AND COALESCE(public_profile_enabled, false) = true
            LIMIT 1`,
@@ -1269,7 +1268,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
       [ownerId]
     );
     const base = baseRows[0];
-    if (!base || !['instructor','company'].includes(base.role) || !base.is_active) {
+    if (!base || !base.is_active) {
       return res.status(404).json({ error: 'Not found' });
     }
     const pp = await getPublicProfileSettings(ownerId);
