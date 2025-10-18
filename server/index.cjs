@@ -567,9 +567,8 @@ app.put('/api/profile', requireAuth, async (req, res) => {
       'assicurazione','scadenza_assicurazione','instagram_contact',
       'company_name','vat_number','company_address','phone'
     ];
-    if (HAS_PUBLIC_PROFILE_FIELDS) {
-      allowed.push('public_profile_enabled','public_slug','public_show_bio','public_show_instagram','public_show_company_info','public_show_certifications');
-    }
+    // Accetta sempre i flag pubblici; se le colonne mancassero, effettueremo un ensure e un retry sotto
+    allowed.push('public_profile_enabled','public_slug','public_show_bio','public_show_instagram','public_show_company_info','public_show_certifications');
     if (HAS_PERSONAL_BEST) allowed.push('personal_best');
     const p = req.body || {};
     // Sanitizza/normalizza slug lato server (sicurezza/coerenza)
@@ -598,18 +597,38 @@ app.put('/api/profile', requireAuth, async (req, res) => {
       return `${k} = $${i+1}`;
     }).join(', ');
     const sql = `UPDATE profiles SET ${sets}, updated_at = now() WHERE id = $${fields.length+1} RETURNING *`;
-    let rows;
-    try {
-      ({ rows } = await pool.query(sql, [...values, req.user.id]));
-    } catch (e) {
-      const code = e && e.code;
-      const msg = String(e?.message || '');
-      // unique violation on lower(public_slug) index
-      if (code === '23505' || msg.includes('uniq_profiles_public_slug_lower')) {
-        return res.status(409).json({ error: 'public_slug conflict' });
+    async function runUpdate(withEnsure = false) {
+      if (withEnsure) {
+        try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
       }
-      throw e;
+      try {
+        const { rows } = await pool.query(sql, [...values, req.user.id]);
+        return rows;
+      } catch (e) {
+        const code = e && e.code;
+        const msg = String(e?.message || '');
+        // unique violation on lower(public_slug) index
+        if (code === '23505' || msg.includes('uniq_profiles_public_slug_lower')) {
+          return res.status(409).json({ error: 'public_slug conflict' });
+        }
+        // missing column for public profile flags -> ensure and retry once
+        if (msg.toLowerCase().includes('column') && (
+          msg.toLowerCase().includes('public_profile_enabled') ||
+          msg.toLowerCase().includes('public_slug') ||
+          msg.toLowerCase().includes('public_show_bio') ||
+          msg.toLowerCase().includes('public_show_instagram') ||
+          msg.toLowerCase().includes('public_show_company_info') ||
+          msg.toLowerCase().includes('public_show_certifications')
+        )) {
+          if (!withEnsure) {
+            return runUpdate(true);
+          }
+        }
+        throw e;
+      }
     }
+    const rows = await runUpdate(false);
+    if (!Array.isArray(rows)) return; // response already sent (e.g., 409)
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json({ user: rows[0] });
   } catch (e) {
