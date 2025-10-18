@@ -149,6 +149,8 @@ const app = express();
 app.set('trust proxy', true);
 app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+// Rispondi ai preflight CORS per tutte le route
+app.options('*', cors({ origin: true, credentials: true }));
 // serve static files from public (to expose uploaded images)
 app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 // Static mount per /public/uploads anche se UPLOADS_DIR è esterno alla cartella public
@@ -615,8 +617,8 @@ app.put('/api/profile', requireAuth, async (req, res) => {
   }
 });
 
-// Slug availability (auth required to identify own slug). Consider all profiles, even if public disabled.
-app.get('/api/profile/slug-availability/:slug', requireAuth, async (req, res) => {
+// Slug availability (public). Consider all profiles, even if public disabled.
+app.get('/api/profile/slug-availability/:slug', async (req, res) => {
   const raw = String(req.params.slug || '').trim();
   if (!raw) return res.status(400).json({ available: false, error: 'empty slug' });
   // Normalizza come lato update
@@ -650,15 +652,20 @@ app.get('/api/profile/slug-availability/:slug', requireAuth, async (req, res) =>
         // Prova a creare le colonne e ritenta una volta
         try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
         row = await doQuery();
+      } else if (msg.toLowerCase().includes('relation') && msg.toLowerCase().includes('profiles')) {
+        // Se la tabella non esiste ancora, prova migrazioni automatiche e ritenta
+        try { await runMigrationsAtStartup(); await detectSchema(); } catch (_) {}
+        row = await doQuery();
       } else {
         throw e;
       }
     }
     if (!row) return res.json({ available: true, mine: false });
-    const mine = row.id === req.user?.id;
-    return res.json({ available: mine, mine });
+    // Senza auth non possiamo sapere se è "mio": restituiamo solo available=false
+    return res.json({ available: false });
   } catch (e) {
-    return res.status(500).json({ available: false, error: String(e?.message || e) });
+    const msg = String(e?.message || e);
+    return res.status(500).json({ available: false, error: msg });
   }
 });
 
