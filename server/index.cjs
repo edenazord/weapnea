@@ -311,12 +311,37 @@ const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'WeApnea <noreply@exa
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 // --- App settings helpers ---
+async function ensureAppSettingsTable() {
+  try {
+    await pool.query(`CREATE TABLE IF NOT EXISTS public.app_settings (
+      key text PRIMARY KEY,
+      value jsonb NOT NULL,
+      updated_at timestamptz NOT NULL DEFAULT now()
+    )`);
+  } catch (e) {
+    console.warn('[settings] ensure table failed:', e?.message || e);
+    throw e;
+  }
+}
+
 async function getSettingValue(key, defaultValue = null) {
   try {
+    try { await ensureAppSettingsTable(); } catch {}
     const { rows } = await pool.query('SELECT value FROM public.app_settings WHERE key = $1', [key]);
     if (rows[0] && rows[0].value !== undefined && rows[0].value !== null) return rows[0].value;
     return defaultValue;
   } catch (e) {
+    const msg = String(e?.message || e).toLowerCase();
+    if (msg.includes('relation') && msg.includes('app_settings')) {
+      try {
+        await ensureAppSettingsTable();
+        const { rows } = await pool.query('SELECT value FROM public.app_settings WHERE key = $1', [key]);
+        if (rows[0] && rows[0].value !== undefined && rows[0].value !== null) return rows[0].value;
+      } catch (e2) {
+        console.warn('[settings] get retry failed:', key, e2?.message || e2);
+      }
+      return defaultValue;
+    }
     console.warn('[settings] get failed:', key, e?.message || e);
     return defaultValue;
   }
@@ -324,6 +349,7 @@ async function getSettingValue(key, defaultValue = null) {
 
 async function setSettingValue(key, value) {
   try {
+    try { await ensureAppSettingsTable(); } catch {}
     await pool.query(
       `INSERT INTO public.app_settings(key, value, updated_at)
        VALUES ($1, $2, now())
@@ -332,6 +358,22 @@ async function setSettingValue(key, value) {
     );
     return { ok: true };
   } catch (e) {
+    const msg = String(e?.message || e).toLowerCase();
+    if (msg.includes('relation') && msg.includes('app_settings')) {
+      try {
+        await ensureAppSettingsTable();
+        await pool.query(
+          `INSERT INTO public.app_settings(key, value, updated_at)
+           VALUES ($1, $2, now())
+           ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now()`,
+          [key, value]
+        );
+        return { ok: true };
+      } catch (e2) {
+        console.warn('[settings] set retry failed:', key, e2?.message || e2);
+        throw e2;
+      }
+    }
     console.warn('[settings] set failed:', key, e?.message || e);
     throw e;
   }
@@ -363,6 +405,7 @@ async function claimSlug(userId, slugLower) {
 
 async function releaseSlug(slugLower) {
   try {
+    try { await ensureAppSettingsTable(); } catch {}
     await pool.query('DELETE FROM public.app_settings WHERE key = $1', [PP_SLUG_KEY(slugLower)]);
   } catch (e) {
     console.warn('[public_profile] releaseSlug failed', slugLower, e?.message || e);
