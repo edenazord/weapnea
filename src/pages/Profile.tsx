@@ -343,7 +343,7 @@ const Profile = () => {
         {/* Ruolo rimosso su richiesta */}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="w-full overflow-x-auto flex gap-2 md:grid md:grid-cols-4">
+          <TabsList className="w-full overflow-x-auto flex gap-2 md:grid md:grid-cols-5">
             <TabsTrigger value="events" className="whitespace-nowrap">
               <Calendar className="h-4 w-4 mr-2" />
               {t('profile.tabs.events', 'Eventi')}
@@ -360,6 +360,11 @@ const Profile = () => {
               <FileText className="h-4 w-4 mr-2" />
               {t('profile.tabs.bests', 'Record')}
             </TabsTrigger>
+            {(user.role === 'instructor' || user.role === 'company') && (
+              <TabsTrigger value="visibility" className="whitespace-nowrap">
+                Visibilità
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <form onSubmit={handleSubmit}>
@@ -481,12 +486,12 @@ const Profile = () => {
 
             </TabsContent>
 
-            {/* Profilo Pubblico - visibile per istruttori/aziende */}
+            {/* Visibilità - nuova tab dedicata */}
             {(user.role === 'instructor' || user.role === 'company') && (
-              <TabsContent value="personal">
-                <Card className="mt-6">
+              <TabsContent value="visibility">
+                <Card>
                   <CardHeader>
-                    <CardTitle>Profilo Pubblico</CardTitle>
+                    <CardTitle>Visibilità</CardTitle>
                     <CardDescription>
                       Rendi visibile una pagina pubblica del tuo profilo su un URL parlante. Puoi scegliere cosa mostrare.
                     </CardDescription>
@@ -513,7 +518,31 @@ const Profile = () => {
                         placeholder="es. nome-cognome"
                         disabled={!formData.public_profile_enabled}
                       />
-                      <p className="text-xs text-muted-foreground mt-1">URL: /instructor/{formData.public_slug || '<slug>'}</p>
+                      <div className="flex items-center gap-3 mt-2">
+                        <p className="text-xs text-muted-foreground">URL: /instructor/{formData.public_slug || '<slug>'}</p>
+                        {formData.public_profile_enabled && formData.public_slug && (
+                          <>
+                            <Button asChild size="sm" variant="outline">
+                              <Link to={`/instructor/${formData.public_slug}`}>Apri profilo pubblico</Link>
+                            </Button>
+                            <Button
+                              size="sm"
+                              type="button"
+                              variant="secondary"
+                              onClick={() => {
+                                const url = `${window.location.origin}/instructor/${formData.public_slug}`;
+                                navigator.clipboard.writeText(url).then(() => {
+                                  toast({ title: 'Link copiato', description: 'URL del profilo pubblico copiato negli appunti.' });
+                                }).catch(() => {
+                                  toast({ title: 'Impossibile copiare', description: 'Copia manualmente questo URL: ' + url });
+                                });
+                              }}
+                            >
+                              Copia link
+                            </Button>
+                          </>
+                        )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
