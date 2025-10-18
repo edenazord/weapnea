@@ -337,6 +337,38 @@ async function setSettingValue(key, value) {
   }
 }
 
+// --- Fallback public profile storage via app_settings ---
+const PP_USER_KEY = (userId) => `public_profile:${userId}`;
+const PP_SLUG_KEY = (slugLower) => `public_slug:${slugLower}`;
+
+async function getPublicProfileSettings(userId) {
+  const val = await getSettingValue(PP_USER_KEY(userId), null);
+  return (val && typeof val === 'object') ? val : null;
+}
+
+async function setPublicProfileSettings(userId, settings) {
+  return setSettingValue(PP_USER_KEY(userId), settings || {});
+}
+
+async function getSlugOwner(slugLower) {
+  const val = await getSettingValue(PP_SLUG_KEY(slugLower), null);
+  if (val && typeof val === 'object' && val.user_id) return val.user_id;
+  return null;
+}
+
+async function claimSlug(userId, slugLower) {
+  // Upsert mapping slug->user
+  await setSettingValue(PP_SLUG_KEY(slugLower), { user_id: userId });
+}
+
+async function releaseSlug(slugLower) {
+  try {
+    await pool.query('DELETE FROM public.app_settings WHERE key = $1', [PP_SLUG_KEY(slugLower)]);
+  } catch (e) {
+    console.warn('[public_profile] releaseSlug failed', slugLower, e?.message || e);
+  }
+}
+
 async function sendEmail({ to, subject, html }) {
   if (!resend) {
     console.warn('Resend not configured, skipping email:', subject, to);
@@ -550,6 +582,18 @@ app.get('/api/profile', requireAuth, async (req, res) => {
   const { rows } = await pool.query(sql, [req.user.id]);
     const user = rows[0];
     if (!user) return res.status(404).json({ error: 'Not found' });
+    if (!HAS_PUBLIC_PROFILE_FIELDS) {
+      // Usa fallback da app_settings per i flag pubblici
+      const pp = await getPublicProfileSettings(user.id);
+      if (pp) {
+        user.public_profile_enabled = !!pp.enabled;
+        user.public_slug = pp.slug || null;
+        user.public_show_bio = pp.show_bio !== false;
+        user.public_show_instagram = pp.show_instagram !== false;
+        user.public_show_company_info = pp.show_company_info !== false;
+        user.public_show_certifications = pp.show_certifications !== false;
+      }
+    }
     res.json({ user });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
@@ -624,6 +668,42 @@ app.put('/api/profile', requireAuth, async (req, res) => {
           if (!withEnsure) {
             return runUpdate(true);
           }
+          // Se ancora manca, usa fallback app_settings per salvare i flag
+          const pp = await getPublicProfileSettings(req.user.id) || {};
+          const prevSlug = (pp.slug || '').toString().toLowerCase();
+          // Aggiorna i flag dal payload
+          if (fields.includes('public_profile_enabled')) pp.enabled = !!p.public_profile_enabled;
+          if (fields.includes('public_show_bio')) pp.show_bio = !!p.public_show_bio;
+          if (fields.includes('public_show_instagram')) pp.show_instagram = !!p.public_show_instagram;
+          if (fields.includes('public_show_company_info')) pp.show_company_info = !!p.public_show_company_info;
+          if (fields.includes('public_show_certifications')) pp.show_certifications = !!p.public_show_certifications;
+          // Gestione slug fallback con unicità su app_settings
+          if (fields.includes('public_slug')) {
+            const newSlug = (p.public_slug || '').toString().trim().toLowerCase();
+            if (newSlug) {
+              const owner = await getSlugOwner(newSlug);
+              if (owner && owner !== req.user.id) {
+                return res.status(409).json({ error: 'public_slug conflict' });
+              }
+              if (prevSlug && prevSlug !== newSlug) { await releaseSlug(prevSlug); }
+              await claimSlug(req.user.id, newSlug);
+              pp.slug = newSlug;
+            } else {
+              if (prevSlug) await releaseSlug(prevSlug);
+              pp.slug = null;
+            }
+          }
+          await setPublicProfileSettings(req.user.id, pp);
+          // Ritorna lo user originale senza modifiche DB, ma con flags fusi
+          const { rows: r } = await pool.query('SELECT * FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
+          const userRow = r[0] || { id: req.user.id };
+          userRow.public_profile_enabled = !!pp.enabled;
+          userRow.public_slug = pp.slug || null;
+          userRow.public_show_bio = pp.show_bio !== false;
+          userRow.public_show_instagram = pp.show_instagram !== false;
+          userRow.public_show_company_info = pp.show_company_info !== false;
+          userRow.public_show_certifications = pp.show_certifications !== false;
+          return [userRow];
         }
         throw e;
       }
@@ -657,11 +737,16 @@ app.get('/api/profile/slug-availability/:slug', async (req, res) => {
       try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
     }
     const doQuery = async () => {
-      const { rows } = await pool.query(
-        `SELECT id FROM profiles WHERE lower(public_slug) = lower($1) LIMIT 1`,
-        [slug]
-      );
-      return rows[0];
+      if (HAS_PUBLIC_PROFILE_FIELDS) {
+        const { rows } = await pool.query(
+          `SELECT id FROM profiles WHERE lower(public_slug) = lower($1) LIMIT 1`,
+          [slug]
+        );
+        return rows[0];
+      }
+      // Fallback su app_settings
+      const ownerId = await getSlugOwner(slug);
+      return ownerId ? { id: ownerId } : null;
     };
     let row;
     try {
