@@ -334,7 +334,7 @@ const Profile = () => {
       console.error("Errore nell'aggiornamento del profilo:", error);
       toast({
         title: t('profile.toasts.update_error_title', 'Errore'),
-        description: t('profile.toasts.update_error_desc', "Si è verificato un errore nell'aggiornare il profilo."),
+        description: `${t('profile.toasts.update_error_desc', "Si è verificato un errore nell'aggiornare il profilo.")} ${error?.message ? `Dettagli: ${String(error.message)}` : ''}`,
         variant: "destructive",
       });
     } finally {
@@ -603,7 +603,7 @@ const Profile = () => {
                           ) : slugStatus === 'taken' ? (
                             <span className="text-xs text-red-600">Non disponibile</span>
                           ) : slugStatus === 'error' ? (
-                            <span className="text-xs text-amber-600">Impossibile verificare ora</span>
+                            <span className="text-xs text-amber-600">Impossibile verificare ora (server non raggiungibile)</span>
                           ) : null
                         )}
                         {formData.public_profile_enabled && formData.public_slug && (
