@@ -29,8 +29,7 @@ if (!DATABASE_URL) {
 const sslRequired = (
   process.env.DB_SSL === 'true' ||
   process.env.PGSSLMODE === 'require' ||
-  (DATABASE_URL && /(?:^|[?&])sslmode=require(?:&|$)/i.test(DATABASE_URL)) ||
-  process.env.NODE_ENV === 'production'
+  (DATABASE_URL && /(?:^|[?&])sslmode=require(?:&|$)/i.test(DATABASE_URL))
 );
 const pool = new Pool({
   connectionString: DATABASE_URL,
