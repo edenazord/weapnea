@@ -640,7 +640,7 @@ const Profile = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_events">Mostra tab Eventi</Label>
+                          <Label htmlFor="public_show_events">Mostra Eventi</Label>
                           <p className="text-xs text-muted-foreground">Rende visibile la sezione Eventi nella pagina pubblica</p>
                         </div>
                         <Switch
@@ -653,8 +653,8 @@ const Profile = () => {
 
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_personal">Mostra tab Personali</Label>
-                          <p className="text-xs text-muted-foreground">Bio, Instagram e info aziendali (se attive)</p>
+                          <Label htmlFor="public_show_personal">Mostra Personali</Label>
+                          <p className="text-xs text-muted-foreground">Bio, Instagram e info aziendali (se presenti)</p>
                         </div>
                         <Switch
                           id="public_show_personal"
@@ -666,7 +666,7 @@ const Profile = () => {
 
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_certifications">Mostra tab Certificazioni</Label>
+                          <Label htmlFor="public_show_certifications">Mostra Certificazioni</Label>
                           <p className="text-xs text-muted-foreground">Brevetto e assicurazione</p>
                         </div>
                         <Switch
@@ -679,7 +679,7 @@ const Profile = () => {
 
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_records">Mostra tab Record</Label>
+                          <Label htmlFor="public_show_records">Mostra Record</Label>
                           <p className="text-xs text-muted-foreground">Record personali dalla sezione "Record"</p>
                         </div>
                         <Switch

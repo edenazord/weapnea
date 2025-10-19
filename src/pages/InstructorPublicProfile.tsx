@@ -42,6 +42,11 @@ export default function InstructorPublicProfile() {
   const { slug } = useParams<{ slug: string }>();
   const isMobile = useIsMobile();
 
+  const publicCertVisible = (d: PublicInstructor) => {
+    if (d.public_show_certifications === false) return false;
+    return Boolean(d.brevetto || d.assicurazione || d.scadenza_certificato_medico);
+  };
+
   const { data, isLoading, error } = useQuery<PublicInstructor>({
     queryKey: ['public-instructor', slug],
     queryFn: async () => {
@@ -115,7 +120,7 @@ export default function InstructorPublicProfile() {
               </Avatar>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">{data.full_name || 'Nome non specificato'}</h1>
               {data.company_name && <p className="text-lg text-blue-600 mb-2">{data.company_name}</p>}
-              {data.public_show_instagram !== false && data.instagram_contact && (
+              {data.public_show_personal !== false && data.instagram_contact && (
                 <div className="mt-2">
                   <Button variant="outline" size="sm" asChild>
                     <a href={`https://instagram.com/${data.instagram_contact.replace('@','')}`} target="_blank" rel="noopener noreferrer">
@@ -126,7 +131,7 @@ export default function InstructorPublicProfile() {
               )}
             </CardContent>
           </Card>
-          {data.public_show_company_info !== false && data.role === 'company' && (data.company_address || data.vat_number) && (
+          {data.public_show_personal !== false && data.role === 'company' && (data.company_address || data.vat_number) && (
             <Card className="mt-6">
               <CardHeader><CardTitle className="text-lg flex items-center"><MapPin className="w-5 h-5 mr-2"/>Informazioni Aziendali</CardTitle></CardHeader>
               <CardContent>
@@ -143,7 +148,7 @@ export default function InstructorPublicProfile() {
               <CardContent><div className="prose max-w-none text-gray-700 whitespace-pre-wrap">{data.bio}</div></CardContent>
             </Card>
           )}
-          {data.public_show_personal !== false && data.public_show_certifications !== false && (data.brevetto || data.assicurazione || data.scadenza_certificato_medico) && (
+          {data.public_show_personal !== false && publicCertVisible(data) && (
             <Card>
               <CardHeader><CardTitle className="text-xl">Certificazioni</CardTitle></CardHeader>
               <CardContent className="space-y-4">
