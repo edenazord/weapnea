@@ -196,6 +196,11 @@ const Profile = () => {
       if (!formData.public_profile_enabled) { setSlugStatus('idle'); return; }
       const slug = debouncedPublicSlug?.trim();
       if (!slug) { setSlugStatus('idle'); return; }
+      // Se lo slug corrente coincide con quello già assegnato all'utente, non verifichiamo
+      if (user?.public_slug && String(user.public_slug).toLowerCase() === String(slug).toLowerCase()) {
+        setSlugStatus('available');
+        return;
+      }
       setSlugStatus('checking');
       try {
         // Usa endpoint dedicato di availability
@@ -214,7 +219,7 @@ const Profile = () => {
     }
     check();
     return () => { cancelled = true; };
-  }, [debouncedPublicSlug, formData.public_profile_enabled, user?.id]);
+  }, [debouncedPublicSlug, formData.public_profile_enabled, user?.id, user?.public_slug]);
 
   useEffect(() => {
     const loadParticipations = async () => {

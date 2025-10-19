@@ -824,8 +824,26 @@ app.get('/api/profile/slug-availability/:slug', async (req, res) => {
       }
     }
     if (!row) return res.json({ available: true, mine: false });
-    // Senza auth non possiamo sapere se è "mio": restituiamo solo available=false
-    return res.json({ available: false });
+    // Se autenticato, verifica se appartiene al chiamante
+    const auth = req.headers['authorization'] || '';
+    let mine = false;
+    if (auth.startsWith('Bearer ')) {
+      try {
+        const token = auth.slice('Bearer '.length);
+        const payload = jwt.verify(token, JWT_SECRET);
+        if (payload?.id) {
+          if (HAS_PUBLIC_PROFILE_FIELDS) {
+            const { rows: me } = await pool.query('SELECT id FROM profiles WHERE id = $1 AND lower(public_slug) = lower($2) LIMIT 1', [payload.id, slug]);
+            mine = !!me[0];
+          } else {
+            const ownerId = await getSlugOwner(slug);
+            mine = ownerId === payload.id;
+          }
+        }
+      } catch {}
+    }
+    if (mine) return res.json({ available: true, mine: true });
+    return res.json({ available: false, mine: false });
   } catch (e) {
     const msg = String(e?.message || e);
     return res.status(500).json({ available: false, error: msg });
