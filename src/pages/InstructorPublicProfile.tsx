@@ -142,18 +142,37 @@ export default function InstructorPublicProfile() {
           )}
         </div>
         <div className="lg:col-span-2 space-y-6">
-          {data.public_show_personal !== false && data.public_show_bio !== false && data.bio && (
+          {data.public_show_personal !== false && data.public_show_bio !== false && (
             <Card>
               <CardHeader><CardTitle className="text-xl">Chi sono</CardTitle></CardHeader>
-              <CardContent><div className="prose max-w-none text-gray-700 whitespace-pre-wrap">{data.bio}</div></CardContent>
+              <CardContent>
+                {data.bio ? (
+                  <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">{data.bio}</div>
+                ) : (
+                  <div className="text-gray-500">Bio non disponibile</div>
+                )}
+              </CardContent>
             </Card>
           )}
-          {data.public_show_personal !== false && publicCertVisible(data) && (
+          {data.public_show_personal !== false && data.public_show_certifications !== false && (
             <Card>
               <CardHeader><CardTitle className="text-xl">Certificazioni</CardTitle></CardHeader>
               <CardContent className="space-y-4">
-                {data.brevetto && (<div><div className="flex items-center mb-2"><Award className="w-4 h-4 mr-2 text-blue-600"/><p className="font-semibold text-gray-800">Brevetto</p></div><p className="text-gray-600 ml-6">{data.brevetto}</p></div>)}
-                {data.assicurazione && (<div><div className="flex items-center mb-2"><Shield className="w-4 h-4 mr-2 text-green-600"/><p className="font-semibold text-gray-800">Assicurazione</p></div><p className="text-gray-600 ml-6">{data.assicurazione}</p></div>)}
+                {data.brevetto && (
+                  <div>
+                    <div className="flex items-center mb-2"><Award className="w-4 h-4 mr-2 text-blue-600"/><p className="font-semibold text-gray-800">Brevetto</p></div>
+                    <p className="text-gray-600 ml-6">{data.brevetto}</p>
+                  </div>
+                )}
+                {data.assicurazione && (
+                  <div>
+                    <div className="flex items-center mb-2"><Shield className="w-4 h-4 mr-2 text-green-600"/><p className="font-semibold text-gray-800">Assicurazione</p></div>
+                    <p className="text-gray-600 ml-6">{data.assicurazione}</p>
+                  </div>
+                )}
+                {!data.brevetto && !data.assicurazione && (
+                  <div className="text-gray-500">Nessuna certificazione disponibile</div>
+                )}
               </CardContent>
             </Card>
           )}
@@ -177,15 +196,19 @@ export default function InstructorPublicProfile() {
             </Card>
           )}
 
-          {data.public_show_records !== false && data.personal_best && Object.keys(data.personal_best).length > 0 && (
+          {data.public_show_records !== false && (
             <Card>
               <CardHeader><CardTitle className="text-xl flex items-center"><Target className="w-5 h-5 mr-2"/>Record</CardTitle></CardHeader>
               <CardContent>
-                <ul className="list-disc pl-5 space-y-1 text-gray-700">
-                  {Object.entries(data.personal_best).map(([disc, val]) => (
-                    <li key={disc}><span className="font-semibold mr-1">{disc.toUpperCase()}:</span> {String(val)}</li>
-                  ))}
-                </ul>
+                {data.personal_best && Object.keys(data.personal_best).length > 0 ? (
+                  <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                    {Object.entries(data.personal_best).map(([disc, val]) => (
+                      <li key={disc}><span className="font-semibold mr-1">{disc.toUpperCase()}:</span> {String(val)}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <div className="text-gray-500">Nessun record disponibile</div>
+                )}
               </CardContent>
             </Card>
           )}
