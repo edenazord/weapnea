@@ -194,6 +194,7 @@ const Profile = () => {
     let cancelled = false;
     async function check() {
       if (!formData.public_profile_enabled) { setSlugStatus('idle'); return; }
+      if (user?.public_slug) { setSlugStatus('available'); return; }
       const slug = debouncedPublicSlug?.trim();
       if (!slug) { setSlugStatus('idle'); return; }
       // Se lo slug corrente coincide con quello già assegnato all'utente, non verifichiamo
@@ -289,6 +290,13 @@ const Profile = () => {
     try {
       // Autogenera slug se visibilità attiva e slug mancante
       let computedSlug = formData.public_slug?.trim() ? slugify(formData.public_slug) : "";
+      // Se lo slug è già stato assegnato (immutabile), impedisci modifica o rimozione lato client
+      if (user?.public_slug) {
+        if (!computedSlug || computedSlug.toLowerCase() !== String(user.public_slug).toLowerCase()) {
+          toast({ title: 'Slug bloccato', description: 'Lo slug pubblico è già assegnato e non può essere modificato per il momento.', variant: 'destructive' });
+          return;
+        }
+      }
       if (formData.public_profile_enabled && !computedSlug) {
         const base = formData.full_name || formData.company_name || user.email?.split('@')[0] || '';
         computedSlug = slugify(base);
@@ -604,11 +612,11 @@ const Profile = () => {
                         value={formData.public_slug}
                         onChange={(e) => setFormData(prev => ({ ...prev, public_slug: slugify(e.target.value) }))}
                         placeholder="es. nome-cognome"
-                        disabled={!formData.public_profile_enabled}
+                        disabled={!formData.public_profile_enabled || Boolean(user?.public_slug)}
                       />
                       <div className="flex items-center gap-3 mt-2">
                         <p className="text-xs text-muted-foreground">URL: /instructor/{formData.public_slug || '<slug>'}</p>
-                        {formData.public_profile_enabled && (
+                        {formData.public_profile_enabled && !user?.public_slug && (
                           slugStatus === 'checking' ? (
                             <span className="text-xs text-blue-600">Verifica disponibilità...</span>
                           ) : slugStatus === 'available' ? (

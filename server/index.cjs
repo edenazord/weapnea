@@ -747,19 +747,16 @@ app.put('/api/profile', requireAuth, async (req, res) => {
           // Load previous slug (if any)
           const { rows: cur } = await pool.query('SELECT public_slug FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
           const prevSlug = (cur[0]?.public_slug || '').toLowerCase() || null;
-          if (newSlug) {
+          // Immutabilità: se esiste già un prevSlug, non è consentito modificarlo o rimuoverlo
+          if (prevSlug && (!newSlug || newSlug !== prevSlug)) {
+            return res.status(400).json({ error: 'slug_locked' });
+          }
+          // Prima assegnazione: claim atomico
+          if (!prevSlug && newSlug) {
             const r = await claimSlugAtomic(req.user.id, newSlug);
             if (!r.ok && r.conflict) return res.status(409).json({ error: 'public_slug conflict' });
           }
           const { rows } = await pool.query(sql, [...values, req.user.id]);
-          // After DB write, manage aliases and release old slug mapping
-          if (newSlug && prevSlug && prevSlug !== newSlug) {
-            await setSlugAlias(prevSlug, newSlug);
-            await releaseSlug(prevSlug);
-          }
-          if (!newSlug && prevSlug) {
-            await releaseSlug(prevSlug);
-          }
           return rows;
         } else {
           const { rows } = await pool.query(sql, [...values, req.user.id]);
