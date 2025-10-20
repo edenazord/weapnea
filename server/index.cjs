@@ -385,6 +385,8 @@ async function setSettingValue(key, value) {
 // --- Fallback public profile storage via app_settings ---
 const PP_USER_KEY = (userId) => `public_profile:${userId}`;
 const PP_SLUG_KEY = (slugLower) => `public_slug:${slugLower}`;
+const PP_SLUG_ALIAS_KEY = (slugLower) => `public_slug_alias:${slugLower}`;
+const RESERVED_SLUGS = new Set((process.env.RESERVED_SLUGS || 'admin,login,register,signup,signin,api,static,public,assets,images,js,css,events,event,instructor,instructors,blog,forum,privacy,terms,sitemap,robots,category,categories,profile,profiles,user,users,me,account').split(',').map(s=>s.trim().toLowerCase()).filter(Boolean));
 
 async function getPublicProfileSettings(userId) {
   const val = await getSettingValue(PP_USER_KEY(userId), null);
@@ -402,7 +404,7 @@ async function getSlugOwner(slugLower) {
 }
 
 async function claimSlug(userId, slugLower) {
-  // Upsert mapping slug->user
+  // Upsert mapping slug->user (non-atomic legacy)
   await setSettingValue(PP_SLUG_KEY(slugLower), { user_id: userId });
 }
 
@@ -413,6 +415,46 @@ async function releaseSlug(slugLower) {
   } catch (e) {
     console.warn('[public_profile] releaseSlug failed', slugLower, e?.message || e);
   }
+}
+
+async function claimSlugAtomic(userId, slugLower) {
+  // Claims a slug only if it's free or already owned by this user. Uses a transaction to avoid races.
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    try { await ensureAppSettingsTable(); } catch {}
+    const key = PP_SLUG_KEY(slugLower);
+    const { rows } = await client.query('SELECT value FROM public.app_settings WHERE key = $1 FOR UPDATE', [key]);
+    if (!rows[0]) {
+      await client.query('INSERT INTO public.app_settings(key, value, updated_at) VALUES ($1, $2::jsonb, now())', [key, JSON.stringify({ user_id: userId })]);
+      await client.query('COMMIT');
+      return { ok: true, mine: true, created: true };
+    }
+    const owner = rows[0].value?.user_id;
+    if (owner && owner !== userId) {
+      await client.query('ROLLBACK');
+      return { ok: false, conflict: true, owner };
+    }
+    await client.query('UPDATE public.app_settings SET value = $1::jsonb, updated_at = now() WHERE key = $2', [JSON.stringify({ user_id: userId }), key]);
+    await client.query('COMMIT');
+    return { ok: true, mine: true, created: false };
+  } catch (e) {
+    try { await pool.query('ROLLBACK'); } catch {}
+    return { ok: false, error: String(e?.message || e) };
+  } finally {
+    client.release();
+  }
+}
+
+async function setSlugAlias(oldSlugLower, newSlugLower) {
+  if (!oldSlugLower || !newSlugLower || oldSlugLower === newSlugLower) return;
+  await setSettingValue(PP_SLUG_ALIAS_KEY(oldSlugLower), { redirect_to: newSlugLower });
+}
+
+async function getSlugAliasTarget(slugLower) {
+  const val = await getSettingValue(PP_SLUG_ALIAS_KEY(slugLower), null);
+  if (val && typeof val === 'object' && val.redirect_to) return String(val.redirect_to);
+  return null;
 }
 
 async function sendEmail({ to, subject, html }) {
@@ -676,6 +718,9 @@ app.put('/api/profile', requireAuth, async (req, res) => {
         .replace(/-+/g, '-')
         .replace(/^-+|-+$/g, '')
         .slice(0, 80) || null;
+      if (p.public_slug && RESERVED_SLUGS.has(p.public_slug)) {
+        return res.status(400).json({ error: 'reserved_slug' });
+      }
     }
     const fields = Object.keys(p).filter(k => allowed.includes(k));
     if (fields.length === 0) return res.status(400).json({ error: 'no valid fields to update' });
@@ -690,14 +735,36 @@ app.put('/api/profile', requireAuth, async (req, res) => {
       if (k === 'personal_best') return `${k} = $${i+1}::jsonb`;
       return `${k} = $${i+1}`;
     }).join(', ');
-    const sql = `UPDATE profiles SET ${sets}, updated_at = now() WHERE id = $${fields.length+1} RETURNING *`;
+  const sql = `UPDATE profiles SET ${sets}, updated_at = now() WHERE id = $${fields.length+1} RETURNING *`;
     async function runUpdate(withEnsure = false) {
       if (withEnsure) {
         try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
       }
       try {
-        const { rows } = await pool.query(sql, [...values, req.user.id]);
-        return rows;
+        // If slug present, ensure atomic claim first, then update profile
+        if (fields.includes('public_slug')) {
+          const newSlug = p.public_slug || null;
+          // Load previous slug (if any)
+          const { rows: cur } = await pool.query('SELECT public_slug FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
+          const prevSlug = (cur[0]?.public_slug || '').toLowerCase() || null;
+          if (newSlug) {
+            const r = await claimSlugAtomic(req.user.id, newSlug);
+            if (!r.ok && r.conflict) return res.status(409).json({ error: 'public_slug conflict' });
+          }
+          const { rows } = await pool.query(sql, [...values, req.user.id]);
+          // After DB write, manage aliases and release old slug mapping
+          if (newSlug && prevSlug && prevSlug !== newSlug) {
+            await setSlugAlias(prevSlug, newSlug);
+            await releaseSlug(prevSlug);
+          }
+          if (!newSlug && prevSlug) {
+            await releaseSlug(prevSlug);
+          }
+          return rows;
+        } else {
+          const { rows } = await pool.query(sql, [...values, req.user.id]);
+          return rows;
+        }
       } catch (e) {
         const code = e && e.code;
         const msg = String(e?.message || '');
@@ -790,6 +857,7 @@ app.get('/api/profile/slug-availability/:slug', async (req, res) => {
     .replace(/^-+|-+$/g, '')
     .slice(0, 80);
   if (!slug) return res.status(400).json({ available: false, error: 'invalid slug' });
+  if (RESERVED_SLUGS.has(slug)) return res.json({ available: false, reserved: true });
   try {
     if (!HAS_PUBLIC_PROFILE_FIELDS) {
       try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
@@ -806,6 +874,11 @@ app.get('/api/profile/slug-availability/:slug', async (req, res) => {
       const ownerId = await getSlugOwner(slug);
       return ownerId ? { id: ownerId } : null;
     };
+    // Resolve alias: if slug is an old alias redirecting to another, treat as taken
+    const aliasTo = await getSlugAliasTarget(slug);
+    if (aliasTo) {
+      return res.json({ available: false, aliasTo });
+    }
     let row;
     try {
       row = await doQuery();
@@ -1277,7 +1350,10 @@ app.get('/api/instructors/:id/events', async (req, res) => {
 // Public instructor/company profile by slug (SEO-friendly)
 app.get('/api/instructors/slug/:slug', async (req, res) => {
   try {
-    const slug = String(req.params.slug || '').trim().toLowerCase();
+    let slug = String(req.params.slug || '').trim().toLowerCase();
+    // Follow aliases
+    const aliasTo = await getSlugAliasTarget(slug);
+    if (aliasTo) slug = aliasTo;
     // 1) Prova via colonne native, se presenti
     if (HAS_PUBLIC_PROFILE_FIELDS) {
       try {
@@ -1294,7 +1370,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
            LIMIT 1`,
           [slug]
         );
-        if (rows[0]) return res.json(rows[0]);
+  if (rows[0]) return res.json({ ...rows[0], public_slug: rows[0].public_slug || slug });
       } catch (e) {
         // Se la colonna mancasse, andiamo a fallback
       }
@@ -1335,7 +1411,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
       vat_number: base.vat_number,
       personal_best: base.personal_best || null,
       public_profile_enabled: true,
-      public_slug: pp.slug || slug,
+  public_slug: pp.slug || slug,
       public_show_bio: pp.show_bio !== false,
       public_show_instagram: pp.show_instagram !== false,
       public_show_company_info: pp.show_company_info !== false,

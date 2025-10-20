@@ -207,6 +207,8 @@ const Profile = () => {
         const avail = await apiGet(`/api/profile/slug-availability/${encodeURIComponent(slug)}`).catch((e:any) => e);
         if (cancelled) return;
         if (avail && typeof avail === 'object' && 'available' in avail) {
+          if (avail.reserved) { setSlugStatus('taken'); return; }
+          if (avail.mine) { setSlugStatus('available'); return; }
           setSlugStatus(avail.available ? 'available' : 'taken');
         } else if (avail instanceof Error) {
           setSlugStatus('error');
