@@ -18,10 +18,12 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
   const [inputValue, setInputValue] = useState(value || '');
   const [isReady, setIsReady] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
+  const [previewValue, setPreviewValue] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const autocompleteRef = useRef<any | null>(null);
   const lastSelectTs = useRef<number>(0);
   const initializedRef = useRef<boolean>(false);
+  const pacCleanupRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     setInputValue(value || '');
@@ -102,6 +104,45 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
       document.removeEventListener('touchstart', onTouchStart as any, { capture: true } as any);
     };
   }, []);
+
+  // Aggancia anteprima al passaggio del mouse sui suggerimenti Google (senza confermare il valore)
+  useEffect(() => {
+    if (!isReady) return;
+    // Potrebbero esserci più container; li gestiamo tutti
+    const containers = Array.from(document.querySelectorAll('.pac-container')) as HTMLElement[];
+    if (!containers.length) return;
+
+    const getItemText = (el: HTMLElement) => (el.textContent || '').trim();
+
+    const onOver = (e: Event) => {
+      const target = e.target as HTMLElement | null;
+      const item = target ? target.closest('.pac-item') as HTMLElement | null : null;
+      if (item) {
+        const text = getItemText(item);
+        if (text) setPreviewValue(text);
+      }
+    };
+    const onLeave = () => {
+      setPreviewValue(null);
+    };
+
+    containers.forEach(c => {
+      c.addEventListener('mouseover', onOver, true);
+      c.addEventListener('mouseleave', onLeave, true);
+    });
+
+    pacCleanupRef.current = () => {
+      containers.forEach(c => {
+        c.removeEventListener('mouseover', onOver, true);
+        c.removeEventListener('mouseleave', onLeave, true);
+      });
+    };
+
+    return () => {
+      if (pacCleanupRef.current) pacCleanupRef.current();
+      pacCleanupRef.current = null;
+    };
+  }, [isReady]);
   
   // Cleanup Autocomplete on unmount
   useEffect(() => {
@@ -123,7 +164,7 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            value={inputValue}
+            value={previewValue ?? inputValue}
             onChange={(e) => {
               const v = e.target.value;
               if (!autocompleteRef.current) {
@@ -134,6 +175,7 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
                 // Evita che un onChange immediatamente successivo alla selezione sovrascriva il valore scelto
                 return;
               }
+              setPreviewValue(null);
               setInputValue(v);
               onChange(v);
             }}
@@ -147,7 +189,7 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
                 e.preventDefault();
               }
             }}
-            onBlur={() => { /* Nessun auto-resolve: gestito da Places */ }}
+            onBlur={() => { setPreviewValue(null); /* Nessun auto-resolve: gestito da Places */ }}
             autoComplete="off"
             placeholder={placeholder}
             ref={inputRef}
