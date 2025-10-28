@@ -103,9 +103,9 @@ async function runMigrationsAtStartup() {
 (async () => {
   try {
     // Run full SQL migrations first (idempotent)
-    await runMigrationsAtStartup();
+  await runMigrationsAtStartup();
     // Ensure optional columns/tables exist to avoid runtime failures if migrations weren't applied yet
-    await pool.query("ALTER TABLE IF NOT EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
+  await pool.query("ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
     // Simple key-value app settings store (for UI-configurable options like past-events position)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS public.app_settings (
@@ -134,10 +134,9 @@ async function runMigrationsAtStartup() {
       CREATE INDEX IF NOT EXISTS idx_user_packages_status ON public.user_packages(status);
     `);
     await detectSchema();
-    if (!HAS_PUBLIC_PROFILE_FIELDS) {
-      await ensurePublicProfileColumnsAtRuntime();
-      await detectSchema();
-    }
+    // Garantisci SEMPRE le colonne del profilo pubblico: l'ALTER è idempotente
+    await ensurePublicProfileColumnsAtRuntime();
+    await detectSchema();
     console.log('[startup] ensured/detected flags:', { HAS_PERSONAL_BEST, HAS_USER_PACKAGES, HAS_PUBLIC_PROFILE_FIELDS });
   } catch (e) {
     console.error('[startup] ensure/detect schema failed:', e?.message || e);
@@ -200,7 +199,7 @@ let HAS_PUBLIC_PROFILE_FIELDS = false;
 
 async function ensurePersonalBestColumnAtRuntime() {
   try {
-    await pool.query("ALTER TABLE IF NOT EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
+    await pool.query("ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
     HAS_PERSONAL_BEST = true;
   } catch (e) {
     console.warn('[personal_best] ensure column failed:', e?.message || e);
@@ -209,7 +208,7 @@ async function ensurePersonalBestColumnAtRuntime() {
 async function ensurePublicProfileColumnsAtRuntime() {
   try {
     await pool.query(`
-      ALTER TABLE IF NOT EXISTS public.profiles
+      ALTER TABLE IF EXISTS public.profiles
         ADD COLUMN IF NOT EXISTS public_profile_enabled boolean DEFAULT false,
         ADD COLUMN IF NOT EXISTS public_slug text,
         ADD COLUMN IF NOT EXISTS public_show_bio boolean DEFAULT true,
