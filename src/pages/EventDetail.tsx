@@ -187,7 +187,11 @@ const EventDetail = () => {
     };
 
     // Lightbox helpers
-    const galleryAbs = (event?.gallery_images || []).map((g) => ensureAbsoluteUrl(g) || "");
+    const gallery = event?.gallery_images as string[] | undefined;
+    const galleryAbs = useMemo(() => {
+        const arr = Array.isArray(gallery) ? gallery : [];
+        return (arr || []).map((g: string) => ensureAbsoluteUrl(g) || "");
+    }, [gallery]);
     const hasGallery = galleryAbs.length > 0;
     const goPrev = () => {
         if (!hasGallery) return;
