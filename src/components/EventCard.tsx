@@ -59,7 +59,7 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
   };
 
   return (
-  <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200 bg-white/90 backdrop-blur-sm border-0 shadow-md min-h-event-card h-full flex flex-col">
+  <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200 bg-white/90 backdrop-blur-sm border-0 shadow-md h-[400px] md:h-[440px] flex flex-col">
       {showImage && (
         <div className="relative overflow-hidden flex-shrink-0 aspect-[16/9]">
           <img
@@ -94,7 +94,7 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
         </div>
       </CardHeader>
 
-      <CardContent className="pt-0 pb-4 space-y-2 flex-1 flex flex-col">
+  <CardContent className="pt-0 pb-4 space-y-2 flex-1 flex flex-col overflow-hidden">
         {event.description && variant === "full" && (
           <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
             {event.description}
@@ -146,9 +146,9 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
               </div>
             )}
           </div>
-        </div>
+    </div>
 
-  <Link to={buildFriendlyEventPath(event.slug)} className="block mt-2">
+  <Link to={buildFriendlyEventPath(event.slug)} className="block mt-auto">
           <Button 
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs"
             size="sm"
