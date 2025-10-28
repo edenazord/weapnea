@@ -364,7 +364,7 @@ export default function EventsManager() {
             <SortableHeader column="title" label="Titolo" />
             <SortableHeader column="category" label="Categoria" />
             <SortableHeader column="discipline" label="Disciplina" />
-            <SortableHeader column="level" label="Livello" />
+            <SortableHeader column="level" label={profile?.role === 'admin' ? 'Organizzatore' : 'Livello'} />
             <SortableHeader column="nation" label="Nazione" />
             <SortableHeader column="date" label="Date" />
             <TableHead>Luogo</TableHead>
@@ -393,7 +393,10 @@ export default function EventsManager() {
                 </TableCell>
                 <TableCell className="block md:table-cell p-3 md:p-4 text-right md:text-left"><span className="font-bold md:hidden float-left">Categoria</span>{event.categories?.name || 'N/A'}</TableCell>
                 <TableCell className="block md:table-cell p-3 md:p-4 text-right md:text-left"><span className="font-bold md:hidden float-left">Disciplina</span>{formatDiscipline(event.discipline)}</TableCell>
-                <TableCell className="block md:table-cell p-3 md:p-4 text-right md:text-left"><span className="font-bold md:hidden float-left">Livello</span>{formatLevel(event.level)}</TableCell>
+                <TableCell className="block md:table-cell p-3 md:p-4 text-right md:text-left">
+                  <span className="font-bold md:hidden float-left">{profile?.role === 'admin' ? 'Organizzatore' : 'Livello'}</span>
+                  {profile?.role === 'admin' ? (event.organizer_name || 'N/A') : formatLevel(event.level)}
+                </TableCell>
                 <TableCell className="block md:table-cell p-3 md:p-4 text-right md:text-left"><span className="font-bold md:hidden float-left">Nazione</span>{event.nation || 'N/A'}</TableCell>
                 <TableCell className="block md:table-cell p-3 md:p-4 text-right md:text-left"><span className="font-bold md:hidden float-left">Date</span>{formatDateRange(event.date, event.end_date)}</TableCell>
                 <TableCell className="block md:table-cell p-3 md:p-4 text-right md:text-left"><span className="font-bold md:hidden float-left">Luogo</span>{event.location}</TableCell>
