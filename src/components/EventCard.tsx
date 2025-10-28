@@ -16,9 +16,10 @@ interface EventCardProps {
   event: EventWithCategory;
   variant?: "compact" | "full";
   formatDate?: (dateString: string) => string;
+  showCategoryBadge?: boolean;
 }
 
-const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
+const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = true }: EventCardProps) => {
   const [imageError, setImageError] = useState(false);
   // null = sconosciuto (evita lampeggio del prezzo prima di caricare la config)
   const [eventsFree, setEventsFree] = useState<boolean | null>(null);
@@ -83,7 +84,7 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
 
       <CardHeader className="pb-2 flex-shrink-0">
         <div className="space-y-2">
-      {event.categories && (
+      {event.categories && showCategoryBadge && (
             <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full w-fit">
         {localizeCategoryName(event.categories.name, t)}
             </Badge>

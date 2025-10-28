@@ -398,7 +398,8 @@ const Index = () => {
                                 <EventCard 
                                   event={event} 
                                   variant="full" 
-                                  formatDate={formatEventDate} 
+                                  formatDate={formatEventDate}
+                                  showCategoryBadge={false}
                                 />
                               </CarouselItem>
                             ))}
