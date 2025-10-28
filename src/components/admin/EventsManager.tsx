@@ -25,7 +25,7 @@ export default function EventsManager() {
   const [selectedEvent, setSelectedEvent] = useState<Event | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
+  const [categoryFilter, setCategoryFilter] = useState<string>("active");
   const [sort, setSort] = useState({ column: 'date' as SortableColumn, direction: 'desc' });
 
   useEffect(() => {
@@ -74,7 +74,7 @@ export default function EventsManager() {
   };
 
   const events = allEvents?.filter(event => {
-    if (categoryFilter === "all") return true;
+    if (categoryFilter === "active") return !isEventPast(event);
     if (categoryFilter === "past") return isEventPast(event);
     if (categoryFilter === "allenamenti") return event.category_id === allenamentiCategory?.id;
     return event.category_id === categoryFilter;
@@ -201,7 +201,7 @@ export default function EventsManager() {
       setCategoryFilter("allenamenti");
     } else if (!event && !isAllenamento) {
       // Se stiamo creando un evento normale, resettiamo il filtro
-      setCategoryFilter("all");
+      setCategoryFilter("active");
     }
   };
 
@@ -278,7 +278,7 @@ export default function EventsManager() {
                 <SelectValue placeholder="Filtra per categoria" />
               </SelectTrigger>
               <SelectContent>
-                  <SelectItem value="all">Tutti gli eventi</SelectItem>
+                  <SelectItem value="active">Eventi Attivi</SelectItem>
                   {(() => {
                     // Costruisci la lista ordinata: categorie reali per order_index, inserendo synthetic "past" all'indice salvato.
                     const realCats = (categories || []).slice().sort((a, b) => a.order_index - b.order_index);
