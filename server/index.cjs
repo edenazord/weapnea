@@ -1124,6 +1124,8 @@ function eventsSelect() {
 // Events list with basic filters
 app.get('/api/events', async (req, res) => {
   const { searchTerm, nation, dateFrom, sortColumn = 'date', sortDirection = 'asc' } = req.query;
+  const userRole = req.query.userRole ? String(req.query.userRole) : '';
+  const userId = req.query.userId ? String(req.query.userId) : '';
   const clauses = [];
   const params = [];
   if (searchTerm && String(searchTerm).trim()) {
@@ -1137,6 +1139,11 @@ app.get('/api/events', async (req, res) => {
   if (dateFrom) {
     params.push(String(dateFrom));
     clauses.push(`e.date >= $${params.length}`);
+  }
+  // If called by dashboard/manager with a non-admin role, restrict to own events
+  if (userRole && userId && userRole !== 'admin') {
+    params.push(userId);
+    clauses.push(`e.created_by = $${params.length}`);
   }
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
   const validCols = new Set(['date', 'title', 'nation', 'category']);
