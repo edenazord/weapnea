@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, ExternalLink, Calendar, Euro } from "lucide-react";
+import { Users, ExternalLink, Calendar, Euro, Phone } from "lucide-react";
 import { getEventParticipants, EventParticipant } from "@/lib/payments-api";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -114,6 +114,13 @@ export const EventParticipantsModal = ({
                     {participant.company_name && (
                       <p className="text-xs text-gray-500 truncate">
                         {participant.company_name}
+                      </p>
+                    )}
+
+                    {participant.phone && (
+                      <p className="text-xs text-gray-600 flex items-center gap-1 mt-1">
+                        <Phone className="h-3 w-3" />
+                        {participant.phone}
                       </p>
                     )}
                     

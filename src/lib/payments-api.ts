@@ -66,6 +66,7 @@ export interface EventParticipant {
   avatar_url?: string;
   company_name?: string;
   user_id: string;
+  phone?: string | null;
   amount: number;
   paid_at: string;
 }
