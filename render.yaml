@@ -65,7 +65,7 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: RESEND_FROM_EMAIL
-        sync: false
+        value: "WeApnea <noreply@weapnea.com>"
       - key: PUBLIC_BASE_URL
         sync: false
       - key: API_PUBLIC_BASE_URL

@@ -105,7 +105,15 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
           {event.date && (
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <Calendar className="h-4 w-4 text-blue-500 flex-shrink-0" />
-              <span>{formatDate ? formatDate(event.date) : event.date}</span>
+              <span>
+                {formatDate ? formatDate(event.date) : event.date}
+                {event.end_date && event.end_date !== event.date && (
+                  <>
+                    {" - "}
+                    {formatDate ? formatDate(event.end_date) : event.end_date}
+                  </>
+                )}
+              </span>
             </div>
           )}
 

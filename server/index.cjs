@@ -309,7 +309,7 @@ const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 // Global toggle: make all events free (bypass checkout)
 const EVENTS_FREE_MODE = String(process.env.EVENTS_FREE_MODE || '').toLowerCase() === 'true';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'WeApnea <noreply@example.com>';
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'WeApnea <noreply@weapnea.com>';
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 
 // --- App settings helpers ---
@@ -2366,7 +2366,7 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
   const eventId = req.params.id;
   try {
     // Ensure event exists
-    const { rows: evRows } = await pool.query('SELECT id, title, cost FROM events WHERE id = $1 LIMIT 1', [eventId]);
+    const { rows: evRows } = await pool.query('SELECT id, title, slug, date, end_date, location, cost, created_by FROM events WHERE id = $1 LIMIT 1', [eventId]);
     const ev = evRows[0];
     if (!ev) return res.status(404).json({ error: 'Event not found' });
 
@@ -2392,6 +2392,58 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
        RETURNING id`,
       [eventId, req.user.id]
     );
+    // Fire-and-forget emails: to participant and organizer (if any)
+    (async () => {
+      try {
+        const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+        const eventUrl = ev.slug ? `${base}/events/${encodeURIComponent(ev.slug)}` : base;
+        // Load current user profile (participant)
+        const { rows: userRows } = await pool.query('SELECT email, full_name FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
+        const participant = userRows[0];
+        // Build date range text if available
+        const fmt = (s) => {
+          try { return new Date(s).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }); } catch { return s; }
+        };
+        const dateText = ev?.date ? (ev?.end_date && ev.end_date !== ev.date ? `${fmt(ev.date)} - ${fmt(ev.end_date)}` : fmt(ev.date)) : '';
+        const locationText = ev?.location ? `<p><strong>Luogo:</strong> ${ev.location}</p>` : '';
+        // Email to participant
+        if (participant?.email) {
+          await sendEmail({
+            to: participant.email,
+            subject: `Iscrizione confermata: ${ev.title}`,
+            html: `
+              <p>Ciao ${participant.full_name || ''},</p>
+              <p>la tua iscrizione all'evento <strong>${ev.title}</strong> è stata registrata correttamente.</p>
+              ${dateText ? `<p><strong>Date:</strong> ${dateText}</p>` : ''}
+              ${locationText}
+              <p>Dettagli evento: <a href="${eventUrl}">${eventUrl}</a></p>
+              <p>Grazie da WeApnea</p>
+            `
+          });
+        }
+        // Email to organizer (optional)
+        if (ev.created_by) {
+          const { rows: orgRows } = await pool.query('SELECT email, full_name FROM profiles WHERE id = $1 LIMIT 1', [ev.created_by]);
+          const org = orgRows[0];
+          if (org?.email && participant?.email) {
+            await sendEmail({
+              to: org.email,
+              subject: `Nuova iscrizione all'evento: ${ev.title}`,
+              html: `
+                <p>Ciao ${org.full_name || ''},</p>
+                <p>${participant.full_name || participant.email} si è iscritto all'evento <strong>${ev.title}</strong>.</p>
+                ${dateText ? `<p><strong>Date:</strong> ${dateText}</p>` : ''}
+                ${locationText}
+                <p>Dettagli evento: <a href="${eventUrl}">${eventUrl}</a></p>
+              `
+            });
+          }
+        }
+      } catch (e) {
+        console.warn('[email] register-free notifications failed:', e?.message || e);
+      }
+    })().catch(() => {});
+
     res.status(201).json({ ok: true, id: rows[0]?.id || null });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
