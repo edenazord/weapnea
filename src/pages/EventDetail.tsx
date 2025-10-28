@@ -1,6 +1,6 @@
 
 import { useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEventById, getEventBySlug, EventWithCategory } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -208,6 +208,26 @@ const EventDetail = () => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [lightboxOpen, galleryAbs.length]);
 
+    // Banner carosello: prepara elenco immagini e stato indice
+    const bannerImages = useMemo(() => {
+        return (galleryAbs && galleryAbs.length > 0)
+            ? galleryAbs
+            : [ensureAbsoluteUrl(event?.image_url) || "/placeholder.svg"];
+    }, [galleryAbs, event?.image_url]);
+    const [bannerIndex, setBannerIndex] = useState(0);
+    // Reset quando cambia evento o lista immagini
+    useEffect(() => {
+        setBannerIndex(0);
+    }, [event?.id, bannerImages]);
+    // Auto-play ogni 5s
+    useEffect(() => {
+        if (!bannerImages || bannerImages.length <= 1) return;
+        const timer = setInterval(() => {
+            setBannerIndex((i) => (i + 1) % bannerImages.length);
+        }, 5000);
+        return () => clearInterval(timer);
+    }, [bannerImages]);
+
     // Helper functions to format the display values
     const formatEventType = (eventType: string | null) => {
         if (!eventType) return null;
@@ -320,9 +340,35 @@ const EventDetail = () => {
             <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
                 {/* Colonna sinistra - Contenuto principale */}
                 <div className={isMobile ? 'col-span-1' : 'md:col-span-2'}>
-                    {/* Immagine principale e descrizione */}
+                    {/* Banner immagine: carosello automatico */}
                     <Card className="overflow-hidden shadow-lg">
-                        <img src={ensureAbsoluteUrl(event.image_url) || "/placeholder.svg"} alt={event.title} className={`w-full object-cover ${isMobile ? 'h-48' : 'h-64 md:h-96'}`} />
+                        <div className={`relative w-full ${isMobile ? 'h-48' : 'h-64 md:h-96'}`}>
+                            {/* Slides */}
+                            <div className="absolute inset-0">
+                                {bannerImages.map((src, idx) => (
+                                    <img
+                                        key={`${src}-${idx}`}
+                                        src={src || '/placeholder.svg'}
+                                        alt={`${event.title} - immagine ${idx + 1}`}
+                                        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${idx === bannerIndex ? 'opacity-100' : 'opacity-0'}`}
+                                        onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                                        loading={idx === 0 ? 'eager' : 'lazy'}
+                                    />
+                                ))}
+                            </div>
+
+                            {/* Indicatori puntini */}
+                            {bannerImages.length > 1 && (
+                                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-2">
+                                    {bannerImages.map((_, idx) => (
+                                        <span
+                                            key={idx}
+                                            className={`h-2 w-2 rounded-full ${idx === bannerIndex ? 'bg-white' : 'bg-white/50'}`}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                         <div className={`${isMobile ? 'p-4' : 'p-6 md:p-8'}`}>
                                                         {/* Organizzatore con avatar sopra al titolo */}
                                                                                                                 {(organizerId) && (
@@ -626,47 +672,12 @@ const EventDetail = () => {
         </div>
     );
 
-    if (isMobile) {
-        return <MobileLayout>{content}</MobileLayout>;
-    }
+        if (isMobile) {
+                return <MobileLayout>{content}</MobileLayout>;
+        }
 
-    return (
-        <div className="min-h-screen bg-blue-50">
-            <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-blue-100">
-              <div className="container mx-auto px-4 py-4">
-                <div className="flex items-center justify-between">
-                  <Link to="/" className="flex items-center space-x-2">
-                    <Waves className="h-8 w-8 text-blue-600" />
-                    <span className="text-2xl font-bold text-blue-900">WeApnea</span>
-                  </Link>
-                   <div className="flex items-center space-x-3">
-                    {authLoading ? (
-                      <div className="flex items-center space-x-3">
-                        <Skeleton className="h-9 w-20" />
-                        <Skeleton className="h-9 w-24" />
-                      </div>
-                    ) : user ? (
-                      <UserNav />
-                    ) : (
-                      <>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link to="/auth">Accedi</Link>
-                        </Button>
-                        <Button size="sm" asChild>
-                          <Link to="/auth?view=register">Registrati</Link>
-                        </Button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </header>
-
-            <main className="flex-1">
-                {content}
-            </main>
-        </div>
-    );
+        // Desktop: usa Layout standard per avere navbar e footer coerenti con il resto del sito
+        return <Layout>{content}</Layout>;
 };
 
 export default EventDetail;
