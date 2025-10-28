@@ -14,8 +14,8 @@ const ChiSiamo = () => {
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-purple-50">
       {/* Decorative hero */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10" />
-        <PageTopBar fallbackPath="/" label={t('common.back_home','Torna alla Home')} />
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 pointer-events-none" />
+        <PageTopBar className="relative z-10" fallbackPath="/" label={t('common.back_home','Torna alla Home')} />
         <div className="max-w-6xl mx-auto px-4 md:px-6 pt-10 md:pt-14 pb-4">
           <PageHeader
             title={t('about_page.title', 'Chi Siamo')}
