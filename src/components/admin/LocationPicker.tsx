@@ -69,6 +69,33 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
     }
   };
   
+  // Permetti il click sui suggerimenti senza perdere il focus sull'input (fix classico pac-container)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const path = (e as any).composedPath ? (e as any).composedPath() : undefined;
+      const target = e.target as HTMLElement | null;
+      const isInsidePac = ((): boolean => {
+        if (path && Array.isArray(path)) {
+          return path.some((el: any) => el && el.classList && (el.classList.contains('pac-container') || el.classList.contains('pac-item')));
+        }
+        if (target) {
+          return !!target.closest('.pac-container, .pac-item');
+        }
+        return false;
+      })();
+      if (isInsidePac) {
+        // Previene il blur dell'input al mousedown/touchstart così il click può selezionare la voce
+        e.preventDefault();
+      }
+    };
+    document.addEventListener('mousedown', handler, true);
+    document.addEventListener('touchstart', handler as any, { capture: true, passive: false } as any);
+    return () => {
+      document.removeEventListener('mousedown', handler, true);
+      document.removeEventListener('touchstart', handler as any, { capture: true } as any);
+    };
+  }, []);
+  
   // Cleanup Autocomplete on unmount
   useEffect(() => {
     return () => {
@@ -102,6 +129,9 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
               }
               setInputValue(v);
               onChange(v);
+            }}
+            onFocus={() => {
+              if (!autocompleteRef.current) ensureAutocomplete();
             }}
             onKeyDown={(e) => {
               if (!autocompleteRef.current) ensureAutocomplete();
