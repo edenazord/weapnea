@@ -61,11 +61,11 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
   return (
   <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200 bg-white/90 backdrop-blur-sm border-0 shadow-md min-h-event-card h-full flex flex-col">
       {showImage && (
-        <div className="relative h-32 overflow-hidden flex-shrink-0">
+        <div className="relative overflow-hidden flex-shrink-0 aspect-[16/9]">
           <img
             src={imageUrl}
             alt={event.title}
-            className="w-full h-full object-cover transition-transform duration-200 hover:scale-105"
+            className="w-full h-full object-cover object-center md:object-[50%_35%] transition-transform duration-200 hover:scale-105"
             onError={handleImageError}
             onLoad={handleImageLoad}
             loading="lazy"
@@ -76,7 +76,7 @@ const EventCard = ({ event, variant = "full", formatDate }: EventCardProps) => {
       )}
       
       {!showImage && (
-        <div className="h-32 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0">
+        <div className="aspect-[16/9] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0">
           <ImageIcon className="h-12 w-12 text-gray-400" />
         </div>
       )}
