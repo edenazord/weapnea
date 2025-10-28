@@ -69,7 +69,7 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
     }
   };
   
-  // Permetti il click sui suggerimenti senza chiudere il modal né perdere il focus
+  // Permetti il click sui suggerimenti senza perdere il focus (lascia la selezione a Google)
   useEffect(() => {
     const isInsidePac = (e: Event) => {
       const path = (e as any).composedPath ? (e as any).composedPath() : undefined;
@@ -83,31 +83,21 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
       return false;
     };
 
-    const onPointerDown = (e: Event) => {
-      if (isInsidePac(e)) {
-        // Impedisce a Radix Dialog/Sheet di interpretare l'azione come outside click
-        e.stopPropagation();
-      }
-    };
     const onMouseDown = (e: Event) => {
       if (isInsidePac(e)) {
-        // Evita il blur dell'input per mantenere la lista aperta fino al click
+        // Evita il blur dell'input. Non blocchiamo la propagazione così Google gestisce la selezione.
         e.preventDefault();
-        e.stopPropagation();
       }
     };
     const onTouchStart = (e: Event) => {
       if (isInsidePac(e)) {
         e.preventDefault();
-        e.stopPropagation();
       }
     };
 
-    document.addEventListener('pointerdown', onPointerDown, true);
     document.addEventListener('mousedown', onMouseDown, true);
     document.addEventListener('touchstart', onTouchStart as any, { capture: true, passive: false } as any);
     return () => {
-      document.removeEventListener('pointerdown', onPointerDown, true);
       document.removeEventListener('mousedown', onMouseDown, true);
       document.removeEventListener('touchstart', onTouchStart as any, { capture: true } as any);
     };

@@ -329,7 +329,16 @@ export default function EventsManager() {
       </div>
 
       <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) setSelectedEvent(undefined); }}>
-        <SheetContent className="overflow-y-auto">
+        <SheetContent
+          className="overflow-y-auto"
+          onInteractOutside={(e) => {
+            const target = e.target as HTMLElement | null;
+            if (target && target.closest('.pac-container, .pac-item')) {
+              // Evita la chiusura della Sheet quando si clicca sui suggerimenti di Google Places
+              e.preventDefault();
+            }
+          }}
+        >
           <SheetHeader>
             <SheetTitle>
               {selectedEvent 
