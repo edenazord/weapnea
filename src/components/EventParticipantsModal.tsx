@@ -106,15 +106,15 @@ export const EventParticipantsModal = ({
                       <h4 className="font-medium text-gray-900 truncate">
                         {participant.full_name}
                       </h4>
-                      <Link 
-                        to={participant && (participant as any).public_profile_enabled && (participant as any).public_slug
-                          ? `/instructor/${(participant as any).public_slug}`
-                          : `/instructor/id/${participant.user_id}`}
-                        className="text-blue-600 hover:text-blue-800"
-                        title="Vedi profilo"
-                      >
-                        <ExternalLink className="h-3 w-3" />
-                      </Link>
+                      {participant.role === 'instructor' && participant.public_profile_enabled && participant.public_slug ? (
+                        <Link 
+                          to={`/instructor/${participant.public_slug}`}
+                          className="text-blue-600 hover:text-blue-800"
+                          title="Vedi profilo pubblico"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                        </Link>
+                      ) : null}
                     </div>
                     
                     {participant.company_name && (

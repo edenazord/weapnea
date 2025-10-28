@@ -2310,7 +2310,7 @@ app.get('/api/events/:id/participants', requireAuth, async (req, res) => {
   try {
     const sql = `
       SELECT ep.id, ep.user_id, ep.amount, ep.paid_at,
-             p.full_name, p.avatar_url, p.company_name, p.phone
+             p.full_name, p.avatar_url, p.company_name, p.phone, p.role, p.public_profile_enabled, p.public_slug
       FROM event_payments ep
       LEFT JOIN profiles p ON p.id = ep.user_id
       WHERE ep.event_id = $1 AND ep.status = 'paid'
