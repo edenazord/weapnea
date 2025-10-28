@@ -35,13 +35,19 @@ export const EventParticipantsModal = ({
     enabled: isOpen, // Solo carica quando il modal è aperto
   });
 
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  const getInitials = (name?: string | null) => {
+    if (!name || typeof name !== 'string') return '?';
+    try {
+      return name
+        .split(' ')
+        .filter(Boolean)
+        .map(word => word.charAt(0))
+        .join('')
+        .toUpperCase()
+        .slice(0, 2) || '?';
+    } catch {
+      return '?';
+    }
   };
 
   return (
@@ -128,11 +134,11 @@ export const EventParticipantsModal = ({
                       <div className="flex items-center gap-3 mt-1">
                         <Badge variant="secondary" className="text-xs">
                           <Euro className="h-3 w-3 mr-1" />
-                          €{participant.amount.toFixed(2)}
+                          €{Number(participant.amount || 0).toFixed(2)}
                         </Badge>
                         <span className="text-xs text-gray-500 flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {format(new Date(participant.paid_at), "dd MMM yy", { locale: it })}
+                          {participant.paid_at ? format(new Date(participant.paid_at), "dd MMM yy", { locale: it }) : ''}
                         </span>
                       </div>
                     ) : null}
@@ -153,7 +159,7 @@ export const EventParticipantsModal = ({
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-600">Ricavo totale:</span>
                 <span className="font-medium text-green-600">
-                  €{participants.reduce((sum, p) => sum + (p.amount || 0), 0).toFixed(2)}
+                  €{participants.reduce((sum, p) => sum + Number(p.amount || 0), 0).toFixed(2)}
                 </span>
               </div>
             )}
