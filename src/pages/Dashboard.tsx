@@ -351,7 +351,7 @@ const Dashboard = () => {
             {eventFilter === 'active' && (
             <Card>
                 <CardHeader>
-                    <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>I tuoi eventi</CardTitle>
+                    <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>Eventi Attivi</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {isLoadingEvents ? (
@@ -415,11 +415,11 @@ const Dashboard = () => {
                     ) : (
                         <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
                             <Calendar className={`text-gray-400 mx-auto mb-4 ${isMobile ? 'h-12 w-12' : 'h-16 w-16'}`} />
-                            <h3 className={`font-semibold text-gray-600 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>Nessun evento creato</h3>
-                            <p className={`text-gray-500 mb-4 ${isMobile ? 'text-sm' : 'text-base'}`}>Non hai ancora creato eventi. Clicca il pulsante sopra per iniziare.</p>
+                            <h3 className={`font-semibold text-gray-600 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>Nessun evento attivo</h3>
+                            <p className={`text-gray-500 mb-4 ${isMobile ? 'text-sm' : 'text-base'}`}>Non hai eventi futuri attivi. Clicca il pulsante sopra per crearne uno.</p>
                             <Button variant="outline" size={isMobile ? "sm" : "default"} onClick={handleCreateEventClick}>
                                 <PlusCircle className="mr-2 h-4 w-4" />
-                                {isMobile ? 'Primo Evento' : 'Crea il tuo primo evento'}
+                                {isMobile ? 'Nuovo Evento' : 'Crea un nuovo evento'}
                             </Button>
                         </div>
                     )}
