@@ -144,9 +144,11 @@ const Index = () => {
 
     // Apply category filter
     if (categoryFilter !== "all") {
-      filteredEvents = filteredEvents.filter(event => 
-        event.category_id === categoryFilter
-      );
+      if (categoryFilter === 'uncategorized') {
+        filteredEvents = filteredEvents.filter(event => !event.category_id);
+      } else {
+        filteredEvents = filteredEvents.filter(event => event.category_id === categoryFilter);
+      }
     }
 
     // Apply discipline filter
@@ -263,6 +265,22 @@ const Index = () => {
 
   console.log('Index component: About to render content');
 
+  // Costruisci elenco categorie per i filtri includendo (se presenti) gli "Allenamenti" senza categoria
+  const categoriesForFilters = useMemo(() => {
+    const list = (categories || []).map(c => ({ id: c.id, name: c.name }));
+    try {
+      const hasUncategorized = upcomingEvents?.some(ev => !ev.category_id) || false;
+      const hasAllenamentiReal = (categories || []).some(c => c.name.toLowerCase().includes('allenamenti'));
+      if (hasUncategorized && !hasAllenamentiReal) {
+        // Aggiungi opzione sintetica per Allenamenti (eventi senza categoria)
+        list.push({ id: 'uncategorized', name: t('homepage.uncategorized_events', 'Allenamenti') });
+      }
+    } catch (e) {
+      console.warn('categoriesForFilters build failed:', e);
+    }
+    return list;
+  }, [categories, upcomingEvents, t]);
+
   const content = (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 overflow-x-hidden">
       <div className="space-y-8 py-8">
@@ -280,7 +298,7 @@ const Index = () => {
             disciplineFilter={disciplineFilter}
             onDisciplineChange={setDisciplineFilter}
             nations={nations}
-            categories={categories}
+            categories={categoriesForFilters}
             isMobile={isMobile}
           />
         </section>

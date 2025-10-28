@@ -1,7 +1,9 @@
+// Load .env if present so POSTGRES_URL/DB_SSL can be read locally
+try { require('dotenv').config(); } catch (e) {}
 const { Client } = require('pg');
 
 async function main() {
-  const connString = process.env.POSTGRES_URL || process.env.DATABASE_URL;
+  const connString = process.env.POSTGRES_URL || process.env.DATABASE_URL || process.env.RENDER_EXTERNAL_DB_URL;
   if (!connString) {
     console.error('POSTGRES_URL non impostata. Esempio: postgres://postgres:dev@localhost:5432/postgres');
     process.exit(1);
