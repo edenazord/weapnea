@@ -19,7 +19,6 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
   const [isReady, setIsReady] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const widgetRef = useRef<HTMLElement | null>(null);
   const autocompleteRef = useRef<any | null>(null);
   const lastSelectTs = useRef<number>(0);
   const initializedRef = useRef<boolean>(false);
@@ -36,36 +35,29 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
       await loadGoogleMaps();
       const g = (window as any).google;
       if (g && g.maps && g.maps.places && inputRef.current && !initializedRef.current) {
-        // Nuovo elemento ufficiale PlaceAutocompleteElement
-        const el: any = new g.maps.places.PlaceAutocompleteElement();
-        // Collega il nostro input esistente
-        el.inputElement = inputRef.current;
-        // Campi che ci servono quando cambia il place
-        el.fields = ['formatted_address','name','address_components','geometry'];
+        // Usa la classica API Autocomplete agganciata all'input
+        const ac = new g.maps.places.Autocomplete(inputRef.current, {
+          // types: ['geocode'], // opzionale
+          fields: ['formatted_address', 'name', 'address_components', 'geometry'],
+        });
         const handler = () => {
-          const place = el.value?.place || el.place || el.value || {};
-          const label = place.formattedAddress || place.displayName || place.formatted_address || place.name || inputRef.current?.value || '';
+          const place = ac.getPlace() || {};
+          const label = place.formatted_address || place.name || inputRef.current?.value || '';
           lastSelectTs.current = Date.now();
           setInputValue(label);
           onChange(label);
           if (onPlaceSelected) {
             const comps: AddressComponents = {};
-            const addr = place.addressComponents || place.address_components || [];
+            const addr = (place as any).address_components || [];
             addr.forEach((c: any) => {
-              const key = (Array.isArray(c.types) && c.types[0]) || c.shortText || c.short_name || 'unknown';
-              comps[key] = c.longText || c.long_name || c.shortText || c.short_name;
+              const key = (Array.isArray(c.types) && c.types[0]) || c.short_name || 'unknown';
+              comps[key] = c.long_name || c.short_name;
             });
             onPlaceSelected({ label, address: comps });
           }
         };
-        // L'elemento deve essere nel DOM per funzionare correttamente
-        document.body.appendChild(el);
-        widgetRef.current = el as HTMLElement;
-        // Ascolta sia 'placechange' che varianti gmp per compatibilità
-        el.addEventListener('placechange', handler as EventListener);
-        el.addEventListener('gmp-placechange', handler as EventListener);
-        // Segnaposto per gating init
-        autocompleteRef.current = el;
+        ac.addListener('place_changed', handler);
+        autocompleteRef.current = ac;
         initializedRef.current = true;
         setIsReady(true);
       }
@@ -76,35 +68,14 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
       setIsActivating(false);
     }
   };
-
-  // Evita che il blur dell'input interrompa la selezione: previeni il mousedown sui suggerimenti
-  // Affidati al click native di Google: niente prevenzione globale degli eventi
-  useEffect(() => {
-    const onPointerDownCapture = (e: Event) => {
-      const path = (e as any).composedPath ? (e as any).composedPath() : undefined;
-      const target = e.target as HTMLElement | null;
-      const insideWidget = (path && widgetRef.current && path.includes(widgetRef.current)) || (target && widgetRef.current && widgetRef.current.contains(target));
-      if (insideWidget) {
-        // Evita che il click nei suggerimenti venga interpretato come outside-click dal modal
-        e.stopPropagation();
-      }
-    };
-    document.addEventListener('pointerdown', onPointerDownCapture, true);
-    document.addEventListener('mousedown', onPointerDownCapture, true);
-    document.addEventListener('touchstart', onPointerDownCapture as any, { capture: true, passive: false } as any);
-    return () => {
-      document.removeEventListener('pointerdown', onPointerDownCapture, true);
-      document.removeEventListener('mousedown', onPointerDownCapture, true);
-      document.removeEventListener('touchstart', onPointerDownCapture as any, { capture: true } as any);
-    };
-  }, []);
-
-  // Cleanup del widget al smontaggio del componente
+  
+  // Cleanup Autocomplete on unmount
   useEffect(() => {
     return () => {
-      if (widgetRef.current) {
+      if (autocompleteRef.current) {
         try {
-          widgetRef.current.remove();
+          // Non esiste un destroy pubblico; rimuovere riferimenti lascia al GC
+          autocompleteRef.current = null;
         } catch {
           // ignore
         }
