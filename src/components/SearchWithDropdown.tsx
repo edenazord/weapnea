@@ -7,7 +7,6 @@ import { MonthPicker } from "@/components/MonthPicker";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { localizeCategoryName } from "@/lib/i18n-utils";
 
 interface SearchWithDropdownProps {
   searchTerm: string;
@@ -168,7 +167,9 @@ export const SearchWithDropdown = ({
                     <SelectItem value="all">{t('search.all_categories', 'Tutte le Categorie')}</SelectItem>
           {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
-            {localizeCategoryName(category.name, t)}
+            {category.id === 'uncategorized' 
+              ? t('search.uncategorized_trainings', 'Allenamenti (senza categoria)')
+              : category.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
