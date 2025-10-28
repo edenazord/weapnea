@@ -38,7 +38,8 @@ const Dashboard = () => {
     const [showPackagePrompt, setShowPackagePrompt] = useState(false);
     const [isAllenamentiMode, setIsAllenamentiMode] = useState(false);
     const [activeTab, setActiveTab] = useState("events");
-    const [eventFilter, setEventFilter] = useState<'all' | 'active' | 'past'>('all');
+    // Default: mostra solo eventi attivi; rimosso filtro "tutti"
+    const [eventFilter, setEventFilter] = useState<'active' | 'past'>('active');
     
     const { data: userEvents, isLoading: isLoadingEvents } = useQuery({
         queryKey: ["events", "user", profile?.id],
@@ -319,7 +320,7 @@ const Dashboard = () => {
             <div className={`grid gap-4 ${isMobile ? 'grid-cols-2' : 'grid-cols-2 md:grid-cols-4'}`}>
                 <Card
                     className={`cursor-pointer transition ${eventFilter === 'active' ? 'ring-2 ring-blue-600 border-blue-600 bg-blue-50' : 'hover:bg-gray-50'}`}
-                    onClick={() => setEventFilter(eventFilter === 'active' ? 'all' : 'active')}
+                    onClick={() => setEventFilter('active')}
                     title="Mostra solo eventi attivi"
                 >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -333,7 +334,7 @@ const Dashboard = () => {
                 </Card>
                 <Card
                     className={`cursor-pointer transition ${eventFilter === 'past' ? 'ring-2 ring-blue-600 border-blue-600 bg-blue-50' : 'hover:bg-gray-50'}`}
-                    onClick={() => setEventFilter(eventFilter === 'past' ? 'all' : 'past')}
+                    onClick={() => setEventFilter('past')}
                     title="Mostra solo eventi passati"
                 >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -347,7 +348,7 @@ const Dashboard = () => {
                 </Card>
             </div>
 
-            {(eventFilter === 'all' || eventFilter === 'active') && (
+            {eventFilter === 'active' && (
             <Card>
                 <CardHeader>
                     <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>I tuoi eventi</CardTitle>
@@ -426,7 +427,7 @@ const Dashboard = () => {
             </Card>
             )}
 
-            {(eventFilter === 'all' || eventFilter === 'past') && (
+            {eventFilter === 'past' && (
             <Card>
                 <CardHeader>
                     <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>Eventi Passati</CardTitle>
