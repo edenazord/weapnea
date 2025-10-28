@@ -446,11 +446,9 @@ const Profile = () => {
               <FileText className="h-4 w-4 mr-2" />
               {t('profile.tabs.bests', 'Record')}
             </TabsTrigger>
-            {(user.role === 'instructor' || user.role === 'company') && (
-              <TabsTrigger value="visibility" className="whitespace-nowrap">
-                Visibilità
-              </TabsTrigger>
-            )}
+            <TabsTrigger value="visibility" className="whitespace-nowrap">
+              Visibilità
+            </TabsTrigger>
           </TabsList>
 
           <form onSubmit={handleSubmit}>
@@ -572,9 +570,8 @@ const Profile = () => {
 
             </TabsContent>
 
-            {/* Visibilità - nuova tab dedicata */}
-            {(user.role === 'instructor' || user.role === 'company') && (
-              <TabsContent value="visibility">
+            {/* Visibilità - nuova tab dedicata (resa disponibile per tutti i ruoli) */}
+            <TabsContent value="visibility">
                 <Card>
                   <CardHeader>
                     <CardTitle>Visibilità</CardTitle>
@@ -747,7 +744,6 @@ const Profile = () => {
                   </CardContent>
                 </Card>
               </TabsContent>
-            )}
 
             <TabsContent value="certs">
               <Card>
