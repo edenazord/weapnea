@@ -6,10 +6,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Waves, Home, User, FileText, Sparkles } from "lucide-react";
+import { Home, User, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Footer from "@/components/Footer";
+import Logo from "@/components/Logo";
 
 const MobileLayout = ({ children }: { children: ReactNode }) => {
     const { user, loading } = useAuth();
@@ -30,17 +31,7 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
             {/* Header compatto per mobile */}
             <header className="sticky top-0 z-50 modern-blur border-b border-white/20 px-4 py-3 shadow-lg">
                 <div className="flex items-center justify-between">
-                    <Link to="/" className="flex items-center space-x-2 group">
-                        <div className="relative">
-                            <Waves className="h-6 w-6 text-blue-600 group-hover:text-purple-600 transition-colors duration-300" />
-                            <div className="absolute -top-1 -right-1">
-                                <Sparkles className="h-3 w-3 text-yellow-400 animate-pulse" />
-                            </div>
-                        </div>
-                        <span className="text-xl font-bold bg-gradient-to-r from-blue-900 via-purple-700 to-blue-900 bg-clip-text text-transparent">
-                            WeApnea
-                        </span>
-                    </Link>
+                    <Logo imgClassName="h-7" />
                     <div className="flex items-center space-x-2">
                         <LanguageSwitcher />
                         {loading ? (

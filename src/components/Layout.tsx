@@ -10,6 +10,7 @@ import { Waves, Sparkles } from "lucide-react";
 import { ReactNode } from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Footer from "@/components/Footer";
+import Logo from "@/components/Logo";
 
 const Layout = ({ children }: { children: ReactNode }) => {
     const { user, loading } = useAuth();
@@ -25,17 +26,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             <header className="sticky top-0 z-50 modern-blur border-b border-white/20 shadow-lg">
                 <div className="px-6 py-4 w-full max-w-none">
                     <div className="flex items-center justify-between">
-                        <Link to="/" className="flex items-center space-x-3 group">
-                            <div className="relative">
-                                <Waves className="h-8 w-8 text-blue-600 group-hover:text-purple-600 transition-colors duration-300" />
-                                <div className="absolute -top-1 -right-1">
-                                    <Sparkles className="h-4 w-4 text-yellow-400 animate-pulse" />
-                                </div>
-                            </div>
-                            <span className="text-2xl font-bold bg-gradient-to-r from-blue-900 via-purple-700 to-blue-900 bg-clip-text text-transparent">
-                                WeApnea
-                            </span>
-                        </Link>
+                        <Logo imgClassName="h-9" />
                         
                         <nav className="hidden md:flex items-center space-x-8">
                             <Link 
