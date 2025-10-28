@@ -4,7 +4,7 @@ import { apiGet, apiSend } from '@/lib/apiClient';
 // Tipi locali per API-only
 export type BlogArticle = {
   id: string;
-  language?: 'it' | 'en';
+  language?: 'it' | 'en' | 'es' | 'fr' | 'pl' | 'ru';
   title: string;
   slug: string;
   excerpt: string | null;
@@ -30,7 +30,7 @@ export const getBlogArticles = async (
   published: boolean = true,
   searchTerm?: string,
   sort: { column: string; direction: string } = { column: 'created_at', direction: 'desc' },
-  language?: 'it' | 'en'
+  language?: 'it' | 'en' | 'es' | 'fr' | 'pl' | 'ru'
 ): Promise<BlogArticleWithAuthor[]> => {
   const params = new URLSearchParams();
   if (published) params.set('published', 'true');

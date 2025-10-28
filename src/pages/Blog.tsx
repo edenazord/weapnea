@@ -21,11 +21,14 @@ import PageHeader from "@/components/PageHeader";
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const isMobile = useIsMobile();
-  const { t } = useLanguage();
+  const { t, currentLanguage } = useLanguage();
+
+  const allowedLangs = ['it','en','es','fr','pl','ru'] as const;
+  const langParam = (allowedLangs as readonly string[]).includes(currentLanguage) ? (currentLanguage as typeof allowedLangs[number]) : undefined;
 
   const { data: articles = [], isLoading } = useQuery({
-    queryKey: ['blog-articles', searchTerm],
-    queryFn: () => getBlogArticles(true, searchTerm),
+    queryKey: ['blog-articles', langParam, searchTerm],
+    queryFn: () => getBlogArticles(true, searchTerm, { column: 'created_at', direction: 'desc' }, langParam),
   });
 
   const formatDate = (dateString: string) => {
