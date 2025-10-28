@@ -71,39 +71,8 @@ export function LocationPicker({ value, onChange, placeholder = "Cerca una local
     }
   };
   
-  // Permetti il click sui suggerimenti senza perdere il focus (lascia la selezione a Google)
-  useEffect(() => {
-    const isInsidePac = (e: Event) => {
-      const path = (e as any).composedPath ? (e as any).composedPath() : undefined;
-      const target = e.target as HTMLElement | null;
-      if (path && Array.isArray(path)) {
-        return path.some((el: any) => el && el.classList && (el.classList.contains('pac-container') || el.classList.contains('pac-item')));
-      }
-      if (target) {
-        return !!target.closest('.pac-container, .pac-item');
-      }
-      return false;
-    };
-
-    const onMouseDown = (e: Event) => {
-      if (isInsidePac(e)) {
-        // Evita il blur dell'input. Non blocchiamo la propagazione così Google gestisce la selezione.
-        e.preventDefault();
-      }
-    };
-    const onTouchStart = (e: Event) => {
-      if (isInsidePac(e)) {
-        e.preventDefault();
-      }
-    };
-
-    document.addEventListener('mousedown', onMouseDown, true);
-    document.addEventListener('touchstart', onTouchStart as any, { capture: true, passive: false } as any);
-    return () => {
-      document.removeEventListener('mousedown', onMouseDown, true);
-      document.removeEventListener('touchstart', onTouchStart as any, { capture: true } as any);
-    };
-  }, []);
+  // Rimuoviamo workaround sul mousedown: lasciamo che Google gestisca completamente il click sui suggerimenti
+  // L'eventuale chiusura del modal è già gestita a livello di Sheet (onInteractOutside)
 
   // Aggancia anteprima al passaggio del mouse sui suggerimenti Google (senza confermare il valore)
   useEffect(() => {
