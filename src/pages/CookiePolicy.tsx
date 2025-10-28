@@ -4,6 +4,8 @@ import PageTopBar from "@/components/PageTopBar";
 import PageHeader from "@/components/PageHeader";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Cookie, ListOrdered, CalendarDays } from "lucide-react";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { useEffect, useState } from "react";
 
 const CookiePolicy = () => {
   const isMobile = useIsMobile();
@@ -48,37 +50,7 @@ const CookiePolicy = () => {
                 <span className="font-semibold">Informativa Cookie</span>
               </div>
               <div className="prose prose-slate max-w-none">
-                <h3 id="cosa-sono">1. Cosa sono i cookie</h3>
-                <p>
-                  I cookie sono piccoli file salvati nel dispositivo dell’utente per migliorare la navigazione e abilitare determinate funzionalità.
-                </p>
-
-                <h3 id="tipologie">2. Tipologie di cookie utilizzati</h3>
-                <ul>
-                  <li><strong>Tecnici / Necessari</strong>: funzionamento del sito (es. lingua, login) – non richiedono consenso.</li>
-                  <li><strong>Statistici (anonimizzati)</strong>: analisi visite (es. Google Analytics con IP anonimizzato) – richiedono consenso.</li>
-                  <li><strong>Marketing / Profilazione</strong>: remarketing e personalizzazione contenuti – richiedono consenso.</li>
-                </ul>
-
-                <h3 id="consenso">3. Gestione del consenso</h3>
-                <p>
-                  Al primo accesso viene mostrato un banner cookie che consente di accettare tutti i cookie, rifiutare quelli non necessari o gestire le preferenze. L’utente può modificare le preferenze in ogni momento tramite browser o tramite un link “Impostazioni Cookie” presente nel Sito.
-                </p>
-
-                <h3 id="browser">4. Disabilitazione tramite browser</h3>
-                <p>
-                  L’utente può gestire i cookie dalle impostazioni del proprio browser (Chrome, Firefox, Safari, ecc.). La disattivazione dei cookie tecnici può compromettere alcune funzionalità del Sito.
-                </p>
-
-                <h3 id="terze-parti">5. Strumenti di terza parte</h3>
-                <p>
-                  Il Sito può utilizzare servizi esterni come Google Analytics o pixel social. In caso di cookie marketing, questi vengono attivati solo previo consenso esplicito.
-                </p>
-
-                <h3 id="contatti">6. Contatti</h3>
-                <p>
-                  Per chiarimenti o richieste sulla gestione dei dati o dei cookie: <a href="mailto:weapnea@gmail.com">weapnea@gmail.com</a>
-                </p>
+                <CookieAccordion />
               </div>
             </div>
           </main>
@@ -99,3 +71,69 @@ const CookiePolicy = () => {
 };
 
 export default CookiePolicy;
+
+function CookieAccordion() {
+  const [open, setOpen] = useState<string | undefined>("cosa-sono");
+  useEffect(() => {
+    try {
+      const hash = window.location?.hash?.replace('#','');
+      if (hash) setOpen(hash);
+    } catch (e) {
+      // no-op
+    }
+  }, []);
+  return (
+    <Accordion type="single" collapsible value={open} onValueChange={setOpen}>
+      <AccordionItem value="cosa-sono">
+        <AccordionTrigger id="cosa-sono">1. Cosa sono i cookie</AccordionTrigger>
+        <AccordionContent>
+          <p>
+            I cookie sono piccoli file salvati nel dispositivo dell’utente per migliorare la navigazione e abilitare determinate funzionalità.
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="tipologie">
+        <AccordionTrigger id="tipologie">2. Tipologie di cookie utilizzati</AccordionTrigger>
+        <AccordionContent>
+          <ul>
+            <li><strong>Tecnici / Necessari</strong>: funzionamento del sito (es. lingua, login) – non richiedono consenso.</li>
+            <li><strong>Statistici (anonimizzati)</strong>: analisi visite (es. Google Analytics con IP anonimizzato) – richiedono consenso.</li>
+            <li><strong>Marketing / Profilazione</strong>: remarketing e personalizzazione contenuti – richiedono consenso.</li>
+          </ul>
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="consenso">
+        <AccordionTrigger id="consenso">3. Gestione del consenso</AccordionTrigger>
+        <AccordionContent>
+          <p>
+            Al primo accesso viene mostrato un banner cookie che consente di accettare tutti i cookie, rifiutare quelli non necessari o gestire le preferenze. L’utente può modificare le preferenze in ogni momento tramite browser o tramite un link “Impostazioni Cookie” presente nel Sito.
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="browser">
+        <AccordionTrigger id="browser">4. Disabilitazione tramite browser</AccordionTrigger>
+        <AccordionContent>
+          <p>
+            L’utente può gestire i cookie dalle impostazioni del proprio browser (Chrome, Firefox, Safari, ecc.). La disattivazione dei cookie tecnici può compromettere alcune funzionalità del Sito.
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="terze-parti">
+        <AccordionTrigger id="terze-parti">5. Strumenti di terza parte</AccordionTrigger>
+        <AccordionContent>
+          <p>
+            Il Sito può utilizzare servizi esterni come Google Analytics o pixel social. In caso di cookie marketing, questi vengono attivati solo previo consenso esplicito.
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+      <AccordionItem value="contatti">
+        <AccordionTrigger id="contatti">6. Contatti</AccordionTrigger>
+        <AccordionContent>
+          <p>
+            Per chiarimenti o richieste sulla gestione dei dati o dei cookie: <a href="mailto:weapnea@gmail.com">weapnea@gmail.com</a>
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
