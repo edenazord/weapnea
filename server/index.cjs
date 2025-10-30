@@ -2371,7 +2371,7 @@ app.get('/api/admin/users', requireAuth, requireAdmin, async (_req, res) => {
     const { rows } = await pool.query(`
       SELECT id,
         email,
-        NULL::timestamp AS created_at,
+        created_at,
         full_name,
         role,
         is_active,

@@ -234,6 +234,7 @@ const UsersManager = () => {
                     <TableRow>
                       <TableHead>Utente</TableHead>
                       <TableHead>Email</TableHead>
+                      <TableHead>Iscrizione</TableHead>
                       <TableHead>Ruolo</TableHead>
                       <TableHead>Stato</TableHead>
                       <TableHead>Azienda</TableHead>
@@ -261,6 +262,11 @@ const UsersManager = () => {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">{user.email}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm text-gray-700">
+                            {user.created_at ? new Date(user.created_at).toLocaleDateString('it-IT', { year: 'numeric', month: '2-digit', day: '2-digit' }) : '-'}
+                          </div>
                         </TableCell>
                         <TableCell>
                           <Select
