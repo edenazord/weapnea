@@ -1325,6 +1325,8 @@ function eventsSelect() {
     e.activity_details, e.who_we_are, e.fixed_appointment, e.instructors,
     e.instructor_certificates, e.max_participants_per_instructor, e.schedule_meeting_point,
     e.responsibility_waiver_accepted, e.privacy_accepted,
+    -- Paid participants count for x / y indicator in listings
+    COALESCE((SELECT COUNT(*) FROM event_payments ep WHERE ep.event_id = e.id AND ep.status = 'paid'), 0)::int AS participants_paid_count,
     -- Organizer public fields (for UI)
     e.created_by AS organizer_id,
     COALESCE(p.company_name, p.full_name) AS organizer_name,

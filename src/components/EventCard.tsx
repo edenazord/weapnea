@@ -137,12 +137,25 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
           )}
 
           <div className="flex items-center justify-between">
-            {event.participants && (
+            {/* Partecipanti: mostra x/y dove possibile */}
+            {(typeof event.participants === 'number' && event.participants > 0) || (typeof event.participants_paid_count === 'number') ? (
               <div className="flex items-center gap-2 text-xs text-gray-600">
                 <Users className="h-4 w-4 text-purple-500 flex-shrink-0" />
-                <span>{event.participants} {t('events.participants', 'partecipanti')}</span>
+                {typeof event.participants === 'number' && event.participants > 0 && typeof event.participants_paid_count === 'number' ? (
+                  <span>
+                    {t('events.participants_label', 'Partecipanti')} {Math.max(0, event.participants_paid_count)} / {event.participants}
+                  </span>
+                ) : typeof event.participants === 'number' && event.participants > 0 ? (
+                  <span>
+                    {event.participants} {t('events.participants', 'partecipanti')}
+                  </span>
+                ) : (
+                  <span>
+                    {Math.max(0, Number(event.participants_paid_count || 0))} {t('events.participants', 'partecipanti')}
+                  </span>
+                )}
               </div>
-            )}
+            ) : null}
 
             {eventsFree === false && event.cost && event.cost > 0 && (
               <div className="flex items-center gap-1 text-xs font-medium text-green-600">

@@ -11,6 +11,7 @@ export interface Event {
   end_date?: string | null;
   location?: string | null;
   participants?: number | null;
+  participants_paid_count?: number | null;
   image_url?: string | null;
   category_id: string;
   cost?: number | null;
