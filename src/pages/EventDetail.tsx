@@ -526,12 +526,15 @@ const EventDetail = () => {
                                 </div>
                             )}
                         </div>
-                        <EventPaymentButton
-                            eventId={event.id}
-                            eventTitle={event.title}
-                            eventCost={event.cost ? Number(event.cost) : 0}
-                            className="w-full mt-8"
-                        />
+                                                <EventPaymentButton
+                                                        eventId={event.id}
+                                                        eventTitle={event.title}
+                                                        eventCost={event.cost ? Number(event.cost) : 0}
+                                                        isFull={(typeof event.participants === 'number' && event.participants > 0) 
+                                                            ? Number(event.participants_paid_count || 0) >= Number(event.participants)
+                                                            : false}
+                                                        className="w-full mt-8"
+                                                />
                     </Card>
 
                     {/* Informazioni Dettagliate - senza logistica che è stata spostata a sinistra */}

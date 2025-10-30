@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Loader2, CreditCard } from "lucide-react";
@@ -7,7 +7,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { backendConfig } from "@/lib/backendConfig";
-import { getPublicConfig } from "@/lib/publicConfig";
 import { useQuery } from "@tanstack/react-query";
 
 interface EventPaymentButtonProps {
@@ -15,6 +14,7 @@ interface EventPaymentButtonProps {
   eventTitle: string;
   eventCost: number;
   disabled?: boolean;
+  isFull?: boolean;
   className?: string;
 }
 
@@ -23,6 +23,7 @@ export const EventPaymentButton = ({
   eventTitle, 
   eventCost, 
   disabled = false,
+  isFull = false,
   className = ""
 }: EventPaymentButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,8 +31,6 @@ export const EventPaymentButton = ({
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
-  // null = sconosciuto; evita testo con prezzo fino a quando non carichiamo la config
-  const [eventsFree, setEventsFree] = useState<boolean | null>(null);
   const { data: myParticipations } = useQuery({
     queryKey: ["me", "participations"],
     queryFn: async () => {
@@ -53,12 +52,6 @@ export const EventPaymentButton = ({
     return Array.isArray(myParticipations) && myParticipations.some((p: any) => p.event_id === eventId);
   }, [myParticipations, eventId]);
 
-  useEffect(() => {
-    let mounted = true;
-    getPublicConfig().then(cfg => { if (mounted) setEventsFree(Boolean(cfg.eventsFreeMode)); }).catch(() => { if (mounted) setEventsFree(null); });
-    return () => { mounted = false; };
-  }, []);
-
   const handlePayment = async () => {
   if (!user) {
       // Reindirizza alla pagina di login se l'utente non è autenticato
@@ -66,10 +59,16 @@ export const EventPaymentButton = ({
       return;
     }
 
+    // Blocca lato UI se l'evento è pieno
+    if (isFull) {
+      toast.error('Posti esauriti per questo evento.');
+      return;
+    }
+
     setIsLoading(true);
     try {
-  // Consenti pagamento solo quando sappiamo con certezza che la free mode è DISATTIVA.
-  if (eventsFree === false && eventCost > 0) {
+      // Eventi a pagamento: controlla campi profilo obbligatori
+      if (eventCost > 0) {
         // Gating lato UI: campi profilo obbligatori per eventi a pagamento
         const missing: string[] = [];
         const today = new Date();
@@ -133,7 +132,7 @@ export const EventPaymentButton = ({
     <>
     <Button 
       onClick={handlePayment}
-      disabled={disabled || isLoading || isAlreadyRegistered}
+      disabled={disabled || isLoading || isAlreadyRegistered || isFull}
       className={className}
     >
       {isLoading ? (
@@ -144,9 +143,11 @@ export const EventPaymentButton = ({
       ) : (
         <>
           <CreditCard className="mr-2 h-4 w-4" />
-          {isAlreadyRegistered
-            ? 'Già iscritto'
-            : (eventsFree === false && eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti')}
+          {isFull
+            ? 'Completo'
+            : isAlreadyRegistered
+              ? 'Già iscritto'
+              : (eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti')}
         </>
       )}
     </Button>
