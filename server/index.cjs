@@ -311,6 +311,9 @@ const EVENTS_FREE_MODE = String(process.env.EVENTS_FREE_MODE || '').toLowerCase(
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'WeApnea <noreply@weapnea.com>';
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+// In-memory log for email attempts (last 50)
+const EMAIL_LOG_MAX = 50;
+const emailLog = [];
 
 // --- App settings helpers ---
 async function ensureAppSettingsTable() {
@@ -459,14 +462,20 @@ async function getSlugAliasTarget(slugLower) {
 async function sendEmail({ to, subject, html }) {
   if (!resend) {
     console.warn('Resend not configured, skipping email:', subject, to);
+    const entry = { ts: new Date().toISOString(), to, subject, ok: false, skipped: true, error: 'RESEND_API_KEY not set' };
+    emailLog.push(entry); if (emailLog.length > EMAIL_LOG_MAX) emailLog.shift();
     return { skipped: true };
   }
   try {
     const { data, error } = await resend.emails.send({ from: RESEND_FROM_EMAIL, to, subject, html });
     if (error) throw error;
+    const entry = { ts: new Date().toISOString(), to, subject, ok: true, id: data?.id };
+    emailLog.push(entry); if (emailLog.length > EMAIL_LOG_MAX) emailLog.shift();
     return { ok: true, id: data?.id };
   } catch (e) {
     console.error('Email send failed:', e);
+    const entry = { ts: new Date().toISOString(), to, subject, ok: false, error: String(e?.message || e) };
+    emailLog.push(entry); if (emailLog.length > EMAIL_LOG_MAX) emailLog.shift();
     return { ok: false, error: String(e?.message || e) };
   }
 }
@@ -642,6 +651,31 @@ app.get('/api/health', async (_, res) => {
   } catch (e) {
     // Return 200 even if DB isn't reachable yet, so platform health checks pass
     return res.json({ ok: false, error: String(e?.message || e) });
+  }
+});
+
+// Email health/status (admin only)
+app.get('/api/email/health', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    res.json({
+      configured: !!resend,
+      from: RESEND_FROM_EMAIL,
+      last: emailLog.slice(-10),
+    });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Email test (admin only)
+app.post('/api/email/test', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { to, subject = 'Test email WeApnea', html = '<p>Questa è una email di test inviata da WeApnea.</p>' } = req.body || {};
+    if (!to) return res.status(400).json({ error: 'to is required' });
+    const result = await sendEmail({ to, subject, html });
+    res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
