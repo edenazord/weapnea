@@ -143,7 +143,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
                 <Users className="h-4 w-4 text-purple-500 flex-shrink-0" />
                 {typeof event.participants === 'number' && event.participants > 0 && typeof event.participants_paid_count === 'number' ? (
                   <span>
-                    {t('events.participants_label', 'Partecipanti')} {Math.max(0, event.participants_paid_count)} / {event.participants}
+                    {t('events.enrolled_label', 'Iscritti')} {Math.max(0, event.participants_paid_count)} / {event.participants}
                   </span>
                 ) : typeof event.participants === 'number' && event.participants > 0 ? (
                   <span>
@@ -151,7 +151,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
                   </span>
                 ) : (
                   <span>
-                    {Math.max(0, Number(event.participants_paid_count || 0))} {t('events.participants', 'partecipanti')}
+                    {Math.max(0, Number(event.participants_paid_count || 0))} {t('events.enrolled', 'iscritti')}
                   </span>
                 )}
               </div>

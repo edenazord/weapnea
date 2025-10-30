@@ -374,27 +374,44 @@ const EventDetail = () => {
                             )}
                         </div>
                         <div className={`${isMobile ? 'p-4' : 'p-6 md:p-8'}`}>
-                                                        {/* Organizzatore con avatar sopra al titolo */}
-                                                                                                                {(organizerId) && (
-                                                                                        <div className="mb-3 flex items-center gap-3">
-                                                                                            <Link to={(event as any).organizer_public_enabled && (event as any).organizer_public_slug ? `/instructor/${(event as any).organizer_public_slug}` : `/instructor/id/${organizerId}`} className="flex items-center gap-3 group">
-                                                                    <Avatar className="h-9 w-9">
-                                                                                                                                <AvatarImage src={ensureAbsoluteUrl(event.organizer_avatar_url || organizerProfile?.avatar_url || undefined) || ''} alt={event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || 'Organizzatore'} />
-                                                                        <AvatarFallback>
-                                                                                                                                    {(event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || event.organizer?.company_name || event.organizer?.full_name || 'O')
-                                                                                .charAt(0)
-                                                                                .toUpperCase()}
-                                                                        </AvatarFallback>
-                                                                    </Avatar>
-                                                                    <div className="flex flex-col leading-tight">
-                                                                        <span className="text-xs text-gray-500">Organizzato da</span>
-                                                                        <span className="text-sm font-medium text-blue-700 group-hover:underline">
-                                                                                                                                    {event.organizer_name || organizerProfile?.company_name || organizerProfile?.full_name || event.organizer?.company_name || event.organizer?.full_name || 'Organizzatore'}
-                                                                        </span>
-                                                                    </div>
-                                                                </Link>
-                                                            </div>
-                                                        )}
+                                                                                                                {/* Organizzatore con avatar sopra al titolo */}
+                                                                                                                {(organizerId || event.organizer_name) && (
+                                                                                                                    <div className="mb-3 flex items-center gap-3">
+                                                                                                                        {organizerId ? (
+                                                                                                                            <Link to={(event as any).organizer_public_enabled && (event as any).organizer_public_slug ? `/instructor/${(event as any).organizer_public_slug}` : `/instructor/id/${organizerId}`} className="flex items-center gap-3 group">
+                                                                                                                                <Avatar className="h-9 w-9">
+                                                                                                                                    <AvatarImage src={ensureAbsoluteUrl(event.organizer_avatar_url || organizerProfile?.avatar_url || undefined) || ''} alt={event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || 'Organizzatore'} />
+                                                                                                                                    <AvatarFallback>
+                                                                                                                                        {(event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || event.organizer?.company_name || event.organizer?.full_name || 'O')
+                                                                                                                                            .charAt(0)
+                                                                                                                                            .toUpperCase()}
+                                                                                                                                    </AvatarFallback>
+                                                                                                                                </Avatar>
+                                                                                                                                <div className="flex flex-col leading-tight">
+                                                                                                                                    <span className="text-xs text-gray-500">Organizzato da</span>
+                                                                                                                                    <span className="text-sm font-medium text-blue-700 group-hover:underline">
+                                                                                                                                        {event.organizer_name || organizerProfile?.company_name || organizerProfile?.full_name || event.organizer?.company_name || event.organizer?.full_name || 'Organizzatore'}
+                                                                                                                                    </span>
+                                                                                                                                </div>
+                                                                                                                            </Link>
+                                                                                                                        ) : (
+                                                                                                                            <div className="flex items-center gap-3">
+                                                                                                                                <Avatar className="h-9 w-9">
+                                                                                                                                    <AvatarImage src={ensureAbsoluteUrl(event.organizer_avatar_url || undefined) || ''} alt={event.organizer_name || 'Organizzatore'} />
+                                                                                                                                    <AvatarFallback>
+                                                                                                                                        {(event.organizer_name || 'O').charAt(0).toUpperCase()}
+                                                                                                                                    </AvatarFallback>
+                                                                                                                                </Avatar>
+                                                                                                                                <div className="flex flex-col leading-tight">
+                                                                                                                                    <span className="text-xs text-gray-500">Organizzato da</span>
+                                                                                                                                    <span className="text-sm font-medium text-blue-700">
+                                                                                                                                        {event.organizer_name}
+                                                                                                                                    </span>
+                                                                                                                                </div>
+                                                                                                                            </div>
+                                                                                                                        )}
+                                                                                                                    </div>
+                                                                                                                )}
 
                                                         <h1 className={`font-bold text-blue-900 mb-2 leading-tight ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>{event.title}</h1>
                             
@@ -498,15 +515,19 @@ const EventDetail = () => {
                                     </div>
                                 </div>
                             )}
-                            {event.participants && (
+                            {(typeof event.participants === 'number' && event.participants > 0) || typeof (event as any).participants_paid_count === 'number' ? (
                                 <div className="flex items-start">
                                     <Users className="h-5 w-5 mr-3 mt-1 text-blue-600" />
-                                     <div>
-                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Partecipanti</p>
-                                        <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{event.participants} posti</p>
+                                    <div>
+                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Iscritti</p>
+                                        <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>
+                                            {typeof event.participants === 'number' && event.participants > 0
+                                                ? `${Math.max(0, Number((event as any).participants_paid_count || 0))} / ${event.participants}`
+                                                : `${Math.max(0, Number((event as any).participants_paid_count || 0))}`}
+                                        </p>
                                     </div>
                                 </div>
-                            )}
+                            ) : null}
                                                         {eventsFree === false && (event.cost != null && event.cost > 0) && (
                               <div className="flex items-start">
                                   <CreditCard className="h-5 w-5 mr-3 mt-1 text-blue-600" />
