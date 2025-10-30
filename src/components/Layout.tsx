@@ -26,7 +26,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
             <header className="sticky top-0 z-50 modern-blur border-b border-white/20 shadow-lg">
                 <div className="px-6 py-4 w-full max-w-none">
                     <div className="flex items-center justify-between">
-                        <Logo imgClassName="h-9" showText />
+                        <Logo imgClassName="h-9" />
                         
                         <nav className="hidden md:flex items-center space-x-8">
                             <Link 
