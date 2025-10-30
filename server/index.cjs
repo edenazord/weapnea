@@ -219,6 +219,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 let HAS_PERSONAL_BEST = false;
 let HAS_USER_PACKAGES = false;
 let HAS_PUBLIC_PROFILE_FIELDS = false;
+let HAS_ORGANIZER_REQUEST = false; 
 
 async function ensurePersonalBestColumnAtRuntime() {
   try {
@@ -257,6 +258,18 @@ async function ensurePublicProfileColumnsAtRuntime() {
     console.warn('[public_profile] ensure columns failed:', e?.message || e);
   }
 }
+async function ensureOrganizerRequestColumnsAtRuntime() {
+  try {
+    await pool.query(`
+      ALTER TABLE IF EXISTS public.profiles
+        ADD COLUMN IF NOT EXISTS organizer_upgrade_requested_at timestamptz,
+        ADD COLUMN IF NOT EXISTS organizer_upgrade_note text
+    `);
+    HAS_ORGANIZER_REQUEST = true;
+  } catch (e) {
+    console.warn('[organizer_request] ensure columns failed:', e?.message || e);
+  }
+}
 let HAS_BLOG_LANGUAGE = false;
 async function detectSchema() {
   try {
@@ -277,6 +290,10 @@ async function detectSchema() {
     const r3b = await pool.query(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='public_slug'`);
     HAS_PUBLIC_PROFILE_FIELDS = (r3a.rowCount > 0) && (r3b.rowCount > 0);
     if (!HAS_PUBLIC_PROFILE_FIELDS) console.warn('[startup] profiles.public_profile_* NOT present');
+
+    const r4 = await pool.query(`SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='profiles' AND column_name='organizer_upgrade_requested_at'`);
+    HAS_ORGANIZER_REQUEST = r4.rowCount > 0;
+    if (!HAS_ORGANIZER_REQUEST) console.warn('[startup] profiles.organizer_upgrade_requested_at NOT present');
   } catch (e) {
     console.warn('[startup] schema detection failed:', e?.message || e);
   }
@@ -533,6 +550,16 @@ const DEFAULT_TEMPLATES = {
        <p>{{participant_name}} si è iscritto all'evento <strong>{{event_title}}</strong>.</p>
        {{#if event_dates}}<p><strong>Date:</strong> {{event_dates}}</p>{{/if}}`,
       'Apri evento', '{{event_url}}'
+    )
+  },
+  organizer_upgrade_request_admin: {
+    subject: 'Richiesta upgrade organizzatore: {{requester_email}}',
+    html: BASE_EMAIL_TEMPLATE(
+      'Nuova richiesta upgrade organizzatore',
+      `<p>Ciao {{admin_name}},</p>
+       <p>L'utente <strong>{{requester_name}}</strong> ({{requester_email}}) ha richiesto l'upgrade a organizzatore.</p>
+       <p>Puoi gestire il ruolo dalla dashboard amministratore.</p>`,
+      'Apri gestione utenti', '{{admin_url}}'
     )
   }
 };
@@ -869,6 +896,7 @@ app.get('/api/profile', requireAuth, async (req, res) => {
   if (!HAS_PUBLIC_PROFILE_FIELDS) {
     try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
   }
+  if (!HAS_ORGANIZER_REQUEST) { try { await ensureOrganizerRequestColumnsAtRuntime(); await detectSchema(); } catch (_) {} }
   const pb = HAS_PERSONAL_BEST
     ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best"
     : ", '{}'::jsonb AS personal_best";
@@ -879,7 +907,7 @@ app.get('/api/profile', requireAuth, async (req, res) => {
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
     assicurazione, scadenza_assicurazione, instagram_contact${pb},
-    company_name, vat_number, company_address, phone${pub}
+    company_name, vat_number, company_address, phone${pub}, organizer_upgrade_requested_at
      FROM profiles WHERE id = $1 LIMIT 1`;
   const { rows } = await pool.query(sql, [req.user.id]);
     const user = rows[0];
@@ -1131,6 +1159,54 @@ app.get('/api/profile/slug-availability/:slug', async (req, res) => {
   } catch (e) {
     const msg = String(e?.message || e);
     return res.status(500).json({ available: false, error: msg });
+  }
+});
+
+// Request organizer upgrade (final users). Idempotent.
+app.post('/api/me/request-organizer', requireAuth, async (req, res) => {
+  if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    if (!HAS_ORGANIZER_REQUEST) { try { await ensureOrganizerRequestColumnsAtRuntime(); await detectSchema(); } catch (_) {} }
+    // Fetch current role and existing request
+    const { rows } = await pool.query('SELECT role, organizer_upgrade_requested_at FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
+    const r = rows[0];
+    if (!r) return res.status(404).json({ error: 'Not found' });
+    if (r.role && r.role !== 'final_user') {
+      return res.status(409).json({ error: 'already_organizer' });
+    }
+    if (r.organizer_upgrade_requested_at) {
+      // Even if already requested, notify admins again? Keep idempotent: do not resend.
+      return res.json({ ok: true, already_requested: true });
+    }
+    await pool.query('UPDATE profiles SET organizer_upgrade_requested_at = NOW() WHERE id = $1', [req.user.id]);
+    // Notify all admins by email (fire-and-forget)
+    ;(async () => {
+      try {
+        const { rows: meRows } = await pool.query('SELECT email, COALESCE(NULLIF(TRIM(full_name), \'\'), email) AS name FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
+        const requesterEmail = meRows[0]?.email || '';
+        const requesterName = meRows[0]?.name || requesterEmail;
+        const { rows: admins } = await pool.query("SELECT email, COALESCE(NULLIF(TRIM(full_name), ''), email) AS name FROM profiles WHERE role = 'admin' AND COALESCE(is_active, true) = true AND email IS NOT NULL");
+        if (admins.length === 0) return;
+        const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+        const adminUrl = `${String(base).replace(/\/$/, '')}/admin`;
+        for (const a of admins) {
+          const tpl = await renderEmailWithTemplate(
+            'organizer_upgrade_request_admin',
+            { admin_name: a.name || 'Admin', requester_name: requesterName, requester_email: requesterEmail, app_name: APP_NAME, public_base: base, admin_url: adminUrl },
+            'Richiesta upgrade organizzatore',
+            BASE_EMAIL_TEMPLATE(
+              'Nuova richiesta upgrade organizzatore',
+              `<p>Un utente ha richiesto l'upgrade a organizzatore: <strong>${requesterName}</strong> (${requesterEmail}).</p>`,
+              'Apri gestione utenti', adminUrl
+            )
+          );
+          await sendEmail({ to: a.email, subject: tpl.subject, html: tpl.html });
+        }
+      } catch (e) { console.warn('[organizer-upgrade] notify admins failed:', e?.message || e); }
+    })();
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
@@ -2368,10 +2444,12 @@ app.post('/api/forum/topics/:id/views', async (req, res) => {
 // -----------------------------
 app.get('/api/admin/users', requireAuth, requireAdmin, async (_req, res) => {
   try {
+    if (!HAS_ORGANIZER_REQUEST) { try { await ensureOrganizerRequestColumnsAtRuntime(); await detectSchema(); } catch (_) {} }
     const { rows } = await pool.query(`
       SELECT id,
         email,
         created_at,
+        organizer_upgrade_requested_at,
         full_name,
         role,
         is_active,
@@ -2386,6 +2464,7 @@ app.get('/api/admin/users', requireAuth, requireAdmin, async (_req, res) => {
       id: r.id,
       email: r.email,
       created_at: r.created_at,
+      organizer_upgrade_requested_at: r.organizer_upgrade_requested_at,
       email_confirmed_at: null,
       last_sign_in_at: null,
       profile: {
@@ -2408,9 +2487,63 @@ app.put('/api/admin/users/:id/role', requireAuth, requireAdmin, async (req, res)
   const { role } = req.body || {};
   if (!role) return res.status(400).json({ error: 'role is required' });
   try {
-    const { rows } = await pool.query('UPDATE profiles SET role = $1 WHERE id = $2 RETURNING id, role', [role, req.params.id]);
-    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
+    // If upgrading to organizer roles, auto-enable public profile and generate slug
+    const isOrganizer = role === 'instructor' || role === 'company';
+    if (isOrganizer) {
+      if (!HAS_PUBLIC_PROFILE_FIELDS) { try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {} }
+      if (!HAS_ORGANIZER_REQUEST) { try { await ensureOrganizerRequestColumnsAtRuntime(); await detectSchema(); } catch (_) {} }
+      // Fetch base info for slug
+      const { rows: baseRows } = await pool.query(
+        'SELECT email, COALESCE(NULLIF(TRIM(company_name), \'\'), NULLIF(TRIM(full_name), \'\')) AS name FROM profiles WHERE id = $1 LIMIT 1',
+        [req.params.id]
+      );
+      if (!baseRows[0]) return res.status(404).json({ error: 'Not found' });
+      const baseName = baseRows[0].name || (baseRows[0].email || '').split('@')[0] || 'organizer';
+      const normalizeSlug = (raw) => raw
+        .toString()
+        .toLowerCase()
+        .trim()
+        .replace(/[@._]/g, '-')
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 80);
+      let candidate = normalizeSlug(baseName);
+      if (!candidate) candidate = 'organizer';
+      // Ensure uniqueness against lower(public_slug)
+      let suffix = 0;
+      while (true) {
+        const trySlug = suffix === 0 ? candidate : `${candidate}-${suffix}`;
+        const { rows: exist } = await pool.query(`SELECT 1 FROM profiles WHERE lower(public_slug) = lower($1) LIMIT 1`, [trySlug]);
+        if (!exist[0]) { candidate = trySlug; break; }
+        suffix++;
+        if (suffix > 1000) { candidate = `${candidate}-${Date.now().toString().slice(-4)}`; break; }
+      }
+      const { rows } = await pool.query(
+        `UPDATE profiles SET 
+           role = $1,
+           public_profile_enabled = true,
+           public_slug = COALESCE(public_slug, $2),
+           public_show_bio = true,
+           public_show_instagram = true,
+           public_show_company_info = true,
+           public_show_certifications = true,
+           public_show_events = true,
+           public_show_records = true,
+           public_show_personal = true,
+           organizer_upgrade_requested_at = NULL
+         WHERE id = $3
+         RETURNING id, role, public_profile_enabled, public_slug`,
+        [role, candidate, req.params.id]
+      );
+      if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+      return res.json(rows[0]);
+    } else {
+      const { rows } = await pool.query('UPDATE profiles SET role = $1 WHERE id = $2 RETURNING id, role', [role, req.params.id]);
+      if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+      return res.json(rows[0]);
+    }
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }

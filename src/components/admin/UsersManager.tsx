@@ -9,10 +9,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, Key, Info, Package } from "lucide-react";
+import { Search, Key, Info } from "lucide-react";
 import { toast } from "sonner";
 import UserDetailsModal from "./UserDetailsModal";
-import AssignPackageModal from "./AssignPackageModal";
+// import AssignPackageModal from "./AssignPackageModal";
 import UserStatusDropdown from "./UserStatusDropdown";
 import { CreateUserForm } from "./CreateUserForm";
 import {
@@ -29,9 +29,10 @@ import {
 const UsersManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [onlyUpgradeRequests, setOnlyUpgradeRequests] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
+  // const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
   const queryClient = useQueryClient();
 
   const { data: users = [], isLoading } = useQuery({
@@ -102,7 +103,8 @@ const UsersManager = () => {
     const matchesSearch = user.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || user.profile?.role === roleFilter;
-    return matchesSearch && matchesRole;
+    const matchesUpgrade = !onlyUpgradeRequests || !!user.organizer_upgrade_requested_at;
+    return matchesSearch && matchesRole && matchesUpgrade;
   });
 
   const handleUserInfoClick = (user: AdminUser) => {
@@ -110,10 +112,10 @@ const UsersManager = () => {
     setIsModalOpen(true);
   };
 
-  const handleAssignPackageClick = (user: AdminUser) => {
-    setSelectedUser(user);
-    setIsPackageModalOpen(true);
-  };
+  // const handleAssignPackageClick = (user: AdminUser) => {
+  //   setSelectedUser(user);
+  //   setIsPackageModalOpen(true);
+  // };
 
   const handleProfileSave = (userId: string, profileData: Partial<AdminUser['profile']>) => {
     updateProfileMutation.mutate({ userId, profileData });
@@ -184,6 +186,10 @@ const UsersManager = () => {
                     <SelectItem value="final_user">Utenti Finali</SelectItem>
                   </SelectContent>
                 </Select>
+                <label className="flex items-center gap-2 text-sm text-red-700 border border-red-300 rounded-md px-3 py-2 cursor-pointer select-none">
+                  <input type="checkbox" className="accent-red-600" checked={onlyUpgradeRequests} onChange={(e)=>setOnlyUpgradeRequests(e.target.checked)} />
+                  Solo richieste upgrade
+                </label>
               </div>
             </CardContent>
           </Card>
@@ -243,7 +249,7 @@ const UsersManager = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
+                      <TableRow key={user.id} className={user.organizer_upgrade_requested_at ? "bg-red-50 ring-1 ring-red-300" : undefined}>
                         <TableCell>
                           <div className="flex items-center space-x-3">
                             <Avatar className="h-8 w-8">
@@ -255,6 +261,9 @@ const UsersManager = () => {
                             <div>
                               <div className="font-medium">
                                 {user.profile?.full_name || 'Nome non disponibile'}
+                                {user.organizer_upgrade_requested_at && (
+                                  <Badge className="ml-2 bg-red-100 text-red-800 border border-red-300">Richiesta upgrade</Badge>
+                                )}
                               </div>
                               <div className="text-sm text-gray-500">ID: {user.id.slice(0, 8)}...</div>
                             </div>
@@ -310,15 +319,7 @@ const UsersManager = () => {
                             >
                               <Info className="h-4 w-4" />
                             </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleAssignPackageClick(user)}
-                              title="Assegna pacchetto"
-                              className="text-purple-600 hover:text-purple-700"
-                            >
-                              <Package className="h-4 w-4" />
-                            </Button>
+                            {/* Removed Assign Package button as per request */}
                             <Button
                               variant="outline"
                               size="sm"
@@ -355,11 +356,7 @@ const UsersManager = () => {
         onSave={handleProfileSave}
       />
 
-      <AssignPackageModal
-        user={selectedUser}
-        open={isPackageModalOpen}
-        onClose={() => setIsPackageModalOpen(false)}
-      />
+      {/* AssignPackageModal removed */}
     </div>
   );
 };

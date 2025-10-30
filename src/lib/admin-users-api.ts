@@ -4,6 +4,7 @@ export type AdminUser = {
   id: string;
   email: string;
   created_at: string;
+  organizer_upgrade_requested_at?: string | null;
   email_confirmed_at: string | null;
   last_sign_in_at: string | null;
   profile?: {
