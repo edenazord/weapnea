@@ -2623,6 +2623,35 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
       if (cost > 0) return res.status(400).json({ error: 'Event is not free' });
     }
 
+    // Enforce user profile requirements before registering
+    if (!req.user?.id) {
+      return res.status(401).json({ error: 'Login required' });
+    }
+    try {
+      const { rows: profRows } = await pool.query(
+        `SELECT phone, assicurazione, scadenza_assicurazione, scadenza_certificato_medico
+         FROM profiles WHERE id = $1 LIMIT 1`,
+        [req.user.id]
+      );
+      const prof = profRows[0];
+      if (!prof) return res.status(404).json({ error: 'Profile not found' });
+      const missing = [];
+      const today = new Date();
+      const isEmpty = (v) => !v || String(v).trim() === '';
+      if (isEmpty(prof.phone)) missing.push('phone');
+      if (isEmpty(prof.assicurazione)) missing.push('assicurazione');
+      const sa = prof.scadenza_assicurazione ? new Date(prof.scadenza_assicurazione) : null;
+      const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
+      if (!sa || !(sa instanceof Date) || isNaN(sa.getTime()) || sa < today) missing.push('scadenza_assicurazione');
+      if (!sc || !(sc instanceof Date) || isNaN(sc.getTime()) || sc < today) missing.push('scadenza_certificato_medico');
+      if (missing.length) {
+        return res.status(400).json({ error: 'profile_incomplete', missing });
+      }
+    } catch (e) {
+      // Hard-fail if profile cannot be loaded reliably
+      return res.status(500).json({ error: 'profile_check_failed' });
+    }
+
     // Avoid duplicate registrations
     const { rows: existing } = await pool.query(
       `SELECT id FROM event_payments WHERE event_id = $1 AND user_id = $2 AND status = 'paid' LIMIT 1`,

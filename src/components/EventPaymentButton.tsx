@@ -67,25 +67,24 @@ export const EventPaymentButton = ({
 
     setIsLoading(true);
     try {
-      // Eventi a pagamento: controlla campi profilo obbligatori
-      if (eventCost > 0) {
-        // Gating lato UI: campi profilo obbligatori per eventi a pagamento
-        const missing: string[] = [];
-        const today = new Date();
-        const isEmpty = (v?: string | null) => !v || String(v).trim() === '';
-        if (isEmpty(user.phone)) missing.push('Telefono');
-        if (isEmpty(user.assicurazione)) missing.push('Assicurazione');
-        const sa = user.scadenza_assicurazione ? new Date(user.scadenza_assicurazione) : null;
-        const sc = user.scadenza_certificato_medico ? new Date(user.scadenza_certificato_medico) : null;
-        if (!sa || isNaN(sa.getTime()) || sa < today) missing.push('Scadenza assicurazione');
-        if (!sc || isNaN(sc.getTime()) || sc < today) missing.push('Scadenza certificato medico');
-        if (missing.length) {
-          setMissingFields(missing);
-          setShowProfileModal(true);
-          setIsLoading(false);
-          return;
-        }
+      // Controlla SEMPRE i campi profilo obbligatori (sia eventi a pagamento che gratuiti)
+      const missing: string[] = [];
+      const today = new Date();
+      const isEmpty = (v?: string | null) => !v || String(v).trim() === '';
+      if (isEmpty(user.phone)) missing.push('Telefono');
+      if (isEmpty(user.assicurazione)) missing.push('Assicurazione');
+      const sa = user.scadenza_assicurazione ? new Date(user.scadenza_assicurazione) : null;
+      const sc = user.scadenza_certificato_medico ? new Date(user.scadenza_certificato_medico) : null;
+      if (!sa || isNaN(sa.getTime()) || sa < today) missing.push('Scadenza assicurazione');
+      if (!sc || isNaN(sc.getTime()) || sc < today) missing.push('Scadenza certificato medico');
+      if (missing.length) {
+        setMissingFields(missing);
+        setShowProfileModal(true);
+        setIsLoading(false);
+        return;
+      }
 
+      if (eventCost > 0) {
         const { url } = await startCheckout({
           kind: 'event',
           id: eventId,
@@ -110,6 +109,17 @@ export const EventPaymentButton = ({
             toast.error('Questo evento non è gratuito.');
           } else if (data?.error === 'Event not found') {
             toast.error('Evento non trovato.');
+          } else if (data?.error === 'profile_incomplete') {
+            const miss = Array.isArray(data?.missing) ? data.missing : [];
+            const map: Record<string,string> = {
+              phone: 'Telefono',
+              assicurazione: 'Assicurazione',
+              scadenza_assicurazione: 'Scadenza assicurazione',
+              scadenza_certificato_medico: 'Scadenza certificato medico',
+            };
+            const human = miss.map((k:string)=> map[k] || k);
+            setMissingFields(human);
+            setShowProfileModal(true);
           } else if (data?.error === 'Login required') {
             navigate('/auth');
             return;
