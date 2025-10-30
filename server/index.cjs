@@ -2563,6 +2563,31 @@ app.get('/api/events/:id/participants', requireAuth, async (req, res) => {
   }
 });
 
+// Remove a participant from an event (admin or event owner only)
+app.delete('/api/events/:id/participants/:userId', requireAuth, async (req, res) => {
+  const eventId = req.params.id;
+  const userId = req.params.userId;
+  try {
+    // Authorization: only admin or event owner
+    const { rows: evRows } = await pool.query('SELECT id, created_by FROM events WHERE id = $1 LIMIT 1', [eventId]);
+    const ev = evRows[0];
+    if (!ev) return res.status(404).json({ error: 'Event not found' });
+    const isAdmin = req.user?.role === 'admin';
+    if (!isAdmin && (!req.user?.id || ev.created_by !== req.user.id)) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    // Delete registration(s) for this user in this event
+    const { rowCount } = await pool.query(
+      `DELETE FROM event_payments WHERE event_id = $1 AND user_id = $2 AND status = 'paid'`,
+      [eventId, userId]
+    );
+    if (rowCount === 0) return res.status(404).json({ error: 'Participation not found' });
+    res.status(204).end();
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 // Organizer dashboard stats
 app.get('/api/payments/organizer-stats', requireAuth, async (req, res) => {
   const organizerId = req.query.organizerId || req.user?.id;

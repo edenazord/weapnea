@@ -78,3 +78,7 @@ export const getEventParticipants = async (eventId: string): Promise<EventPartic
   const rows = await apiGet(`/api/events/${encodeURIComponent(eventId)}/participants`);
   return rows as EventParticipant[];
 };
+
+export const removeEventParticipant = async (eventId: string, userId: string): Promise<void> => {
+  await apiSend(`/api/events/${encodeURIComponent(eventId)}/participants/${encodeURIComponent(userId)}`, 'DELETE');
+};

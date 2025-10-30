@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -11,23 +11,31 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Users, ExternalLink, Calendar, Euro, Phone } from "lucide-react";
-import { getEventParticipants, EventParticipant } from "@/lib/payments-api";
+import { getEventParticipants, EventParticipant, removeEventParticipant } from "@/lib/payments-api";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import { Link } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { Trash2 } from "lucide-react";
+import { toast } from "sonner";
 
 interface EventParticipantsModalProps {
   eventId: string;
   eventTitle: string;
   participantCount?: number;
+  organizerId?: string | null;
 }
 
 export const EventParticipantsModal = ({ 
   eventId, 
   eventTitle, 
-  participantCount = 0 
+  participantCount = 0,
+  organizerId = null,
 }: EventParticipantsModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { user } = useAuth();
+  const qc = useQueryClient();
+  const canManage = (user?.role === 'admin') || (!!organizerId && user?.id === organizerId);
 
   const { data: participants, isLoading, error } = useQuery({
     queryKey: ["event-participants", eventId],
@@ -143,6 +151,28 @@ export const EventParticipantsModal = ({
                       </div>
                     ) : null}
                   </div>
+                  {canManage && (
+                    <div className="ml-2">
+                      <button
+                        type="button"
+                        className="p-2 rounded hover:bg-red-50 text-red-600"
+                        title="Rimuovi partecipante"
+                        onClick={async () => {
+                          const confirmed = window.confirm(`Rimuovere ${participant.full_name}?`);
+                          if (!confirmed) return;
+                          try {
+                            await removeEventParticipant(eventId, participant.user_id);
+                            toast.success('Partecipante rimosso');
+                            await qc.invalidateQueries({ queryKey: ["event-participants", eventId] });
+                          } catch (e) {
+                            toast.error('Impossibile rimuovere il partecipante');
+                          }
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

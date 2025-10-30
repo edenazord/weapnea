@@ -383,6 +383,7 @@ const Dashboard = () => {
                                         <EventParticipantsModal
                                             eventId={event.id}
                                             eventTitle={event.title}
+                                            organizerId={event.created_by as any}
                                         />
                                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleEditEvent(event)}>
                                             <Edit className="h-4 w-4" />
@@ -456,7 +457,7 @@ const Dashboard = () => {
                                             </Link>
                                         </Button>
                                                 {/* Icona iscritti: apre modal con lista */}
-                                                <EventParticipantsModal eventId={event.id} eventTitle={event.title} />
+                                                <EventParticipantsModal eventId={event.id} eventTitle={event.title} organizerId={event.created_by as any} />
                                         <Button asChild variant="outline" size="sm">
                                             <Link to={buildFriendlyEventPath(event.slug)}>Dettagli</Link>
                                         </Button>
