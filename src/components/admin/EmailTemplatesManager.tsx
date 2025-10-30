@@ -107,7 +107,8 @@ const EmailTemplatesManager = () => {
                 setSeeding(true);
                 const res = await seedEmailTemplatesDefaults();
                 if (res) {
-                  toast({ title: 'Template creati', description: `${res.inserted} template caricati` });
+                  const n = (res && (res.count ?? res.inserted)) ?? null;
+                  toast({ title: 'Template creati', description: n ? `${n} template caricati` : 'Template predefiniti caricati' });
                   await loadTemplates();
                 } else {
                   toast({ title: 'Errore', description: 'Impossibile caricare i template predefiniti', variant: 'destructive' });

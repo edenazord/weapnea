@@ -32,10 +32,10 @@ export const getEmailTemplate = async (templateType: string): Promise<EmailTempl
   }
 };
 
-export const seedEmailTemplatesDefaults = async (): Promise<{ inserted: number } | null> => {
+export const seedEmailTemplatesDefaults = async (): Promise<any> => {
   try {
     const res = await apiSend('/api/email-templates/seed-defaults', 'POST');
-    return res as { inserted: number };
+    return res;
   } catch {
     return null;
   }

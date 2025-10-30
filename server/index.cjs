@@ -399,7 +399,7 @@ async function getPublicProfileSettings(userId) {
 // --- Email templates helpers ---
 async function getEmailTemplate(type) {
   try {
-    const { rows } = await pool.query('SELECT subject, html FROM public.email_templates WHERE template_type = $1 LIMIT 1', [type]);
+    const { rows } = await pool.query('SELECT subject, COALESCE(html_content, html) AS html FROM public.email_templates WHERE template_type = $1 LIMIT 1', [type]);
     return rows[0] || null;
   } catch (e) {
     console.warn('[email] get template failed:', type, e?.message || e);
@@ -508,9 +508,9 @@ const DEFAULT_TEMPLATES = {
 };
 
 async function upsertEmailTemplate(type, subject, html) {
-  const sql = `INSERT INTO public.email_templates(template_type, subject, html)
+  const sql = `INSERT INTO public.email_templates(template_type, subject, html_content)
     VALUES($1,$2,$3)
-    ON CONFLICT (template_type) DO UPDATE SET subject = EXCLUDED.subject, html = EXCLUDED.html, updated_at = now()`;
+    ON CONFLICT (template_type) DO UPDATE SET subject = EXCLUDED.subject, html_content = EXCLUDED.html_content, updated_at = now()`;
   await pool.query(sql, [type, subject, html]);
 }
 
@@ -2058,7 +2058,17 @@ app.get('/api/i18n/translations/by-keys', async (req, res) => {
 // -----------------------------
 app.get('/api/email-templates', requireAuth, requireAdmin, async (_req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM email_templates ORDER BY template_type ASC');
+    const { rows } = await pool.query(`
+      SELECT 
+        template_type,
+        subject,
+        COALESCE(html_content, html) AS html_content,
+        COALESCE(is_active, true) AS is_active,
+        created_at,
+        updated_at
+      FROM email_templates
+      ORDER BY template_type ASC
+    `);
     res.json(rows);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
@@ -2067,7 +2077,16 @@ app.get('/api/email-templates', requireAuth, requireAdmin, async (_req, res) => 
 
 app.get('/api/email-templates/:type', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM email_templates WHERE template_type = $1 LIMIT 1', [req.params.type]);
+    const { rows } = await pool.query(`
+      SELECT 
+        template_type,
+        subject,
+        COALESCE(html_content, html) AS html_content,
+        COALESCE(is_active, true) AS is_active,
+        created_at,
+        updated_at
+      FROM email_templates WHERE template_type = $1 LIMIT 1
+    `, [req.params.type]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (e) {
