@@ -8,8 +8,7 @@ import CategoriesManager from "@/components/admin/CategoriesManager";
 import BlogManager from "@/components/admin/BlogManager";
 // Forum disabilitato temporaneamente
 import UsersManager from "@/components/admin/UsersManager";
-import PasswordTokensManager from "@/components/admin/PasswordTokensManager";
-import UserPackagesManager from "@/components/admin/UserPackagesManager";
+import EmailTemplatesManager from "@/components/admin/EmailTemplatesManager";
 import { BackButton } from "@/components/BackButton";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import DashboardMobileNav from "@/components/DashboardMobileNav";
@@ -67,25 +66,14 @@ const AdminDashboard = () => {
                         </CardContent>
                     </Card>
                 );
-            case "packages":
+            case "email":
                 return (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Pacchetti Utenti</CardTitle>
+                            <CardTitle>Gestione Email</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <UserPackagesManager />
-                        </CardContent>
-                    </Card>
-                );
-            case "tokens":
-                return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Token di Recupero Password</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <PasswordTokensManager />
+                            <EmailTemplatesManager />
                         </CardContent>
                     </Card>
                 );
@@ -141,13 +129,12 @@ const AdminDashboard = () => {
             </div>
             
             <Tabs defaultValue="events">
-                <TabsList className="grid w-full grid-cols-6">
+                <TabsList className="grid w-full grid-cols-5">
                     <TabsTrigger value="events">Eventi</TabsTrigger>
                     <TabsTrigger value="categories">Categorie</TabsTrigger>
                     <TabsTrigger value="blog">Blog</TabsTrigger>
                     <TabsTrigger value="users">Utenti</TabsTrigger>
-                    <TabsTrigger value="packages">Pacchetti</TabsTrigger>
-                    <TabsTrigger value="tokens">Token</TabsTrigger>
+                    <TabsTrigger value="email">Email</TabsTrigger>
                 </TabsList>
                 <TabsContent value="events">
                     <Card>
@@ -190,23 +177,13 @@ const AdminDashboard = () => {
                         </CardContent>
                     </Card>
                 </TabsContent>
-                <TabsContent value="packages">
+                <TabsContent value="email">
                      <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Pacchetti Utenti</CardTitle>
+                            <CardTitle>Gestione Email</CardTitle>
                         </CardHeader>
                         <CardContent>
-                            <UserPackagesManager />
-                        </CardContent>
-                    </Card>
-                </TabsContent>
-                <TabsContent value="tokens">
-                     <Card>
-                        <CardHeader>
-                            <CardTitle>Token di Recupero Password</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <PasswordTokensManager />
+                            <EmailTemplatesManager />
                         </CardContent>
                     </Card>
                 </TabsContent>

@@ -1,4 +1,4 @@
-import { Calendar, FolderTree, FileText, MessageSquare, Users, Package, Key } from "lucide-react";
+import { Calendar, FolderTree, FileText, Users, Mail } from "lucide-react";
 
 interface DashboardMobileNavProps {
   activeTab: string;
@@ -11,8 +11,7 @@ const DashboardMobileNav = ({ activeTab, onTabChange }: DashboardMobileNavProps)
     { id: "categories", icon: FolderTree, label: "Categorie" },
     { id: "blog", icon: FileText, label: "Blog" },
     { id: "users", icon: Users, label: "Utenti" },
-    { id: "packages", icon: Package, label: "Pacchetti" },
-    { id: "tokens", icon: Key, label: "Token" },
+    { id: "email", icon: Mail, label: "Email" },
   ];
 
   return (
