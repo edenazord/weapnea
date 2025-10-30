@@ -137,6 +137,20 @@ async function runMigrationsAtStartup() {
     // Garantisci SEMPRE le colonne del profilo pubblico: l'ALTER è idempotente
     await ensurePublicProfileColumnsAtRuntime();
     await detectSchema();
+    // Seed email templates if table is empty (idempotente)
+    try {
+      const { rows: cnt } = await pool.query('SELECT COUNT(*)::int AS n FROM public.email_templates');
+      const n = Number(cnt[0]?.n || 0);
+      if (n === 0) {
+        const entries = Object.entries(DEFAULT_TEMPLATES);
+        for (const [type, tpl] of entries) {
+          await upsertEmailTemplate(type, tpl.subject, tpl.html);
+        }
+        console.log('[startup] seeded default email templates:', entries.length);
+      }
+    } catch (e) {
+      console.warn('[startup] email templates seed skipped:', e?.message || e);
+    }
     console.log('[startup] ensured/detected flags:', { HAS_PERSONAL_BEST, HAS_USER_PACKAGES, HAS_PUBLIC_PROFILE_FIELDS });
   } catch (e) {
     console.error('[startup] ensure/detect schema failed:', e?.message || e);
@@ -157,6 +171,15 @@ app.use('/public', express.static(path.join(__dirname, '..', 'public')));
 const DEFAULT_UPLOADS = path.join(__dirname, '..', 'public', 'uploads');
 const UPLOADS_DIR = process.env.UPLOADS_DIR ? path.resolve(process.env.UPLOADS_DIR) : DEFAULT_UPLOADS;
 try { app.use('/public/uploads', express.static(UPLOADS_DIR)); } catch {}
+
+// If frontend links mistakenly point to the API host (e.g. PUBLIC_BASE_URL not set),
+// provide a redirect for SPA routes to the public site to avoid 404s like "Cannot GET /password-reset"
+app.get(['/password-reset'], (req, res) => {
+  const base = process.env.PUBLIC_BASE_URL;
+  if (!base) return res.status(404).send('Not Found');
+  const target = base.replace(/\/$/, '') + req.originalUrl;
+  res.redirect(302, target);
+});
 
 function getApiPublicBase(req) {
   // Preferisci override esplicito via env (es. https://weapnea-api.onrender.com)
@@ -418,7 +441,14 @@ function simpleRender(template, vars = {}) {
 async function renderEmailWithTemplate(type, vars, fallbackSubject, fallbackHtml) {
   const tpl = await getEmailTemplate(type);
   const subject = tpl?.subject ? simpleRender(tpl.subject, vars) : fallbackSubject;
-  const html = tpl?.html ? simpleRender(tpl.html, vars) : fallbackHtml;
+  const raw = tpl?.html ? simpleRender(tpl.html, vars) : fallbackHtml;
+  // Support semplici blocchi condizionali {{#if var}}...{{/if}}
+  const html = String(raw || '').replace(/{{#if\s+([a-zA-Z0-9_\.]+)\s*}}([\s\S]*?){{\/if}}/g, (_m, key, inner) => {
+    const v = vars && Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : undefined;
+    if (v === undefined || v === null) return '';
+    if (typeof v === 'string') return v.trim() ? inner : '';
+    return v ? inner : '';
+  });
   return { subject, html };
 }
 
@@ -708,8 +738,8 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
        ON CONFLICT (user_id) DO UPDATE SET token_hash = EXCLUDED.token_hash, expires_at = EXCLUDED.expires_at`,
       [user.id, resetToken]
     );
-    const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
-    const link = `${base}/password-reset?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(user.email)}&type=recovery`;
+  const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+  const link = `${base.replace(/\/$/, '')}/password-reset?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(user.email)}&type=recovery`;
     const rendered = await renderEmailWithTemplate('password_reset', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME, reset_link: link },
       'Recupero password {{app_name}}',
       `<p>Ciao {{full_name}},</p><p>clicca <a href="{{reset_link}}">qui</a> per reimpostare la tua password. Il link scade tra 30 minuti.</p>`
@@ -807,17 +837,8 @@ app.post('/api/email/test', requireAuth, requireAdmin, async (req, res) => {
     if (template_type) {
       const rendered = await renderEmailWithTemplate(template_type, boundVars, subject, html);
       finalSubject = rendered.subject;
-      finalHtml = rendered.html.replace(/\{#if [^}]+\}[^]*?\{\/if\}/g, (block) => {
-        // Rimuovi blocchi condizionali custom se la variabile non è valorizzata
-        const m = block.match(/\{#if\s+([a-zA-Z0-9_\.]+)\s*\}/);
-        if (m) {
-          const key = m[1];
-          const val = boundVars[key];
-          if (val) return block.replace(/\{#if[^}]+\}/, '').replace('\{/if\}', '');
-          return '';
-        }
-        return '';
-      });
+      // Il renderer principale già gestisce {{#if var}}, quindi nessuna sostituzione extra necessaria
+      finalHtml = rendered.html;
     }
     const result = await sendEmail({ to, subject: finalSubject, html: finalHtml });
     res.json(result);
@@ -2504,8 +2525,8 @@ app.post('/api/auth/request-password-reset-by-id', requireAuth, requireAdmin, as
        ON CONFLICT (user_id) DO UPDATE SET token_hash = EXCLUDED.token_hash, expires_at = EXCLUDED.expires_at`,
       [user.id, resetToken]
     );
-    const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
-    const link = `${base}/password-reset?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(user.email)}&type=recovery`;
+  const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+  const link = `${base.replace(/\/$/, '')}/password-reset?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(user.email)}&type=recovery`;
     await sendEmail({
       to: user.email,
       subject: 'Recupero password WeApnea',
@@ -2615,8 +2636,9 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
     // Fire-and-forget emails: to participant and organizer (if any)
     (async () => {
       try {
-        const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
-        const eventUrl = ev.slug ? `${base}/events/${encodeURIComponent(ev.slug)}` : base;
+  const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+  const safeBase = base.replace(/\/$/, '');
+  const eventUrl = ev.slug ? `${safeBase}/events/${encodeURIComponent(ev.slug)}` : safeBase;
         // Load current user profile (participant)
         const { rows: userRows } = await pool.query('SELECT email, full_name FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
         const participant = userRows[0];
