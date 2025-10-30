@@ -23,7 +23,8 @@ import { getPublicConfig } from '@/lib/publicConfig';
 // Opzioni per il livello
 // Opzioni spostate in event-constants.ts
 
-const eventFormSchema = z.object({
+// Schema base (modifica): liberatorie opzionali
+const eventFormBaseSchema = z.object({
   title: z.string().min(2, { message: "Il titolo è obbligatorio." }),
   slug: z.string().optional(),
   description: z.string().optional(),
@@ -47,13 +48,19 @@ const eventFormSchema = z.object({
   notes: z.string().optional(),
   schedule_logistics: z.string().optional(),
   gallery_images: z.array(z.string()).optional(),
-  // Liberatorie come in Allenamenti (obbligatorie)
+  // Liberatorie (solo obbligatorie in creazione, opzionali in modifica)
+  responsibility_waiver_accepted: z.boolean().optional(),
+  privacy_accepted: z.boolean().optional(),
+});
+
+// Schema creazione: liberatorie obbligatorie
+const eventFormCreateSchema = eventFormBaseSchema.extend({
   responsibility_waiver_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare la liberatoria di responsabilità." }),
   privacy_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare il trattamento della privacy." }),
 });
 
 type EventFormProps = {
-  onSubmit: (values: z.infer<typeof eventFormSchema>) => void;
+  onSubmit: (values: z.infer<typeof eventFormBaseSchema>) => void;
   defaultValues?: Event;
   isEditing: boolean;
 };
@@ -74,8 +81,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
     queryFn: getCategories,
   });
 
-  const form = useForm<z.infer<typeof eventFormSchema>>({
-    resolver: zodResolver(eventFormSchema),
+  const form = useForm<z.infer<typeof eventFormBaseSchema>>({
+    resolver: zodResolver(isEditing ? eventFormBaseSchema : eventFormCreateSchema),
     defaultValues: {
       title: defaultValues?.title || "",
       slug: defaultValues?.slug || "",
@@ -106,7 +113,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
     },
   });
 
-  const handleSubmit = (values: z.infer<typeof eventFormSchema>) => {
+  const handleSubmit = (values: z.infer<typeof eventFormBaseSchema>) => {
     // Auto-generate SEO-friendly slug
     if (!values.slug || values.slug.trim() === '') {
       values.slug = generateEventSlug(values.title, values.date || '');
@@ -134,7 +141,6 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
     
     onSubmit(transformedValues);
   };
-
 
   const handleImageUploaded = (url: string) => {
     form.setValue('image_url', url);
@@ -506,7 +512,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           </div>
         </div>
 
-        {/* Liberatorie obbligatorie */}
+        {/* Liberatorie obbligatorie - solo in creazione */}
+        {!isEditing && (
         <div className="space-y-4 border-t pt-4">
           <h3 className="text-lg font-semibold">Liberatorie Obbligatorie</h3>
 
@@ -557,7 +564,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
               </FormItem>
             )}
           />
-        </div>
+  </div>
+  )}
 
         <Button 
           type="submit" 

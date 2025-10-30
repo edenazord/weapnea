@@ -11,7 +11,8 @@ import { DISCIPLINE_OPTIONS, LEVEL_OPTIONS } from "./event-constants";
 import { ImageUpload } from "./ImageUpload";
 import { LocationPicker } from "./LocationPicker";
 
-const allenamentiFormSchema = z.object({
+// Schema base (modifica): liberatorie opzionali
+const allenamentiFormBaseSchema = z.object({
   title: z.string().min(2, { message: "Il titolo è obbligatorio." }),
   category_id: z.string().uuid(),
   discipline: z.string().min(1, { message: "La disciplina è obbligatoria." }),
@@ -31,22 +32,28 @@ const allenamentiFormSchema = z.object({
     certificate_url: z.string().url().optional().or(z.literal(""))
   })).min(1, { message: "Almeno un istruttore è richiesto." }).max(10, { message: "Massimo 10 istruttori." }),
   max_participants_per_instructor: z.coerce.number().min(1).max(6, { message: "Massimo 6 partecipanti per istruttore." }),
-  responsibility_waiver_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare la liberatoria di responsabilità." }),
-  privacy_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare il trattamento della privacy." }),
+  responsibility_waiver_accepted: z.boolean().optional(),
+  privacy_accepted: z.boolean().optional(),
   image_url: z.string().optional(),
   cost: z.coerce.number().optional(),
 });
 
+// Schema creazione: liberatorie obbligatorie
+const allenamentiFormCreateSchema = allenamentiFormBaseSchema.extend({
+  responsibility_waiver_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare la liberatoria di responsabilità." }),
+  privacy_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare il trattamento della privacy." }),
+});
+
 type AllenamentiFormProps = {
-  onSubmit: (values: z.infer<typeof allenamentiFormSchema>) => void;
+  onSubmit: (values: z.infer<typeof allenamentiFormBaseSchema>) => void;
   defaultValues?: any;
   isEditing: boolean;
   allenamentiCategoryId: string;
 };
 
 export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenamentiCategoryId }: AllenamentiFormProps) {
-  const form = useForm<z.infer<typeof allenamentiFormSchema>>({
-    resolver: zodResolver(allenamentiFormSchema),
+  const form = useForm<z.infer<typeof allenamentiFormBaseSchema>>({
+    resolver: zodResolver(isEditing ? allenamentiFormBaseSchema : allenamentiFormCreateSchema),
     defaultValues: {
       title: defaultValues?.title || "",
       category_id: allenamentiCategoryId,
@@ -475,7 +482,8 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
           />
         </div>
 
-        {/* Liberatorie */}
+        {/* Liberatorie - solo in creazione */}
+        {!isEditing && (
         <div className="space-y-4 border-t pt-4">
           <h4 className="font-medium text-lg">Liberatorie Obbligatorie</h4>
           
@@ -526,7 +534,8 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
               </FormItem>
             )}
           />
-        </div>
+  </div>
+  )}
 
         <Button 
           type="submit" 
