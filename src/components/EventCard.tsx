@@ -34,7 +34,11 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
     setImageError(false);
   };
 
-  const imageUrl = ensureAbsoluteUrl(event.image_url);
+  // Usa immagine principale, altrimenti prima della galleria
+  const primary = event.image_url && event.image_url.trim() !== ''
+    ? event.image_url
+    : (Array.isArray(event.gallery_images) && event.gallery_images.length > 0 ? event.gallery_images[0] : undefined);
+  const imageUrl = ensureAbsoluteUrl(primary);
   const showImage = imageUrl && !imageError;
 
   useEffect(() => {
