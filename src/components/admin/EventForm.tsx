@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateEventSlug } from "@/lib/seo-utils";
-import { ImageUpload } from "./ImageUpload";
+// Rimosso ImageUpload in favore della sola galleria: la prima immagine sarà la copertina
 import { LocationPicker } from "./LocationPicker";
 import { MultipleImageUpload } from "./MultipleImageUpload";
 import { DISCIPLINE_OPTIONS, LEVEL_OPTIONS } from './event-constants';
@@ -95,7 +95,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
       end_date: (defaultValues?.end_date || "").toString().slice(0, 10),
       participants: defaultValues?.participants || 0,
       cost: defaultValues?.cost || 0,
-      image_url: defaultValues?.image_url || "",
+  image_url: defaultValues?.image_url || "",
       category_id: defaultValues?.category_id || undefined,
       nation: defaultValues?.nation || "",
       level: defaultValues?.level || "",
@@ -107,7 +107,10 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
       not_included_in_activity: defaultValues?.not_included_in_activity || "",
       notes: defaultValues?.notes || "",
       schedule_logistics: defaultValues?.schedule_logistics || "",
-      gallery_images: defaultValues?.gallery_images || [],
+      // Se in modifica non ci sono immagini in galleria ma esiste image_url, lo mostro come prima immagine
+      gallery_images: (defaultValues?.gallery_images && defaultValues.gallery_images.length > 0)
+        ? defaultValues.gallery_images
+        : (defaultValues?.image_url ? [defaultValues.image_url] : []),
       responsibility_waiver_accepted: defaultValues?.responsibility_waiver_accepted || false,
       privacy_accepted: defaultValues?.privacy_accepted || false,
     },
@@ -121,6 +124,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
     
     // Transform empty strings to null for new fields
     const singleDesc = values.description && values.description.trim() !== '' ? values.description.trim() : null;
+    const gallery = values.gallery_images && values.gallery_images.length > 0 ? values.gallery_images : null;
     const transformedValues = {
       ...values,
       // If free mode, enforce null cost server-side
@@ -136,7 +140,9 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
       not_included_in_activity: values.not_included_in_activity && values.not_included_in_activity.trim() !== '' ? values.not_included_in_activity : null,
       notes: values.notes && values.notes.trim() !== '' ? values.notes : null,
       schedule_logistics: values.schedule_logistics && values.schedule_logistics.trim() !== '' ? values.schedule_logistics : null,
-      gallery_images: values.gallery_images && values.gallery_images.length > 0 ? values.gallery_images : null,
+      gallery_images: gallery,
+      // La prima della galleria diventa l'immagine principale (copertina)
+      image_url: gallery && gallery.length > 0 ? gallery[0] : null,
     };
     
     onSubmit(transformedValues);
@@ -492,24 +498,12 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
         )}
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Immagini</h3>
-          
-          <div>
-            <FormLabel>Immagine Principale</FormLabel>
-            <ImageUpload
-              onImageUploaded={handleImageUploaded}
-              currentImageUrl={form.watch('image_url')}
-              onImageRemoved={handleImageRemoved}
-            />
-          </div>
-
-          <div>
-            <FormLabel>Galleria Immagini</FormLabel>
-            <MultipleImageUpload
-              onImagesChanged={handleGalleryImagesChanged}
-              currentImages={form.watch('gallery_images') || []}
-            />
-          </div>
+          <h3 className="text-lg font-semibold">Galleria Immagini</h3>
+          <p className="text-sm text-muted-foreground">La prima immagine diventa automaticamente la copertina.</p>
+          <MultipleImageUpload
+            onImagesChanged={handleGalleryImagesChanged}
+            currentImages={form.watch('gallery_images') || []}
+          />
         </div>
 
         {/* Liberatorie obbligatorie - solo in creazione */}

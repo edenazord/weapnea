@@ -8,6 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DISCIPLINE_OPTIONS, LEVEL_OPTIONS } from "./event-constants";
+// Per la galleria usiamo MultipleImageUpload; manteniamo ImageUpload per la foto brevetto istruttore (singola)
+import { MultipleImageUpload } from "./MultipleImageUpload";
 import { ImageUpload } from "./ImageUpload";
 import { LocationPicker } from "./LocationPicker";
 
@@ -36,6 +38,7 @@ const allenamentiFormBaseSchema = z.object({
   privacy_accepted: z.boolean().optional(),
   image_url: z.string().optional(),
   cost: z.coerce.number().optional(),
+  gallery_images: z.array(z.string()).optional(),
 });
 
 // Schema creazione: liberatorie obbligatorie
@@ -76,15 +79,15 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
       privacy_accepted: defaultValues?.privacy_accepted || false,
       image_url: defaultValues?.image_url || "",
       cost: defaultValues?.cost || 0,
+      // Se non ci sono immagini in galleria ma esiste image_url, lo mostro come prima immagine
+      gallery_images: (defaultValues?.gallery_images && defaultValues.gallery_images.length > 0)
+        ? defaultValues.gallery_images
+        : (defaultValues?.image_url ? [defaultValues.image_url] : []),
     },
   });
 
-  const handleImageUploaded = (url: string) => {
-    form.setValue('image_url', url);
-  };
-
-  const handleImageRemoved = () => {
-    form.setValue('image_url', '');
+  const handleGalleryImagesChanged = (urls: string[]) => {
+    form.setValue('gallery_images', urls);
   };
 
   const addInstructor = () => {
@@ -103,7 +106,18 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <form
+        onSubmit={form.handleSubmit((vals) => {
+          const gallery = vals.gallery_images && vals.gallery_images.length > 0 ? vals.gallery_images : null;
+          const transformed = {
+            ...vals,
+            gallery_images: gallery,
+            image_url: gallery && gallery.length > 0 ? gallery[0] : null,
+          };
+          onSubmit(transformed as any);
+        })}
+        className="space-y-6"
+      >
         {/* Mostra errori di validazione principali */}
         {Object.keys(form.formState.errors).length > 0 && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -456,17 +470,17 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
           />
         </div>
 
-        {/* Immagine e Costo */}
+        {/* Immagini e Costo */}
         <div className="space-y-4">
-          <h4 className="font-medium text-lg">Immagine e Costo</h4>
-          
+          <h4 className="font-medium text-lg">Immagini e Costo</h4>
+
           <div>
-            <FormLabel>Immagine Principale</FormLabel>
-            <ImageUpload
-              onImageUploaded={handleImageUploaded}
-              currentImageUrl={form.watch('image_url')}
-              onImageRemoved={handleImageRemoved}
+            <FormLabel>Galleria Immagini</FormLabel>
+            <MultipleImageUpload
+              onImagesChanged={handleGalleryImagesChanged}
+              currentImages={form.watch('gallery_images') || []}
             />
+            <p className="text-xs text-muted-foreground mt-1">La prima immagine diventa automaticamente la copertina.</p>
           </div>
 
           <FormField

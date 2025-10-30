@@ -15,6 +15,15 @@ interface MultipleImageUploadProps {
 export function MultipleImageUpload({ onImagesChanged, currentImages }: MultipleImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadInput, setUploadInput] = useState("");
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+
+  const moveImage = (from: number, to: number) => {
+    if (from === to || from == null || to == null) return;
+    const updated = [...currentImages];
+    const [moved] = updated.splice(from, 1);
+    updated.splice(to, 0, moved);
+    onImagesChanged(updated);
+  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -130,7 +139,29 @@ export function MultipleImageUpload({ onImagesChanged, currentImages }: Multiple
       {currentImages.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {currentImages.map((url, index) => (
-            <div key={index} className="relative group">
+            <div
+              key={index}
+              className="relative group cursor-move"
+              draggable
+              onDragStart={(e) => {
+                setDragIndex(index);
+                e.dataTransfer.effectAllowed = 'move';
+                // Firefox needs some data
+                e.dataTransfer.setData('text/plain', String(index));
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const from = dragIndex ?? Number(e.dataTransfer.getData('text/plain'));
+                const to = index;
+                moveImage(from, to);
+                setDragIndex(null);
+              }}
+              onDragEnd={() => setDragIndex(null)}
+            >
               <img
                 src={ensureAbsoluteUrl(url) || '/placeholder.svg'}
                 alt={`Galleria ${index + 1}`}
@@ -140,6 +171,10 @@ export function MultipleImageUpload({ onImagesChanged, currentImages }: Multiple
                   target.src = "/placeholder.svg";
                 }}
               />
+              {/* Badge posizione */}
+              <div className="absolute top-2 left-2 text-xs px-2 py-0.5 rounded bg-black/60 text-white">
+                {index === 0 ? 'Copertina' : `#${index + 1}`}
+              </div>
               <Button
                 type="button"
                 size="icon"
