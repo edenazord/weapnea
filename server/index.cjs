@@ -311,6 +311,7 @@ const EVENTS_FREE_MODE = String(process.env.EVENTS_FREE_MODE || '').toLowerCase(
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'WeApnea <noreply@weapnea.com>';
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
+const APP_NAME = process.env.APP_NAME || 'WeApnea';
 // In-memory log for email attempts (last 50)
 const EMAIL_LOG_MAX = 50;
 const emailLog = [];
@@ -395,6 +396,124 @@ async function getPublicProfileSettings(userId) {
   return (val && typeof val === 'object') ? val : null;
 }
 
+// --- Email templates helpers ---
+async function getEmailTemplate(type) {
+  try {
+    const { rows } = await pool.query('SELECT subject, html FROM public.email_templates WHERE template_type = $1 LIMIT 1', [type]);
+    return rows[0] || null;
+  } catch (e) {
+    console.warn('[email] get template failed:', type, e?.message || e);
+    return null;
+  }
+}
+
+function simpleRender(template, vars = {}) {
+  if (!template) return '';
+  return String(template).replace(/{{\s*([a-zA-Z0-9_\.]+)\s*}}/g, (_m, key) => {
+    const v = vars && Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : '';
+    return v == null ? '' : String(v);
+  });
+}
+
+async function renderEmailWithTemplate(type, vars, fallbackSubject, fallbackHtml) {
+  const tpl = await getEmailTemplate(type);
+  const subject = tpl?.subject ? simpleRender(tpl.subject, vars) : fallbackSubject;
+  const html = tpl?.html ? simpleRender(tpl.html, vars) : fallbackHtml;
+  return { subject, html };
+}
+
+// Branded base template (inline-friendly styles)
+const BASE_EMAIL_STYLE = `
+  body{margin:0;background:#f4f5f7;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111827}
+  .container{max-width:600px;margin:0 auto;padding:24px}
+  .card{background:#ffffff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,0.06);overflow:hidden}
+  .header{background:#0f172a;padding:20px;text-align:center}
+  .brand{color:#ffffff;font-size:22px;line-height:24px;font-weight:700;letter-spacing:0.3px;text-decoration:none}
+  .content{padding:24px;font-size:15px;line-height:1.6}
+  .h1{font-size:20px;margin:0 0 12px 0;color:#0f172a}
+  .btn{display:inline-block;background:#2563eb;color:#ffffff !important;text-decoration:none;padding:10px 16px;border-radius:8px;font-weight:600}
+  .muted{color:#6b7280;font-size:13px}
+  .divider{height:1px;background:#e5e7eb;margin:16px 0}
+  .footer{padding:16px;text-align:center}
+`;
+
+const BASE_EMAIL_TEMPLATE = (
+  title, bodyHtml, ctaText = null, ctaUrl = null, footerHtml = `Questa è una comunicazione automatica di {{app_name}}.`
+) => `<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>${BASE_EMAIL_STYLE}</style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="header">
+          <a class="brand" href="{{public_base}}" target="_blank" rel="noopener noreferrer">{{app_name}}</a>
+        </div>
+        <div class="content">
+          <h1 class="h1">${title}</h1>
+          ${bodyHtml}
+          ${ctaText && ctaUrl ? `<p style="margin:20px 0 8px 0;"><a class=\"btn\" href=\"${ctaUrl}\" target=\"_blank\" rel=\"noopener noreferrer\">${ctaText}</a></p>` : ''}
+          <div class="divider"></div>
+          <p class="muted">${footerHtml}</p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>`;
+
+const DEFAULT_TEMPLATES = {
+  welcome: {
+    subject: 'Benvenuto su {{app_name}}',
+    html: BASE_EMAIL_TEMPLATE(
+      'Benvenuto!',
+      `<p>Ciao {{full_name}},</p>
+       <p>il tuo account ({{email}}) è stato creato con successo su {{app_name}}.</p>
+       <p>Inizia subito ad esplorare eventi, allenamenti e molto altro.</p>`,
+      'Apri {{app_name}}', '{{public_base}}'
+    )
+  },
+  password_reset: {
+    subject: 'Recupero password {{app_name}}',
+    html: BASE_EMAIL_TEMPLATE(
+      'Reimposta la tua password',
+      `<p>Ciao {{full_name}},</p>
+       <p>abbiamo ricevuto una richiesta di reimpostazione password per il tuo account ({{email}}).</p>
+       <p>Se non l'hai richiesta tu, ignora pure questa email.</p>`,
+      'Reimposta password', '{{reset_link}}'
+    )
+  },
+  event_registration_user: {
+    subject: 'Iscrizione confermata: {{event_title}}',
+    html: BASE_EMAIL_TEMPLATE(
+      'Iscrizione confermata',
+      `<p>Ciao {{full_name}},</p>
+       <p>la tua iscrizione all'evento <strong>{{event_title}}</strong> è stata registrata correttamente.</p>
+       {{#if event_dates}}<p><strong>Date:</strong> {{event_dates}}</p>{{/if}}`,
+      'Dettagli evento', '{{event_url}}'
+    )
+  },
+  event_registration_organizer: {
+    subject: "Nuova iscrizione all'evento: {{event_title}}",
+    html: BASE_EMAIL_TEMPLATE(
+      'Nuova iscrizione',
+      `<p>Ciao {{organizer_name}},</p>
+       <p>{{participant_name}} si è iscritto all'evento <strong>{{event_title}}</strong>.</p>
+       {{#if event_dates}}<p><strong>Date:</strong> {{event_dates}}</p>{{/if}}`,
+      'Apri evento', '{{event_url}}'
+    )
+  }
+};
+
+async function upsertEmailTemplate(type, subject, html) {
+  const sql = `INSERT INTO public.email_templates(template_type, subject, html)
+    VALUES($1,$2,$3)
+    ON CONFLICT (template_type) DO UPDATE SET subject = EXCLUDED.subject, html = EXCLUDED.html, updated_at = now()`;
+  await pool.query(sql, [type, subject, html]);
+}
+
 async function setPublicProfileSettings(userId, settings) {
   return setSettingValue(PP_USER_KEY(userId), settings || {});
 }
@@ -459,6 +578,15 @@ async function getSlugAliasTarget(slugLower) {
   return null;
 }
 
+function formatFromEmail(fromEnv) {
+  const from = String(fromEnv || '').trim();
+  if (!from) return `${APP_NAME} <noreply@weapnea.com>`;
+  // Se già contiene display name, lasciamo invariato
+  if (from.includes('<') && from.includes('>')) return from;
+  // Se è solo un indirizzo, aggiungiamo il display name
+  return `${APP_NAME} <${from}>`;
+}
+
 async function sendEmail({ to, subject, html }) {
   if (!resend) {
     console.warn('Resend not configured, skipping email:', subject, to);
@@ -467,7 +595,8 @@ async function sendEmail({ to, subject, html }) {
     return { skipped: true };
   }
   try {
-    const { data, error } = await resend.emails.send({ from: RESEND_FROM_EMAIL, to, subject, html });
+    const from = formatFromEmail(RESEND_FROM_EMAIL);
+    const { data, error } = await resend.emails.send({ from, to, subject, html });
     if (error) throw error;
     const entry = { ts: new Date().toISOString(), to, subject, ok: true, id: data?.id };
     emailLog.push(entry); if (emailLog.length > EMAIL_LOG_MAX) emailLog.shift();
@@ -528,12 +657,11 @@ app.post('/api/auth/register', async (req, res) => {
     );
     const user = rows[0];
     const jwtToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-    // Fire-and-forget welcome email
-    sendEmail({
-      to: user.email,
-      subject: 'Benvenuto su WeApnea',
-      html: `<p>Ciao ${user.full_name || ''},</p><p>benvenuto su WeApnea! Il tuo account è stato creato con successo.</p>`
-    }).catch(() => {});
+    // Fire-and-forget welcome email (templated)
+    renderEmailWithTemplate('welcome', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME },
+      'Benvenuto su {{app_name}}',
+      `<p>Ciao {{full_name}},</p><p>benvenuto su {{app_name}}! Il tuo account è stato creato con successo.</p>`
+    ).then(t => sendEmail({ to: user.email, subject: t.subject, html: t.html })).catch(() => {});
     res.status(201).json({ token: jwtToken, user });
   } catch (e) {
     if (String(e.message).includes('duplicate key')) {
@@ -582,11 +710,11 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
     );
     const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
     const link = `${base}/password-reset?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(user.email)}&type=recovery`;
-    await sendEmail({
-      to: user.email,
-      subject: 'Recupero password WeApnea',
-      html: `<p>Ciao ${user.full_name || ''},</p><p>clicca <a href="${link}">qui</a> per reimpostare la tua password. Il link scade tra 30 minuti.</p>`
-    });
+    const rendered = await renderEmailWithTemplate('password_reset', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME, reset_link: link },
+      'Recupero password {{app_name}}',
+      `<p>Ciao {{full_name}},</p><p>clicca <a href="{{reset_link}}">qui</a> per reimpostare la tua password. Il link scade tra 30 minuti.</p>`
+    );
+    await sendEmail({ to: user.email, subject: rendered.subject, html: rendered.html });
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
@@ -670,10 +798,42 @@ app.get('/api/email/health', requireAuth, requireAdmin, async (_req, res) => {
 // Email test (admin only)
 app.post('/api/email/test', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { to, subject = 'Test email WeApnea', html = '<p>Questa è una email di test inviata da WeApnea.</p>' } = req.body || {};
+    const { to, template_type = null, vars = null, subject = 'Test email WeApnea', html = '<p>Questa è una email di test inviata da WeApnea.</p>' } = req.body || {};
     if (!to) return res.status(400).json({ error: 'to is required' });
-    const result = await sendEmail({ to, subject, html });
+    let finalSubject = subject;
+    let finalHtml = html;
+    const public_base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+    const boundVars = { app_name: APP_NAME, public_base, ...(vars || {}) };
+    if (template_type) {
+      const rendered = await renderEmailWithTemplate(template_type, boundVars, subject, html);
+      finalSubject = rendered.subject;
+      finalHtml = rendered.html.replace(/\{#if [^}]+\}[^]*?\{\/if\}/g, (block) => {
+        // Rimuovi blocchi condizionali custom se la variabile non è valorizzata
+        const m = block.match(/\{#if\s+([a-zA-Z0-9_\.]+)\s*\}/);
+        if (m) {
+          const key = m[1];
+          const val = boundVars[key];
+          if (val) return block.replace(/\{#if[^}]+\}/, '').replace('\{/if\}', '');
+          return '';
+        }
+        return '';
+      });
+    }
+    const result = await sendEmail({ to, subject: finalSubject, html: finalHtml });
     res.json(result);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Seed default email templates (admin only)
+app.post('/api/email-templates/seed-defaults', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const entries = Object.entries(DEFAULT_TEMPLATES);
+    for (const [type, tpl] of entries) {
+      await upsertEmailTemplate(type, tpl.subject, tpl.html);
+    }
+    res.json({ ok: true, count: entries.length });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
@@ -2447,37 +2607,45 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
         };
         const dateText = ev?.date ? (ev?.end_date && ev.end_date !== ev.date ? `${fmt(ev.date)} - ${fmt(ev.end_date)}` : fmt(ev.date)) : '';
         const locationText = ev?.location ? `<p><strong>Luogo:</strong> ${ev.location}</p>` : '';
-        // Email to participant
+        // Email to participant (templated)
         if (participant?.email) {
-          await sendEmail({
-            to: participant.email,
-            subject: `Iscrizione confermata: ${ev.title}`,
-            html: `
-              <p>Ciao ${participant.full_name || ''},</p>
-              <p>la tua iscrizione all'evento <strong>${ev.title}</strong> è stata registrata correttamente.</p>
-              ${dateText ? `<p><strong>Date:</strong> ${dateText}</p>` : ''}
-              ${locationText}
-              <p>Dettagli evento: <a href="${eventUrl}">${eventUrl}</a></p>
-              <p>Grazie da WeApnea</p>
+          const tpl = await renderEmailWithTemplate(
+            'event_registration_user',
+            { full_name: participant.full_name || '', participant_email: participant.email, app_name: APP_NAME, event_title: ev.title, event_url: eventUrl, event_dates: dateText },
+            `Iscrizione confermata: ${ev.title}`,
             `
-          });
+              <p>Ciao {{full_name}},</p>
+              <p>la tua iscrizione all'evento <strong>{{event_title}}</strong> è stata registrata correttamente.</p>
+              {{#if event_dates}}<p><strong>Date:</strong> {{event_dates}}</p>{{/if}}
+              <p>Dettagli evento: <a href="{{event_url}}">{{event_url}}</a></p>
+              <p>Grazie da {{app_name}}</p>
+            `
+          );
+          await sendEmail({ to: participant.email, subject: tpl.subject, html: tpl.html.replace(/\{#if [^}]+\}[^]*?\{\/if\}/g, (block) => { // rimuovi blocchi if custom
+            if (block.includes('{{event_dates}}') && dateText) return block.replace(/\{#if[^}]+\}/, '').replace('\{/if\}', '');
+            return '';
+          }) });
         }
         // Email to organizer (optional)
         if (ev.created_by) {
           const { rows: orgRows } = await pool.query('SELECT email, full_name FROM profiles WHERE id = $1 LIMIT 1', [ev.created_by]);
           const org = orgRows[0];
           if (org?.email && participant?.email) {
-            await sendEmail({
-              to: org.email,
-              subject: `Nuova iscrizione all'evento: ${ev.title}`,
-              html: `
-                <p>Ciao ${org.full_name || ''},</p>
-                <p>${participant.full_name || participant.email} si è iscritto all'evento <strong>${ev.title}</strong>.</p>
-                ${dateText ? `<p><strong>Date:</strong> ${dateText}</p>` : ''}
-                ${locationText}
-                <p>Dettagli evento: <a href="${eventUrl}">${eventUrl}</a></p>
+            const tpl2 = await renderEmailWithTemplate(
+              'event_registration_organizer',
+              { organizer_name: org.full_name || '', participant_name: participant.full_name || participant.email, app_name: APP_NAME, event_title: ev.title, event_url: eventUrl, event_dates: dateText },
+              `Nuova iscrizione all'evento: ${ev.title}`,
               `
-            });
+                <p>Ciao {{organizer_name}},</p>
+                <p>{{participant_name}} si è iscritto all'evento <strong>{{event_title}}</strong>.</p>
+                {{#if event_dates}}<p><strong>Date:</strong> {{event_dates}}</p>{{/if}}
+                <p>Dettagli evento: <a href="{{event_url}}">{{event_url}}</a></p>
+              `
+            );
+            await sendEmail({ to: org.email, subject: tpl2.subject, html: tpl2.html.replace(/\{#if [^}]+\}[^]*?\{\/if\}/g, (block) => {
+              if (block.includes('{{event_dates}}') && dateText) return block.replace(/\{#if[^}]+\}/, '').replace('\{/if\}', '');
+              return '';
+            }) });
           }
         }
       } catch (e) {
