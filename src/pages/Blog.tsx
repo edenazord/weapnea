@@ -54,14 +54,14 @@ const Blog = () => {
   <div className="mb-12">
         <div className="relative max-w-xl mx-auto">
           <div className="gradient-border">
-            <div className="gradient-border-inner">
+            <div className="gradient-border-inner rounded-lg shadow-md hover:shadow-lg overflow-hidden transition-all duration-200">
               <div className="relative">
-                <Search className="absolute left-4 top-4 h-5 w-5 text-gray-400" />
+                <Search className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 -mt-0.5 h-5 w-5 text-primary/50 z-10" />
                 <Input
                   placeholder={t('blog_page.search_placeholder', 'Cerca articoli...')}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-12 pr-4 py-3 text-lg border-0 focus:ring-2 focus:ring-purple-500 rounded-lg shadow-lg"
+                  className="pl-14 pr-6 border-0 bg-transparent text-base focus:ring-0 focus:outline-none placeholder:text-muted-foreground h-16"
                 />
               </div>
             </div>
