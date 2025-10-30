@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "api": "node ./server/index.cjs",
     "db:migrate": "node ./scripts/db-migrate.cjs",
+  "db:set-event-owner": "node ./scripts/db-set-event-owner.cjs",
     "preview": "vite preview",
     "deploy:vercel": "echo Use Vercel dashboard for deploy",
     "deploy:render": "echo Use Render dashboard for deploy"

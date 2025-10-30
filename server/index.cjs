@@ -1800,6 +1800,10 @@ app.post('/api/events', requireAuth, async (req, res) => {
   if (!e.title || !e.category_id) return res.status(400).json({ error: 'title and category_id are required' });
   // Default slug if missing
   const slug = e.slug || String(e.title).toLowerCase().replace(/\s+/g, '-');
+  // Ensure ownership: if client didn't provide created_by, bind to current user
+  if (!e.created_by && req.user?.id) {
+    e.created_by = req.user.id;
+  }
   const cols = [
     'title','slug','description','date','end_date','location','participants','image_url','category_id','cost','nation','discipline','created_by','level','activity_description','language','about_us','objectives','included_in_activity','not_included_in_activity','notes','schedule_logistics','gallery_images','event_type','activity_details','who_we_are','fixed_appointment','instructors','instructor_certificates','max_participants_per_instructor','schedule_meeting_point','responsibility_waiver_accepted','privacy_accepted'
   ];
