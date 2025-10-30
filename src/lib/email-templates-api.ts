@@ -3,7 +3,7 @@ import { apiGet, apiSend } from '@/lib/apiClient';
 
 export type EmailTemplate = {
   id: string;
-  template_type: 'signup_confirmation' | 'password_recovery' | 'magic_link';
+  template_type: 'welcome' | 'password_reset' | 'event_registration_user' | 'event_registration_organizer';
   subject: string;
   html_content: string;
   is_active: boolean;
@@ -28,6 +28,15 @@ export const getEmailTemplate = async (templateType: string): Promise<EmailTempl
     const res = await apiGet(`/api/email-templates/${encodeURIComponent(templateType)}`);
     return res as EmailTemplate;
   } catch (e) {
+    return null;
+  }
+};
+
+export const seedEmailTemplatesDefaults = async (): Promise<{ inserted: number } | null> => {
+  try {
+    const res = await apiSend('/api/email-templates/seed-defaults', 'POST');
+    return res as { inserted: number };
+  } catch {
     return null;
   }
 };
