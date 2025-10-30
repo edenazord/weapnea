@@ -125,14 +125,20 @@ const BlogManager = () => {
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div className="relative flex-1 max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 -mt-0.5 h-4 w-4 text-gray-400" />
-          <Input
-            placeholder="Cerca articoli..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-          />
+        <div className="flex-1 max-w-md">
+          <div className="relative gradient-border hover:scale-[1.01] transition-all duration-200">
+            <div className="gradient-border-inner rounded-lg shadow-md hover:shadow-lg overflow-hidden transition-all duration-200">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 -mt-0.5 h-5 w-5 text-primary/50 z-10" />
+                <Input
+                  placeholder="Cerca articoli..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-14 pr-6 border-0 bg-transparent text-base focus:ring-0 focus:outline-none placeholder:text-muted-foreground h-12"
+                />
+              </div>
+            </div>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Select value={language} onValueChange={(v) => setLanguage(v as 'all' | 'it' | 'en')}>
