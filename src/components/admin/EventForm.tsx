@@ -10,6 +10,7 @@ import type { Event, Category } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateEventSlug } from "@/lib/seo-utils";
 import { ImageUpload } from "./ImageUpload";
@@ -36,6 +37,7 @@ const eventFormSchema = z.object({
   category_id: z.string().uuid({ message: "Seleziona una categoria." }),
   nation: z.string().optional(),
   level: z.string().optional(),
+  // Campo legacy mantenuto per compatibilità, popolato automaticamente con "description"
   activity_description: z.string().optional(),
   language: z.string().optional(),
   about_us: z.string().optional(),
@@ -45,6 +47,9 @@ const eventFormSchema = z.object({
   notes: z.string().optional(),
   schedule_logistics: z.string().optional(),
   gallery_images: z.array(z.string()).optional(),
+  // Liberatorie come in Allenamenti (obbligatorie)
+  responsibility_waiver_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare la liberatoria di responsabilità." }),
+  privacy_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare il trattamento della privacy." }),
 });
 
 type EventFormProps = {
@@ -74,7 +79,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
     defaultValues: {
       title: defaultValues?.title || "",
       slug: defaultValues?.slug || "",
-      description: defaultValues?.description || "",
+      // Unifica i due campi descrittivi in uno solo, preferendo quello principale se presente
+      description: (defaultValues?.description || defaultValues?.activity_description) || "",
       discipline: defaultValues?.discipline || "",
       location: defaultValues?.location || "",
       // Normalizza per input date (YYYY-MM-DD)
@@ -95,6 +101,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
       notes: defaultValues?.notes || "",
       schedule_logistics: defaultValues?.schedule_logistics || "",
       gallery_images: defaultValues?.gallery_images || [],
+      responsibility_waiver_accepted: defaultValues?.responsibility_waiver_accepted || false,
+      privacy_accepted: defaultValues?.privacy_accepted || false,
     },
   });
 
@@ -105,12 +113,15 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
     }
     
     // Transform empty strings to null for new fields
+    const singleDesc = values.description && values.description.trim() !== '' ? values.description.trim() : null;
     const transformedValues = {
       ...values,
       // If free mode, enforce null cost server-side
       cost: eventsFree ? null : values.cost,
       level: values.level && values.level.trim() !== '' ? values.level : null,
-      activity_description: values.activity_description && values.activity_description.trim() !== '' ? values.activity_description : null,
+      // Mantieni activity_description allineato a description per compatibilità
+      activity_description: singleDesc,
+      description: singleDesc,
       language: values.language && values.language.trim() !== '' ? values.language : null,
       about_us: values.about_us && values.about_us.trim() !== '' ? values.about_us : null,
       objectives: values.objectives && values.objectives.trim() !== '' ? values.objectives : null,
@@ -260,22 +271,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="activity_description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Descrizione Attività</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Descrizione dettagliata dell'attività..."
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Unificazione: rimosso campo separato "Descrizione Attività". Usare solo "Descrizione". */}
 
         <FormField
           control={form.control}
@@ -508,6 +504,59 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
               currentImages={form.watch('gallery_images') || []}
             />
           </div>
+        </div>
+
+        {/* Liberatorie obbligatorie */}
+        <div className="space-y-4 border-t pt-4">
+          <h3 className="text-lg font-semibold">Liberatorie Obbligatorie</h3>
+
+          <FormField
+            control={form.control}
+            name="responsibility_waiver_accepted"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="text-sm font-medium">
+                    Accetto la liberatoria di responsabilità *
+                  </FormLabel>
+                  <p className="text-xs text-muted-foreground">
+                    Confermo di essere responsabile per l'attività e i partecipanti
+                  </p>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="privacy_accepted"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="text-sm font-medium">
+                    Accetto il trattamento della privacy *
+                  </FormLabel>
+                  <p className="text-xs text-muted-foreground">
+                    Confermo il trattamento dei dati secondo la normativa vigente
+                  </p>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         <Button 

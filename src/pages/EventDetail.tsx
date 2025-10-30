@@ -406,8 +406,13 @@ const EventDetail = () => {
                         </div>
                     </Card>
 
-                    {/* Descrizione Attività */}
-                    {event.activity_description && (
+                    {/* Descrizione Attività (mostra solo se diversa dalla descrizione principale) */}
+                    {(() => {
+                        const mainDesc = (event.description || '').trim();
+                        const actDesc = (event.activity_description || '').trim();
+                        const showAct = actDesc !== '' && actDesc !== mainDesc;
+                        return showAct;
+                    })() && (
                         <Card className="shadow-lg p-6 mt-8">
                             <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Descrizione Attività</h2>
                             <div className={`text-gray-600 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
