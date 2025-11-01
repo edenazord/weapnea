@@ -129,7 +129,7 @@ const BlogManager = () => {
           <div className="relative gradient-border hover:scale-[1.01] transition-all duration-200">
             <div className="gradient-border-inner rounded-lg shadow-md hover:shadow-lg overflow-hidden transition-all duration-200">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 -mt-0.5 h-5 w-5 text-primary/50 z-10" />
+                <Search className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 -mt-0.5 h-5 w-5 z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 opacity-80" />
                 <Input
                   placeholder="Cerca articoli..."
                   value={searchTerm}
@@ -151,7 +151,7 @@ const BlogManager = () => {
               <SelectItem value="en">Inglese</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={() => setShowForm(true)}>
+          <Button onClick={() => setShowForm(true)} variant="brand">
             <Plus className="mr-2 h-4 w-4" />
             Nuovo Articolo
           </Button>

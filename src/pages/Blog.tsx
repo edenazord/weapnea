@@ -66,7 +66,7 @@ const Blog = () => {
           <div className="gradient-border">
             <div className="gradient-border-inner rounded-lg shadow-md hover:shadow-lg overflow-hidden transition-all duration-200">
               <div className="relative">
-                <Search className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 -mt-0.5 h-5 w-5 text-primary/50 z-10" />
+                <Search className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 -mt-0.5 h-5 w-5 z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 opacity-80" />
                 <Input
                   placeholder={t('blog_page.search_placeholder', 'Cerca articoli...')}
                   value={searchTerm}
@@ -141,7 +141,7 @@ const Blog = () => {
                   </div>
                 </div>
                 
-                <Button asChild className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 shadow-lg hover:shadow-xl transition-all duration-300 rounded-full">
+                <Button asChild className="w-full rounded-full" variant="brand">
                   <Link to={buildFriendlyBlogPath(article.slug, article.created_at)}>{t('blog_page.read_more', 'Leggi di più')}</Link>
                 </Button>
               </CardContent>
