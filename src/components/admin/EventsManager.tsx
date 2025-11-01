@@ -330,7 +330,7 @@ export default function EventsManager() {
 
       <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) setSelectedEvent(undefined); }}>
         <SheetContent
-          className="overflow-y-auto [&>button]:hidden"
+          className="overflow-y-auto p-0 [&>button]:hidden"
           // Chiudi solo con la X: blocca chiusura su click esterno ed ESC
           onInteractOutside={(e) => {
             e.preventDefault();
@@ -339,8 +339,8 @@ export default function EventsManager() {
             e.preventDefault();
           }}
         >
-          <div className="sticky top-0 z-50 bg-background border-b">
-            <div className="flex items-center justify-between gap-2 py-3 pr-2">
+          <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
+            <div className="flex items-center justify-between gap-2 px-6 py-3">
               <SheetTitle className="text-base sm:text-lg">
                 {selectedEvent 
                   ? (isAllenamentoForm ? "Modifica Allenamento Condiviso" : "Modifica Evento")
@@ -354,7 +354,7 @@ export default function EventsManager() {
               </SheetClose>
             </div>
           </div>
-          <div className="mt-4">
+          <div className="px-6 py-4">
             {isAllenamentoForm && allenamentiCategory ? (
               <AllenamentiForm
                 key={selectedEvent?.id || 'new-allenamento'}

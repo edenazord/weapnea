@@ -230,13 +230,13 @@ const Dashboard = () => {
 
                 <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) { setSelectedEvent(undefined); setIsAllenamentiMode(false); } }}>
                     <SheetContent
-                        className="overflow-y-auto [&>button]:hidden"
+                        className="overflow-y-auto p-0 [&>button]:hidden"
                         // Consenti chiusura solo con la X in alto
                         onInteractOutside={(e) => { e.preventDefault(); }}
                         onEscapeKeyDown={(e) => { e.preventDefault(); }}
                     >
-                        <div className="sticky top-0 z-50 bg-background border-b">
-                            <div className="flex items-center justify-between gap-2 py-3 pr-2">
+                        <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
+                            <div className="flex items-center justify-between gap-2 px-6 py-3">
                                 <SheetTitle className="text-base sm:text-lg">
                                     {isAllenamentiMode ? (selectedEvent ? "Modifica Allenamento Condiviso" : "Crea Allenamento Condiviso") : (selectedEvent ? "Modifica Evento" : "Crea Nuovo Evento")}
                                 </SheetTitle>
@@ -247,7 +247,7 @@ const Dashboard = () => {
                                 </SheetClose>
                             </div>
                         </div>
-                        <div className="mt-4">
+                        <div className="px-6 py-4">
                             {isAllenamentiMode ? (
                                 <AllenamentiForm key={selectedEvent?.id || 'new-allenamento'} onSubmit={handleAllenamentiFormSubmit} defaultValues={selectedEvent} isEditing={!!selectedEvent} allenamentiCategoryId={allenamentiCategory?.id || ''} />
                             ) : (
@@ -500,13 +500,13 @@ const Dashboard = () => {
                 <div className="pb-20 px-4 py-6">{content}</div>
                 <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) { setSelectedEvent(undefined); setIsAllenamentiMode(false); } }}>
                     <SheetContent
-                        className="overflow-y-auto [&>button]:hidden"
+                        className="overflow-y-auto p-0 [&>button]:hidden"
                         // Consenti chiusura solo con la X in alto
                         onInteractOutside={(e) => { e.preventDefault(); }}
                         onEscapeKeyDown={(e) => { e.preventDefault(); }}
                     >
-                        <div className="sticky top-0 z-50 bg-background border-b">
-                            <div className="flex items-center justify-between gap-2 py-3 pr-2">
+                        <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
+                            <div className="flex items-center justify-between gap-2 px-6 py-3">
                                 <SheetTitle className="text-base sm:text-lg">
                                     {isAllenamentiMode ? (selectedEvent ? "Modifica Allenamento Condiviso" : "Crea Allenamento Condiviso") : (selectedEvent ? "Modifica Evento" : "Crea Nuovo Evento")}
                                 </SheetTitle>
@@ -517,7 +517,7 @@ const Dashboard = () => {
                                 </SheetClose>
                             </div>
                         </div>
-                        <div className="mt-4">
+                        <div className="px-6 py-4">
                             {isAllenamentiMode ? (
                                 <AllenamentiForm key={selectedEvent?.id || 'new-allenamento'} onSubmit={handleAllenamentiFormSubmit} defaultValues={selectedEvent} isEditing={!!selectedEvent} allenamentiCategoryId={allenamentiCategory?.id || ''} />
                             ) : (
