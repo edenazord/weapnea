@@ -229,7 +229,12 @@ const Dashboard = () => {
                 </div>
 
                 <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) { setSelectedEvent(undefined); setIsAllenamentiMode(false); } }}>
-                    <SheetContent className="overflow-y-auto">
+                    <SheetContent
+                        className="overflow-y-auto"
+                        // Consenti chiusura solo con la X in alto
+                        onInteractOutside={(e) => { e.preventDefault(); }}
+                        onEscapeKeyDown={(e) => { e.preventDefault(); }}
+                    >
                         <SheetHeader>
                             <SheetTitle>
                                 {isAllenamentiMode ? (selectedEvent ? "Modifica Allenamento Condiviso" : "Crea Allenamento Condiviso") : (selectedEvent ? "Modifica Evento" : "Crea Nuovo Evento")}
@@ -487,7 +492,12 @@ const Dashboard = () => {
                 </div>
                 <div className="pb-20 px-4 py-6">{content}</div>
                 <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) { setSelectedEvent(undefined); setIsAllenamentiMode(false); } }}>
-                    <SheetContent className="overflow-y-auto">
+                    <SheetContent
+                        className="overflow-y-auto"
+                        // Consenti chiusura solo con la X in alto
+                        onInteractOutside={(e) => { e.preventDefault(); }}
+                        onEscapeKeyDown={(e) => { e.preventDefault(); }}
+                    >
                         <SheetHeader>
                             <SheetTitle>
                                 {isAllenamentiMode ? (selectedEvent ? "Modifica Allenamento Condiviso" : "Crea Allenamento Condiviso") : (selectedEvent ? "Modifica Evento" : "Crea Nuovo Evento")}

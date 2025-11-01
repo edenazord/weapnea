@@ -331,12 +331,12 @@ export default function EventsManager() {
       <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) setSelectedEvent(undefined); }}>
         <SheetContent
           className="overflow-y-auto"
+          // Chiudi solo con la X: blocca chiusura su click esterno ed ESC
           onInteractOutside={(e) => {
-            const target = e.target as HTMLElement | null;
-            if (target && target.closest('.pac-container, .pac-item')) {
-              // Evita la chiusura della Sheet quando si clicca sui suggerimenti di Google Places
-              e.preventDefault();
-            }
+            e.preventDefault();
+          }}
+          onEscapeKeyDown={(e) => {
+            e.preventDefault();
           }}
         >
           <SheetHeader>
