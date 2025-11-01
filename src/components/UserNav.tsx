@@ -35,28 +35,15 @@ export function UserNav() {
     return null;
   }
 
-  const getDashboardPath = () => {
-    switch (effective.role) {
-      case 'admin':
-        return '/admin';
-      case 'company':
-      case 'instructor':
-        return '/dashboard';
-      default:
-        return null;
-    }
-  }
-
-  const dashboardPath = getDashboardPath();
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-          <Avatar className="h-8 w-8">
+        <Button variant="outline" className="rounded-full pl-2 pr-3 h-9 flex items-center gap-2 border-purple-200 hover:border-purple-400">
+          <Avatar className="h-6 w-6">
             <AvatarImage src={effective.avatar_url || undefined} alt={effective.full_name || effective.email} />
             <AvatarFallback>{effective.full_name?.charAt(0).toUpperCase() || effective.email?.charAt(0).toUpperCase()}</AvatarFallback>
           </Avatar>
+          <span className="text-sm font-medium">{t('nav.personal_area', 'Area Personale')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -72,11 +59,6 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          {dashboardPath && (
-            <DropdownMenuItem onClick={() => navigate(dashboardPath)}>
-              {t('nav.dashboard', 'Dashboard')}
-            </DropdownMenuItem>
-          )}
           <DropdownMenuItem onClick={() => navigate('/profile')}>
             {t('nav.profile', 'Profilo')}
           </DropdownMenuItem>

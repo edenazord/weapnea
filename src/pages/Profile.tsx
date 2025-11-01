@@ -459,7 +459,7 @@ const Profile = () => {
             <TabsTrigger value="visibility" className="whitespace-nowrap">
               Visibilità
             </TabsTrigger>
-            <TabsTrigger value="organizer" className="whitespace-nowrap" disabled={!organizerEligible && user?.role !== 'admin'}>
+            <TabsTrigger value="organizer" className="whitespace-nowrap">
               Organizza
             </TabsTrigger>
           </TabsList>
@@ -938,6 +938,11 @@ const Profile = () => {
                         <div className="font-medium">Profilo pubblico</div>
                         <div className="text-sm text-muted-foreground">Devi attivare la visibilità e avere uno slug valido.</div>
                         <div className="mt-1 text-xs">Stato: {publicEnabled && hasSlug ? 'OK' : 'Mancante'}</div>
+                        {!publicEnabled || !hasSlug ? (
+                          <Button size="sm" variant="outline" className="mt-2" type="button" onClick={() => setActiveTab('visibility')}>
+                            Vai a Visibilità
+                          </Button>
+                        ) : null}
                       </div>
                       <div className={`border rounded-md p-3 ${(hasPhone && hasInsurance && insuranceOk && medicalOk) ? 'border-green-300' : 'border-red-300'}`}>
                         <div className="font-medium">Certificazioni obbligatorie</div>
@@ -947,6 +952,11 @@ const Profile = () => {
                           <li className={insuranceOk ? 'text-green-700' : 'text-red-700'}>Scadenza assicurazione valida</li>
                           <li className={medicalOk ? 'text-green-700' : 'text-red-700'}>Certificato medico valido</li>
                         </ul>
+                        {!(hasPhone && hasInsurance && insuranceOk && medicalOk) ? (
+                          <Button size="sm" variant="outline" className="mt-2" type="button" onClick={() => setActiveTab('certs')}>
+                            Vai a Certificazioni
+                          </Button>
+                        ) : null}
                       </div>
                     </div>
                   )}
