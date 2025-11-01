@@ -175,12 +175,10 @@ export default function EventsManager() {
       objectives: values.objectives,
       notes: values.notes || null,
       schedule_logistics: values.schedule_meeting_point,
-      // Nuovi campi specifici per allenamenti
+      // Campi specifici per allenamenti (senza multi-istruttori)
       activity_details: values.activity_details,
       who_we_are: values.who_we_are,
       fixed_appointment: values.fixed_appointment,
-      instructors: values.instructors,
-      max_participants_per_instructor: values.max_participants_per_instructor,
       schedule_meeting_point: values.schedule_meeting_point,
       responsibility_waiver_accepted: values.responsibility_waiver_accepted,
       privacy_accepted: values.privacy_accepted,
@@ -322,7 +320,10 @@ export default function EventsManager() {
               Crea Allenamento
             </Button>
           )}
-          <Button onClick={() => openSheet()}>
+          <Button 
+            onClick={() => openSheet()}
+            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+          >
             <Plus className="mr-2 h-4 w-4" /> Crea Evento
           </Button>
         </div>
@@ -418,14 +419,7 @@ export default function EventsManager() {
                 <TableCell className="block md:table-cell p-3 md:p-4 text-right md:text-left"><span className="font-bold md:hidden float-left">Luogo</span>{event.location}</TableCell>
                 <TableCell className="block md:table-cell p-3 md:p-4 text-right md:text-left">
                   <span className="font-bold md:hidden float-left">Costo</span>
-                  {event.category_id === allenamentiCategory?.id && event.instructors && Array.isArray(event.instructors) ? (
-                    <div className="text-sm">
-                      <div>{event.cost != null && event.cost > 0 ? `€${event.cost}` : 'Gratuito'}</div>
-                      <div className="text-muted-foreground">{event.instructors.length} istruttori</div>
-                    </div>
-                  ) : (
-                    event.cost != null && event.cost > 0 ? `${event.cost}€` : 'Gratuito'
-                  )}
+                  {event.cost != null && event.cost > 0 ? `${event.cost}€` : 'Gratuito'}
                 </TableCell>
                 <TableCell className="block md:table-cell p-3 md:p-4 text-right">
                   <div className="flex items-center justify-end gap-1">

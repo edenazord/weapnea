@@ -31,6 +31,16 @@ const Blog = () => {
     queryFn: () => getBlogArticles(true, searchTerm, { column: 'created_at', direction: 'desc' }, langParam),
   });
 
+  // Fallback: se per la lingua selezionata non ci sono articoli, mostra quelli in inglese
+  const { data: enArticles = [], isLoading: isLoadingEn } = useQuery({
+    queryKey: ['blog-articles', 'en', searchTerm],
+    queryFn: () => getBlogArticles(true, searchTerm, { column: 'created_at', direction: 'desc' }, 'en'),
+    enabled: langParam !== 'en',
+  });
+
+  const usingEnglishFallback = (langParam && langParam !== 'en' && !isLoading && articles.length === 0 && enArticles.length > 0);
+  const displayArticles = usingEnglishFallback ? enArticles : articles;
+
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -70,7 +80,7 @@ const Blog = () => {
       </div>
 
       {/* Articles Grid */}
-  {isLoading ? (
+  {isLoading || (usingEnglishFallback && isLoadingEn) ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="overflow-hidden animate-pulse">
@@ -84,9 +94,9 @@ const Blog = () => {
             </Card>
           ))}
         </div>
-  ) : articles.length > 0 ? (
+  ) : displayArticles.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {articles.map((article, index) => (
+          {displayArticles.map((article, index) => (
             <Card key={article.id} className="group overflow-hidden modern-blur border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-500 card-hover-lift fade-in-animation" style={{ animationDelay: `${index * 100}ms` }}>
               <div className="relative overflow-hidden">
                 <img 

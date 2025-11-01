@@ -218,10 +218,17 @@ const Dashboard = () => {
                 </div>
                 <div className="flex flex-col gap-3">
                     <div className="flex gap-3">
-                        <Button className={`${isMobile ? 'flex-1 text-sm' : 'w-auto'}`} onClick={handleCreateEventClick}>
+                        <Button 
+                            className={`${isMobile ? 'flex-1 text-sm' : 'w-auto'} bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700`} 
+                            onClick={handleCreateEventClick}
+                        >
                             <PlusCircle className="mr-2 h-4 w-4" /> {isMobile ? 'Crea Evento' : 'Crea Nuovo Evento'}
                         </Button>
-                        <Button variant="secondary" className={`${isMobile ? 'flex-1 text-sm' : 'w-auto'} bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700`} onClick={handleCreateAllenamentiClick}>
+                        <Button 
+                            variant="secondary" 
+                            className={`${isMobile ? 'flex-1 text-sm' : 'w-auto'} bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700`} 
+                            onClick={handleCreateAllenamentiClick}
+                        >
                             <Users className="mr-2 h-4 w-4" /> {isMobile ? 'Allenamento' : 'Crea Allenamento Condiviso'}
                         </Button>
                         {/* Pulsante "Diventa Sponsor" rimosso */}

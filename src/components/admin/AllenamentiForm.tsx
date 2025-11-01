@@ -29,11 +29,7 @@ const allenamentiFormBaseSchema = z.object({
   date: z.string().min(1, { message: "La data di inizio è obbligatoria." }),
   end_date: z.string().optional(),
   fixed_appointment: z.boolean().default(false),
-  instructors: z.array(z.object({
-    name: z.string().min(1, { message: "Nome istruttore obbligatorio" }),
-    certificate_url: z.string().url().optional().or(z.literal(""))
-  })).min(1, { message: "Almeno un istruttore è richiesto." }).max(10, { message: "Massimo 10 istruttori." }),
-  max_participants_per_instructor: z.coerce.number().min(1).max(6, { message: "Massimo 6 partecipanti per istruttore." }),
+  // Multi-istruttore rimosso
   responsibility_waiver_accepted: z.boolean().optional(),
   privacy_accepted: z.boolean().optional(),
   image_url: z.string().optional(),
@@ -73,8 +69,6 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
       date: (defaultValues?.date || "").toString().slice(0, 10),
       end_date: (defaultValues?.end_date || "").toString().slice(0, 10),
       fixed_appointment: defaultValues?.fixed_appointment || false,
-      instructors: defaultValues?.instructors || [{ name: "", certificate_url: "" }],
-      max_participants_per_instructor: defaultValues?.max_participants_per_instructor || 6,
       responsibility_waiver_accepted: defaultValues?.responsibility_waiver_accepted || false,
       privacy_accepted: defaultValues?.privacy_accepted || false,
       image_url: defaultValues?.image_url || "",
@@ -90,19 +84,7 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
     form.setValue('gallery_images', urls);
   };
 
-  const addInstructor = () => {
-    const currentInstructors = form.getValues('instructors');
-    if (currentInstructors.length < 10) {
-      form.setValue('instructors', [...currentInstructors, { name: "", certificate_url: "" }]);
-    }
-  };
-
-  const removeInstructor = (index: number) => {
-    const currentInstructors = form.getValues('instructors');
-    if (currentInstructors.length > 1) {
-      form.setValue('instructors', currentInstructors.filter((_, i) => i !== index));
-    }
-  };
+  // Multi-istruttore rimosso: nessuna gestione add/remove
 
   return (
     <Form {...form}>
@@ -400,75 +382,7 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
           />
         </div>
 
-        {/* Istruttori */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h4 className="font-medium text-lg">Istruttori (max 10)</h4>
-            <Button type="button" variant="outline" size="sm" onClick={addInstructor}>
-              Aggiungi Istruttore
-            </Button>
-          </div>
-          
-          {form.watch('instructors').map((instructor, index) => (
-            <div key={index} className="border rounded-lg p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <h5 className="font-medium">Istruttore {index + 1}</h5>
-                {form.watch('instructors').length > 1 && (
-                  <Button 
-                    type="button" 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => removeInstructor(index)}
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    Rimuovi
-                  </Button>
-                )}
-              </div>
-              
-              <FormField
-                control={form.control}
-                name={`instructors.${index}.name`}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome e Cognome *</FormLabel>
-                    <FormControl><Input {...field} placeholder="Nome e cognome dell'istruttore" /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div>
-                <FormLabel>Foto Brevetto (opzionale)</FormLabel>
-                <ImageUpload
-                  onImageUploaded={(url) => {
-                    const instructors = form.getValues('instructors');
-                    instructors[index].certificate_url = url;
-                    form.setValue('instructors', instructors);
-                  }}
-                  currentImageUrl={instructor.certificate_url}
-                  onImageRemoved={() => {
-                    const instructors = form.getValues('instructors');
-                    instructors[index].certificate_url = "";
-                    form.setValue('instructors', instructors);
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-
-          <FormField
-            control={form.control}
-            name="max_participants_per_instructor"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Partecipanti per Istruttore (max 6) *</FormLabel>
-                <FormControl><Input type="number" min="1" max="6" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        {/* Sezione istruttori rimossa (multi-istruttore non più supportato) */}
 
         {/* Immagini e Costo */}
         <div className="space-y-4">

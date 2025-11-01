@@ -15,7 +15,7 @@ import { AvatarUpload } from "@/components/AvatarUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye } from "lucide-react";
+import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -29,6 +29,12 @@ import { it as itLocale } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getCategories, createEvent, Event } from "@/lib/api";
+import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
+import { EventForm } from "@/components/admin/EventForm";
+import { AllenamentiForm } from "@/components/admin/AllenamentiForm";
+import { toast } from "sonner";
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
 type BestEntry = { discipline: BestDiscipline; value: string };
@@ -119,6 +125,72 @@ const Profile = () => {
   const publicEnabled = !!formData.public_profile_enabled;
   const hasSlug = !!(formData.public_slug && formData.public_slug.trim());
   const organizerEligible = publicEnabled && hasSlug && hasPhone && hasInsurance && insuranceOk && medicalOk;
+
+  // Stato/queries per creazione evento dal profilo
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isAllenamentiMode, setIsAllenamentiMode] = useState(false);
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: getCategories,
+    enabled: organizerEligible,
+  });
+  const allenamentiCategory = categories?.find((c: any) => c.name?.toLowerCase?.().includes('allenamenti'));
+
+  const createMutation = useMutation({
+    mutationFn: (payload: Partial<Event>) => createEvent(payload as Event),
+    onSuccess: () => {
+      toast.success("Creato con successo!");
+      setIsCreateOpen(false);
+    },
+    onError: (err: any) => {
+      toast.error(`Errore: ${err?.message || 'Creazione fallita'}`);
+    }
+  });
+
+  const handleOpenCreateEvent = () => { setIsAllenamentiMode(false); setIsCreateOpen(true); };
+  const handleOpenCreateAllenamento = () => { setIsAllenamentiMode(true); setIsCreateOpen(true); };
+
+  const handleEventFormSubmit = async (values: any) => {
+    try {
+      await createMutation.mutateAsync(values as Partial<Event>);
+    } catch (e) {
+      // handled by mutation onError
+    }
+  };
+
+  const handleAllenamentiFormSubmit = async (values: any) => {
+    const payload: Partial<Event> = {
+      title: values.title,
+      slug: values.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
+      description: `Allenamento condiviso: ${values.activity_details}`,
+      discipline: values.discipline,
+      location: values.location,
+      date: values.date,
+      end_date: values.end_date || null,
+      participants: null,
+      cost: values.cost ? Number(values.cost) : null,
+      image_url: values.image_url || null,
+      category_id: values.category_id,
+      nation: values.nation,
+      level: values.level,
+      activity_description: values.activity_details,
+      about_us: values.who_we_are,
+      objectives: values.objectives,
+      notes: values.notes || null,
+      schedule_logistics: values.schedule_meeting_point,
+      activity_details: values.activity_details,
+      who_we_are: values.who_we_are,
+      fixed_appointment: values.fixed_appointment,
+      schedule_meeting_point: values.schedule_meeting_point,
+      responsibility_waiver_accepted: values.responsibility_waiver_accepted,
+      privacy_accepted: values.privacy_accepted,
+    };
+    try {
+      await createMutation.mutateAsync(payload);
+    } catch (e) {
+      // handled by mutation onError
+    }
+  };
 
   const formatEventDate = (start?: string, end?: string) => {
     if (start) {
@@ -974,12 +1046,67 @@ const Profile = () => {
                       <Link to="/admin">Apri Dashboard Admin</Link>
                     </Button>
                   ) : organizerEligible ? (
-                    <Button asChild>
-                      <Link to="/my-events">Vai ai miei eventi</Link>
-                    </Button>
+                    <div className="flex flex-wrap gap-2">
+                      {allenamentiCategory && (
+                        <Button 
+                          type="button"
+                          onClick={handleOpenCreateAllenamento}
+                          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                        >
+                          <Users className="mr-2 h-4 w-4" /> Crea Allenamento
+                        </Button>
+                      )}
+                      <Button 
+                        type="button"
+                        onClick={handleOpenCreateEvent}
+                        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                      >
+                        <PlusCircle className="mr-2 h-4 w-4" /> Crea Evento
+                      </Button>
+                    </div>
                   ) : (
                     <div className="text-sm text-muted-foreground">Completa i requisiti nelle tab "Certificazioni" e "Visibilità" per abilitare questa sezione.</div>
                   )}
+
+                  {/* Sheet di creazione */}
+                  <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                    <SheetContent
+                      className="overflow-y-auto p-0 [&>button]:hidden"
+                      onInteractOutside={(e) => e.preventDefault()}
+                      onEscapeKeyDown={(e) => e.preventDefault()}
+                    >
+                      <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
+                        <div className="flex items-center justify-between gap-2 px-6 py-3">
+                          <SheetTitle className="text-base sm:text-lg">
+                            {isAllenamentiMode ? 'Crea Allenamento Condiviso' : 'Crea Nuovo Evento'}
+                          </SheetTitle>
+                          <SheetClose asChild>
+                            <Button variant="ghost" size="icon" aria-label="Chiudi">
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </SheetClose>
+                        </div>
+                      </div>
+                      <div className="px-6 py-4">
+                        {isAllenamentiMode && allenamentiCategory ? (
+                          <AllenamentiForm
+                            key={'new-allenamento-profile'}
+                            onSubmit={handleAllenamentiFormSubmit}
+                            defaultValues={undefined}
+                            isEditing={false}
+                            allenamentiCategoryId={allenamentiCategory.id}
+                          />
+                        ) : (
+                          <EventForm
+                            key={'new-event-profile'}
+                            onSubmit={handleEventFormSubmit}
+                            defaultValues={undefined}
+                            isEditing={false}
+                          />
+                        )}
+                      </div>
+                    </SheetContent>
+                  </Sheet>
                 </CardContent>
               </Card>
             </TabsContent>
