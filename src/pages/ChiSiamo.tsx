@@ -94,12 +94,12 @@ const ChiSiamo = () => {
           {/* Team Photos Grid */}
           <div className="mt-8 md:mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 md:gap-6">
             {[
-              "/uploads/team-1.jpg",
-              "/uploads/team-2.jpg",
-              "/uploads/team-3.jpg",
-              "/uploads/team-4.jpg",
-              "/uploads/team-5.jpg",
-              "/uploads/team-6.jpg",
+            "/images/team/Paolo.jpg",
+            "/images/team/Marta.jpg",
+            "/images/team/Leo.jpg",
+            "/images/team/Ruggero.jpg",
+            "/images/team/Filippo.jpg",
+           
             ].map((src, idx) => (
               <div key={idx} className="group relative">
                 <div className="rounded-xl overflow-hidden ring-1 ring-white/60 bg-white shadow-sm">
