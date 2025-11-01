@@ -59,6 +59,11 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
+          {effective.role === 'admin' && (
+            <DropdownMenuItem onClick={() => navigate('/admin')}>
+              {t('nav.dashboard', 'Dashboard')}
+            </DropdownMenuItem>
+          )}
           <DropdownMenuItem onClick={() => navigate('/profile')}>
             {t('nav.profile', 'Profilo')}
           </DropdownMenuItem>
