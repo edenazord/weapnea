@@ -90,6 +90,33 @@ const ChiSiamo = () => {
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             {t('about_page.team_desc', "Siamo un team di apneisti appassionati, sviluppatori e professionisti del settore che lavorano insieme per creare la migliore esperienza possibile per la community dell'apnea.")}
           </p>
+
+          {/* Team Photos Grid */}
+          <div className="mt-8 md:mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 md:gap-6">
+            {[
+              "/uploads/team-1.jpg",
+              "/uploads/team-2.jpg",
+              "/uploads/team-3.jpg",
+              "/uploads/team-4.jpg",
+              "/uploads/team-5.jpg",
+              "/uploads/team-6.jpg",
+            ].map((src, idx) => (
+              <div key={idx} className="group relative">
+                <div className="rounded-xl overflow-hidden ring-1 ring-white/60 bg-white shadow-sm">
+                  <div className="aspect-[4/5] w-full bg-gradient-to-br from-blue-100 to-purple-100">
+                    <img
+                      src={src}
+                      alt={`Foto membro del team ${idx + 1}`}
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
       </div>
     </div>
