@@ -564,6 +564,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
         <Button 
           type="submit" 
           className="w-full"
+          variant="brand"
         >
           {isEditing ? "Salva Modifiche" : "Crea Evento"}
         </Button>

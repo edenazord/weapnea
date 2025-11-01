@@ -100,6 +100,7 @@ const EditTopicDialog = ({ topic, topicId }: EditTopicDialogProps) => {
           <Button 
             onClick={handleSubmit}
             disabled={updateMutation.isPending || !title.trim() || !content.trim()}
+            variant="brand"
           >
             {updateMutation.isPending ? 'Salvataggio...' : 'Salva Modifiche'}
           </Button>

@@ -89,6 +89,7 @@ const EditReplyDialog = ({ reply, topicId }: EditReplyDialogProps) => {
           <Button 
             onClick={handleSubmit}
             disabled={updateMutation.isPending || !content.trim()}
+            variant="brand"
           >
             {updateMutation.isPending ? 'Salvataggio...' : 'Salva Modifiche'}
           </Button>

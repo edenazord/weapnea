@@ -188,6 +188,7 @@ const EmailTemplatesManager = () => {
                   </Button>
 
                   <Button
+                    variant="brand"
                     onClick={() => handleSave(template)}
                     disabled={saving === template.id}
                   >

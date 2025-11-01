@@ -79,6 +79,7 @@ export function DraggableList({ items, onReorder, onCancel }: DraggableListProps
             size="sm" 
             onClick={handleSave}
             disabled={isReordering}
+            variant="brand"
           >
             <Save className="h-4 w-4 mr-1" />
             {isReordering ? 'Salvando...' : 'Salva Ordine'}

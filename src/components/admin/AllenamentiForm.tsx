@@ -469,6 +469,7 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
           type="submit" 
           className="w-full" 
           size="lg"
+          variant="brand"
         >
           {isEditing ? "Salva Allenamento" : "Crea Allenamento Condiviso"}
         </Button>

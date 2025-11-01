@@ -1124,6 +1124,7 @@ const Profile = () => {
                   )
                 }
                 className="w-full md:w-auto"
+                variant="brand"
               >
                 {loading ? t('profile.buttons.saving', 'Salvando...') : t('profile.buttons.save', 'Salva Modifiche')}
               </Button>

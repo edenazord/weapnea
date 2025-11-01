@@ -87,7 +87,7 @@ export function ForumCategoryForm({ onSubmit, defaultValues, isEditing }: ForumC
             </FormItem>
           )}
         />
-        <Button type="submit">{isEditing ? "Salva Modifiche" : "Crea Categoria"}</Button>
+  <Button type="submit" variant="brand">{isEditing ? "Salva Modifiche" : "Crea Categoria"}</Button>
       </form>
     </Form>
   );
