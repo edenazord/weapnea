@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Calendar, Info, FileText } from "lucide-react";
+// icons removed per request (cleaner nav)
 import { ReactNode } from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Footer from "@/components/Footer";
@@ -28,39 +28,27 @@ const Layout = ({ children }: { children: ReactNode }) => {
                     <div className="flex items-center justify-between">
                         <Logo imgClassName="h-9 origin-left scale-110" showText />
                         
-                        <nav className="hidden md:flex items-center gap-2">
+                        <nav className="hidden md:flex items-center gap-4">
                             <NavLink 
                                 to="/" 
-                                className={({ isActive }) => `relative px-3 py-2 rounded-full transition-all duration-300 group ${isActive ? 'text-blue-700' : 'text-gray-700 hover:text-blue-700'}`}
+                                className={({ isActive }) => `relative px-3 py-2 transition-all duration-300 group ${isActive ? 'text-blue-700' : 'text-gray-700 hover:text-blue-700'}`}
                             >
-                                <span className="relative z-10 flex items-center gap-2 font-medium">
-                                  <Calendar className="h-4 w-4 text-blue-600 transition-transform duration-300 group-hover:scale-110" />
-                                  {t('nav.events', 'Eventi')}
-                                </span>
-                                <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-blue-600/10 to-purple-600/10 opacity-0 group-hover:opacity-100 blur-sm transition-opacity"></div>
-                                <div className="pointer-events-none absolute inset-x-2 -bottom-1 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full"></div>
+                                <span className="relative z-10 font-medium">{t('nav.events', 'Eventi')}</span>
+                                <div className="pointer-events-none absolute inset-x-1 -bottom-1 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full"></div>
                             </NavLink>
                             <NavLink 
                                 to="/chi-siamo" 
-                                className={({ isActive }) => `relative px-3 py-2 rounded-full transition-all duration-300 group ${isActive ? 'text-blue-700' : 'text-gray-700 hover:text-blue-700'}`}
+                                className={({ isActive }) => `relative px-3 py-2 transition-all duration-300 group ${isActive ? 'text-blue-700' : 'text-gray-700 hover:text-blue-700'}`}
                             >
-                                <span className="relative z-10 flex items-center gap-2 font-medium">
-                                  <Info className="h-4 w-4 text-blue-600 transition-transform duration-300 group-hover:scale-110" />
-                                  {t('nav.about', 'Chi Siamo')}
-                                </span>
-                                <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-blue-600/10 to-purple-600/10 opacity-0 group-hover:opacity-100 blur-sm transition-opacity"></div>
-                                <div className="pointer-events-none absolute inset-x-2 -bottom-1 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full"></div>
+                                <span className="relative z-10 font-medium">{t('nav.about', 'Chi Siamo')}</span>
+                                <div className="pointer-events-none absolute inset-x-1 -bottom-1 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full"></div>
                             </NavLink>
                             <NavLink 
                                 to="/blog" 
-                                className={({ isActive }) => `relative px-3 py-2 rounded-full transition-all duration-300 group ${isActive ? 'text-blue-700' : 'text-gray-700 hover:text-blue-700'}`}
+                                className={({ isActive }) => `relative px-3 py-2 transition-all duration-300 group ${isActive ? 'text-blue-700' : 'text-gray-700 hover:text-blue-700'}`}
                             >
-                                <span className="relative z-10 flex items-center gap-2 font-medium">
-                                  <FileText className="h-4 w-4 text-blue-600 transition-transform duration-300 group-hover:scale-110" />
-                                  {t('nav.blog', 'Blog')}
-                                </span>
-                                <div className="pointer-events-none absolute inset-0 rounded-full bg-gradient-to-r from-blue-600/10 to-purple-600/10 opacity-0 group-hover:opacity-100 blur-sm transition-opacity"></div>
-                                <div className="pointer-events-none absolute inset-x-2 -bottom-1 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full"></div>
+                                <span className="relative z-10 font-medium">{t('nav.blog', 'Blog')}</span>
+                                <div className="pointer-events-none absolute inset-x-1 -bottom-1 h-0.5 bg-gradient-to-r from-blue-600 to-purple-600 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left rounded-full"></div>
                             </NavLink>
                         </nav>
                         
