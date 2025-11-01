@@ -101,6 +101,15 @@ const Profile = () => {
   const [participations, setParticipations] = useState<EventParticipation[]>([]);
   const [isLoadingParticipations, setIsLoadingParticipations] = useState(false);
   
+  // Util per serializzare una data in formato locale YYYY-MM-DD (senza shift UTC)
+  const toLocalDateString = (d?: Date) => {
+    if (!d) return '';
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+  
   // Requisiti per abilitare l'organizzazione eventi
   const today = new Date();
   const hasPhone = !!(formData.phone && formData.phone.trim());
@@ -791,7 +800,7 @@ const Profile = () => {
                       <Label htmlFor="scadenza_brevetto">{t('profile.sections.certifications.brevetto_expiry_label', 'Scadenza Brevetto')}</Label>
                       <DatePicker
                         date={formData.scadenza_brevetto ? new Date(formData.scadenza_brevetto) : undefined}
-                        onDateChange={(date) => handleInputChange('scadenza_brevetto', date?.toISOString().split('T')[0] || '')}
+                        onDateChange={(date) => handleInputChange('scadenza_brevetto', toLocalDateString(date))}
                       />
                     </div>
                   </div>
@@ -810,7 +819,7 @@ const Profile = () => {
                       <Label htmlFor="scadenza_assicurazione">{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
                       <DatePicker
                         date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined}
-                        onDateChange={(date) => handleInputChange('scadenza_assicurazione', date?.toISOString().split('T')[0] || '')}
+                        onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))}
                       />
                     </div>
                   </div>
@@ -819,7 +828,7 @@ const Profile = () => {
                     <Label htmlFor="scadenza_certificato_medico">{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
                     <DatePicker
                       date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined}
-                      onDateChange={(date) => handleInputChange('scadenza_certificato_medico', date?.toISOString().split('T')[0] || '')}
+                      onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))}
                     />
                   </div>
                 </CardContent>

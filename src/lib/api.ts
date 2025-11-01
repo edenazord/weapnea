@@ -99,7 +99,12 @@ export const getEvents = async (
   const params = new URLSearchParams();
   if (searchTerm && searchTerm.trim() !== '') params.set('searchTerm', searchTerm);
   if (nationFilter && nationFilter !== 'all') params.set('nation', nationFilter);
-  if (dateFilter) params.set('dateFrom', dateFilter.toISOString().slice(0, 10));
+  if (dateFilter) {
+    const y = dateFilter.getFullYear();
+    const m = String(dateFilter.getMonth() + 1).padStart(2, '0');
+    const d = String(dateFilter.getDate()).padStart(2, '0');
+    params.set('dateFrom', `${y}-${m}-${d}`);
+  }
   params.set('sortColumn', sort.column);
   params.set('sortDirection', sort.direction);
   if (userRole) params.set('userRole', userRole);
