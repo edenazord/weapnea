@@ -191,32 +191,33 @@
 }
 
 /* Scrollbar styling to match site theme */
+/* Firefox + general */
 @layer base {
-  html {
-    /* Firefox */
+  *, html {
     scrollbar-width: thin;
     scrollbar-color: hsl(var(--primary)) hsl(var(--muted));
   }
+  html, body { scrollbar-gutter: stable; }
+}
 
-  /* WebKit-based browsers */
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
+/* WebKit-based browsers (Chrome, Edge, Safari) */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
 
-  ::-webkit-scrollbar-track {
-    background: hsl(var(--muted));
-  }
+*::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
 
-  ::-webkit-scrollbar-thumb {
-    background: linear-gradient(to bottom right, #667eea, #764ba2);
-    border-radius: 9999px;
-    border: 2px solid transparent;
-    background-clip: padding-box;
-  }
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom right, #667eea, #764ba2);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
 
-  ::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(to bottom right, #5a67d8, #6b46c1);
-    background-clip: padding-box;
-  }
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom right, #5a67d8, #6b46c1);
+  background-clip: padding-box;
 }
