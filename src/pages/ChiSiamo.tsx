@@ -10,6 +10,23 @@ const ChiSiamo = () => {
   const isMobile = useIsMobile();
   const { t } = useLanguage();
   
+  const MemberCard = ({ name, src, desc }: { name: string; src: string; desc: string }) => (
+    <div className="text-center">
+      <div className="mx-auto w-36 h-36 md:w-40 md:h-40 rounded-full overflow-hidden ring-2 ring-white/70 shadow-md bg-gradient-to-br from-blue-100 to-purple-100">
+        <img
+          src={src}
+          alt={name}
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
+          }}
+        />
+      </div>
+      <h4 className="mt-3 text-base md:text-lg font-semibold text-gray-900">{name}</h4>
+      <p className="text-sm text-gray-600 max-w-xs mx-auto">{desc}</p>
+    </div>
+  );
+  
   const content = (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-purple-50">
       {/* Decorative hero */}
@@ -91,31 +108,44 @@ const ChiSiamo = () => {
             {t('about_page.team_desc', "Siamo un team di apneisti appassionati, sviluppatori e professionisti del settore che lavorano insieme per creare la migliore esperienza possibile per la community dell'apnea.")}
           </p>
 
-          {/* Team Photos Grid */}
-          <div className="mt-8 md:mt-10 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 md:gap-6">
-            {[
-            "/images/team/Paolo.jpg",
-            "/images/team/Marta.jpg",
-            "/images/team/Leo.jpg",
-            "/images/team/Ruggero.jpg",
-            "/images/team/Filippo.jpg",
-           
-            ].map((src, idx) => (
-              <div key={idx} className="group relative">
-                <div className="rounded-xl overflow-hidden ring-1 ring-white/60 bg-white shadow-sm">
-                  <div className="aspect-[4/5] w-full bg-gradient-to-br from-blue-100 to-purple-100">
-                    <img
-                      src={src}
-                      alt={`Foto membro del team ${idx + 1}`}
-                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.04]"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = "/placeholder.svg";
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
+          {/* Team layout: 1 / 2 / 2 */}
+          <div className="mt-8 md:mt-10 space-y-10">
+            {/* Row 1: Pol (Paolo) */}
+            <div className="flex justify-center">
+              <MemberCard 
+                name="Pol"
+                src="/images/team/Paolo.jpg"
+                desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante."
+              />
+            </div>
+
+            {/* Row 2: Leo e Marta */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 justify-items-center">
+              <MemberCard 
+                name="Leo"
+                src="/images/team/Leo.jpg"
+                desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante."
+              />
+              <MemberCard 
+                name="Marta"
+                src="/images/team/Marta.jpg"
+                desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante."
+              />
+            </div>
+
+            {/* Row 3: Filippo e Ruggero */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 justify-items-center">
+              <MemberCard 
+                name="Filippo"
+                src="/images/team/Filippo.jpg"
+                desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante."
+              />
+              <MemberCard 
+                name="Ruggero"
+                src="/images/team/Ruggero.jpg"
+                desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante."
+              />
+            </div>
           </div>
         </section>
       </div>
