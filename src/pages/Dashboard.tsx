@@ -3,9 +3,9 @@ import DashboardMobileNav from "@/components/DashboardMobileNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Calendar, Users, BarChart3, Edit, Trash2, Package, FolderTree, FileText, MessageSquare, Key, Clock } from "lucide-react";
+import { PlusCircle, Calendar, Users, BarChart3, Edit, Trash2, Package, FolderTree, FileText, MessageSquare, Key, Clock, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { EventForm } from "@/components/admin/EventForm";
 import { AllenamentiForm } from "@/components/admin/AllenamentiForm";
@@ -230,16 +230,23 @@ const Dashboard = () => {
 
                 <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) { setSelectedEvent(undefined); setIsAllenamentiMode(false); } }}>
                     <SheetContent
-                        className="overflow-y-auto"
+                        className="overflow-y-auto [&>button]:hidden"
                         // Consenti chiusura solo con la X in alto
                         onInteractOutside={(e) => { e.preventDefault(); }}
                         onEscapeKeyDown={(e) => { e.preventDefault(); }}
                     >
-                        <SheetHeader>
-                            <SheetTitle>
-                                {isAllenamentiMode ? (selectedEvent ? "Modifica Allenamento Condiviso" : "Crea Allenamento Condiviso") : (selectedEvent ? "Modifica Evento" : "Crea Nuovo Evento")}
-                            </SheetTitle>
-                        </SheetHeader>
+                        <div className="sticky top-0 z-50 bg-background border-b">
+                            <div className="flex items-center justify-between gap-2 py-3 pr-2">
+                                <SheetTitle className="text-base sm:text-lg">
+                                    {isAllenamentiMode ? (selectedEvent ? "Modifica Allenamento Condiviso" : "Crea Allenamento Condiviso") : (selectedEvent ? "Modifica Evento" : "Crea Nuovo Evento")}
+                                </SheetTitle>
+                                <SheetClose asChild>
+                                    <Button variant="ghost" size="icon" aria-label="Chiudi">
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </SheetClose>
+                            </div>
+                        </div>
                         <div className="mt-4">
                             {isAllenamentiMode ? (
                                 <AllenamentiForm key={selectedEvent?.id || 'new-allenamento'} onSubmit={handleAllenamentiFormSubmit} defaultValues={selectedEvent} isEditing={!!selectedEvent} allenamentiCategoryId={allenamentiCategory?.id || ''} />
@@ -493,16 +500,23 @@ const Dashboard = () => {
                 <div className="pb-20 px-4 py-6">{content}</div>
                 <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) { setSelectedEvent(undefined); setIsAllenamentiMode(false); } }}>
                     <SheetContent
-                        className="overflow-y-auto"
+                        className="overflow-y-auto [&>button]:hidden"
                         // Consenti chiusura solo con la X in alto
                         onInteractOutside={(e) => { e.preventDefault(); }}
                         onEscapeKeyDown={(e) => { e.preventDefault(); }}
                     >
-                        <SheetHeader>
-                            <SheetTitle>
-                                {isAllenamentiMode ? (selectedEvent ? "Modifica Allenamento Condiviso" : "Crea Allenamento Condiviso") : (selectedEvent ? "Modifica Evento" : "Crea Nuovo Evento")}
-                            </SheetTitle>
-                        </SheetHeader>
+                        <div className="sticky top-0 z-50 bg-background border-b">
+                            <div className="flex items-center justify-between gap-2 py-3 pr-2">
+                                <SheetTitle className="text-base sm:text-lg">
+                                    {isAllenamentiMode ? (selectedEvent ? "Modifica Allenamento Condiviso" : "Crea Allenamento Condiviso") : (selectedEvent ? "Modifica Evento" : "Crea Nuovo Evento")}
+                                </SheetTitle>
+                                <SheetClose asChild>
+                                    <Button variant="ghost" size="icon" aria-label="Chiudi">
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </SheetClose>
+                            </div>
+                        </div>
                         <div className="mt-4">
                             {isAllenamentiMode ? (
                                 <AllenamentiForm key={selectedEvent?.id || 'new-allenamento'} onSubmit={handleAllenamentiFormSubmit} defaultValues={selectedEvent} isEditing={!!selectedEvent} allenamentiCategoryId={allenamentiCategory?.id || ''} />

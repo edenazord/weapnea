@@ -4,12 +4,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEvents, createEvent, updateEvent, deleteEvent, EventWithCategory, Event, getCategories, getSetting } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { EventForm } from "./EventForm";
 import { AllenamentiForm } from "./AllenamentiForm";
 import { toast } from "sonner";
-import { Edit, Trash2, Plus, Search, ArrowUp, ArrowDown, Users, Filter } from "lucide-react";
+import { Edit, Trash2, Plus, Search, ArrowUp, ArrowDown, Users, Filter, X } from "lucide-react";
 import { EventParticipantsModal } from "@/components/EventParticipantsModal";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -330,7 +330,7 @@ export default function EventsManager() {
 
       <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) setSelectedEvent(undefined); }}>
         <SheetContent
-          className="overflow-y-auto"
+          className="overflow-y-auto [&>button]:hidden"
           // Chiudi solo con la X: blocca chiusura su click esterno ed ESC
           onInteractOutside={(e) => {
             e.preventDefault();
@@ -339,14 +339,21 @@ export default function EventsManager() {
             e.preventDefault();
           }}
         >
-          <SheetHeader>
-            <SheetTitle>
-              {selectedEvent 
-                ? (isAllenamentoForm ? "Modifica Allenamento Condiviso" : "Modifica Evento")
-                : (isAllenamentoForm ? "Crea Allenamento Condiviso" : "Nuovo Evento")
-              }
-            </SheetTitle>
-          </SheetHeader>
+          <div className="sticky top-0 z-50 bg-background border-b">
+            <div className="flex items-center justify-between gap-2 py-3 pr-2">
+              <SheetTitle className="text-base sm:text-lg">
+                {selectedEvent 
+                  ? (isAllenamentoForm ? "Modifica Allenamento Condiviso" : "Modifica Evento")
+                  : (isAllenamentoForm ? "Crea Allenamento Condiviso" : "Nuovo Evento")
+                }
+              </SheetTitle>
+              <SheetClose asChild>
+                <Button variant="ghost" size="icon" aria-label="Chiudi">
+                  <X className="h-4 w-4" />
+                </Button>
+              </SheetClose>
+            </div>
+          </div>
           <div className="mt-4">
             {isAllenamentoForm && allenamentiCategory ? (
               <AllenamentiForm
