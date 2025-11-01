@@ -95,12 +95,12 @@ const App = () => {
                   <Route path="/sponsor-packages" element={<SponsorPackages />} />
                   
                   <Route path="/profile" element={
-                    <ProtectedRoute allowedRoles={['company', 'instructor', 'final_user', 'admin']}>
+                    <ProtectedRoute allowedRoles={['final_user', 'admin', 'company', 'instructor']}>
                       <Profile />
                     </ProtectedRoute>
                   } />
                   <Route path="/dashboard" element={
-                    <ProtectedRoute allowedRoles={['company', 'instructor']}>
+                    <ProtectedRoute allowedRoles={['admin']}>
                       <Dashboard />
                     </ProtectedRoute>
                   } />

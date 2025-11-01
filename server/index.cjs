@@ -713,6 +713,47 @@ app.post('/api/auth/register', async (req, res) => {
       [email, full_name, role, hash]
     );
     const user = rows[0];
+
+    // Alla registrazione: crea subito lo slug pubblico (disabilitato di default)
+    try {
+      if (!HAS_PUBLIC_PROFILE_FIELDS) { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); }
+      // Costruisci base slug da Nome Cognome oppure da parte locale dell'email
+      const baseName = (full_name && String(full_name).trim()) || String(email).split('@')[0] || '';
+      const norm = (s) => String(s || '')
+        .toLowerCase()
+        .trim()
+        .replace(/[@._]/g, '-')
+        .replace(/\s+/g, '-')
+        .replace(/[^a-z0-9-]/g, '')
+        .replace(/-+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 80);
+      let slug = norm(baseName);
+      if (!slug || RESERVED_SLUGS.has(slug)) slug = norm(`user-${String(email).split('@')[0] || 'profile'}`) || null;
+      // Prova a reclamare lo slug, aggiungendo suffissi numerici in caso di conflitto
+      let finalSlug = null;
+      if (slug) {
+        let attempt = slug;
+        for (let i = 0; i < 20; i++) {
+          const trySlug = i === 0 ? attempt : `${attempt}-${i+1}`;
+          const r = await claimSlugAtomic(user.id, trySlug);
+          if (r && r.ok) { finalSlug = trySlug; break; }
+          // Se conflitto, riprova con il prossimo suffisso
+        }
+      }
+      // Aggiorna profilo con flag pubblici (disabilitato) e slug se ottenuto
+      if (HAS_PUBLIC_PROFILE_FIELDS) {
+        await pool.query(
+          `UPDATE profiles SET public_profile_enabled = false, public_slug = $1,
+             public_show_bio = true, public_show_instagram = true, public_show_company_info = true,
+             public_show_certifications = true, public_show_events = true, public_show_records = true, public_show_personal = true
+           WHERE id = $2`,
+          [finalSlug, user.id]
+        );
+      }
+    } catch (e) {
+      console.warn('[register] unable to preset public profile fields:', e?.message || e);
+    }
     const jwtToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     // Fire-and-forget welcome email (templated)
     renderEmailWithTemplate('welcome', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME },
@@ -1879,6 +1920,35 @@ app.post('/api/events', requireAuth, async (req, res) => {
   // Ensure ownership: if client didn't provide created_by, bind to current user
   if (!e.created_by && req.user?.id) {
     e.created_by = req.user.id;
+  }
+  // Requisiti per creare un evento: profilo pubblico abilitato e certificazioni valide (per non-admin)
+  if (!req.user || req.user.role !== 'admin') {
+    try {
+      const { rows: profRows } = await pool.query(
+        `SELECT public_profile_enabled, public_slug, phone, assicurazione, scadenza_assicurazione, scadenza_certificato_medico
+         FROM profiles WHERE id = $1 LIMIT 1`,
+        [req.user?.id]
+      );
+      const prof = profRows[0];
+      if (!prof) return res.status(404).json({ error: 'Profile not found' });
+      const missing = [];
+      // Profilo pubblico deve essere attivo con slug assegnato
+      if (!prof.public_profile_enabled) missing.push('public_profile_enabled');
+      if (!prof.public_slug) missing.push('public_slug');
+      const isEmpty = (v) => !v || String(v).trim() === '';
+      if (isEmpty(prof.phone)) missing.push('phone');
+      if (isEmpty(prof.assicurazione)) missing.push('assicurazione');
+      const today = new Date();
+      const sa = prof.scadenza_assicurazione ? new Date(prof.scadenza_assicurazione) : null;
+      const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
+      if (!sa || isNaN(sa.getTime()) || sa < today) missing.push('scadenza_assicurazione');
+      if (!sc || isNaN(sc.getTime()) || sc < today) missing.push('scadenza_certificato_medico');
+      if (missing.length) {
+        return res.status(400).json({ error: 'organizer_requirements_missing', missing });
+      }
+    } catch (err) {
+      return res.status(500).json({ error: String(err?.message || err) });
+    }
   }
   const cols = [
     'title','slug','description','date','end_date','location','participants','image_url','category_id','cost','nation','discipline','created_by','level','activity_description','language','about_us','objectives','included_in_activity','not_included_in_activity','notes','schedule_logistics','gallery_images','event_type','activity_details','who_we_are','fixed_appointment','instructors','instructor_certificates','max_participants_per_instructor','schedule_meeting_point','responsibility_waiver_accepted','privacy_accepted'

@@ -22,9 +22,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { getPublicConfig } from "@/lib/publicConfig";
-import { useAuth } from "@/contexts/AuthContext";
-import { requestOrganizerUpgrade } from "@/lib/organizer-api";
-import { toast } from "sonner";
+// import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
   console.log('Index component rendering...');
@@ -36,7 +34,7 @@ const Index = () => {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [disciplineFilter, setDisciplineFilter] = useState("all");
   const isMobile = useIsMobile();
-  const { user } = useAuth();
+  // const { user } = useAuth();
 
   const { data: events, isLoading: eventsLoading, error: eventsError, refetch: refetchEvents } = useQuery({
     queryKey: ["events", searchTerm, nationFilter, dateFilter],
@@ -103,43 +101,7 @@ const Index = () => {
     staleTime: 60000,
   });
 
-  // Show organizer upgrade CTA as a red toast for logged-in final users (once per session)
-  useEffect(() => {
-    try {
-      const shownKey = 'org-upgrade-toast-shown';
-      if (!user || (user as any).role !== 'final_user') return;
-      if (sessionStorage.getItem(shownKey) === '1') return;
-      sessionStorage.setItem(shownKey, '1');
-      const id = toast(
-        (
-          <div className="flex items-start gap-3">
-            <div className="flex-1">
-              <div className="font-semibold">Vuoi inserire i tuoi eventi nel nostro portale?</div>
-              <div className="text-sm opacity-90">Richiedi gratuitamente l'upgrade ad organizzatore!</div>
-            </div>
-            <Button
-              size="sm"
-              className="bg-white text-red-600 border border-red-600 hover:bg-red-50"
-              onClick={async () => {
-                try {
-                  const r = await requestOrganizerUpgrade();
-                  toast.dismiss(id);
-                  toast.success(r?.already_requested ? 'Richiesta già inviata' : 'Richiesta inviata!');
-                } catch (e: any) {
-                  toast.error(`Errore: ${e?.message || e}`);
-                }
-              }}
-            >Richiedi ora</Button>
-          </div>
-        ),
-        {
-          position: 'bottom-right',
-          className: 'border border-red-600 bg-red-100 text-red-900 shadow-lg',
-          duration: 10000,
-        }
-      );
-    } catch (_e) { /* noop */ }
-  }, [user]);
+  // Rimosso: CTA richiesta upgrade organizzatore (non più necessaria)
 
   const isLoading = eventsLoading || nationsLoading || categoriesLoading;
   const hasError = eventsError;

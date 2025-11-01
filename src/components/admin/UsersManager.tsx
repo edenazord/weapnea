@@ -29,7 +29,7 @@ import {
 const UsersManager = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
-  const [onlyUpgradeRequests, setOnlyUpgradeRequests] = useState(false);
+  // Rimosso filtro richieste upgrade (non più in uso)
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   // const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
@@ -103,8 +103,7 @@ const UsersManager = () => {
     const matchesSearch = user.profile?.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = roleFilter === "all" || user.profile?.role === roleFilter;
-    const matchesUpgrade = !onlyUpgradeRequests || !!user.organizer_upgrade_requested_at;
-    return matchesSearch && matchesRole && matchesUpgrade;
+    return matchesSearch && matchesRole;
   });
 
   const handleUserInfoClick = (user: AdminUser) => {
@@ -186,10 +185,7 @@ const UsersManager = () => {
                     <SelectItem value="final_user">Utenti Finali</SelectItem>
                   </SelectContent>
                 </Select>
-                <label className="flex items-center gap-2 text-sm text-red-700 border border-red-300 rounded-md px-3 py-2 cursor-pointer select-none">
-                  <input type="checkbox" className="accent-red-600" checked={onlyUpgradeRequests} onChange={(e)=>setOnlyUpgradeRequests(e.target.checked)} />
-                  Solo richieste upgrade
-                </label>
+                {/* Rimosso: filtro "Solo richieste upgrade" */}
               </div>
             </CardContent>
           </Card>
@@ -249,7 +245,7 @@ const UsersManager = () => {
                   </TableHeader>
                   <TableBody>
                     {filteredUsers.map((user) => (
-                      <TableRow key={user.id} className={user.organizer_upgrade_requested_at ? "bg-red-50 ring-1 ring-red-300" : undefined}>
+                      <TableRow key={user.id}>
                         <TableCell>
                           <div className="flex items-center space-x-3">
                             <Avatar className="h-8 w-8">
@@ -259,12 +255,7 @@ const UsersManager = () => {
                               </AvatarFallback>
                             </Avatar>
                             <div>
-                              <div className="font-medium">
-                                {user.profile?.full_name || 'Nome non disponibile'}
-                                {user.organizer_upgrade_requested_at && (
-                                  <Badge className="ml-2 bg-red-100 text-red-800 border border-red-300">Richiesta upgrade</Badge>
-                                )}
-                              </div>
+                              <div className="font-medium">{user.profile?.full_name || 'Nome non disponibile'}</div>
                               <div className="text-sm text-gray-500">ID: {user.id.slice(0, 8)}...</div>
                             </div>
                           </div>

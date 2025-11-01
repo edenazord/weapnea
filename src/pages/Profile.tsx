@@ -100,6 +100,16 @@ const Profile = () => {
   };
   const [participations, setParticipations] = useState<EventParticipation[]>([]);
   const [isLoadingParticipations, setIsLoadingParticipations] = useState(false);
+  
+  // Requisiti per abilitare l'organizzazione eventi
+  const today = new Date();
+  const hasPhone = !!(formData.phone && formData.phone.trim());
+  const hasInsurance = !!(formData.assicurazione && formData.assicurazione.trim());
+  const insuranceOk = formData.scadenza_assicurazione ? (new Date(formData.scadenza_assicurazione) >= today) : false;
+  const medicalOk = formData.scadenza_certificato_medico ? (new Date(formData.scadenza_certificato_medico) >= today) : false;
+  const publicEnabled = !!formData.public_profile_enabled;
+  const hasSlug = !!(formData.public_slug && formData.public_slug.trim());
+  const organizerEligible = publicEnabled && hasSlug && hasPhone && hasInsurance && insuranceOk && medicalOk;
 
   const formatEventDate = (start?: string, end?: string) => {
     if (start) {
@@ -429,7 +439,7 @@ const Profile = () => {
         {/* Ruolo rimosso su richiesta */}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="w-full overflow-x-auto flex gap-2 md:grid md:grid-cols-5">
+          <TabsList className="w-full overflow-x-auto flex gap-2 md:grid md:grid-cols-6">
             <TabsTrigger value="events" className="whitespace-nowrap">
               <Calendar className="h-4 w-4 mr-2" />
               {t('profile.tabs.events', 'Eventi')}
@@ -448,6 +458,9 @@ const Profile = () => {
             </TabsTrigger>
             <TabsTrigger value="visibility" className="whitespace-nowrap">
               Visibilità
+            </TabsTrigger>
+            <TabsTrigger value="organizer" className="whitespace-nowrap" disabled={!organizerEligible && user?.role !== 'admin'}>
+              Organizza
             </TabsTrigger>
           </TabsList>
 
@@ -901,6 +914,53 @@ const Profile = () => {
                       })}
                     </TableBody>
                   </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {/* Organizzazione eventi: visibile come tab; disabilitata se non si soddisfano i requisiti (eccetto admin) */}
+            <TabsContent value="organizer">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Organizza Eventi / Allenamenti</CardTitle>
+                  <CardDescription>
+                    {user?.role === 'admin'
+                      ? 'Accesso completo (admin).'
+                      : organizerEligible
+                        ? 'Hai i requisiti necessari per organizzare. Puoi creare un nuovo evento.'
+                        : 'Per organizzare devi attivare il profilo pubblico e compilare le certificazioni obbligatorie.'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {user?.role !== 'admin' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className={`border rounded-md p-3 ${publicEnabled ? 'border-green-300' : 'border-red-300'}`}>
+                        <div className="font-medium">Profilo pubblico</div>
+                        <div className="text-sm text-muted-foreground">Devi attivare la visibilità e avere uno slug valido.</div>
+                        <div className="mt-1 text-xs">Stato: {publicEnabled && hasSlug ? 'OK' : 'Mancante'}</div>
+                      </div>
+                      <div className={`border rounded-md p-3 ${(hasPhone && hasInsurance && insuranceOk && medicalOk) ? 'border-green-300' : 'border-red-300'}`}>
+                        <div className="font-medium">Certificazioni obbligatorie</div>
+                        <ul className="text-sm text-muted-foreground list-disc ml-5">
+                          <li className={hasPhone ? 'text-green-700' : 'text-red-700'}>Telefono</li>
+                          <li className={hasInsurance ? 'text-green-700' : 'text-red-700'}>Assicurazione</li>
+                          <li className={insuranceOk ? 'text-green-700' : 'text-red-700'}>Scadenza assicurazione valida</li>
+                          <li className={medicalOk ? 'text-green-700' : 'text-red-700'}>Certificato medico valido</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                  {user?.role === 'admin' ? (
+                    <Button asChild>
+                      <Link to="/admin">Apri Dashboard Admin</Link>
+                    </Button>
+                  ) : organizerEligible ? (
+                    <Button asChild>
+                      <Link to="/my-events">Vai ai miei eventi</Link>
+                    </Button>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">Completa i requisiti nelle tab "Certificazioni" e "Visibilità" per abilitare questa sezione.</div>
+                  )}
                 </CardContent>
               </Card>
             </TabsContent>
