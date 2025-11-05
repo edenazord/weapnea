@@ -35,6 +35,7 @@ import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/she
 import { EventForm } from "@/components/admin/EventForm";
 import { AllenamentiForm } from "@/components/admin/AllenamentiForm";
 import { toast } from "sonner";
+import { CenteredNotice } from "@/components/CenteredNotice";
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
 type BestEntry = { discipline: BestDiscipline; value: string };
@@ -129,6 +130,8 @@ const Profile = () => {
   // Stato/queries per creazione evento dal profilo
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isAllenamentiMode, setIsAllenamentiMode] = useState(false);
+  const [noticeOpen, setNoticeOpen] = useState(false);
+  const [noticeMsg, setNoticeMsg] = useState("");
   const { data: categories } = useQuery({
     queryKey: ["categories"],
     queryFn: getCategories,
@@ -139,7 +142,8 @@ const Profile = () => {
   const createMutation = useMutation({
     mutationFn: (payload: Partial<Event>) => createEvent(payload as Event),
     onSuccess: () => {
-      toast.success("Creato con successo!");
+      setNoticeMsg("Creato con successo!");
+      setNoticeOpen(true);
       setIsCreateOpen(false);
     },
     onError: (err: any) => {
@@ -501,6 +505,12 @@ const Profile = () => {
   const profileContent = (
     <div className="px-4 py-6">
       <div className="max-w-4xl mx-auto">
+        <CenteredNotice
+          open={noticeOpen}
+          onClose={() => setNoticeOpen(false)}
+          title="Operazione completata"
+          message={noticeMsg}
+        />
         {!isMobile && (
           <div className="mb-6">
             <BackButton fallbackPath="/" label={t('not_found.back_home', 'Torna alla Home')} />

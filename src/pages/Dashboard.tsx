@@ -15,6 +15,7 @@ import { getOrganizerStats } from "@/lib/payments-api";
 import { EventParticipantsModal } from "@/components/EventParticipantsModal";
 import { getUserPackages } from "@/lib/packages-api";
 import { toast } from "sonner";
+import { CenteredNotice } from "@/components/CenteredNotice";
 import { Link } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
 import { parseISO, isValid, startOfDay, format } from "date-fns";
@@ -38,6 +39,8 @@ const Dashboard = () => {
     const [showPackagePrompt, setShowPackagePrompt] = useState(false);
     const [isAllenamentiMode, setIsAllenamentiMode] = useState(false);
     const [activeTab, setActiveTab] = useState("events");
+    const [noticeOpen, setNoticeOpen] = useState(false);
+    const [noticeMsg, setNoticeMsg] = useState("");
     // Default: mostra solo eventi attivi; rimosso filtro "tutti"
     const [eventFilter, setEventFilter] = useState<'active' | 'past'>('active');
     
@@ -67,7 +70,8 @@ const Dashboard = () => {
     const createMutation = useMutation({
         mutationFn: createEvent,
         onSuccess: () => {
-            toast.success("Evento creato con successo!");
+            setNoticeMsg("Evento creato con successo!");
+            setNoticeOpen(true);
             queryClient.invalidateQueries({ queryKey: ["events"] });
             queryClient.invalidateQueries({ queryKey: ["events", "user", profile?.id] });
             setIsSheetOpen(false);
@@ -81,7 +85,8 @@ const Dashboard = () => {
     const updateMutation = useMutation({
         mutationFn: (data: { id: string; values: Partial<Event> }) => updateEvent(data.id, data.values),
         onSuccess: () => {
-            toast.success("Evento aggiornato con successo!");
+            setNoticeMsg("Evento aggiornato con successo!");
+            setNoticeOpen(true);
             queryClient.invalidateQueries({ queryKey: ["events"] });
             queryClient.invalidateQueries({ queryKey: ["events", "user", profile?.id] });
             setIsSheetOpen(false);
@@ -211,6 +216,12 @@ const Dashboard = () => {
 
     const content = (
         <div className={`space-y-6 ${isMobile ? 'pb-24' : ''}`}>
+            <CenteredNotice
+                open={noticeOpen}
+                onClose={() => setNoticeOpen(false)}
+                title="Operazione completata"
+                message={noticeMsg}
+            />
             <div className="space-y-3">
                 <div>
                     <h1 className={`font-bold text-blue-900 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>Dashboard Organizzatore</h1>

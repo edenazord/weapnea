@@ -30,7 +30,7 @@ const eventFormBaseSchema = z.object({
   description: z.string().optional(),
   discipline: z.string().optional(),
   location: z.string().optional(),
-  date: z.string().optional(),
+  date: z.string().min(1, { message: "La data di inizio è obbligatoria." }),
   end_date: z.string().optional(),
   participants: z.coerce.number().int().optional(),
   cost: z.coerce.number().optional(),
@@ -125,8 +125,15 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
     // Transform empty strings to null for new fields
     const singleDesc = values.description && values.description.trim() !== '' ? values.description.trim() : null;
     const gallery = values.gallery_images && values.gallery_images.length > 0 ? values.gallery_images : null;
+    // Date normalization: evita stringhe vuote lato DB
+    const startDate = (values.date || '').trim();
+    const endDateRaw = (values.end_date || '').trim();
+    // Se end_date è vuota, usa la stessa di startDate (evento di 1 giorno)
+    const normalizedEndDate = endDateRaw !== '' ? endDateRaw : startDate;
     const transformedValues = {
       ...values,
+      date: startDate,
+      end_date: normalizedEndDate,
       // If free mode, enforce null cost server-side
       cost: eventsFree ? null : values.cost,
       level: values.level && values.level.trim() !== '' ? values.level : null,
@@ -438,7 +445,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           render={({ field }) => (
             <FormItem>
               <FormLabel>Data di Inizio</FormLabel>
-              <FormControl><Input type="date" {...field} /></FormControl>
+              <FormControl><Input type="date" required {...field} /></FormControl>
               <FormMessage />
             </FormItem>
           )}

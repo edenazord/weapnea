@@ -9,6 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { EventForm } from "./EventForm";
 import { AllenamentiForm } from "./AllenamentiForm";
 import { toast } from "sonner";
+import { CenteredNotice } from "@/components/CenteredNotice";
 import { Edit, Trash2, Plus, Search, ArrowUp, ArrowDown, Users, Filter, X } from "lucide-react";
 import { EventParticipantsModal } from "@/components/EventParticipantsModal";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,8 @@ export default function EventsManager() {
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("active");
   const [sort, setSort] = useState({ column: 'date' as SortableColumn, direction: 'desc' });
+  const [noticeOpen, setNoticeOpen] = useState(false);
+  const [noticeMsg, setNoticeMsg] = useState("");
 
   useEffect(() => {
     const timerId = setTimeout(() => {
@@ -95,7 +98,8 @@ export default function EventsManager() {
     ...mutationOptions,
     mutationFn: createEvent,
     onSuccess: () => {
-      toast.success("Evento creato con successo!");
+      setNoticeMsg("Evento creato con successo!");
+      setNoticeOpen(true);
       mutationOptions.onSuccess();
     },
   });
@@ -104,7 +108,8 @@ export default function EventsManager() {
     ...mutationOptions,
     mutationFn: (data: { id: string; values: Partial<Event> }) => updateEvent(data.id, data.values),
      onSuccess: () => {
-      toast.success("Evento aggiornato con successo!");
+      setNoticeMsg("Evento aggiornato con successo!");
+      setNoticeOpen(true);
       mutationOptions.onSuccess();
     },
   });
@@ -257,6 +262,12 @@ export default function EventsManager() {
 
   return (
     <div className="space-y-4">
+      <CenteredNotice
+        open={noticeOpen}
+        onClose={() => setNoticeOpen(false)}
+        title="Operazione completata"
+        message={noticeMsg}
+      />
       <div className="flex justify-between items-center gap-4">
         <div className="flex items-center gap-4 flex-1">
           <div className="relative max-w-sm">
