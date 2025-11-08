@@ -30,8 +30,6 @@ import { it as itLocale } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -137,17 +135,7 @@ const Profile = () => {
   const hasSlug = !!(formData.public_slug && formData.public_slug.trim());
   const organizerEligible = publicEnabled && hasSlug && hasPhone && hasInsurance && insuranceOk && medicalOk;
 
-  // Stato e progress per "Certificazioni"
-  const brevettoComplete = Boolean((formData.brevetto && formData.brevetto.trim()) && formData.dichiarazione_brevetto_valido);
-  const assicurazioneComplete = Boolean(hasInsurance && insuranceOk && formData.dichiarazione_assicurazione_valida);
-  const medicoComplete = Boolean(medicalOk);
-  const certGroups = [assicurazioneComplete, medicoComplete, brevettoComplete];
-  const certsCompletion = Math.round((certGroups.filter(Boolean).length / certGroups.length) * 100);
-  const missingCerts: string[] = [];
-  if (!hasInsurance) missingCerts.push('Assicurazione');
-  if (!insuranceOk) missingCerts.push('Scadenza assicurazione valida');
-  if (!formData.dichiarazione_assicurazione_valida) missingCerts.push('Dichiarazione assicurazione');
-  if (!medicoComplete) missingCerts.push('Certificato medico valido');
+  // Nessun calcolo di progress: le sezioni sono opzionali/variabili per ruolo
 
   // Stato/queries per creazione evento dal profilo
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -891,41 +879,11 @@ const Profile = () => {
                     {t('profile.sections.certifications.description', 'Mantieni aggiornate le tue certificazioni. Per iscriversi agli eventi a pagamento sono obbligatori: Telefono, Assicurazione e relative scadenze, Certificato medico valido.')}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Riepilogo stato e progress */}
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <Progress value={certsCompletion} className="h-2 w-40" />
-                      <span className="text-xs text-muted-foreground">{certsCompletion}% completo</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className={`inline-flex h-2 w-2 rounded-full ${assicurazioneComplete ? 'bg-green-500' : 'bg-red-500'}`} /> Assicurazione
-                      <span className={`inline-flex h-2 w-2 rounded-full ${medicoComplete ? 'bg-green-500' : 'bg-red-500'} ml-3`} /> Certificato medico
-                      <span className={`inline-flex h-2 w-2 rounded-full ${brevettoComplete ? 'bg-green-500' : 'bg-amber-500'} ml-3`} /> Brevetto (opzionale)
-                    </div>
-                  </div>
-
-                  {(!assicurazioneComplete || !medicoComplete) && (
-                    <Alert>
-                      <AlertTitle>Azioni richieste</AlertTitle>
-                      <AlertDescription>
-                        <ul className="list-disc ml-5">
-                          {missingCerts.map((m, i) => (
-                            <li key={i}>{m}</li>
-                          ))}
-                        </ul>
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  {/* Sezioni a fisarmonica */}
-                  <Accordion type="single" collapsible defaultValue={!assicurazioneComplete ? 'assicurazione' : (!medicoComplete ? 'medico' : 'brevetto')}>
+                <CardContent className="space-y-4">
+                  <Accordion type="single" collapsible>
                     <AccordionItem value="assicurazione">
                       <AccordionTrigger>
-                        <div className="flex items-center gap-2">
-                          <Shield className="h-4 w-4" /> Assicurazione
-                          <span className={`ml-2 inline-flex h-2 w-2 rounded-full ${assicurazioneComplete ? 'bg-green-500' : 'bg-red-500'}`} />
-                        </div>
+                        <div className="flex items-center gap-2"><Shield className="h-4 w-4" /> Assicurazione</div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -972,10 +930,7 @@ const Profile = () => {
 
                     <AccordionItem value="medico">
                       <AccordionTrigger>
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" /> Certificato medico
-                          <span className={`ml-2 inline-flex h-2 w-2 rounded-full ${medicoComplete ? 'bg-green-500' : 'bg-red-500'}`} />
-                        </div>
+                        <div className="flex items-center gap-2"><FileText className="h-4 w-4" /> Certificato medico</div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <div>
@@ -990,10 +945,7 @@ const Profile = () => {
 
                     <AccordionItem value="brevetto">
                       <AccordionTrigger>
-                        <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4" /> Brevetto (opzionale)
-                          <span className={`ml-2 inline-flex h-2 w-2 rounded-full ${brevettoComplete ? 'bg-green-500' : 'bg-amber-500'}`} />
-                        </div>
+                        <div className="flex items-center gap-2"><FileText className="h-4 w-4" /> Brevetto (opzionale)</div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
