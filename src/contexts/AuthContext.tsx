@@ -15,6 +15,13 @@ interface CustomUser {
   scadenza_certificato_medico?: string | null;
   assicurazione?: string | null;
   scadenza_assicurazione?: string | null;
+  // Campi estesi certificazioni
+  didattica_brevetto?: string | null;
+  numero_brevetto?: string | null;
+  foto_brevetto_url?: string | null;
+  numero_assicurazione?: string | null;
+  dichiarazione_brevetto_valido?: boolean;
+  dichiarazione_assicurazione_valida?: boolean;
   instagram_contact?: string | null;
   personal_best?: unknown;
   company_name?: string | null;

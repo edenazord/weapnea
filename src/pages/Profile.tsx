@@ -12,6 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/DatePicker";
 import { AvatarUpload } from "@/components/AvatarUpload";
+import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -27,6 +28,7 @@ import MobileLayout from "@/components/MobileLayout";
 import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -34,7 +36,6 @@ import { getCategories, createEvent, Event } from "@/lib/api";
 import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { EventForm } from "@/components/admin/EventForm";
 import { AllenamentiForm } from "@/components/admin/AllenamentiForm";
-import { toast } from "sonner";
 import { CenteredNotice } from "@/components/CenteredNotice";
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
@@ -65,9 +66,15 @@ const Profile = () => {
     full_name: "",
     bio: "",
     brevetto: "",
+    didattica_brevetto: "",
+    numero_brevetto: "",
+    foto_brevetto_url: "",
     scadenza_brevetto: "",
     scadenza_certificato_medico: "",
     assicurazione: "",
+    numero_assicurazione: "",
+    dichiarazione_brevetto_valido: false,
+    dichiarazione_assicurazione_valida: false,
     scadenza_assicurazione: "",
     instagram_contact: "",
     phone: "",
@@ -147,7 +154,7 @@ const Profile = () => {
       setIsCreateOpen(false);
     },
     onError: (err: any) => {
-      toast.error(`Errore: ${err?.message || 'Creazione fallita'}`);
+      toast({ title: 'Errore creazione', description: err?.message || 'Creazione fallita', variant: 'destructive' });
     }
   });
 
@@ -229,9 +236,15 @@ const Profile = () => {
         full_name: user.full_name || "",
         bio: user.bio || "",
         brevetto: user.brevetto || "",
+        didattica_brevetto: (user as any).didattica_brevetto || "",
+        numero_brevetto: (user as any).numero_brevetto || "",
+        foto_brevetto_url: (user as any).foto_brevetto_url || "",
         scadenza_brevetto: user.scadenza_brevetto || "",
         scadenza_certificato_medico: user.scadenza_certificato_medico || "",
         assicurazione: user.assicurazione || "",
+        numero_assicurazione: (user as any).numero_assicurazione || "",
+        dichiarazione_brevetto_valido: Boolean((user as any).dichiarazione_brevetto_valido) || false,
+        dichiarazione_assicurazione_valida: Boolean((user as any).dichiarazione_assicurazione_valida) || false,
         scadenza_assicurazione: user.scadenza_assicurazione || "",
         instagram_contact: user.instagram_contact || "",
         phone: (user as any).phone || "",
@@ -410,7 +423,13 @@ const Profile = () => {
         scadenza_assicurazione: formData.scadenza_assicurazione || null,
         bio: formData.bio || null,
         brevetto: formData.brevetto || null,
+        didattica_brevetto: formData.didattica_brevetto || null,
+        numero_brevetto: formData.numero_brevetto || null,
+        foto_brevetto_url: formData.foto_brevetto_url || null,
         assicurazione: formData.assicurazione || null,
+        numero_assicurazione: formData.numero_assicurazione || null,
+        dichiarazione_brevetto_valido: Boolean(formData.dichiarazione_brevetto_valido),
+        dichiarazione_assicurazione_valida: Boolean(formData.dichiarazione_assicurazione_valida),
         instagram_contact: formData.instagram_contact || null,
         phone: formData.phone || null,
         company_name: formData.company_name || null,
@@ -861,22 +880,12 @@ const Profile = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="brevetto">{t('profile.sections.certifications.brevetto_label', 'Brevetto')}</Label>
-                      <Select
+                      <Input
+                        id="brevetto"
                         value={formData.brevetto}
-                        onValueChange={(value) => handleInputChange('brevetto', value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder={t('profile.sections.certifications.brevetto_placeholder', 'Seleziona brevetto')} />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="none">{t('profile.sections.certifications.brevetto_options.none', 'Nessun brevetto')}</SelectItem>
-                          <SelectItem value="open_water">{t('profile.sections.certifications.brevetto_options.open_water', 'Open Water')}</SelectItem>
-                          <SelectItem value="advanced">{t('profile.sections.certifications.brevetto_options.advanced', 'Advanced')}</SelectItem>
-                          <SelectItem value="rescue">{t('profile.sections.certifications.brevetto_options.rescue', 'Rescue')}</SelectItem>
-                          <SelectItem value="master">{t('profile.sections.certifications.brevetto_options.master', 'Master')}</SelectItem>
-                          <SelectItem value="instructor">{t('profile.sections.certifications.brevetto_options.instructor', 'Instructor')}</SelectItem>
-                        </SelectContent>
-                      </Select>
+                        onChange={(e) => handleInputChange('brevetto', e.target.value)}
+                        placeholder={t('profile.sections.certifications.brevetto_placeholder', 'Inserire tipologia brevetto')}
+                      />
                     </div>
                     <div>
                       <Label htmlFor="scadenza_brevetto">{t('profile.sections.certifications.brevetto_expiry_label', 'Scadenza Brevetto')}</Label>
@@ -885,6 +894,47 @@ const Profile = () => {
                         onDateChange={(date) => handleInputChange('scadenza_brevetto', toLocalDateString(date))}
                       />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="didattica_brevetto">Didattica brevetto</Label>
+                      <Input
+                        id="didattica_brevetto"
+                        value={formData.didattica_brevetto}
+                        onChange={(e) => handleInputChange('didattica_brevetto', e.target.value)}
+                        placeholder="Inserire didattica brevetto"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="numero_brevetto">Numero brevetto</Label>
+                      <Input
+                        id="numero_brevetto"
+                        value={formData.numero_brevetto}
+                        onChange={(e) => handleInputChange('numero_brevetto', e.target.value)}
+                        placeholder="Inserire numero brevetto"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>Foto brevetto</Label>
+                    <ImageUpload
+                      currentImageUrl={formData.foto_brevetto_url || undefined}
+                      onImageUploaded={(url) => handleInputChange('foto_brevetto_url', url)}
+                      onImageRemoved={() => handleInputChange('foto_brevetto_url', '')}
+                    />
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 border rounded-md">
+                    <Checkbox
+                      id="dichiarazione_brevetto_valido"
+                      checked={Boolean(formData.dichiarazione_brevetto_valido)}
+                      onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_brevetto_valido: Boolean(v) }))}
+                    />
+                    <Label htmlFor="dichiarazione_brevetto_valido" className="text-sm cursor-pointer">
+                      Dichiaro di essere istruttore certificato con BREVETTO in corso di validità
+                    </Label>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -904,6 +954,29 @@ const Profile = () => {
                         onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))}
                       />
                     </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="numero_assicurazione">Numero assicurazione</Label>
+                      <Input
+                        id="numero_assicurazione"
+                        value={formData.numero_assicurazione}
+                        onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)}
+                        placeholder="Inserire numero assicurazione"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 border rounded-md">
+                    <Checkbox
+                      id="dichiarazione_assicurazione_valida"
+                      checked={Boolean(formData.dichiarazione_assicurazione_valida)}
+                      onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_assicurazione_valida: Boolean(v) }))}
+                    />
+                    <Label htmlFor="dichiarazione_assicurazione_valida" className="text-sm cursor-pointer">
+                      Dichiaro di essere istruttore brevettato e di avere una copertura assicurativa in corso di validità
+                    </Label>
                   </div>
 
                   <div>
