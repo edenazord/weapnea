@@ -142,6 +142,12 @@ const Profile = () => {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [noticeMsg, setNoticeMsg] = useState("");
+  // Stato per elenco iscritti a un evento
+  const [participantsOpen, setParticipantsOpen] = useState(false);
+  const [participantsLoading, setParticipantsLoading] = useState(false);
+  const [participants, setParticipants] = useState<Array<{ id: string; user_id: string; full_name: string | null; paid_at: string | null; avatar_url?: string | null; company_name?: string | null; phone?: string | null; role?: string | null; public_profile_enabled?: boolean; public_slug?: string | null; }>>([]);
+  const [participantsEventTitle, setParticipantsEventTitle] = useState<string>("");
+  const [participantsEventId, setParticipantsEventId] = useState<string>("");
 
   // Query eventi organizzati (solo quando vista organizer attiva)
   const { data: organizedEvents, isLoading: isLoadingOrganized, refetch: refetchOrganized } = useQuery<EventWithCategory[]>({
@@ -177,6 +183,21 @@ const Profile = () => {
       await createMutation.mutateAsync(values as Partial<Event>);
     } catch (e) {
       // handled by mutation onError
+    }
+  };
+
+  const openParticipantsForEvent = async (ev: { id: string; title: string }) => {
+    setParticipantsEventId(ev.id);
+    setParticipantsEventTitle(ev.title);
+    setParticipantsOpen(true);
+    setParticipantsLoading(true);
+    try {
+      const rows = await apiGet(`/api/events/${encodeURIComponent(ev.id)}/participants`);
+      setParticipants(Array.isArray(rows) ? rows : []);
+    } catch (e) {
+      setParticipants([]);
+    } finally {
+      setParticipantsLoading(false);
     }
   };
 
@@ -693,6 +714,7 @@ const Profile = () => {
                                 <TableHead>Titolo</TableHead>
                                 <TableHead>Date / Ricorrenza</TableHead>
                                 <TableHead>Luogo</TableHead>
+                                <TableHead>Iscritti</TableHead>
                                 <TableHead className="text-right">Azioni</TableHead>
                               </TableRow>
                             </TableHeader>
@@ -706,12 +728,16 @@ const Profile = () => {
                                     {formatEventWithFixed(ev)}
                                   </TableCell>
                                   <TableCell className="text-sm">{ev.location || '-'}</TableCell>
+                                  <TableCell className="text-sm">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex gap-2 justify-end">
                                       <Button asChild size="sm" variant="outline">
                                         <Link to={buildFriendlyEventPath(ev.slug)}>
                                           <Eye className="h-4 w-4 mr-1" /> Apri
                                         </Link>
+                                      </Button>
+                                      <Button size="sm" variant="outline" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
+                                        <Users className="h-4 w-4 mr-1" /> Iscritti
                                       </Button>
                                     </div>
                                   </TableCell>
@@ -755,6 +781,65 @@ const Profile = () => {
                   </div>
                   <div className="px-6 py-4">
                     <EventForm onSubmit={(vals) => { handleEventFormSubmit(vals); }} isEditing={false} />
+                  </div>
+                </SheetContent>
+              </Sheet>
+
+              {/* Sheet laterale: elenco iscritti evento */}
+              <Sheet
+                open={participantsOpen}
+                onOpenChange={(open) => { setParticipantsOpen(open); if (!open) { setParticipants([]); setParticipantsEventId(''); setParticipantsEventTitle(''); } }}
+              >
+                <SheetContent
+                  className="overflow-y-auto p-0 [&>button]:hidden"
+                  onInteractOutside={(e) => { e.preventDefault(); }}
+                  onEscapeKeyDown={(e) => { e.preventDefault(); }}
+                >
+                  <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
+                    <div className="flex items-center justify-between gap-2 px-6 py-3">
+                      <SheetTitle className="text-base sm:text-lg">
+                        Iscritti — {participantsEventTitle || 'Evento'}
+                      </SheetTitle>
+                      <SheetClose asChild>
+                        <Button variant="ghost" size="icon" aria-label="Chiudi">
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </div>
+                  <div className="px-6 py-4">
+                    {participantsLoading ? (
+                      <div className="py-8 text-center text-muted-foreground text-sm">Caricamento iscritti...</div>
+                    ) : participants.length > 0 ? (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Nome</TableHead>
+                            <TableHead>Pagato il</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {participants.map(p => (
+                            <TableRow key={p.id}>
+                              <TableCell>
+                                {p.public_profile_enabled && p.public_slug ? (
+                                  <Link className="underline" to={`/instructor/${p.public_slug}`} target="_blank" rel="noreferrer">
+                                    {p.full_name || p.company_name || p.user_id}
+                                  </Link>
+                                ) : (
+                                  <span>{p.full_name || p.company_name || p.user_id}</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {p.paid_at ? format(parseISO(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: itLocale }) : '-'}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    ) : (
+                      <div className="py-8 text-center text-muted-foreground text-sm">Nessun iscritto al momento.</div>
+                    )}
                   </div>
                 </SheetContent>
               </Sheet>
