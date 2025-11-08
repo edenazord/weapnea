@@ -522,7 +522,7 @@ const Profile = () => {
   };
 
   const profileContent = (
-    <div className="px-4 py-6">
+    <div className="px-4 py-6 profile-theme">
       <div className="max-w-4xl mx-auto">
         <CenteredNotice
           open={noticeOpen}
@@ -1033,7 +1033,7 @@ const Profile = () => {
                           <TableRow key={idx}>
                             <TableCell>
                               <Select value={entry.discipline} onValueChange={(v) => handleBestChange(idx, { discipline: v as BestDiscipline })}>
-                                <SelectTrigger>
+                                <SelectTrigger className="select-trigger">
                                   <SelectValue placeholder={t('profile.sections.personal_bests.discipline_placeholder', 'Seleziona disciplina')} />
                                 </SelectTrigger>
                                 <SelectContent>

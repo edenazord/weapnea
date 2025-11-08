@@ -168,6 +168,53 @@
   }
 }
 
+/* Profilo: restyle inputs/textarea con i colori del sito */
+@layer components {
+  .profile-theme {
+    /* Tinta anelli focus con il primario del sito */
+    --ring: var(--primary);
+  }
+
+  .profile-theme input[type="text"],
+  .profile-theme input[type="email"],
+  .profile-theme input[type="password"],
+  .profile-theme input[type="tel"],
+  .profile-theme input[type="url"],
+  .profile-theme input[type="number"],
+  .profile-theme textarea,
+  .profile-theme select,
+  .profile-theme .shadcn-input,
+  .profile-theme .shadcn-textarea {
+    @apply transition-colors duration-200;
+    border-color: hsl(var(--primary) / 0.25);
+  }
+
+  .profile-theme input:focus,
+  .profile-theme textarea:focus,
+  .profile-theme select:focus {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+    outline: none;
+  }
+
+  /* Trigger dei Select e pulsanti simili (shadcn SelectTrigger) */
+  .profile-theme .select-trigger,
+  .profile-theme [data-radix-select-trigger] {
+    border-color: hsl(var(--primary) / 0.25);
+  }
+  .profile-theme .select-trigger:focus,
+  .profile-theme [data-radix-select-trigger]:focus {
+    border-color: hsl(var(--primary));
+    box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+    outline: none;
+  }
+
+  /* Etichette leggermente più marcate */
+  .profile-theme label {
+    @apply text-gray-800;
+  }
+}
+
 @keyframes floating {
   0%, 100% {
     transform: translateY(0px);
