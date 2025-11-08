@@ -166,18 +166,17 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
   const isFixed = form.watch('fixed_appointment');
 
   const handleSubmit = (values: z.infer<typeof eventFormBaseSchema>) => {
-    // Auto-generate SEO-friendly slug
+    // Date normalization: evita stringhe vuote lato DB (prima per usarla nello slug)
+    const isFixed = values.fixed_appointment === true;
+    const startDate = (isFixed ? (values.validity_start || '') : (values.date || '')).trim();
+    const endDateRaw = (isFixed ? (values.validity_end || '') : (values.end_date || '')).trim();
+    // Auto-generate SEO-friendly slug se mancante
     if (!values.slug || values.slug.trim() === '') {
-      values.slug = generateEventSlug(values.title, values.date || '');
+      values.slug = generateEventSlug(values.title, startDate || '');
     }
-    
-    // Transform empty strings to null for new fields
+    // Transform empty strings to null per i campi testuali
     const singleDesc = values.description && values.description.trim() !== '' ? values.description.trim() : null;
     const gallery = values.gallery_images && values.gallery_images.length > 0 ? values.gallery_images : null;
-  // Date normalization: evita stringhe vuote lato DB
-  const isFixed = values.fixed_appointment === true;
-  const startDate = (isFixed ? (values.validity_start || '') : (values.date || '')).trim();
-  const endDateRaw = (isFixed ? (values.validity_end || '') : (values.end_date || '')).trim();
     // Se end_date è vuota, usa la stessa di startDate (evento di 1 giorno)
     const normalizedEndDate = endDateRaw !== '' ? endDateRaw : startDate;
     const transformedValues = {
@@ -204,7 +203,9 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
       image_url: gallery && gallery.length > 0 ? gallery[0] : null,
     };
     
-    onSubmit(transformedValues);
+    // Rimuovi campi solo UI (non esistono a DB)
+    const { validity_start: _vs, validity_end: _ve, ...clean } = transformedValues as any;
+    onSubmit(clean);
   };
 
   const handleImageUploaded = (url: string) => {
@@ -221,7 +222,14 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form
+        onSubmit={(e) => {
+          // Evita che il submit del form interno propaghi e attivi il form del profilo esterno
+          e.stopPropagation();
+          form.handleSubmit(handleSubmit)(e);
+        }}
+        className="space-y-4"
+      >
         <FormField
           control={form.control}
           name="title"
