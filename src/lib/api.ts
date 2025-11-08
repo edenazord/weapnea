@@ -34,6 +34,7 @@ export interface Event {
   activity_details?: string | null;
   who_we_are?: string | null;
   fixed_appointment?: boolean | null;
+  fixed_appointment_text?: string | null; // Strategia B: descrizione testuale ricorrenza
   instructors?: unknown | null;
   instructor_certificates?: string[] | null;
   max_participants_per_instructor?: number | null;

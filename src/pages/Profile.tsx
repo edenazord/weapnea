@@ -32,8 +32,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useMutation } from "@tanstack/react-query";
-import { createEvent, Event } from "@/lib/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createEvent, Event, getEvents, EventWithCategory } from "@/lib/api";
 import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { EventForm } from "@/components/admin/EventForm";
 import { CenteredNotice } from "@/components/CenteredNotice";
@@ -143,6 +143,18 @@ const Profile = () => {
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [noticeMsg, setNoticeMsg] = useState("");
 
+  // Query eventi organizzati (solo quando vista organizer attiva)
+  const { data: organizedEvents, isLoading: isLoadingOrganized, refetch: refetchOrganized } = useQuery<EventWithCategory[]>({
+    queryKey: ['organized-events', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+  const rows = await getEvents(undefined, { column: 'date', direction: 'asc' }, undefined, undefined, user.role, user.id);
+      return rows.filter(r => r.organizer_id === user.id || r.organizer?.id === user.id);
+    },
+    enabled: !!user && showOrganizer,
+    staleTime: 30_000,
+  });
+
   const createMutation = useMutation({
     mutationFn: (payload: Partial<Event>) => createEvent(payload as Event),
     onSuccess: () => {
@@ -150,6 +162,8 @@ const Profile = () => {
       setNoticeOpen(true);
   // Chiudi lo sheet laterale
   setIsSheetOpen(false);
+      // Aggiorna elenco organizzati
+      refetchOrganized();
     },
     onError: (err: any) => {
       toast({ title: 'Errore creazione', description: err?.message || 'Creazione fallita', variant: 'destructive' });
@@ -214,6 +228,15 @@ const Profile = () => {
       }
     }
     return t('events.date_tbd', 'Data da definire');
+  };
+
+  const formatEventWithFixed = (ev: EventWithCategory) => {
+    if (ev.fixed_appointment) {
+      const validity = formatEventDate(ev.date || undefined, ev.end_date || undefined);
+      const text = ev.fixed_appointment_text ? ev.fixed_appointment_text : 'Appuntamento ricorrente';
+      return `${text} (${validity})`;
+    }
+    return formatEventDate(ev.date || undefined, ev.end_date || undefined);
   };
 
   const slugify = (s: string) =>
@@ -637,7 +660,7 @@ const Profile = () => {
                       )
                     )
                   ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <div className="text-sm text-muted-foreground">
                         {user?.role === 'admin'
                           ? 'Accesso completo (admin).'
@@ -659,6 +682,49 @@ const Profile = () => {
                       {!(user?.role === 'admin' || organizerEligible) && (
                         <div className="text-xs text-muted-foreground">Completa le sezioni "Certificazioni" e "Visibilità" per abilitare la creazione.</div>
                       )}
+                      <div className="mt-4">
+                        <h3 className="font-semibold mb-2">I tuoi eventi organizzati</h3>
+                        {isLoadingOrganized ? (
+                          <div className="py-4 text-sm text-muted-foreground">Caricamento eventi...</div>
+                        ) : (organizedEvents && organizedEvents.length > 0 ? (
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Titolo</TableHead>
+                                <TableHead>Date / Ricorrenza</TableHead>
+                                <TableHead>Luogo</TableHead>
+                                <TableHead className="text-right">Azioni</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {organizedEvents.map(ev => (
+                                <TableRow key={ev.id}>
+                                  <TableCell className="max-w-[220px] truncate">
+                                    <span className="font-medium">{ev.title}</span>
+                                  </TableCell>
+                                  <TableCell className="text-sm text-muted-foreground">
+                                    {formatEventWithFixed(ev)}
+                                  </TableCell>
+                                  <TableCell className="text-sm">{ev.location || '-'}</TableCell>
+                                  <TableCell className="text-right">
+                                    <div className="flex gap-2 justify-end">
+                                      <Button asChild size="sm" variant="outline">
+                                        <Link to={buildFriendlyEventPath(ev.slug)}>
+                                          <Eye className="h-4 w-4 mr-1" /> Apri
+                                        </Link>
+                                      </Button>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        ) : (
+                          <div className="py-6 text-sm text-muted-foreground border rounded-md text-center">
+                            Nessun evento organizzato ancora.
+                          </div>
+                        ))}
+                      </div>
                       <Button type="button" variant="outline" size="sm" onClick={() => setShowOrganizer(false)}>← Torna agli Eventi</Button>
                     </div>
                   )}
