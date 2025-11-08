@@ -875,9 +875,7 @@ const Profile = () => {
               <Card>
                   <CardHeader>
                   <CardTitle>{t('profile.sections.certifications.title', 'Certificazioni e Assicurazioni')}</CardTitle>
-                  <CardDescription>
-                    {t('profile.sections.certifications.description', 'Mantieni aggiornate le tue certificazioni. Per iscriversi agli eventi a pagamento sono obbligatori: Telefono, Assicurazione e relative scadenze, Certificato medico valido.')}
-                  </CardDescription>
+                  {/* Descrizione rimossa su richiesta */}
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Accordion type="single" collapsible>
