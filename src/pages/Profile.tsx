@@ -63,6 +63,8 @@ const Profile = () => {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("events");
+  // Stato locale per mostrare vista organizzazione dentro la tab Eventi
+  const [showOrganizer, setShowOrganizer] = useState(false);
   const [formData, setFormData] = useState({
     full_name: "",
     bio: "",
@@ -553,10 +555,6 @@ const Profile = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="w-full overflow-x-auto flex gap-2 md:grid md:grid-cols-6">
-            <TabsTrigger value="events" className="whitespace-nowrap">
-              <Calendar className="h-4 w-4 mr-2" />
-              {t('profile.tabs.events', 'Eventi')}
-            </TabsTrigger>
             <TabsTrigger value="personal" className="whitespace-nowrap">
               <UserCircle className="h-4 w-4 mr-2" />
               {t('profile.tabs.personal', 'Personali')}
@@ -572,9 +570,7 @@ const Profile = () => {
             <TabsTrigger value="visibility" className="whitespace-nowrap">
               Visibilità
             </TabsTrigger>
-            <TabsTrigger value="organizer" className="whitespace-nowrap">
-              Organizza
-            </TabsTrigger>
+            {/* Rimuovo tab separato Organizza: incorporato in Eventi con sottomenu */}
           </TabsList>
 
           <form onSubmit={handleSubmit}>
@@ -583,53 +579,100 @@ const Profile = () => {
                 <CardHeader>
                   <CardTitle>{t('profile.sections.my_events.title', 'I Miei Eventi')}</CardTitle>
                   <CardDescription>
-                    {t('profile.sections.my_events.description', 'Gestisci i tuoi eventi')}
+                    {t('profile.sections.my_events.description', 'Gestisci i tuoi eventi e crea nuovi eventi')}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {isLoadingParticipations ? (
-                    <div className="py-8 text-center text-gray-500">{t('common.loading', 'Caricamento...')}</div>
-                  ) : participations.length > 0 ? (
-                    <div className="grid gap-4">
-                      {participations.map((p) => (
-                        <div key={p.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center gap-4">
-                            {p.events.image_url && (
-                              <img src={p.events.image_url} alt={p.events.title} className="w-16 h-16 object-cover rounded-lg" />
-                            )}
-                            <div>
-                              <h3 className="font-semibold">{p.events.title}</h3>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                                <Calendar className="h-4 w-4" />
-                                {formatEventDate(p.events.date, p.events.end_date)}
-                                {p.events.location && (
-                                  <>
-                                    <MapPin className="h-4 w-4 ml-2" />
-                                    {p.events.location}
-                                  </>
+                  {/* Sottomenu locale */}
+                  <div className="flex flex-wrap gap-2 mb-6">
+                    <Button type="button" variant={!showOrganizer ? 'default' : 'outline'} size="sm" onClick={() => setShowOrganizer(false)}>
+                      Elenco Iscrizioni
+                    </Button>
+                    <Button type="button" variant={showOrganizer ? 'default' : 'outline'} size="sm" onClick={() => setShowOrganizer(true)} disabled={!organizerEligible && user?.role !== 'admin'}>
+                      Organizza Evento
+                    </Button>
+                  </div>
+                  {!showOrganizer ? (
+                    isLoadingParticipations ? (
+                      <div className="py-8 text-center text-gray-500">{t('common.loading', 'Caricamento...')}</div>
+                    ) : (
+                      participations.length > 0 ? (
+                        <div className="grid gap-4">
+                          {participations.map((p) => (
+                            <div key={p.id} className="flex items-center justify-between p-4 border rounded-lg">
+                              <div className="flex items-center gap-4">
+                                {p.events.image_url && (
+                                  <img src={p.events.image_url} alt={p.events.title} className="w-16 h-16 object-cover rounded-lg" />
                                 )}
+                                <div>
+                                  <h3 className="font-semibold">{p.events.title}</h3>
+                                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+                                    <Calendar className="h-4 w-4" />
+                                    {formatEventDate(p.events.date, p.events.end_date)}
+                                    {p.events.location && (
+                                      <>
+                                        <MapPin className="h-4 w-4 ml-2" />
+                                        {p.events.location}
+                                      </>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Button asChild variant="outline" size="sm">
+                                  <Link to={buildFriendlyEventPath(p.events.slug)}>
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    {t('common.view', 'Visualizza')}
+                                  </Link>
+                                </Button>
                               </div>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Button asChild variant="outline" size="sm">
-                              <Link to={buildFriendlyEventPath(p.events.slug)}>
-                                <Eye className="h-4 w-4 mr-1" />
-                                {t('common.view', 'Visualizza')}
-                              </Link>
-                            </Button>
-                          </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      ) : (
+                        <div className="text-center py-12">
+                          <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                          <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('profile.no_participations', 'Nessun evento iscritto')}</h3>
+                          <p className="text-gray-500 mb-6">{t('profile.no_participations_hint', 'Non hai ancora effettuato iscrizioni.')}</p>
+                          <Button asChild>
+                            <Link to="/">{t('profile.discover_events', 'Scopri gli eventi')}</Link>
+                          </Button>
+                        </div>
+                      )
+                    )
                   ) : (
-                    <div className="text-center py-12">
-                      <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('profile.no_participations', 'Nessun evento iscritto')}</h3>
-                      <p className="text-gray-500 mb-6">{t('profile.no_participations_hint', 'Non hai ancora effettuato iscrizioni.')}</p>
-                      <Button asChild>
-                        <Link to="/">{t('profile.discover_events', 'Scopri gli eventi')}</Link>
-                      </Button>
+                    <div className="space-y-4">
+                      <div className="text-sm text-muted-foreground">
+                        {user?.role === 'admin'
+                          ? 'Accesso completo (admin).'
+                          : organizerEligible
+                            ? 'Hai i requisiti necessari per organizzare. Puoi creare un nuovo evento.'
+                            : 'Per organizzare devi attivare il profilo pubblico e compilare le certificazioni obbligatorie.'}
+                      </div>
+                      {(user?.role === 'admin' || organizerEligible) ? (
+                        <div className="flex flex-wrap gap-2">
+                          {allenamentiCategory && (
+                            <Button 
+                              type="button"
+                              onClick={handleOpenCreateAllenamento}
+                              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                            >
+                              <Users className="mr-2 h-4 w-4" /> Crea Allenamento
+                            </Button>
+                          )}
+                          <Button 
+                            type="button"
+                            onClick={handleOpenCreateEvent}
+                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                          >
+                            <PlusCircle className="mr-2 h-4 w-4" /> Crea Evento
+                          </Button>
+                        </div>
+                      ) : null}
+                      {!(user?.role === 'admin' || organizerEligible) && (
+                        <div className="text-xs text-muted-foreground">Completa le sezioni "Certificazioni" e "Visibilità" per abilitare la creazione.</div>
+                      )}
+                      <Button type="button" variant="outline" size="sm" onClick={() => setShowOrganizer(false)}>← Torna agli Eventi</Button>
                     </div>
                   )}
                 </CardContent>
@@ -1102,116 +1145,7 @@ const Profile = () => {
             </TabsContent>
 
             {/* Organizzazione eventi: visibile come tab; disabilitata se non si soddisfano i requisiti (eccetto admin) */}
-            <TabsContent value="organizer">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Organizza Eventi / Allenamenti</CardTitle>
-                  <CardDescription>
-                    {user?.role === 'admin'
-                      ? 'Accesso completo (admin).'
-                      : organizerEligible
-                        ? 'Hai i requisiti necessari per organizzare. Puoi creare un nuovo evento.'
-                        : 'Per organizzare devi attivare il profilo pubblico e compilare le certificazioni obbligatorie.'}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {user?.role !== 'admin' && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className={`border rounded-md p-3 ${publicEnabled ? 'border-green-300' : 'border-red-300'}`}>
-                        <div className="font-medium">Profilo pubblico</div>
-                        <div className="text-sm text-muted-foreground">Devi attivare la visibilità e avere uno slug valido.</div>
-                        <div className="mt-1 text-xs">Stato: {publicEnabled && hasSlug ? 'OK' : 'Mancante'}</div>
-                        {!publicEnabled || !hasSlug ? (
-                          <Button size="sm" variant="outline" className="mt-2" type="button" onClick={() => setActiveTab('visibility')}>
-                            Vai a Visibilità
-                          </Button>
-                        ) : null}
-                      </div>
-                      <div className={`border rounded-md p-3 ${(hasPhone && hasInsurance && insuranceOk && medicalOk) ? 'border-green-300' : 'border-red-300'}`}>
-                        <div className="font-medium">Certificazioni obbligatorie</div>
-                        <ul className="text-sm text-muted-foreground list-disc ml-5">
-                          <li className={hasPhone ? 'text-green-700' : 'text-red-700'}>Telefono</li>
-                          <li className={hasInsurance ? 'text-green-700' : 'text-red-700'}>Assicurazione</li>
-                          <li className={insuranceOk ? 'text-green-700' : 'text-red-700'}>Scadenza assicurazione valida</li>
-                          <li className={medicalOk ? 'text-green-700' : 'text-red-700'}>Certificato medico valido</li>
-                        </ul>
-                        {!(hasPhone && hasInsurance && insuranceOk && medicalOk) ? (
-                          <Button size="sm" variant="outline" className="mt-2" type="button" onClick={() => setActiveTab('certs')}>
-                            Vai a Certificazioni
-                          </Button>
-                        ) : null}
-                      </div>
-                    </div>
-                  )}
-                  {user?.role === 'admin' ? (
-                    <Button asChild>
-                      <Link to="/admin">Apri Dashboard Admin</Link>
-                    </Button>
-                  ) : organizerEligible ? (
-                    <div className="flex flex-wrap gap-2">
-                      {allenamentiCategory && (
-                        <Button 
-                          type="button"
-                          onClick={handleOpenCreateAllenamento}
-                          className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                        >
-                          <Users className="mr-2 h-4 w-4" /> Crea Allenamento
-                        </Button>
-                      )}
-                      <Button 
-                        type="button"
-                        onClick={handleOpenCreateEvent}
-                        className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                      >
-                        <PlusCircle className="mr-2 h-4 w-4" /> Crea Evento
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="text-sm text-muted-foreground">Completa i requisiti nelle tab "Certificazioni" e "Visibilità" per abilitare questa sezione.</div>
-                  )}
-
-                  {/* Sheet di creazione */}
-                  <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                    <SheetContent
-                      className="overflow-y-auto p-0 [&>button]:hidden"
-                      onInteractOutside={(e) => e.preventDefault()}
-                      onEscapeKeyDown={(e) => e.preventDefault()}
-                    >
-                      <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
-                        <div className="flex items-center justify-between gap-2 px-6 py-3">
-                          <SheetTitle className="text-base sm:text-lg">
-                            {isAllenamentiMode ? 'Crea Allenamento Condiviso' : 'Crea Nuovo Evento'}
-                          </SheetTitle>
-                          <SheetClose asChild>
-                            <Button variant="ghost" size="icon" aria-label="Chiudi">
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </SheetClose>
-                        </div>
-                      </div>
-                      <div className="px-6 py-4">
-                        {isAllenamentiMode && allenamentiCategory ? (
-                          <AllenamentiForm
-                            key={'new-allenamento-profile'}
-                            onSubmit={handleAllenamentiFormSubmit}
-                            defaultValues={undefined}
-                            isEditing={false}
-                            allenamentiCategoryId={allenamentiCategory.id}
-                          />
-                        ) : (
-                          <EventForm
-                            key={'new-event-profile'}
-                            onSubmit={handleEventFormSubmit}
-                            defaultValues={undefined}
-                            isEditing={false}
-                          />
-                        )}
-                      </div>
-                    </SheetContent>
-                  </Sheet>
-                </CardContent>
-              </Card>
-            </TabsContent>
+            {/* Tab organizer rimossa: funzionalità spostata in events */}
 
             {/* Company-specific extra content can be added here if needed */}
 
