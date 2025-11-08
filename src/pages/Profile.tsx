@@ -555,6 +555,10 @@ const Profile = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="w-full overflow-x-auto flex gap-2 md:grid md:grid-cols-6">
+            <TabsTrigger value="events" className="whitespace-nowrap">
+              <Calendar className="h-4 w-4 mr-2" />
+              {t('profile.tabs.events', 'Eventi')}
+            </TabsTrigger>
             <TabsTrigger value="personal" className="whitespace-nowrap">
               <UserCircle className="h-4 w-4 mr-2" />
               {t('profile.tabs.personal', 'Personali')}
@@ -677,6 +681,35 @@ const Profile = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {/* Sheet per creazione Evento/Allenamento */}
+              <Sheet open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <SheetContent className="sm:max-w-xl">
+                  <div className="mb-4 flex items-center justify-between">
+                    <SheetTitle>{isAllenamentiMode ? 'Crea Allenamento' : 'Crea Evento'}</SheetTitle>
+                    <SheetClose asChild>
+                      <Button variant="ghost" size="icon" aria-label="Chiudi">
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </SheetClose>
+                  </div>
+                  {isAllenamentiMode ? (
+                    allenamentiCategory ? (
+                      <AllenamentiForm
+                        onSubmit={handleAllenamentiFormSubmit}
+                        isEditing={false}
+                        allenamentiCategoryId={allenamentiCategory.id}
+                      />
+                    ) : (
+                      <div className="text-sm text-muted-foreground">
+                        Categoria "Allenamenti" non trovata. Crea un evento normale oppure contatta l'amministratore per abilitare la categoria.
+                      </div>
+                    )
+                  ) : (
+                    <EventForm onSubmit={handleEventFormSubmit} isEditing={false} />
+                  )}
+                </SheetContent>
+              </Sheet>
             </TabsContent>
 
             <TabsContent value="personal">
