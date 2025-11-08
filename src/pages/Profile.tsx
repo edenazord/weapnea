@@ -34,7 +34,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getCategories, createEvent, Event } from "@/lib/api";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { EventForm } from "@/components/admin/EventForm";
 import { AllenamentiForm } from "@/components/admin/AllenamentiForm";
 import { CenteredNotice } from "@/components/CenteredNotice";
@@ -139,9 +139,9 @@ const Profile = () => {
 
   // Nessun calcolo di progress: le sezioni sono opzionali/variabili per ruolo
 
-  // Stato per dialog modali separati (evento vs allenamento)
-  const [isCreateEventOpen, setIsCreateEventOpen] = useState(false);
-  const [isCreateAllenamentoOpen, setIsCreateAllenamentoOpen] = useState(false);
+  // Stato per modale laterale (Sheet) come nei modali originali
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isAllenamentiMode, setIsAllenamentiMode] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [noticeMsg, setNoticeMsg] = useState("");
   const { data: categories } = useQuery({
@@ -156,17 +156,17 @@ const Profile = () => {
     onSuccess: () => {
       setNoticeMsg("Creato con successo!");
       setNoticeOpen(true);
-      // Chiudi eventuali modali aperti
-      setIsCreateEventOpen(false);
-      setIsCreateAllenamentoOpen(false);
+  // Chiudi lo sheet laterale e resetta la modalità
+  setIsSheetOpen(false);
+  setIsAllenamentiMode(false);
     },
     onError: (err: any) => {
       toast({ title: 'Errore creazione', description: err?.message || 'Creazione fallita', variant: 'destructive' });
     }
   });
 
-  const handleOpenCreateEvent = () => { setIsCreateEventOpen(true); };
-  const handleOpenCreateAllenamento = () => { setIsCreateAllenamentoOpen(true); };
+  const handleOpenCreateEvent = () => { setIsAllenamentiMode(false); setIsSheetOpen(true); };
+  const handleOpenCreateAllenamento = () => { setIsAllenamentiMode(true); setIsSheetOpen(true); };
 
   const handleEventFormSubmit = async (values: any) => {
     try {
@@ -684,34 +684,45 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Dialog modale per creazione Evento */}
-              <Dialog open={isCreateEventOpen} onOpenChange={setIsCreateEventOpen}>
-                <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Crea Evento</DialogTitle>
-                    <DialogDescription>Compila i campi per pubblicare un nuovo evento.</DialogDescription>
-                  </DialogHeader>
-                  <EventForm onSubmit={(vals) => { handleEventFormSubmit(vals); setIsCreateEventOpen(false); }} isEditing={false} />
-                </DialogContent>
-              </Dialog>
-              {/* Dialog modale per creazione Allenamento */}
-              <Dialog open={isCreateAllenamentoOpen} onOpenChange={setIsCreateAllenamentoOpen}>
-                <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>Crea Allenamento Condiviso</DialogTitle>
-                    <DialogDescription>Definisci i dettagli dell'allenamento condiviso.</DialogDescription>
-                  </DialogHeader>
-                  {allenamentiCategory ? (
-                    <AllenamentiForm
-                      onSubmit={(vals) => { handleAllenamentiFormSubmit(vals); setIsCreateAllenamentoOpen(false); }}
-                      isEditing={false}
-                      allenamentiCategoryId={allenamentiCategory.id}
-                    />
-                  ) : (
-                    <div className="text-sm text-muted-foreground">Categoria "Allenamenti" non trovata. Contatta un amministratore.</div>
-                  )}
-                </DialogContent>
-              </Dialog>
+              {/* Sheet laterale per creazione Evento/Allenamento (comportamento originale) */}
+              <Sheet
+                open={isSheetOpen}
+                onOpenChange={(open) => { setIsSheetOpen(open); if (!open) { setIsAllenamentiMode(false); } }}
+              >
+                <SheetContent
+                  className="overflow-y-auto p-0 [&>button]:hidden"
+                  onInteractOutside={(e) => { e.preventDefault(); }}
+                  onEscapeKeyDown={(e) => { e.preventDefault(); }}
+                >
+                  <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
+                    <div className="flex items-center justify-between gap-2 px-6 py-3">
+                      <SheetTitle className="text-base sm:text-lg">
+                        {isAllenamentiMode ? 'Crea Allenamento Condiviso' : 'Crea Evento'}
+                      </SheetTitle>
+                      <SheetClose asChild>
+                        <Button variant="ghost" size="icon" aria-label="Chiudi">
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </div>
+                  <div className="px-6 py-4">
+                    {isAllenamentiMode ? (
+                      allenamentiCategory ? (
+                        <AllenamentiForm
+                          onSubmit={(vals) => { handleAllenamentiFormSubmit(vals); }}
+                          isEditing={false}
+                          allenamentiCategoryId={allenamentiCategory.id}
+                        />
+                      ) : (
+                        <div className="text-sm text-muted-foreground">Categoria "Allenamenti" non trovata. Contatta un amministratore.</div>
+                      )
+                    ) : (
+                      <EventForm onSubmit={(vals) => { handleEventFormSubmit(vals); }} isEditing={false} />
+                    )}
+                  </div>
+                </SheetContent>
+              </Sheet>
             </TabsContent>
 
             <TabsContent value="personal">
