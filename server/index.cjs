@@ -1447,6 +1447,7 @@ function eventsSelect() {
     e.activity_details, e.who_we_are, e.fixed_appointment, e.instructors,
     e.instructor_certificates, e.max_participants_per_instructor, e.schedule_meeting_point,
     e.responsibility_waiver_accepted, e.privacy_accepted,
+    e.fixed_appointment_text,
     -- Paid participants count for x / y indicator in listings
     COALESCE((SELECT COUNT(*) FROM event_payments ep WHERE ep.event_id = e.id AND ep.status = 'paid'), 0)::int AS participants_paid_count,
     -- Organizer public fields (for UI)
@@ -1956,7 +1957,7 @@ app.post('/api/events', requireAuth, async (req, res) => {
     }
   }
   const cols = [
-    'title','slug','description','date','end_date','location','participants','image_url','category_id','cost','nation','discipline','created_by','level','activity_description','language','about_us','objectives','included_in_activity','not_included_in_activity','notes','schedule_logistics','gallery_images','event_type','activity_details','who_we_are','fixed_appointment','instructors','instructor_certificates','max_participants_per_instructor','schedule_meeting_point','responsibility_waiver_accepted','privacy_accepted'
+    'title','slug','description','date','end_date','location','participants','image_url','category_id','cost','nation','discipline','created_by','level','activity_description','language','about_us','objectives','included_in_activity','not_included_in_activity','notes','schedule_logistics','gallery_images','event_type','activity_details','who_we_are','fixed_appointment','fixed_appointment_text','instructors','instructor_certificates','max_participants_per_instructor','schedule_meeting_point','responsibility_waiver_accepted','privacy_accepted'
   ];
   // Columns that are JSON/JSONB in DB; ensure we serialize JS objects/arrays to JSON strings
   const jsonCols = new Set([
