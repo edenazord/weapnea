@@ -29,6 +29,9 @@ import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -133,6 +136,18 @@ const Profile = () => {
   const publicEnabled = !!formData.public_profile_enabled;
   const hasSlug = !!(formData.public_slug && formData.public_slug.trim());
   const organizerEligible = publicEnabled && hasSlug && hasPhone && hasInsurance && insuranceOk && medicalOk;
+
+  // Stato e progress per "Certificazioni"
+  const brevettoComplete = Boolean((formData.brevetto && formData.brevetto.trim()) && formData.dichiarazione_brevetto_valido);
+  const assicurazioneComplete = Boolean(hasInsurance && insuranceOk && formData.dichiarazione_assicurazione_valida);
+  const medicoComplete = Boolean(medicalOk);
+  const certGroups = [assicurazioneComplete, medicoComplete, brevettoComplete];
+  const certsCompletion = Math.round((certGroups.filter(Boolean).length / certGroups.length) * 100);
+  const missingCerts: string[] = [];
+  if (!hasInsurance) missingCerts.push('Assicurazione');
+  if (!insuranceOk) missingCerts.push('Scadenza assicurazione valida');
+  if (!formData.dichiarazione_assicurazione_valida) missingCerts.push('Dichiarazione assicurazione');
+  if (!medicoComplete) missingCerts.push('Certificato medico valido');
 
   // Stato/queries per creazione evento dal profilo
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -877,115 +892,169 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="brevetto">{t('profile.sections.certifications.brevetto_label', 'Brevetto')}</Label>
-                      <Input
-                        id="brevetto"
-                        value={formData.brevetto}
-                        onChange={(e) => handleInputChange('brevetto', e.target.value)}
-                        placeholder={t('profile.sections.certifications.brevetto_placeholder', 'Inserire tipologia brevetto')}
-                      />
+                  {/* Riepilogo stato e progress */}
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <Progress value={certsCompletion} className="h-2 w-40" />
+                      <span className="text-xs text-muted-foreground">{certsCompletion}% completo</span>
                     </div>
-                    <div>
-                      <Label htmlFor="scadenza_brevetto">{t('profile.sections.certifications.brevetto_expiry_label', 'Scadenza Brevetto')}</Label>
-                      <DatePicker
-                        date={formData.scadenza_brevetto ? new Date(formData.scadenza_brevetto) : undefined}
-                        onDateChange={(date) => handleInputChange('scadenza_brevetto', toLocalDateString(date))}
-                      />
+                    <div className="flex items-center gap-2 text-xs">
+                      <span className={`inline-flex h-2 w-2 rounded-full ${assicurazioneComplete ? 'bg-green-500' : 'bg-red-500'}`} /> Assicurazione
+                      <span className={`inline-flex h-2 w-2 rounded-full ${medicoComplete ? 'bg-green-500' : 'bg-red-500'} ml-3`} /> Certificato medico
+                      <span className={`inline-flex h-2 w-2 rounded-full ${brevettoComplete ? 'bg-green-500' : 'bg-amber-500'} ml-3`} /> Brevetto (opzionale)
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="didattica_brevetto">Didattica brevetto</Label>
-                      <Input
-                        id="didattica_brevetto"
-                        value={formData.didattica_brevetto}
-                        onChange={(e) => handleInputChange('didattica_brevetto', e.target.value)}
-                        placeholder="Inserire didattica brevetto"
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="numero_brevetto">Numero brevetto</Label>
-                      <Input
-                        id="numero_brevetto"
-                        value={formData.numero_brevetto}
-                        onChange={(e) => handleInputChange('numero_brevetto', e.target.value)}
-                        placeholder="Inserire numero brevetto"
-                      />
-                    </div>
-                  </div>
+                  {(!assicurazioneComplete || !medicoComplete) && (
+                    <Alert>
+                      <AlertTitle>Azioni richieste</AlertTitle>
+                      <AlertDescription>
+                        <ul className="list-disc ml-5">
+                          {missingCerts.map((m, i) => (
+                            <li key={i}>{m}</li>
+                          ))}
+                        </ul>
+                      </AlertDescription>
+                    </Alert>
+                  )}
 
-                  <div className="space-y-2">
-                    <Label>Foto brevetto</Label>
-                    <ImageUpload
-                      currentImageUrl={formData.foto_brevetto_url || undefined}
-                      onImageUploaded={(url) => handleInputChange('foto_brevetto_url', url)}
-                      onImageRemoved={() => handleInputChange('foto_brevetto_url', '')}
-                    />
-                  </div>
+                  {/* Sezioni a fisarmonica */}
+                  <Accordion type="single" collapsible defaultValue={!assicurazioneComplete ? 'assicurazione' : (!medicoComplete ? 'medico' : 'brevetto')}>
+                    <AccordionItem value="assicurazione">
+                      <AccordionTrigger>
+                        <div className="flex items-center gap-2">
+                          <Shield className="h-4 w-4" /> Assicurazione
+                          <span className={`ml-2 inline-flex h-2 w-2 rounded-full ${assicurazioneComplete ? 'bg-green-500' : 'bg-red-500'}`} />
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="assicurazione">{t('profile.sections.certifications.insurance_label', 'Assicurazione')}</Label>
+                            <Input
+                              id="assicurazione"
+                              value={formData.assicurazione}
+                              onChange={(e) => handleInputChange('assicurazione', e.target.value)}
+                              placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="scadenza_assicurazione">{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
+                            <DatePicker
+                              date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined}
+                              onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                          <div>
+                            <Label htmlFor="numero_assicurazione">Numero assicurazione</Label>
+                            <Input
+                              id="numero_assicurazione"
+                              value={formData.numero_assicurazione}
+                              onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)}
+                              placeholder="Inserire numero assicurazione"
+                            />
+                          </div>
+                        </div>
+                        <div className="flex items-start gap-3 p-3 border rounded-md mt-4">
+                          <Checkbox
+                            id="dichiarazione_assicurazione_valida"
+                            checked={Boolean(formData.dichiarazione_assicurazione_valida)}
+                            onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_assicurazione_valida: Boolean(v) }))}
+                          />
+                          <Label htmlFor="dichiarazione_assicurazione_valida" className="text-sm cursor-pointer">
+                            Dichiaro di essere istruttore brevettato e di avere una copertura assicurativa in corso di validità
+                          </Label>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
 
-                  <div className="flex items-start gap-3 p-3 border rounded-md">
-                    <Checkbox
-                      id="dichiarazione_brevetto_valido"
-                      checked={Boolean(formData.dichiarazione_brevetto_valido)}
-                      onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_brevetto_valido: Boolean(v) }))}
-                    />
-                    <Label htmlFor="dichiarazione_brevetto_valido" className="text-sm cursor-pointer">
-                      Dichiaro di essere istruttore certificato con BREVETTO in corso di validità
-                    </Label>
-                  </div>
+                    <AccordionItem value="medico">
+                      <AccordionTrigger>
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" /> Certificato medico
+                          <span className={`ml-2 inline-flex h-2 w-2 rounded-full ${medicoComplete ? 'bg-green-500' : 'bg-red-500'}`} />
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div>
+                          <Label htmlFor="scadenza_certificato_medico">{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
+                          <DatePicker
+                            date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined}
+                            onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))}
+                          />
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="assicurazione">{t('profile.sections.certifications.insurance_label', 'Assicurazione')}</Label>
-                      <Input
-                        id="assicurazione"
-                        value={formData.assicurazione}
-                        onChange={(e) => handleInputChange('assicurazione', e.target.value)}
-                        placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')}
-                      />
-                    </div>
-                    <div>
-                      <Label htmlFor="scadenza_assicurazione">{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
-                      <DatePicker
-                        date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined}
-                        onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="numero_assicurazione">Numero assicurazione</Label>
-                      <Input
-                        id="numero_assicurazione"
-                        value={formData.numero_assicurazione}
-                        onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)}
-                        placeholder="Inserire numero assicurazione"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-start gap-3 p-3 border rounded-md">
-                    <Checkbox
-                      id="dichiarazione_assicurazione_valida"
-                      checked={Boolean(formData.dichiarazione_assicurazione_valida)}
-                      onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_assicurazione_valida: Boolean(v) }))}
-                    />
-                    <Label htmlFor="dichiarazione_assicurazione_valida" className="text-sm cursor-pointer">
-                      Dichiaro di essere istruttore brevettato e di avere una copertura assicurativa in corso di validità
-                    </Label>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="scadenza_certificato_medico">{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
-                    <DatePicker
-                      date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined}
-                      onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))}
-                    />
-                  </div>
+                    <AccordionItem value="brevetto">
+                      <AccordionTrigger>
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4" /> Brevetto (opzionale)
+                          <span className={`ml-2 inline-flex h-2 w-2 rounded-full ${brevettoComplete ? 'bg-green-500' : 'bg-amber-500'}`} />
+                        </div>
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div>
+                            <Label htmlFor="brevetto">{t('profile.sections.certifications.brevetto_label', 'Brevetto')}</Label>
+                            <Input
+                              id="brevetto"
+                              value={formData.brevetto}
+                              onChange={(e) => handleInputChange('brevetto', e.target.value)}
+                              placeholder={t('profile.sections.certifications.brevetto_placeholder', 'Inserire tipologia brevetto')}
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="scadenza_brevetto">{t('profile.sections.certifications.brevetto_expiry_label', 'Scadenza Brevetto')}</Label>
+                            <DatePicker
+                              date={formData.scadenza_brevetto ? new Date(formData.scadenza_brevetto) : undefined}
+                              onDateChange={(date) => handleInputChange('scadenza_brevetto', toLocalDateString(date))}
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                          <div>
+                            <Label htmlFor="didattica_brevetto">Didattica brevetto</Label>
+                            <Input
+                              id="didattica_brevetto"
+                              value={formData.didattica_brevetto}
+                              onChange={(e) => handleInputChange('didattica_brevetto', e.target.value)}
+                              placeholder="Inserire didattica brevetto"
+                            />
+                          </div>
+                          <div>
+                            <Label htmlFor="numero_brevetto">Numero brevetto</Label>
+                            <Input
+                              id="numero_brevetto"
+                              value={formData.numero_brevetto}
+                              onChange={(e) => handleInputChange('numero_brevetto', e.target.value)}
+                              placeholder="Inserire numero brevetto"
+                            />
+                          </div>
+                        </div>
+                        <div className="space-y-2 mt-4">
+                          <Label>Foto brevetto</Label>
+                          <ImageUpload
+                            currentImageUrl={formData.foto_brevetto_url || undefined}
+                            onImageUploaded={(url) => handleInputChange('foto_brevetto_url', url)}
+                            onImageRemoved={() => handleInputChange('foto_brevetto_url', '')}
+                          />
+                        </div>
+                        <div className="flex items-start gap-3 p-3 border rounded-md mt-4">
+                          <Checkbox
+                            id="dichiarazione_brevetto_valido"
+                            checked={Boolean(formData.dichiarazione_brevetto_valido)}
+                            onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_brevetto_valido: Boolean(v) }))}
+                          />
+                          <Label htmlFor="dichiarazione_brevetto_valido" className="text-sm cursor-pointer">
+                            Dichiaro di essere istruttore certificato con BREVETTO in corso di validità
+                          </Label>
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </CardContent>
               </Card>
 
