@@ -657,15 +657,13 @@ const Profile = () => {
                       </div>
                       {(user?.role === 'admin' || organizerEligible) ? (
                         <div className="flex flex-wrap gap-2">
-                          {allenamentiCategory && (
-                            <Button 
-                              type="button"
-                              onClick={handleOpenCreateAllenamento}
-                              className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                            >
-                              <Users className="mr-2 h-4 w-4" /> Crea Allenamento
-                            </Button>
-                          )}
+                          <Button 
+                            type="button"
+                            onClick={handleOpenCreateAllenamento}
+                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
+                          >
+                            <Users className="mr-2 h-4 w-4" /> Crea Allenamento
+                          </Button>
                           <Button 
                             type="button"
                             onClick={handleOpenCreateEvent}
