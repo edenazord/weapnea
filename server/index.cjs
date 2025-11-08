@@ -949,6 +949,9 @@ app.get('/api/profile', requireAuth, async (req, res) => {
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
     assicurazione, scadenza_assicurazione, instagram_contact${pb},
     company_name, vat_number, company_address, phone${pub}, organizer_upgrade_requested_at
+    , didattica_brevetto, numero_brevetto, foto_brevetto_url, numero_assicurazione
+    , COALESCE(dichiarazione_brevetto_valido,false) AS dichiarazione_brevetto_valido
+    , COALESCE(dichiarazione_assicurazione_valida,false) AS dichiarazione_assicurazione_valida
      FROM profiles WHERE id = $1 LIMIT 1`;
   const { rows } = await pool.query(sql, [req.user.id]);
     const user = rows[0];
@@ -984,7 +987,9 @@ app.put('/api/profile', requireAuth, async (req, res) => {
     const allowed = [
       'full_name','avatar_url','bio','brevetto','scadenza_brevetto','scadenza_certificato_medico',
       'assicurazione','scadenza_assicurazione','instagram_contact',
-      'company_name','vat_number','company_address','phone'
+      'company_name','vat_number','company_address','phone',
+      'didattica_brevetto','numero_brevetto','foto_brevetto_url','numero_assicurazione',
+      'dichiarazione_brevetto_valido','dichiarazione_assicurazione_valida'
     ];
     // Accetta sempre i flag pubblici; se le colonne mancassero, effettueremo un ensure e un retry sotto
   allowed.push('public_profile_enabled','public_slug','public_show_bio','public_show_instagram','public_show_company_info','public_show_certifications','public_show_events','public_show_records','public_show_personal');
