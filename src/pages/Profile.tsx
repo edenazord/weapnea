@@ -761,15 +761,15 @@ const Profile = () => {
                                   <TableCell className="text-sm">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex gap-2 justify-end">
-                                      <Button asChild size="icon" variant="ghost" title="Apri" aria-label="Apri evento">
+                                      <Button type="button" asChild size="icon" variant="ghost" title="Apri" aria-label="Apri evento">
                                         <Link to={buildFriendlyEventPath(ev.slug)}>
                                           <Eye className="h-4 w-4" />
                                         </Link>
                                       </Button>
-                                      <Button size="icon" variant="ghost" title="Iscritti" aria-label="Vedi iscritti" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
+                                      <Button type="button" size="icon" variant="ghost" title="Iscritti" aria-label="Vedi iscritti" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
                                         <Users className="h-4 w-4" />
                                       </Button>
-                                      <Button size="icon" variant="ghost" title="Modifica" aria-label="Modifica evento" onClick={() => openEditEvent(ev)}>
+                                      <Button type="button" size="icon" variant="ghost" title="Modifica" aria-label="Modifica evento" onClick={() => openEditEvent(ev)}>
                                         <Pencil className="h-4 w-4" />
                                       </Button>
                                     </div>
@@ -806,7 +806,7 @@ const Profile = () => {
                         Crea Evento
                       </SheetTitle>
                       <SheetClose asChild>
-                        <Button variant="ghost" size="icon" aria-label="Chiudi">
+                        <Button type="button" variant="ghost" size="icon" aria-label="Chiudi">
                           <X className="h-4 w-4" />
                         </Button>
                       </SheetClose>
@@ -834,7 +834,7 @@ const Profile = () => {
                         Modifica Evento
                       </SheetTitle>
                       <SheetClose asChild>
-                        <Button variant="ghost" size="icon" aria-label="Chiudi">
+                        <Button type="button" variant="ghost" size="icon" aria-label="Chiudi">
                           <X className="h-4 w-4" />
                         </Button>
                       </SheetClose>
@@ -864,7 +864,7 @@ const Profile = () => {
                         Iscritti — {participantsEventTitle || 'Evento'}
                       </SheetTitle>
                       <SheetClose asChild>
-                        <Button variant="ghost" size="icon" aria-label="Chiudi">
+                        <Button type="button" variant="ghost" size="icon" aria-label="Chiudi">
                           <X className="h-4 w-4" />
                         </Button>
                       </SheetClose>
