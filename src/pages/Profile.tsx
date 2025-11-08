@@ -32,11 +32,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getCategories, createEvent, Event } from "@/lib/api";
+import { useMutation } from "@tanstack/react-query";
+import { createEvent, Event } from "@/lib/api";
 import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { EventForm } from "@/components/admin/EventForm";
-import { AllenamentiForm } from "@/components/admin/AllenamentiForm";
 import { CenteredNotice } from "@/components/CenteredNotice";
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
@@ -141,32 +140,23 @@ const Profile = () => {
 
   // Stato per modale laterale (Sheet) come nei modali originali
   const [isSheetOpen, setIsSheetOpen] = useState(false);
-  const [isAllenamentiMode, setIsAllenamentiMode] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const [noticeMsg, setNoticeMsg] = useState("");
-  const { data: categories } = useQuery({
-    queryKey: ["categories"],
-    queryFn: getCategories,
-    enabled: organizerEligible,
-  });
-  const allenamentiCategory = categories?.find((c: any) => c.name?.toLowerCase?.().includes('allenamenti'));
 
   const createMutation = useMutation({
     mutationFn: (payload: Partial<Event>) => createEvent(payload as Event),
     onSuccess: () => {
       setNoticeMsg("Creato con successo!");
       setNoticeOpen(true);
-  // Chiudi lo sheet laterale e resetta la modalità
+  // Chiudi lo sheet laterale
   setIsSheetOpen(false);
-  setIsAllenamentiMode(false);
     },
     onError: (err: any) => {
       toast({ title: 'Errore creazione', description: err?.message || 'Creazione fallita', variant: 'destructive' });
     }
   });
 
-  const handleOpenCreateEvent = () => { setIsAllenamentiMode(false); setIsSheetOpen(true); };
-  const handleOpenCreateAllenamento = () => { setIsAllenamentiMode(true); setIsSheetOpen(true); };
+  const handleOpenCreateEvent = () => { setIsSheetOpen(true); };
 
   const handleEventFormSubmit = async (values: any) => {
     try {
@@ -659,13 +649,6 @@ const Profile = () => {
                         <div className="flex flex-wrap gap-2">
                           <Button 
                             type="button"
-                            onClick={handleOpenCreateAllenamento}
-                            className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
-                          >
-                            <Users className="mr-2 h-4 w-4" /> Crea Allenamento
-                          </Button>
-                          <Button 
-                            type="button"
                             onClick={handleOpenCreateEvent}
                             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
                           >
@@ -682,10 +665,10 @@ const Profile = () => {
                 </CardContent>
               </Card>
 
-              {/* Sheet laterale per creazione Evento/Allenamento (comportamento originale) */}
+              {/* Sheet laterale per creazione Evento (comportamento originale) */}
               <Sheet
                 open={isSheetOpen}
-                onOpenChange={(open) => { setIsSheetOpen(open); if (!open) { setIsAllenamentiMode(false); } }}
+                onOpenChange={(open) => { setIsSheetOpen(open); }}
               >
                 <SheetContent
                   className="overflow-y-auto p-0 [&>button]:hidden"
@@ -695,7 +678,7 @@ const Profile = () => {
                   <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
                     <div className="flex items-center justify-between gap-2 px-6 py-3">
                       <SheetTitle className="text-base sm:text-lg">
-                        {isAllenamentiMode ? 'Crea Allenamento Condiviso' : 'Crea Evento'}
+                        Crea Evento
                       </SheetTitle>
                       <SheetClose asChild>
                         <Button variant="ghost" size="icon" aria-label="Chiudi">
@@ -705,19 +688,7 @@ const Profile = () => {
                     </div>
                   </div>
                   <div className="px-6 py-4">
-                    {isAllenamentiMode ? (
-                      allenamentiCategory ? (
-                        <AllenamentiForm
-                          onSubmit={(vals) => { handleAllenamentiFormSubmit(vals); }}
-                          isEditing={false}
-                          allenamentiCategoryId={allenamentiCategory.id}
-                        />
-                      ) : (
-                        <div className="text-sm text-muted-foreground">Categoria "Allenamenti" non trovata. Contatta un amministratore.</div>
-                      )
-                    ) : (
-                      <EventForm onSubmit={(vals) => { handleEventFormSubmit(vals); }} isEditing={false} />
-                    )}
+                    <EventForm onSubmit={(vals) => { handleEventFormSubmit(vals); }} isEditing={false} />
                   </div>
                 </SheetContent>
               </Sheet>
