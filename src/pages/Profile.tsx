@@ -16,7 +16,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle } from "lucide-react";
+import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -33,7 +33,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createEvent, Event, getEvents, EventWithCategory } from "@/lib/api";
+import { createEvent, Event, getEvents, EventWithCategory, updateEvent } from "@/lib/api";
 import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { EventForm } from "@/components/admin/EventForm";
 import { CenteredNotice } from "@/components/CenteredNotice";
@@ -148,6 +148,9 @@ const Profile = () => {
   const [participants, setParticipants] = useState<Array<{ id: string; user_id: string; full_name: string | null; paid_at: string | null; avatar_url?: string | null; company_name?: string | null; phone?: string | null; role?: string | null; public_profile_enabled?: boolean; public_slug?: string | null; }>>([]);
   const [participantsEventTitle, setParticipantsEventTitle] = useState<string>("");
   const [participantsEventId, setParticipantsEventId] = useState<string>("");
+  // Stato per modifica evento
+  const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<EventWithCategory | null>(null);
 
   // Query eventi organizzati (solo quando vista organizer attiva)
   const { data: organizedEvents, isLoading: isLoadingOrganized, refetch: refetchOrganized } = useQuery<EventWithCategory[]>({
@@ -176,6 +179,19 @@ const Profile = () => {
     }
   });
 
+  const editMutation = useMutation({
+    mutationFn: (payload: { id: string; patch: Partial<Event> }) => updateEvent(payload.id, payload.patch),
+    onSuccess: () => {
+      setNoticeMsg("Salvato con successo!");
+      setNoticeOpen(true);
+      setIsEditSheetOpen(false);
+      refetchOrganized();
+    },
+    onError: (err: any) => {
+      toast({ title: 'Errore salvataggio', description: err?.message || 'Modifica fallita', variant: 'destructive' });
+    }
+  });
+
   const handleOpenCreateEvent = () => { setIsSheetOpen(true); };
 
   const handleEventFormSubmit = async (values: any) => {
@@ -198,6 +214,20 @@ const Profile = () => {
       setParticipants([]);
     } finally {
       setParticipantsLoading(false);
+    }
+  };
+
+  const openEditEvent = (ev: EventWithCategory) => {
+    setEditingEvent(ev);
+    setIsEditSheetOpen(true);
+  };
+
+  const handleEventEditSubmit = async (values: any) => {
+    if (!editingEvent) return;
+    try {
+      await editMutation.mutateAsync({ id: editingEvent.id, patch: values as Partial<Event> });
+    } catch (e) {
+      // handled by mutation onError
     }
   };
 
@@ -731,13 +761,16 @@ const Profile = () => {
                                   <TableCell className="text-sm">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex gap-2 justify-end">
-                                      <Button asChild size="sm" variant="outline">
+                                      <Button asChild size="icon" variant="ghost" title="Apri" aria-label="Apri evento">
                                         <Link to={buildFriendlyEventPath(ev.slug)}>
-                                          <Eye className="h-4 w-4 mr-1" /> Apri
+                                          <Eye className="h-4 w-4" />
                                         </Link>
                                       </Button>
-                                      <Button size="sm" variant="outline" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
-                                        <Users className="h-4 w-4 mr-1" /> Iscritti
+                                      <Button size="icon" variant="ghost" title="Iscritti" aria-label="Vedi iscritti" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
+                                        <Users className="h-4 w-4" />
+                                      </Button>
+                                      <Button size="icon" variant="ghost" title="Modifica" aria-label="Modifica evento" onClick={() => openEditEvent(ev)}>
+                                        <Pencil className="h-4 w-4" />
                                       </Button>
                                     </div>
                                   </TableCell>
@@ -781,6 +814,36 @@ const Profile = () => {
                   </div>
                   <div className="px-6 py-4">
                     <EventForm onSubmit={(vals) => { handleEventFormSubmit(vals); }} isEditing={false} />
+                  </div>
+                </SheetContent>
+              </Sheet>
+
+              {/* Sheet laterale per modifica Evento */}
+              <Sheet
+                open={isEditSheetOpen}
+                onOpenChange={(open) => { setIsEditSheetOpen(open); if (!open) setEditingEvent(null); }}
+              >
+                <SheetContent
+                  className="overflow-y-auto p-0 [&>button]:hidden"
+                  onInteractOutside={(e) => { e.preventDefault(); }}
+                  onEscapeKeyDown={(e) => { e.preventDefault(); }}
+                >
+                  <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
+                    <div className="flex items-center justify-between gap-2 px-6 py-3">
+                      <SheetTitle className="text-base sm:text-lg">
+                        Modifica Evento
+                      </SheetTitle>
+                      <SheetClose asChild>
+                        <Button variant="ghost" size="icon" aria-label="Chiudi">
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </SheetClose>
+                    </div>
+                  </div>
+                  <div className="px-6 py-4">
+                    {editingEvent ? (
+                      <EventForm onSubmit={(vals) => { handleEventEditSubmit(vals); }} defaultValues={editingEvent as any} isEditing={true} />
+                    ) : null}
                   </div>
                 </SheetContent>
               </Sheet>
