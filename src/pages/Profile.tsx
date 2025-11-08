@@ -49,9 +49,9 @@ const DISCIPLINES: { code: BestDiscipline; label: string; hint: string }[] = [
   { code: 'DYNB', label: 'Apnea Dinamica Bipinne', hint: 'metri' },
   { code: 'DNF', label: 'Apnea Dinamica senza pinne', hint: 'metri' },
   { code: 'FIM', label: 'Free Immersion', hint: 'metri' },
-  { code: 'CWT', label: 'Peso Costante (monopinna)', hint: 'metri' },
-  { code: 'CWTB', label: 'Peso Costante (bipinne)', hint: 'metri' },
-  { code: 'CNF', label: 'Costante senza pinne', hint: 'metri' },
+  { code: 'CWT', label: 'Assetto Costante (monopinna)', hint: 'metri' },
+  { code: 'CWTB', label: 'Assetto Costante (bipinne)', hint: 'metri' },
+  { code: 'CNF', label: 'Assetto Costante Senza Attrezzi', hint: 'metri' },
   { code: 'VWT', label: 'Variable Weight', hint: 'metri' },
   { code: 'NLT', label: 'No Limits', hint: 'metri' },
 ];
