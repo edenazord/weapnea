@@ -135,7 +135,9 @@ async function runMigrationsAtStartup() {
     `);
     await detectSchema();
     // Garantisci SEMPRE le colonne del profilo pubblico: l'ALTER è idempotente
-    await ensurePublicProfileColumnsAtRuntime();
+  await ensurePublicProfileColumnsAtRuntime();
+  // Safeguard: ensure events.fixed_appointment_text exists even if migrations didn't run yet
+  await ensureEventsFixedAppointmentTextColumn();
     await detectSchema();
     // Seed email templates if table is empty (idempotente)
     try {
@@ -256,6 +258,13 @@ async function ensurePublicProfileColumnsAtRuntime() {
     HAS_PUBLIC_PROFILE_FIELDS = true;
   } catch (e) {
     console.warn('[public_profile] ensure columns failed:', e?.message || e);
+  }
+}
+async function ensureEventsFixedAppointmentTextColumn() {
+  try {
+    await pool.query("ALTER TABLE IF EXISTS public.events ADD COLUMN IF NOT EXISTS fixed_appointment_text text");
+  } catch (e) {
+    console.warn('[events] ensure fixed_appointment_text column failed:', e?.message || e);
   }
 }
 async function ensureOrganizerRequestColumnsAtRuntime() {
