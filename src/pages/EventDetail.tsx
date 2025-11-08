@@ -555,6 +555,7 @@ const EventDetail = () => {
                                                         eventId={event.id}
                                                         eventTitle={event.title}
                                                         eventCost={event.cost ? Number(event.cost) : 0}
+                                                        organizerId={(event as any).organizer_id || event.created_by || null}
                                                         isFull={(typeof event.participants === 'number' && event.participants > 0) 
                                                             ? Number(event.participants_paid_count || 0) >= Number(event.participants)
                                                             : false}
@@ -570,6 +571,7 @@ const EventDetail = () => {
                                                             eventId={event.id}
                                                             eventTitle={event.title}
                                                             eventCost={event.cost ? Number(event.cost) : 0}
+                                                            organizerId={(event as any).organizer_id || event.created_by || null}
                                                             isFull={(typeof event.participants === 'number' && event.participants > 0)
                                                                 ? Number(event.participants_paid_count || 0) >= Number(event.participants)
                                                                 : false}

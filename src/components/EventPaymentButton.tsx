@@ -16,6 +16,7 @@ interface EventPaymentButtonProps {
   disabled?: boolean;
   isFull?: boolean;
   className?: string;
+  organizerId?: string | null;
 }
 
 export const EventPaymentButton = ({ 
@@ -24,7 +25,8 @@ export const EventPaymentButton = ({
   eventCost, 
   disabled = false,
   isFull = false,
-  className = ""
+  className = "",
+  organizerId = null
 }: EventPaymentButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -51,6 +53,9 @@ export const EventPaymentButton = ({
   const isAlreadyRegistered = useMemo(() => {
     return Array.isArray(myParticipations) && myParticipations.some((p: any) => p.event_id === eventId);
   }, [myParticipations, eventId]);
+  const isOrganizer = useMemo(() => {
+    return Boolean(user?.id && organizerId && user.id === organizerId);
+  }, [user?.id, organizerId]);
 
   const handlePayment = async () => {
   if (!user) {
@@ -142,7 +147,7 @@ export const EventPaymentButton = ({
     <>
     <Button 
       onClick={handlePayment}
-      disabled={disabled || isLoading || isAlreadyRegistered || isFull}
+      disabled={disabled || isLoading || isAlreadyRegistered || isFull || isOrganizer}
       className={className}
     >
       {isLoading ? (
@@ -157,7 +162,9 @@ export const EventPaymentButton = ({
             ? 'Completo'
             : isAlreadyRegistered
               ? 'Già iscritto'
-              : (eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti')}
+              : (isOrganizer
+                  ? 'Organizzatore'
+                  : (eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti'))}
         </>
       )}
     </Button>
