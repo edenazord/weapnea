@@ -608,15 +608,7 @@ const Profile = () => {
           </div>
         )}
         
-        {!isMobile && (
-          <div className="flex items-center gap-4 mb-8">
-            <UserCircle className="h-8 w-8 text-blue-600" />
-            <div>
-              <h1 className="text-3xl font-bold">{t('profile.title', 'Il Mio Profilo')}</h1>
-              <p className="text-gray-600">{t('profile.subtitle', 'Gestisci le tue informazioni personali')}</p>
-            </div>
-          </div>
-        )}
+        {/* Header profilo rimosso su richiesta (icona + titolo + sottotitolo) */}
 
         {/* Ruolo rimosso su richiesta */}
 
