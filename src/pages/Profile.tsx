@@ -1225,10 +1225,20 @@ const Profile = () => {
                       <AccordionContent>
                         <div>
                           <Label htmlFor="scadenza_certificato_medico">{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
-                          <DatePicker
-                            date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined}
-                            onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))}
-                          />
+                          <div className="mt-1 flex items-center gap-3">
+                            <DatePicker
+                              date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined}
+                              onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))}
+                              placeholder="Seleziona mese e anno"
+                              className="min-w-[180px]"
+                            />
+                            {formData.scadenza_certificato_medico && (
+                              <span className="text-xs px-2 py-1 rounded bg-purple-50 text-purple-700 dark:bg-purple-800/30 dark:text-purple-200 border border-purple-200 dark:border-purple-700" title="Clicca per cambiare mese">
+                                {new Date(formData.scadenza_certificato_medico).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-2">Clicca sul mese per modificarlo. Usa il selettore per scegliere una nuova scadenza (solo mesi futuri).</p>
                         </div>
                       </AccordionContent>
                     </AccordionItem>

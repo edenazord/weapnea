@@ -2,7 +2,7 @@
 import * as React from "react";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -51,12 +51,16 @@ export function DatePicker({
       <Popover open={isOpen} onOpenChange={handleOpenChange}>
         <PopoverTrigger asChild>
           <Button
-            variant="ghost"
+            type="button"
+            variant="outline"
+            title="Seleziona mese"
+            aria-label="Seleziona mese"
             className={cn(
-              "justify-start text-left font-normal bg-transparent hover:bg-transparent border-0 shadow-none p-0 h-auto",
+              "inline-flex items-center gap-2 px-3 py-2 rounded-md border border-purple-200 hover:border-purple-400 bg-white dark:bg-neutral-900 text-left font-normal",
               !date && "text-muted-foreground"
             )}
           >
+            <CalendarIcon className="h-4 w-4 text-purple-600" />
             <span className="text-sm truncate">
               {date ? format(date, "MMMM yyyy", { locale: it }) : placeholder}
             </span>
