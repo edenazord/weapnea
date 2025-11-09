@@ -13,7 +13,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext"
 import { useNavigate } from "react-router-dom"
 import { useLanguage } from "@/contexts/LanguageContext"
-import { useRef, useState } from "react"
+import { useState } from "react"
 
 export function UserNav() {
   const { user, profile, logout } = useAuth()
@@ -26,15 +26,6 @@ export function UserNav() {
     navigate("/")
   }
   const [open, setOpen] = useState(false)
-  const closeTimer = useRef<number | null>(null)
-  const scheduleClose = () => {
-    if (closeTimer.current) window.clearTimeout(closeTimer.current)
-    closeTimer.current = window.setTimeout(() => setOpen(false), 120)
-  }
-  const cancelClose = () => {
-    if (closeTimer.current) window.clearTimeout(closeTimer.current)
-    closeTimer.current = null
-  }
 
   // Don't render if user is not authenticated
   if (!effective || !effective.is_active) {
@@ -48,7 +39,7 @@ export function UserNav() {
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
-      <DropdownMenuTrigger asChild onMouseEnter={() => { cancelClose(); setOpen(true) }} onMouseLeave={scheduleClose}>
+      <DropdownMenuTrigger asChild>
         <Button variant="outline" className="rounded-full pl-2 pr-3 h-9 flex items-center gap-2 border-purple-200 hover:border-purple-400" aria-haspopup="menu" aria-expanded={open}>
           <Avatar className="h-6 w-6">
             <AvatarImage src={effective.avatar_url || undefined} alt={effective.full_name || effective.email} />
@@ -57,7 +48,7 @@ export function UserNav() {
           <span className="text-sm font-medium">{t('nav.personal_area', 'Area Personale')}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount onMouseEnter={cancelClose} onMouseLeave={scheduleClose}>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
