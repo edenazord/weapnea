@@ -157,10 +157,10 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
               </div>
             ) : null}
 
-            {eventsFree === false && event.cost && event.cost > 0 && (
+            {typeof event.cost === 'number' && event.cost > 0 && (
               <div className="flex items-center gap-1 text-xs font-medium text-green-600">
                 <Euro className="h-4 w-4 flex-shrink-0" />
-                <span>{event.cost}</span>
+                <span>€{Number(event.cost).toFixed(2)}</span>
               </div>
             )}
           </div>
