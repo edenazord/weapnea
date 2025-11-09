@@ -761,24 +761,42 @@ const Profile = () => {
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>Titolo</TableHead>
-                                <TableHead>Date / Ricorrenza</TableHead>
-                                <TableHead>Luogo</TableHead>
-                                <TableHead>Iscritti</TableHead>
+                                <TableHead>Titolo / Categoria</TableHead>
+                                <TableHead>Disciplina / Livello</TableHead>
+                                <TableHead>Data / Ricorrenza & Luogo</TableHead>
+                                <TableHead className="text-center">Iscritti</TableHead>
                                 <TableHead className="text-right">Azioni</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
                               {organizedEvents.map(ev => (
                                 <TableRow key={ev.id}>
-                                  <TableCell className="max-w-[220px] truncate">
-                                    <span className="font-medium">{ev.title}</span>
+                                  <TableCell className="max-w-[260px]">
+                                    <div className="flex flex-col">
+                                      <span className="font-medium truncate" title={ev.title}>{ev.title}</span>
+                                      <span className="text-xs text-muted-foreground truncate">{ev.categories?.name || '-'}</span>
+                                    </div>
                                   </TableCell>
-                                  <TableCell className="text-sm text-muted-foreground">
-                                    {formatEventWithFixed(ev)}
+                                  <TableCell className="text-sm">
+                                    <div className="flex flex-col">
+                                      <span className="truncate">{ev.discipline || '-'}</span>
+                                      <span className="text-xs text-muted-foreground truncate">{ev.level || '-'}</span>
+                                    </div>
                                   </TableCell>
-                                  <TableCell className="text-sm">{ev.location || '-'}</TableCell>
-                                  <TableCell className="text-sm">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</TableCell>
+                                  <TableCell className="text-sm">
+                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                      <Calendar className="h-4 w-4" />
+                                      <span className="truncate" title={formatEventWithFixed(ev)}>{formatEventWithFixed(ev)}</span>
+                                      {ev.location && (
+                                        <>
+                                          <span className="mx-1">•</span>
+                                          <MapPin className="h-4 w-4" />
+                                          <span className="truncate" title={ev.location}>{ev.location}</span>
+                                        </>
+                                      )}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-sm text-center">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex gap-2 justify-end">
                                       <Button type="button" asChild size="icon" variant="ghost" title="Apri" aria-label="Apri evento">
@@ -804,7 +822,7 @@ const Profile = () => {
                           </div>
                         ))}
                       </div>
-                      <Button type="button" variant="outline" size="sm" onClick={() => setShowOrganizer(false)}>← Torna agli Eventi</Button>
+                      {/* Pulsante ritorno rimosso perché ridondante: si usa la sotto-tab sopra */}
                     </div>
                   )}
                 </CardContent>
