@@ -31,6 +31,7 @@ import OrganizerPackages from "./pages/OrganizerPackages";
 import SponsorPackages from "./pages/SponsorPackages";
 import MyEvents from "./pages/MyEvents";
 import ChiSiamo from "./pages/ChiSiamo";
+import Contattaci from "./pages/Contattaci";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -70,6 +71,7 @@ const App = () => {
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/chi-siamo" element={<ChiSiamo />} />
+                  <Route path="/contattaci" element={<Contattaci />} />
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/auth/confirm" element={<AuthConfirm />} />
                   <Route path="/password-reset" element={<PasswordResetPage />} />

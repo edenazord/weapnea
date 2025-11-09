@@ -22,6 +22,7 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
 
     const navItems = [
         { icon: Home, label: t('nav.home', 'Home'), path: "/" },
+        { icon: FileText, label: t('nav.contact', 'Contattaci'), path: "/contattaci" },
         { icon: FileText, label: t('nav.blog', 'Blog'), path: "/blog" },
         { icon: User, label: t('nav.profile', 'Profilo'), path: user ? "/profile" : "/auth" },
     ];
