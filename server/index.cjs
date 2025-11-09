@@ -1531,9 +1531,8 @@ app.get('/api/events', async (req, res) => {
   const sql = `${eventsSelect()} ${where} ${orderBy}`;
   try {
     const { rows } = await pool.query(sql, params);
-    // If free mode is enabled, surface cost as 0 to the client
-    const out = EVENTS_FREE_MODE ? rows.map(r => ({ ...r, cost: 0 })) : rows;
-    res.json(out);
+    // Non mascheriamo più il costo nelle risposte: la modalità free governa solo il flusso di pagamento
+    res.json(rows);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
@@ -1545,7 +1544,6 @@ app.get('/api/events/:id', async (req, res) => {
     const { rows } = await pool.query(sql, [req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     const row = rows[0];
-    if (EVENTS_FREE_MODE) row.cost = 0;
     res.json(row);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
@@ -1558,7 +1556,6 @@ app.get('/api/events/slug/:slug', async (req, res) => {
     const { rows } = await pool.query(sql, [req.params.slug]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     const row = rows[0];
-    if (EVENTS_FREE_MODE) row.cost = 0;
     res.json(row);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
@@ -1721,8 +1718,7 @@ app.get('/api/instructors/:id', async (req, res) => {
 app.get('/api/instructors/:id/events', async (req, res) => {
   try {
     const { rows } = await pool.query(`${eventsSelect()} WHERE e.created_by = $1 ORDER BY e.date DESC NULLS LAST`, [req.params.id]);
-    const out = EVENTS_FREE_MODE ? rows.map(r => ({ ...r, cost: 0 })) : rows;
-    res.json(out);
+    res.json(rows);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
@@ -1823,8 +1819,7 @@ app.get('/api/instructors/slug/:slug/events', async (req, res) => {
     }
     if (!ownerId) return res.status(404).json({ error: 'Not found' });
     const { rows } = await pool.query(`${eventsSelect()} WHERE e.created_by = $1 ORDER BY e.date DESC NULLS LAST`, [ownerId]);
-    const out = EVENTS_FREE_MODE ? rows.map(r => ({ ...r, cost: 0 })) : rows;
-    res.json(out);
+    res.json(rows);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
