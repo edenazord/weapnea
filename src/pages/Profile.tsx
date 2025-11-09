@@ -454,6 +454,38 @@ const Profile = () => {
     e.preventDefault();
     if (!user) return;
 
+    // Validazioni extra: le dichiarazioni possono essere salvate solo se i campi richiesti sono presenti.
+    // Assicurazione: richiede assicurazione, numero_assicurazione e scadenza_assicurazione futura
+    if (formData.dichiarazione_assicurazione_valida) {
+      const hasAssicurazione = !!formData.assicurazione?.trim();
+      const hasNumeroAssicurazione = !!(formData.numero_assicurazione && String(formData.numero_assicurazione).trim());
+      const expiryAss = formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : null;
+      const futureAss = expiryAss ? expiryAss >= new Date(new Date().setHours(0,0,0,0)) : false;
+      if (!hasAssicurazione || !hasNumeroAssicurazione || !futureAss) {
+        toast({
+          title: 'Dati Assicurazione incompleti',
+          description: 'Compila assicurazione, numero e una scadenza valida futura prima di confermare la dichiarazione.',
+          variant: 'destructive'
+        });
+        return;
+      }
+    }
+    // Brevetto: richiede brevetto, numero_brevetto e scadenza_brevetto futura
+    if (formData.dichiarazione_brevetto_valido) {
+      const hasBrevetto = !!formData.brevetto?.trim();
+      const hasNumeroBrevetto = !!(formData.numero_brevetto && String(formData.numero_brevetto).trim());
+      const expiryBrevetto = formData.scadenza_brevetto ? new Date(formData.scadenza_brevetto) : null;
+      const futureBrevetto = expiryBrevetto ? expiryBrevetto >= new Date(new Date().setHours(0,0,0,0)) : false;
+      if (!hasBrevetto || !hasNumeroBrevetto || !futureBrevetto) {
+        toast({
+          title: 'Dati Brevetto incompleti',
+          description: 'Inserisci brevetto, numero e una scadenza futura prima di confermare la dichiarazione brevetto valido.',
+          variant: 'destructive'
+        });
+        return;
+      }
+    }
+
     // Blocca submit se lo slug è preso da altri
     if (formData.public_profile_enabled) {
       if (!formData.public_slug?.trim()) {
