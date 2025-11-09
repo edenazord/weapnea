@@ -37,7 +37,7 @@ import { createEvent, Event, getEvents, EventWithCategory, updateEvent } from "@
 import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { EventForm } from "@/components/admin/EventForm";
 import { CenteredNotice } from "@/components/CenteredNotice";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+// Rimosso dropdown per sostituirlo con sotto-tab statiche interne alla sezione Eventi
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
 type BestEntry = { discipline: BestDiscipline; value: string };
@@ -654,32 +654,41 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* Sottomenu locale: sostituito con Dropdown brand */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          className="rounded-full border-purple-300 hover:border-purple-500 text-purple-700"
-                          aria-label="Seleziona vista eventi"
-                        >
-                          {showOrganizer ? 'Organizza Evento' : 'Elenco Iscrizioni'}
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="start">
-                        <DropdownMenuItem onClick={() => setShowOrganizer(false)}>
-                          Elenco Iscrizioni
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setShowOrganizer(true)}
-                          disabled={!organizerEligible && user?.role !== 'admin'}
-                        >
-                          Organizza Evento
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                  {/* Sotto-tab interne alla sezione Eventi */}
+                  <div className="mb-6" role="tablist" aria-label="Sotto sezione eventi">
+                    <div className="inline-flex rounded-md shadow-sm overflow-hidden border border-purple-200 bg-white dark:bg-neutral-900">
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={!showOrganizer}
+                        onClick={() => setShowOrganizer(false)}
+                        className={
+                          `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60
+                          ${!showOrganizer
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
+                            : 'bg-transparent text-purple-700 hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-800/30'}
+                          `
+                        }
+                      >
+                        Elenco Iscrizioni
+                      </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        aria-selected={showOrganizer}
+                        disabled={!organizerEligible && user?.role !== 'admin'}
+                        onClick={() => setShowOrganizer(true)}
+                        className={
+                          `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
+                          ${showOrganizer
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
+                            : 'bg-transparent text-purple-700 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed dark:text-purple-300 dark:hover:bg-purple-800/30'}
+                          `
+                        }
+                      >
+                        Organizza Evento
+                      </button>
+                    </div>
                   </div>
                   {!showOrganizer ? (
                     isLoadingParticipations ? (
