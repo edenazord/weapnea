@@ -90,14 +90,9 @@ export const EventPaymentButton = ({
       }
 
       if (eventCost > 0) {
-        const { url } = await startCheckout({
-          kind: 'event',
-          id: eventId,
-          title: eventTitle,
-          amount: eventCost,
-        });
-        window.location.href = url;
-        toast.success("Reindirizzamento al pagamento...");
+        // Pagamenti non ancora abilitati: mostra messaggio informativo
+        toast.info('Il pagamento online non è ancora disponibile. Per iscriverti, contatta l\'organizzatore.');
+        return;
       } else {
         // Evento gratuito - iscrizione diretta tramite API
         const token = localStorage.getItem('api_token') || import.meta.env.VITE_API_TOKEN;
@@ -164,7 +159,7 @@ export const EventPaymentButton = ({
               ? 'Già iscritto'
               : (isOrganizer
                   ? 'Organizzatore'
-                  : (eventCost > 0 ? `Iscriviti - €${eventCost.toFixed(2)}` : 'Iscriviti'))}
+                  : 'Iscriviti')}
         </>
       )}
     </Button>

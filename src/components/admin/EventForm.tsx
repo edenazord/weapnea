@@ -183,8 +183,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
       ...values,
       date: startDate,
       end_date: normalizedEndDate,
-  // If free mode, enforce null cost server-side
-      cost: eventsFree ? null : values.cost,
+      // Mantieni sempre il costo salvato a DB; sarà il server a mascherarlo se EVENTS_FREE_MODE=true
+      cost: (values.cost !== undefined && values.cost !== null) ? Number(values.cost) : null,
       level: values.level && values.level.trim() !== '' ? values.level : null,
       // Mantieni activity_description allineato a description per compatibilità
       activity_description: singleDesc,
@@ -633,19 +633,20 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           )}
         />
 
-        {!eventsFree && (
-          <FormField
-            control={form.control}
-            name="cost"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Costo (€)</FormLabel>
-                <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+        <FormField
+          control={form.control}
+          name="cost"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Costo (€)</FormLabel>
+              <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+              {eventsFree && (
+                <p className="text-xs text-muted-foreground mt-1">Attenzione: al momento gli eventi sono in modalità gratuita, il costo non sarà mostrato agli utenti ma verrà salvato.</p>
+              )}
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Galleria Immagini</h3>

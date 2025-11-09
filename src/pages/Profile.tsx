@@ -796,6 +796,7 @@ const Profile = () => {
                                 <TableHead>Titolo / Categoria</TableHead>
                                 <TableHead>Disciplina / Livello</TableHead>
                                 <TableHead>Data / Ricorrenza & Luogo</TableHead>
+                                <TableHead className="text-center">Costo</TableHead>
                                 <TableHead className="text-center">Iscritti</TableHead>
                                 <TableHead className="text-right">Azioni</TableHead>
                               </TableRow>
@@ -828,6 +829,7 @@ const Profile = () => {
                                       )}
                                     </div>
                                   </TableCell>
+                                  <TableCell className="text-sm text-center">{(ev.cost != null && ev.cost > 0) ? `€${Number(ev.cost).toFixed(2)}` : '—'}</TableCell>
                                   <TableCell className="text-sm text-center">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex gap-2 justify-end">
