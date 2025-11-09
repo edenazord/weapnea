@@ -37,6 +37,7 @@ import { createEvent, Event, getEvents, EventWithCategory, updateEvent } from "@
 import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { EventForm } from "@/components/admin/EventForm";
 import { CenteredNotice } from "@/components/CenteredNotice";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
 type BestEntry = { discipline: BestDiscipline; value: string };
@@ -653,14 +654,32 @@ const Profile = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {/* Sottomenu locale */}
+                  {/* Sottomenu locale: sostituito con Dropdown brand */}
                   <div className="flex flex-wrap gap-2 mb-6">
-                    <Button type="button" variant={!showOrganizer ? 'default' : 'outline'} size="sm" onClick={() => setShowOrganizer(false)}>
-                      Elenco Iscrizioni
-                    </Button>
-                    <Button type="button" variant={showOrganizer ? 'default' : 'outline'} size="sm" onClick={() => setShowOrganizer(true)} disabled={!organizerEligible && user?.role !== 'admin'}>
-                      Organizza Evento
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full border-purple-300 hover:border-purple-500 text-purple-700"
+                          aria-label="Seleziona vista eventi"
+                        >
+                          {showOrganizer ? 'Organizza Evento' : 'Elenco Iscrizioni'}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        <DropdownMenuItem onClick={() => setShowOrganizer(false)}>
+                          Elenco Iscrizioni
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          onClick={() => setShowOrganizer(true)}
+                          disabled={!organizerEligible && user?.role !== 'admin'}
+                        >
+                          Organizza Evento
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                   {!showOrganizer ? (
                     isLoadingParticipations ? (
