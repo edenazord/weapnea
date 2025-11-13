@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { backendConfig } from "@/lib/backendConfig";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface EventPaymentButtonProps {
   eventId: string;
@@ -29,10 +29,12 @@ export const EventPaymentButton = ({
   organizerId = null
 }: EventPaymentButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [justRegistered, setJustRegistered] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: myParticipations } = useQuery({
     queryKey: ["me", "participations"],
     queryFn: async () => {
@@ -134,6 +136,22 @@ export const EventPaymentButton = ({
           }
           return;
         }
+        // Aggiorna immediatamente lo stato UI e la cache delle partecipazioni
+        try {
+          queryClient.setQueryData<Array<{ event_id: string }>>(
+            ["me", "participations"],
+            (prev) => {
+              const arr = Array.isArray(prev) ? prev.slice() : [];
+              if (!arr.some(p => p.event_id === eventId)) {
+                arr.push({ event_id: eventId });
+              }
+              return arr;
+            }
+          );
+        } catch (_) {
+          // Ignora eventuali errori di aggiornamento cache: l'iscrizione è comunque avvenuta
+        }
+        setJustRegistered(true);
         toast.success('Iscrizione completata!');
       }
     } catch (error) {
@@ -148,7 +166,7 @@ export const EventPaymentButton = ({
     <>
     <Button 
       onClick={handlePayment}
-      disabled={disabled || isLoading || isAlreadyRegistered || isFull || isOrganizer}
+      disabled={disabled || isLoading || isAlreadyRegistered || justRegistered || isFull || isOrganizer}
       className={className}
     >
       {isLoading ? (
@@ -161,8 +179,8 @@ export const EventPaymentButton = ({
           <CreditCard className="mr-2 h-4 w-4" />
           {isFull
             ? 'Completo'
-            : isAlreadyRegistered
-              ? 'Già iscritto'
+            : (isAlreadyRegistered || justRegistered)
+              ? 'Iscritto'
               : (isOrganizer
                   ? 'Organizzatore'
                   : 'Iscriviti')}
