@@ -74,6 +74,7 @@ const Profile = () => {
     foto_brevetto_url: "",
     scadenza_brevetto: "",
     scadenza_certificato_medico: "",
+  certificato_medico_tipo: "",
     assicurazione: "",
     numero_assicurazione: "",
     dichiarazione_brevetto_valido: false,
@@ -313,6 +314,7 @@ const Profile = () => {
         foto_brevetto_url: (user as any).foto_brevetto_url || "",
         scadenza_brevetto: user.scadenza_brevetto || "",
         scadenza_certificato_medico: user.scadenza_certificato_medico || "",
+  certificato_medico_tipo: (user as any).certificato_medico_tipo || "",
         assicurazione: user.assicurazione || "",
         numero_assicurazione: (user as any).numero_assicurazione || "",
         dichiarazione_brevetto_valido: Boolean((user as any).dichiarazione_brevetto_valido) || false,
@@ -524,6 +526,7 @@ const Profile = () => {
         public_slug: computedSlug || null,
         scadenza_brevetto: formData.scadenza_brevetto || null,
         scadenza_certificato_medico: formData.scadenza_certificato_medico || null,
+        certificato_medico_tipo: formData.certificato_medico_tipo || null,
         scadenza_assicurazione: formData.scadenza_assicurazione || null,
         bio: formData.bio || null,
         brevetto: formData.brevetto || null,
@@ -1291,6 +1294,20 @@ const Profile = () => {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-2">Clicca sul mese per modificarlo. Usa il selettore per scegliere una nuova scadenza (solo mesi futuri).</p>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                            <div>
+                              <Label htmlFor="certificato_medico_tipo">Tipo certificato medico</Label>
+                              <Select value={(formData as any).certificato_medico_tipo || ''} onValueChange={(v) => handleInputChange('certificato_medico_tipo', v)}>
+                                <SelectTrigger id="certificato_medico_tipo" className="select-trigger">
+                                  <SelectValue placeholder="Seleziona tipo" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="agonistico">Agonistico</SelectItem>
+                                  <SelectItem value="non_agonistico">Non agonistico</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
                         </div>
                       </AccordionContent>
                     </AccordionItem>

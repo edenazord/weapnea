@@ -13,6 +13,7 @@ interface CustomUser {
   brevetto?: string | null;
   scadenza_brevetto?: string | null;
   scadenza_certificato_medico?: string | null;
+  certificato_medico_tipo?: 'agonistico' | 'non_agonistico' | null | string;
   assicurazione?: string | null;
   scadenza_assicurazione?: string | null;
   // Campi estesi certificazioni

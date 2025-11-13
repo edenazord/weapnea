@@ -106,6 +106,7 @@ async function runMigrationsAtStartup() {
   await runMigrationsAtStartup();
     // Ensure optional columns/tables exist to avoid runtime failures if migrations weren't applied yet
   await pool.query("ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS personal_best jsonb");
+  await ensureMedicalCertificateTypeColumnAtRuntime();
     // Simple key-value app settings store (for UI-configurable options like past-events position)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS public.app_settings (
@@ -229,6 +230,30 @@ async function ensurePersonalBestColumnAtRuntime() {
     HAS_PERSONAL_BEST = true;
   } catch (e) {
     console.warn('[personal_best] ensure column failed:', e?.message || e);
+  }
+}
+// Ensure column for medical certificate type (agonistico/non_agonistico)
+async function ensureMedicalCertificateTypeColumnAtRuntime() {
+  try {
+    await pool.query(`
+      ALTER TABLE IF EXISTS public.profiles
+        ADD COLUMN IF NOT EXISTS certificato_medico_tipo text
+    `);
+    // Optional constraint to allow only specific values when not null
+    await pool.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint
+          WHERE conname = 'chk_profiles_certificato_medico_tipo_values'
+            AND conrelid = 'public.profiles'::regclass
+        ) THEN
+          EXECUTE 'ALTER TABLE public.profiles ADD CONSTRAINT chk_profiles_certificato_medico_tipo_values CHECK (certificato_medico_tipo IS NULL OR certificato_medico_tipo IN (''agonistico'',''non_agonistico''))';
+        END IF;
+      END$$;
+    `);
+  } catch (e) {
+    console.warn('[profiles] ensure certificato_medico_tipo column failed:', e?.message || e);
   }
 }
 async function ensurePublicProfileColumnsAtRuntime() {
@@ -895,7 +920,7 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     : ", false AS public_profile_enabled, NULL::text AS public_slug, true AS public_show_bio, true AS public_show_instagram, true AS public_show_company_info, true AS public_show_certifications, true AS public_show_events, true AS public_show_records, true AS public_show_personal";
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
-    bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
+    bio, brevetto, scadenza_brevetto, scadenza_certificato_medico, certificato_medico_tipo,
     assicurazione, scadenza_assicurazione, instagram_contact${pb},
     company_name, vat_number, company_address, phone${pub}
      FROM profiles WHERE id = $1 LIMIT 1`;
@@ -984,7 +1009,7 @@ app.get('/api/profile', requireAuth, async (req, res) => {
     : ", false AS public_profile_enabled, NULL::text AS public_slug, true AS public_show_bio, true AS public_show_instagram, true AS public_show_company_info, true AS public_show_certifications, true AS public_show_events, true AS public_show_records, true AS public_show_personal";
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
-    bio, brevetto, scadenza_brevetto, scadenza_certificato_medico,
+    bio, brevetto, scadenza_brevetto, scadenza_certificato_medico, certificato_medico_tipo,
     assicurazione, scadenza_assicurazione, instagram_contact${pb},
     company_name, vat_number, company_address, phone${pub}, organizer_upgrade_requested_at
     , didattica_brevetto, numero_brevetto, foto_brevetto_url, numero_assicurazione
@@ -1023,7 +1048,7 @@ app.put('/api/profile', requireAuth, async (req, res) => {
       try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
     }
     const allowed = [
-      'full_name','avatar_url','bio','brevetto','scadenza_brevetto','scadenza_certificato_medico',
+      'full_name','avatar_url','bio','brevetto','scadenza_brevetto','scadenza_certificato_medico','certificato_medico_tipo',
       'assicurazione','scadenza_assicurazione','instagram_contact',
       'company_name','vat_number','company_address','phone',
       'didattica_brevetto','numero_brevetto','foto_brevetto_url','numero_assicurazione',
@@ -1046,6 +1071,18 @@ app.put('/api/profile', requireAuth, async (req, res) => {
         .slice(0, 80) || null;
       if (p.public_slug && RESERVED_SLUGS.has(p.public_slug)) {
         return res.status(400).json({ error: 'reserved_slug' });
+      }
+    }
+    // Normalizza valore certificato_medico_tipo
+    if (typeof p.certificato_medico_tipo !== 'undefined') {
+      let v = p.certificato_medico_tipo;
+      if (v === null || v === undefined || v === '') {
+        p.certificato_medico_tipo = null;
+      } else if (typeof v === 'string') {
+        const norm = v.toLowerCase().replace(/-/g, '_').trim();
+        p.certificato_medico_tipo = (norm === 'agonistico' || norm === 'non_agonistico') ? norm : null;
+      } else {
+        p.certificato_medico_tipo = null;
       }
     }
     const fields = Object.keys(p).filter(k => allowed.includes(k));
@@ -1701,7 +1738,7 @@ app.get('/api/instructors/:id', async (req, res) => {
       `SELECT 
         id, full_name, company_name, bio, avatar_url, instagram_contact, role,
         brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
-        scadenza_certificato_medico, company_address, vat_number
+        scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number
        FROM profiles
        WHERE id = $1 AND role IN ('instructor','company') AND COALESCE(is_active, true) = true
        LIMIT 1`,
@@ -1738,7 +1775,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
           `SELECT 
             id, full_name, company_name, bio, avatar_url, instagram_contact, role,
             brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
-            scadenza_certificato_medico, company_address, vat_number, personal_best,
+            scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number, personal_best,
             public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications, public_show_events, public_show_records, public_show_personal
            FROM profiles
            WHERE lower(public_slug) = lower($1)
@@ -1759,7 +1796,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
     const { rows: baseRows } = await pool.query(
       `SELECT id, full_name, company_name, bio, avatar_url, instagram_contact, role,
               brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
-              scadenza_certificato_medico, company_address, vat_number, personal_best,
+              scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number, personal_best,
               COALESCE(is_active, true) AS is_active
          FROM profiles WHERE id = $1 LIMIT 1`,
       [ownerId]
@@ -1784,6 +1821,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
       assicurazione: base.assicurazione,
       scadenza_assicurazione: base.scadenza_assicurazione,
       scadenza_certificato_medico: base.scadenza_certificato_medico,
+  certificato_medico_tipo: base.certificato_medico_tipo,
       company_address: base.company_address,
       vat_number: base.vat_number,
       personal_best: base.personal_best || null,

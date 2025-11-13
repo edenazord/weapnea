@@ -107,19 +107,29 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
         )}
 
         <div className="space-y-1 flex-1">
-          {event.date && (
+          {/* Se appuntamento ricorrente, mostra la ricorrenza al posto della data */}
+          {event.fixed_appointment === true ? (
             <div className="flex items-center gap-2 text-xs text-gray-600">
               <Calendar className="h-4 w-4 text-blue-500 flex-shrink-0" />
               <span>
-                {formatDate ? formatDate(event.date) : event.date}
-                {event.end_date && event.end_date !== event.date && (
-                  <>
-                    {" - "}
-                    {formatDate ? formatDate(event.end_date) : event.end_date}
-                  </>
-                )}
+                {(event.fixed_appointment_text && event.fixed_appointment_text.trim()) || t('events.recurring_label', 'Appuntamento ricorrente')}
               </span>
             </div>
+          ) : (
+            event.date && (
+              <div className="flex items-center gap-2 text-xs text-gray-600">
+                <Calendar className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                <span>
+                  {formatDate ? formatDate(event.date) : event.date}
+                  {event.end_date && event.end_date !== event.date && (
+                    <>
+                      {" - "}
+                      {formatDate ? formatDate(event.end_date) : event.end_date}
+                    </>
+                  )}
+                </span>
+              </div>
+            )
           )}
 
           {event.location && (
