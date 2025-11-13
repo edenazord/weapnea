@@ -135,15 +135,29 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
               disabled={contactLoading}
             >
               <MessageCircle className="h-4 w-4" />
-              <span className="text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
+              <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
             </button>
           )}
         </div>
       )}
       
       {!showImage && (
-        <div className="aspect-[16/9] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0">
+        <div className="relative aspect-[16/9] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0">
           <ImageIcon className="h-12 w-12 text-gray-400" />
+          {/* Overlay WhatsApp anche quando non c'è immagine */}
+          {eligibleForActions && (
+            <button
+              type="button"
+              onClick={handleWhatsapp}
+              className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-600/90 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-white/60"
+              aria-label="Richiedi informazioni su WhatsApp"
+              title="Richiedi informazioni"
+              disabled={contactLoading}
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
+            </button>
+          )}
         </div>
       )}
 
