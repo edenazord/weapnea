@@ -82,6 +82,11 @@ export const EventPaymentButton = ({
       const sc = user.scadenza_certificato_medico ? new Date(user.scadenza_certificato_medico) : null;
       if (!sa || isNaN(sa.getTime()) || sa < today) missing.push('Scadenza assicurazione');
       if (!sc || isNaN(sc.getTime()) || sc < today) missing.push('Scadenza certificato medico');
+      // Richiedi anche il tipo di certificato medico (agonistico/non_agonistico)
+      const tipo = (user as any).certificato_medico_tipo as string | null | undefined;
+      if (!tipo || !['agonistico', 'non_agonistico'].includes(String(tipo))) {
+        missing.push('Tipo certificato medico');
+      }
       if (missing.length) {
         setMissingFields(missing);
         setShowProfileModal(true);
@@ -103,7 +108,7 @@ export const EventPaymentButton = ({
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
-        const data = await res.json().catch(() => ({}));
+          const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           if (data?.error === 'Event is not free') {
             toast.error('Questo evento non è gratuito.');
@@ -116,6 +121,7 @@ export const EventPaymentButton = ({
               assicurazione: 'Assicurazione',
               scadenza_assicurazione: 'Scadenza assicurazione',
               scadenza_certificato_medico: 'Scadenza certificato medico',
+                certificato_medico_tipo: 'Tipo certificato medico',
             };
             const human = miss.map((k:string)=> map[k] || k);
             setMissingFields(human);
