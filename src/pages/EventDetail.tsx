@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEventById, getEventBySlug, EventWithCategory } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, MapPin, Users, Waves, CreditCard, Globe, BookOpen, Target, Check, X, Clock, Languages, FileText } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, Waves, CreditCard, Globe, BookOpen, Target, Check, X, Clock, Languages, FileText, MessageCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { UserNav } from "@/components/UserNav";
 import { useAuth } from "@/contexts/AuthContext";
@@ -137,7 +137,7 @@ const EventDetail = () => {
     });
 
         // Organizer profile query (must be declared unconditionally after the first query)
-        const organizerId = event?.organizer_id || event?.organizer?.id || event?.created_by || undefined;
+    const organizerId = event?.organizer_id || event?.organizer?.id || event?.created_by || undefined;
                 const { data: organizerProfile } = useQuery<{ id: string; full_name: string | null; company_name: string | null; avatar_url: string | null; role: string }>(
             {
                 queryKey: ['organizer-profile', organizerId],
@@ -160,6 +160,35 @@ const EventDetail = () => {
                     refetchOnWindowFocus: false,
             }
         );
+
+    // Organizer contact (phone) for eligible users only
+    const { data: organizerContact } = useQuery<{ phone: string } | null>({
+        queryKey: ['event-organizer-contact', event?.id],
+        queryFn: async () => {
+            if (!event?.id) return null as any;
+            try {
+                const res = await apiGet(`/api/events/${encodeURIComponent(event.id)}/organizer-contact`);
+                // Se 204 o 403, apiGet potrebbe lanciare: gestisci silenziosamente
+                if (res && typeof res === 'object' && 'phone' in res) return res as any;
+                return null as any;
+            } catch {
+                return null as any;
+            }
+        },
+        enabled: !!user && !!event?.id,
+        staleTime: 60_000,
+        retry: false,
+        refetchOnWindowFocus: false,
+    });
+
+    const buildWhatsappLink = (raw?: string | null) => {
+        if (!raw) return null;
+        // Rimuovi tutto tranne le cifre. wa.me richiede numero in formato internazionale senza + e simboli
+        const digits = String(raw).replace(/\D+/g, '');
+        if (!digits) return null;
+        const text = encodeURIComponent(`Ciao, sono interessato all'evento "${event?.title || ''}" su WeApnea.`);
+        return `https://wa.me/${digits}?text=${text}`;
+    };
 
     const formatEventDate = (dateString: string) => {
         try {
@@ -412,6 +441,22 @@ const EventDetail = () => {
                                                                                                                                 </div>
                                                                                                                             </div>
                                                                                                                         )}
+                                                                                                                        {(() => {
+                                                                                                                          const link = buildWhatsappLink(organizerContact?.phone);
+                                                                                                                          if (!link) return null;
+                                                                                                                          return (
+                                                                                                                            <a
+                                                                                                                              href={link}
+                                                                                                                              target="_blank"
+                                                                                                                              rel="noreferrer"
+                                                                                                                              className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs bg-green-100 text-green-700 hover:bg-green-200"
+                                                                                                                              title="Chatta su WhatsApp"
+                                                                                                                            >
+                                                                                                                              <MessageCircle className="h-4 w-4" />
+                                                                                                                              WhatsApp
+                                                                                                                            </a>
+                                                                                                                          );
+                                                                                                                        })()}
                                                                                                                     </div>
                                                                                                                 )}
 

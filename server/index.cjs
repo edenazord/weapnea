@@ -1599,6 +1599,52 @@ app.get('/api/events/slug/:slug', async (req, res) => {
   }
 });
 
+// Organizer contact (phone) for an event — only for eligible, authenticated users
+app.get('/api/events/:id/organizer-contact', requireAuth, async (req, res) => {
+  try {
+    // 1) Carica evento per ottenere organizer_id
+    const { rows: evRows } = await pool.query('SELECT id, created_by FROM events WHERE id = $1 LIMIT 1', [req.params.id]);
+    const ev = evRows[0];
+    if (!ev) return res.status(404).json({ error: 'Not found' });
+
+    // 2) Utente deve essere autenticato e non necessariamente organizzatore (se è organizzatore, ok comunque)
+    const viewerId = req.user?.id;
+    if (!viewerId) return res.status(401).json({ error: 'Unauthorized' });
+
+    // 3) Verifica idoneità alla pre-iscrizione (stessa logica del pagamento/iscrizione)
+    const { rows: profRows } = await pool.query(
+      `SELECT phone, assicurazione, scadenza_assicurazione, scadenza_certificato_medico, certificato_medico_tipo
+       FROM profiles WHERE id = $1 LIMIT 1`,
+      [viewerId]
+    );
+    const prof = profRows[0];
+    if (!prof) return res.status(404).json({ error: 'Profile not found' });
+    const isEmpty = (v) => !v || String(v).trim() === '';
+    const today = new Date();
+    const sa = prof.scadenza_assicurazione ? new Date(prof.scadenza_assicurazione) : null;
+    const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
+    const tipo = prof.certificato_medico_tipo ? String(prof.certificato_medico_tipo) : '';
+    const ok = (
+      !isEmpty(prof.phone) &&
+      !isEmpty(prof.assicurazione) &&
+      sa && sa instanceof Date && !isNaN(sa.getTime()) && sa >= today &&
+      sc && sc instanceof Date && !isNaN(sc.getTime()) && sc >= today &&
+      (tipo === 'agonistico' || tipo === 'non_agonistico')
+    );
+    if (!ok) return res.status(403).json({ error: 'not_eligible' });
+
+    // 4) Recupera telefono dell'organizzatore
+    const { rows: orgRows } = await pool.query('SELECT phone FROM profiles WHERE id = $1 LIMIT 1', [ev.created_by]);
+    const org = orgRows[0];
+    const phone = org?.phone && String(org.phone).trim() !== '' ? String(org.phone).trim() : null;
+    if (!phone) return res.status(204).end();
+
+    res.json({ phone });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 // -----------------------------
 // Blog endpoints
 // -----------------------------
