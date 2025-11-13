@@ -109,6 +109,8 @@ const Profile = () => {
     location?: string;
     image_url?: string;
     slug: string;
+    fixed_appointment?: boolean | null;
+    fixed_appointment_text?: string | null;
   };
   type EventParticipation = {
     id: string;
@@ -736,7 +738,9 @@ const Profile = () => {
                                   <h3 className="font-semibold">{p.events.title}</h3>
                                   <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                                     <Calendar className="h-4 w-4" />
-                                    {formatEventDate(p.events.date, p.events.end_date)}
+                                    {p.events.fixed_appointment === true
+                                      ? ((p.events.fixed_appointment_text && p.events.fixed_appointment_text.trim()) || t('events.recurring_label', 'Appuntamento ricorrente'))
+                                      : formatEventDate(p.events.date, p.events.end_date)}
                                     {p.events.location && (
                                       <>
                                         <MapPin className="h-4 w-4 ml-2" />

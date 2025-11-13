@@ -25,6 +25,8 @@ interface Event {
   slug: string;
   created_by?: string;
   category_id?: string;
+  fixed_appointment?: boolean | null;
+  fixed_appointment_text?: string | null;
 }
 
 interface EventParticipation {
@@ -114,7 +116,9 @@ const MyEvents = () => {
                         <h3 className="font-semibold">{participation.events.title}</h3>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                           <Calendar className="h-4 w-4" />
-                          {formatEventDate(participation.events.date, participation.events.end_date)}
+                          {participation.events.fixed_appointment === true
+                            ? ((participation.events.fixed_appointment_text && participation.events.fixed_appointment_text.trim()) || 'Appuntamento ricorrente')
+                            : formatEventDate(participation.events.date, participation.events.end_date)}
                           {participation.events.location && (
                             <>
                               <MapPin className="h-4 w-4 ml-2" />
