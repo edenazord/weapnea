@@ -147,6 +147,11 @@ export default function EventsManager() {
       notes: values.notes,
       schedule_logistics: values.schedule_logistics,
       gallery_images: values.gallery_images,
+      // Appuntamento fisso (Strategia B)
+      fixed_appointment: Boolean(values.fixed_appointment),
+      fixed_appointment_text: values.fixed_appointment_text && String(values.fixed_appointment_text).trim() !== ''
+        ? String(values.fixed_appointment_text).trim()
+        : null,
     };
 
     try {
