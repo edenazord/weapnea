@@ -441,22 +441,7 @@ const EventDetail = () => {
                                                                                                                                 </div>
                                                                                                                             </div>
                                                                                                                         )}
-                                                                                                                        {(() => {
-                                                                                                                          const link = buildWhatsappLink(organizerContact?.phone);
-                                                                                                                          if (!link) return null;
-                                                                                                                          return (
-                                                                                                                            <a
-                                                                                                                              href={link}
-                                                                                                                              target="_blank"
-                                                                                                                              rel="noreferrer"
-                                                                                                                              className="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs bg-green-100 text-green-700 hover:bg-green-200"
-                                                                                                                              title="Chatta su WhatsApp"
-                                                                                                                            >
-                                                                                                                              <MessageCircle className="h-4 w-4" />
-                                                                                                                              WhatsApp
-                                                                                                                            </a>
-                                                                                                                          );
-                                                                                                                        })()}
+                                                                                                                                                                                                                                                {/* WhatsApp inline icon rimosso su richiesta */}
                                                                                                                     </div>
                                                                                                                 )}
 
@@ -595,7 +580,7 @@ const EventDetail = () => {
                             )}
                                                 </div>
                                                 {/* Mostra il bottone Iscriviti solo per eventi futuri o in corso */}
-                                                {(() => {
+                                                                                                {(() => {
                                                     const endOrStart = event?.end_date || event?.date;
                                                     if (!endOrStart) return (
                                                         <EventPaymentButton
@@ -606,7 +591,7 @@ const EventDetail = () => {
                                                         isFull={(typeof event.participants === 'number' && event.participants > 0) 
                                                             ? Number(event.participants_paid_count || 0) >= Number(event.participants)
                                                             : false}
-                                                        className="w-full mt-8"
+                                                                                                                className="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                                                                                                 />
                                                     );
                                                     const d = new Date(endOrStart);
@@ -622,9 +607,27 @@ const EventDetail = () => {
                                                             isFull={(typeof event.participants === 'number' && event.participants > 0)
                                                                 ? Number(event.participants_paid_count || 0) >= Number(event.participants)
                                                                 : false}
-                                                            className="w-full mt-8"
+                                                                                                                        className="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                                                         />
                                                     ) : null;
+                                                })()}
+
+                                                {/* Bottone WhatsApp "Richiedi informazioni" sotto Iscriviti, visibile solo per utenti idonei (endpoint ritorna phone) */}
+                                                {(() => {
+                                                    const link = buildWhatsappLink(organizerContact?.phone);
+                                                    if (!link) return null;
+                                                    return (
+                                                        <a
+                                                            href={link}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-[#25D366] hover:bg-[#1EBE5B] text-white font-medium"
+                                                            title="Richiedi informazioni su WhatsApp"
+                                                        >
+                                                            <MessageCircle className="h-4 w-4" />
+                                                            Richiedi informazioni
+                                                        </a>
+                                                    );
                                                 })()}
                     </Card>
 
