@@ -255,7 +255,10 @@ const Profile = () => {
       schedule_logistics: values.schedule_meeting_point,
       activity_details: values.activity_details,
       who_we_are: values.who_we_are,
-      fixed_appointment: values.fixed_appointment,
+      fixed_appointment: Boolean(values.fixed_appointment),
+      fixed_appointment_text: values.fixed_appointment && values.fixed_appointment_text && values.fixed_appointment_text.trim() !== ''
+        ? values.fixed_appointment_text.trim()
+        : null,
       schedule_meeting_point: values.schedule_meeting_point,
       responsibility_waiver_accepted: values.responsibility_waiver_accepted,
       privacy_accepted: values.privacy_accepted,

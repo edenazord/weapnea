@@ -29,6 +29,7 @@ const allenamentiFormBaseSchema = z.object({
   date: z.string().min(1, { message: "La data di inizio è obbligatoria." }),
   end_date: z.string().optional(),
   fixed_appointment: z.boolean().default(false),
+  fixed_appointment_text: z.string().optional(),
   // Multi-istruttore rimosso
   responsibility_waiver_accepted: z.boolean().optional(),
   privacy_accepted: z.boolean().optional(),
@@ -69,6 +70,7 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
       date: (defaultValues?.date || "").toString().slice(0, 10),
       end_date: (defaultValues?.end_date || "").toString().slice(0, 10),
       fixed_appointment: defaultValues?.fixed_appointment || false,
+      fixed_appointment_text: (defaultValues as any)?.fixed_appointment_text || "",
       responsibility_waiver_accepted: defaultValues?.responsibility_waiver_accepted || false,
       privacy_accepted: defaultValues?.privacy_accepted || false,
       image_url: defaultValues?.image_url || "",
@@ -95,6 +97,10 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
             ...vals,
             gallery_images: gallery,
             image_url: gallery && gallery.length > 0 ? gallery[0] : null,
+            fixed_appointment: Boolean(vals.fixed_appointment),
+            fixed_appointment_text: vals.fixed_appointment && vals.fixed_appointment_text && vals.fixed_appointment_text.trim() !== ''
+              ? vals.fixed_appointment_text.trim()
+              : null,
           };
           onSubmit(transformed as any);
         })}
@@ -380,6 +386,27 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
               </FormItem>
             )}
           />
+
+          {/* Descrizione ricorrenza se appuntamento fisso */}
+          {form.watch('fixed_appointment') && (
+            <FormField
+              control={form.control}
+              name="fixed_appointment_text"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descrizione ricorrenza</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      {...field}
+                      placeholder="Es. Ogni martedì e giovedì alle 19:00, ritrovo 18:45"
+                      rows={3}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
         </div>
 
         {/* Sezione istruttori rimossa (multi-istruttore non più supportato) */}

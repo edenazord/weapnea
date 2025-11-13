@@ -174,14 +174,16 @@ const EventDetail = () => {
     };
 
     const getDisplayDate = () => {
+        // Se appuntamento fisso, mostra la descrizione della ricorrenza al posto della data
+        if (event?.fixed_appointment) {
+            const text = (event.fixed_appointment_text && event.fixed_appointment_text.trim()) || 'Appuntamento ricorrente';
+            return text;
+        }
         if (!event?.date) return '';
-        
         const startDate = formatEventDate(event.date);
-        
         if (!event.end_date || event.end_date === event.date) {
             return startDate;
         }
-        
         const endDate = formatEventDate(event.end_date);
         return `${startDate} - ${endDate}`;
     };
