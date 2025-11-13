@@ -129,7 +129,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
             <button
               type="button"
               onClick={handleWhatsapp}
-              className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-600/90 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-white/60"
+              className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-600/90 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-white/60"
               aria-label="Richiedi informazioni su WhatsApp"
               title="Richiedi informazioni"
               disabled={contactLoading}
@@ -149,7 +149,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
             <button
               type="button"
               onClick={handleWhatsapp}
-              className="absolute top-2 right-2 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-600/90 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-white/60"
+              className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-600/90 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-white/60"
               aria-label="Richiedi informazioni su WhatsApp"
               title="Richiedi informazioni"
               disabled={contactLoading}

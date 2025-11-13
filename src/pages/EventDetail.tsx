@@ -190,6 +190,36 @@ const EventDetail = () => {
         return `https://wa.me/${digits}?text=${text}`;
     };
 
+    const handleWhatsappDetailClick = async () => {
+        try {
+            // Usa quello già in cache se disponibile
+            const linkFromCache = buildWhatsappLink(organizerContact?.phone);
+            if (linkFromCache) {
+                window.open(linkFromCache, '_blank', 'noopener,noreferrer');
+                return;
+            }
+            // Altrimenti prova a recuperare adesso
+            if (!event?.id) return;
+            const res = await apiGet(`/api/events/${encodeURIComponent(event.id)}/organizer-contact`);
+            const phone = (res && typeof res === 'object' && 'phone' in res) ? (res as any).phone as string : '';
+            const link = buildWhatsappLink(phone);
+            if (link) {
+                window.open(link, '_blank', 'noopener,noreferrer');
+                return;
+            }
+        } catch (e) {
+            // Ignora: gestiamo sotto con il messaggio
+        }
+        // Se arrivo qui, non posso contattare: guida l'utente a completare il profilo
+        // Import dinamico per evitare import multipli di toast in header
+        try {
+            const mod = await import('sonner');
+            mod.toast.info('Per contattare l\'organizzatore completa prima il profilo.');
+        } catch (_) {
+            // Ignora errori del dinamico: se non riusciamo a importare, pazienza
+        }
+    };
+
     const formatEventDate = (dateString: string) => {
         try {
             const date = parseISO(dateString);
@@ -612,23 +642,21 @@ const EventDetail = () => {
                                                     ) : null;
                                                 })()}
 
-                                                {/* Bottone WhatsApp "Richiedi informazioni" sotto Iscriviti, visibile solo per utenti idonei (endpoint ritorna phone) */}
-                                                {(() => {
-                                                    const link = buildWhatsappLink(organizerContact?.phone);
-                                                    if (!link) return null;
-                                                    return (
-                                                        <a
-                                                            href={link}
-                                                            target="_blank"
-                                                            rel="noreferrer"
-                                                            className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-[#25D366] hover:bg-[#1EBE5B] text-white font-medium"
-                                                            title="Richiedi informazioni su WhatsApp"
-                                                        >
-                                                            <MessageCircle className="h-4 w-4" />
-                                                            Richiedi informazioni
-                                                        </a>
-                                                    );
-                                                })()}
+                                                {/* Bottone WhatsApp "Richiedi informazioni" sotto Iscriviti:
+                                                    - visibile agli utenti autenticati
+                                                    - al click recupera (se necessario) il contatto in modo sicuro
+                                                    - se non idoneo, mostra un messaggio per completare il profilo */}
+                                                {user ? (
+                                                    <button
+                                                        type="button"
+                                                        onClick={handleWhatsappDetailClick}
+                                                        className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-[#25D366] hover:bg-[#1EBE5B] text-white font-medium"
+                                                        title="Richiedi informazioni su WhatsApp"
+                                                    >
+                                                        <MessageCircle className="h-4 w-4" />
+                                                        Richiedi informazioni
+                                                    </button>
+                                                ) : null}
                     </Card>
 
                     {/* Informazioni Dettagliate - senza logistica che è stata spostata a sinistra */}
