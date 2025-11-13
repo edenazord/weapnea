@@ -4,13 +4,16 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Users, Euro, Image as ImageIcon, Target } from "lucide-react";
+import { Calendar, MapPin, Users, Euro, Image as ImageIcon, Target, MessageCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import type { EventWithCategory } from "@/lib/api";
 import { ensureAbsoluteUrl } from "@/lib/utils";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
 import { localizeCategoryName } from "@/lib/i18n-utils";
 import { getPublicConfig } from "@/lib/publicConfig";
+import { useAuth } from "@/contexts/AuthContext";
+import { apiGet } from "@/lib/apiClient";
+import { toast } from "sonner";
 
 interface EventCardProps {
   event: EventWithCategory;
@@ -21,9 +24,11 @@ interface EventCardProps {
 
 const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = true }: EventCardProps) => {
   const [imageError, setImageError] = useState(false);
+  const [contactLoading, setContactLoading] = useState(false);
   // null = sconosciuto (evita lampeggio del prezzo prima di caricare la config)
   const [eventsFree, setEventsFree] = useState<boolean | null>(null);
   const { t } = useLanguage();
+  const { user } = useAuth();
   
   const handleImageError = () => {
     console.log('Image failed to load for event:', event.title, 'URL:', event.image_url);
@@ -40,6 +45,49 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
     : (Array.isArray(event.gallery_images) && event.gallery_images.length > 0 ? event.gallery_images[0] : undefined);
   const imageUrl = ensureAbsoluteUrl(primary);
   const showImage = imageUrl && !imageError;
+
+  const eligibleForActions = (() => {
+    if (!user) return false;
+    const isEmpty = (v?: string | null) => !v || String(v).trim() === '';
+    const today = new Date();
+    const sa = user.scadenza_assicurazione ? new Date(user.scadenza_assicurazione) : null;
+    const sc = user.scadenza_certificato_medico ? new Date(user.scadenza_certificato_medico) : null;
+    const tipo = (user as any).certificato_medico_tipo as string | null | undefined;
+    const tipoOk = tipo === 'agonistico' || tipo === 'non_agonistico';
+    return !isEmpty(user.phone)
+      && !isEmpty(user.assicurazione)
+      && !!sa && !isNaN(sa.getTime()) && sa >= today
+      && !!sc && !isNaN(sc.getTime()) && sc >= today
+      && tipoOk;
+  })();
+
+  const handleWhatsapp = async () => {
+    if (!eligibleForActions) {
+      toast.info(t('events.complete_profile_first', 'Per contattare l\'organizzatore completa prima il profilo.'));
+      return;
+    }
+    setContactLoading(true);
+    try {
+      const res = await apiGet(`/api/events/${encodeURIComponent(event.id)}/organizer-contact`);
+      const phone = (res && typeof res === 'object' && 'phone' in res) ? (res as any).phone as string : '';
+      if (!phone) {
+        toast.error(t('events.organizer_no_phone', 'Contatto organizzatore non disponibile'));
+        return;
+      }
+      const digits = String(phone).replace(/\D+/g, '');
+      if (!digits) {
+        toast.error(t('events.organizer_no_phone', 'Contatto organizzatore non disponibile'));
+        return;
+      }
+      const text = encodeURIComponent(`Ciao, sono interessato all'evento "${event.title}" su WeApnea.`);
+      const url = `https://wa.me/${digits}?text=${text}`;
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } catch {
+      toast.error(t('events.organizer_contact_error', 'Impossibile recuperare il contatto dell\'organizzatore'));
+    } finally {
+      setContactLoading(false);
+    }
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -77,6 +125,18 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
           {/* Badge 'Gratuito' rimosso in free mode */}
+          {eligibleForActions && (
+            <button
+              type="button"
+              onClick={handleWhatsapp}
+              className="absolute top-2 right-2 inline-flex items-center justify-center h-8 w-8 rounded-full bg-green-600/90 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-white/60"
+              aria-label="Contatta su WhatsApp"
+              title="Contatta su WhatsApp"
+              disabled={contactLoading}
+            >
+              <MessageCircle className="h-4 w-4" />
+            </button>
+          )}
         </div>
       )}
       
