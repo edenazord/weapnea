@@ -136,7 +136,7 @@
         "forgot_password": "Forgot your password?"
       }
     },
-    "register": {
+          "quick_info": "Quick Information"
       "validation": {
         "role_required": "You must select an account type.",
         "fullname_required": "Full name is required",
