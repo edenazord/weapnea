@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Navigation } from 'lucide-react';
 import { loadGoogleMaps } from '@/lib/googleMapsLoader';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface GoogleMapProps {
   location: string;
@@ -14,6 +15,7 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<any | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const { t } = useLanguage();
 
   useEffect(() => {
     let cancelled = false;
@@ -96,7 +98,7 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
       <div className="w-full h-64 bg-gray-100 rounded-lg flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin h-8 w-8 border-2 border-gray-300 border-t-blue-600 rounded-full mx-auto mb-2"></div>
-          <p className="text-gray-600">Caricamento mappa...</p>
+          <p className="text-gray-600">{t('common.loading_map', 'Caricamento mappa...')}</p>
         </div>
       </div>
     );

@@ -3,11 +3,12 @@
     "home": "Home",
     "events": "Events",
     "about": "About",
+    "contact": "Contact Us",
     "blog": "Blog",
     "forum": "Forum",
-  "profile": "Profile",
-  "dashboard": "Dashboard",
-  "logout": "Log out"
+    "profile": "Profile",
+    "dashboard": "Dashboard",
+    "logout": "Log out"
   },
   "common": {
   "login": "Log in",
@@ -204,7 +205,47 @@
     "subtitle": "Oops! Page not found",
     "back_home": "Return to Home"
   },
-  "events": {"participants": "participants", "details": "Details", "count_in_category": "events in this category", "none_in_category": "No events available in this category"},
+  "events": {
+    "upcoming_title": "Upcoming Events",
+    "upcoming_subtitle": "All events scheduled ordered by date",
+    "no_upcoming": "No upcoming events",
+    "check_back_soon": "Check back soon for new events!",
+    "participants": "participants",
+    "details": "Details",
+    "count_in_category": "events in this category",
+    "none_in_category": "No events available in this category",
+    "enrolled_label": "Enrolled",
+    "enrolled": "Enrolled",
+    "participants_title": "Participants",
+    "no_participants": "No participants",
+    "request_info": "Request info",
+    "register": "Sign up",
+    "full": "Full",
+    "organizer": "Organizer",
+    "cost_label": "Cost",
+    "free": "Free",
+    "nation_label": "Country",
+    "event_details": "Event Details",
+    "event_type_label": "Type",
+    "discipline_label": "Discipline",
+    "level_label": "Level",
+    "language_label": "Language",
+    "included_not_included": "Included/Not Included",
+    "gallery_label": "Gallery",
+    "slots_full": "Slots full for this event.",
+    "event_not_free": "This event is not free.",
+    "event_not_found": "Event not found.",
+    "registration_error": "Unable to complete registration.",
+    "registration_success": "Registration completed!",
+    "payment_error": "Error in payment process",
+    "view_participants": "View participants: {count} enrolled",
+    "total_participants": "Total participants:",
+    "total_revenue": "Total revenue:",
+    "remove_participant": "Remove participant",
+    "confirm_remove_participant": "Remove {name}?",
+    "participant_removed": "Participant removed",
+    "remove_participant_error": "Unable to remove participant"
+  },
   "forum": {
     "title": "Forum",
     "subtitle": "Discuss with the freediving community",
@@ -276,6 +317,16 @@
       "company": "Company",
       "sponsor": "Sponsor"
     },
+    "fields": {
+      "phone": "Phone",
+      "insurance": "Insurance",
+      "insurance_expiry": "Insurance Expiry",
+      "medical_cert_expiry": "Medical Certificate Expiry",
+      "medical_cert_type": "Medical Certificate Type"
+    },
+    "complete_profile": "Complete Your Profile",
+    "complete_profile_desc": "To proceed with payment, complete the following profile fields:",
+    "view_public_profile": "View public profile",
     "sections": {
       "my_events": {
         "title": "My Events",
@@ -358,5 +409,37 @@
       "update_error_desc": "An error occurred while updating the profile."
     },
     "login_required": "You must be authenticated to view the profile."
+  },
+  "events": {
+    "upcoming_title": "Upcoming Events",
+    "upcoming_subtitle": "All events scheduled ordered by date",
+    "no_upcoming": "No upcoming events",
+    "check_back_soon": "Check back soon for new events!"
+  },
+  "contact": {
+    "page_title": "Contact Us",
+    "page_subtitle": "Do you have questions, suggestions or want to collaborate with us? Write to us!",
+    "name_label": "Name",
+    "name_placeholder": "Your name",
+    "email_label": "Email",
+    "email_placeholder": "name@example.com",
+    "message_label": "Message",
+    "message_placeholder": "How can we help you?",
+    "response_time": "We respond within 24-48 business hours",
+    "send_button": "Send",
+    "sending": "Sending…",
+    "missing_fields_title": "Missing Fields",
+    "missing_fields_desc": "Fill in name, email and message.",
+    "invalid_email_title": "Invalid Email",
+    "invalid_email_desc": "Enter a valid email address.",
+    "short_message_title": "Message Too Short",
+    "short_message_desc": "Add more details.",
+    "sent_title": "Message Sent",
+    "sent_desc": "We will respond as soon as possible.",
+    "error_title": "Send Failed",
+    "error_desc": "Try again later."
+  },
+  "not_found": {
+    "back_home": "Back to Home"
   }
 }

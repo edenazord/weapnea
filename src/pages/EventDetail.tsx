@@ -8,6 +8,7 @@ import { ArrowLeft, Calendar, MapPin, Users, Waves, CreditCard, Globe, BookOpen,
 import { Card } from "@/components/ui/card";
 import { UserNav } from "@/components/UserNav";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -74,6 +75,7 @@ const EventDetailSkeleton = () => (
 const EventDetail = () => {
     const { slug } = useParams<{ slug: string }>();
     const { user, loading: authLoading } = useAuth();
+    const { t } = useLanguage();
     const isMobile = useIsMobile();
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -594,8 +596,8 @@ const EventDetail = () => {
                               <div className="flex items-start">
                                   <CreditCard className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                   <div>
-                                      <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Costo</p>
-                                      <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{event.cost != null && event.cost > 0 ? `${event.cost}€` : 'Gratuito'}</p>
+                                      <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.cost_label', 'Costo')}</p>
+                                      <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{event.cost != null && event.cost > 0 ? `${event.cost}€` : t('events.free', 'Gratuito')}</p>
                                   </div>
                               </div>
                             )}
@@ -603,7 +605,7 @@ const EventDetail = () => {
                                 <div className="flex items-start">
                                     <Globe className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                     <div>
-                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Nazione</p>
+                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.nation_label', 'Nazione')}</p>
                                         <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{event.nation}</p>
                                     </div>
                                 </div>
@@ -662,13 +664,13 @@ const EventDetail = () => {
                     {/* Informazioni Dettagliate - senza logistica che è stata spostata a sinistra */}
                     {(event.event_type || event.discipline || event.level || event.language) && (
                         <Card className={`shadow-lg p-6 mt-6`}>
-                            <h2 className={`font-bold text-blue-900 mb-6 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Dettagli Evento</h2>
+                            <h2 className={`font-bold text-blue-900 mb-6 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.event_details', 'Dettagli Evento')}</h2>
                             <div className="space-y-4">
                                 {event.event_type && (
                                     <div className="flex items-start">
                                         <FileText className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                         <div>
-                                            <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Tipologia</p>
+                                            <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.event_type_label', 'Tipologia')}</p>
                                             <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{formatEventType(event.event_type)}</p>
                                         </div>
                                     </div>
@@ -677,7 +679,7 @@ const EventDetail = () => {
                                     <div className="flex items-start">
                                         <Waves className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                         <div>
-                                            <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Disciplina</p>
+                                            <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.discipline_label', 'Disciplina')}</p>
                                             <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{formatDiscipline(event.discipline)}</p>
                                         </div>
                                     </div>
@@ -686,7 +688,7 @@ const EventDetail = () => {
                                     <div className="flex items-start">
                                         <BookOpen className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                         <div>
-                                            <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Livello</p>
+                                            <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.level_label', 'Livello')}</p>
                                             <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{formatLevel(event.level)}</p>
                                         </div>
                                     </div>
@@ -695,7 +697,7 @@ const EventDetail = () => {
                                     <div className="flex items-start">
                                         <Languages className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                         <div>
-                                            <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Lingua</p>
+                                            <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.language_label', 'Lingua')}</p>
                                             <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{event.language}</p>
                                         </div>
                                     </div>
@@ -707,12 +709,12 @@ const EventDetail = () => {
                     {/* Cosa è incluso/non incluso - rimane a destra */}
                     {(event.included_in_activity || event.not_included_in_activity) && (
                         <Card className={`shadow-lg p-6 mt-6`}>
-                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Incluso/Non Incluso</h2>
+                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.included_not_included', 'Incluso/Non Incluso')}</h2>
                             {event.included_in_activity && (
                                 <div className="mb-4">
                                     <div className="flex items-center mb-2">
                                         <Check className="h-5 w-5 mr-2 text-green-600" />
-                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Incluso</p>
+                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.included_label', 'Incluso')}</p>
                                     </div>
                                     <div className={`text-gray-600 whitespace-pre-wrap ml-7 ${isMobile ? 'text-sm' : ''}`}>
                                         {event.included_in_activity}
@@ -723,7 +725,7 @@ const EventDetail = () => {
                                 <div>
                                     <div className="flex items-center mb-2">
                                         <X className="h-5 w-5 mr-2 text-red-600" />
-                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Non Incluso</p>
+                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.not_included_label', 'Non Incluso')}</p>
                                     </div>
                                     <div className={`text-gray-600 whitespace-pre-wrap ml-7 ${isMobile ? 'text-sm' : ''}`}>
                                         {event.not_included_in_activity}
@@ -736,7 +738,7 @@ const EventDetail = () => {
                     {/* Galleria immagini - rimane a destra */}
                     {hasGallery && (
                         <Card className={`shadow-lg p-6 mt-6`}>
-                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Galleria</h2>
+                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.gallery_label', 'Galleria')}</h2>
                             <div className="grid grid-cols-2 gap-3">
                                 {galleryAbs.map((src, index) => (
                                     <img

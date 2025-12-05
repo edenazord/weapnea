@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { backendConfig } from "@/lib/backendConfig";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EventPaymentButtonProps {
   eventId: string;
@@ -35,6 +36,7 @@ export const EventPaymentButton = ({
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { t } = useLanguage();
   const { data: myParticipations } = useQuery({
     queryKey: ["me", "participations"],
     queryFn: async () => {
@@ -68,7 +70,7 @@ export const EventPaymentButton = ({
 
     // Blocca lato UI se l'evento è pieno
     if (isFull) {
-      toast.error('Posti esauriti per questo evento.');
+      toast.error(t('events.slots_full', 'Posti esauriti per questo evento.'));
       return;
     }
 
@@ -78,16 +80,16 @@ export const EventPaymentButton = ({
       const missing: string[] = [];
       const today = new Date();
       const isEmpty = (v?: string | null) => !v || String(v).trim() === '';
-      if (isEmpty(user.phone)) missing.push('Telefono');
-      if (isEmpty(user.assicurazione)) missing.push('Assicurazione');
+      if (isEmpty(user.phone)) missing.push(t('profile.fields.phone', 'Telefono'));
+      if (isEmpty(user.assicurazione)) missing.push(t('profile.fields.insurance', 'Assicurazione'));
       const sa = user.scadenza_assicurazione ? new Date(user.scadenza_assicurazione) : null;
       const sc = user.scadenza_certificato_medico ? new Date(user.scadenza_certificato_medico) : null;
-      if (!sa || isNaN(sa.getTime()) || sa < today) missing.push('Scadenza assicurazione');
-      if (!sc || isNaN(sc.getTime()) || sc < today) missing.push('Scadenza certificato medico');
+      if (!sa || isNaN(sa.getTime()) || sa < today) missing.push(t('profile.fields.insurance_expiry', 'Scadenza assicurazione'));
+      if (!sc || isNaN(sc.getTime()) || sc < today) missing.push(t('profile.fields.medical_cert_expiry', 'Scadenza certificato medico'));
       // Richiedi anche il tipo di certificato medico (agonistico/non_agonistico)
       const tipo = (user as any).certificato_medico_tipo as string | null | undefined;
       if (!tipo || !['agonistico', 'non_agonistico'].includes(String(tipo))) {
-        missing.push('Tipo certificato medico');
+        missing.push(t('profile.fields.medical_cert_type', 'Tipo certificato medico'));
       }
       if (missing.length) {
         setMissingFields(missing);
@@ -113,17 +115,17 @@ export const EventPaymentButton = ({
           const data = await res.json().catch(() => ({}));
         if (!res.ok) {
           if (data?.error === 'Event is not free') {
-            toast.error('Questo evento non è gratuito.');
+            toast.error(t('events.event_not_free', 'Questo evento non è gratuito.'));
           } else if (data?.error === 'Event not found') {
-            toast.error('Evento non trovato.');
+            toast.error(t('events.event_not_found', 'Evento non trovato.'));
           } else if (data?.error === 'profile_incomplete') {
             const miss = Array.isArray(data?.missing) ? data.missing : [];
             const map: Record<string,string> = {
-              phone: 'Telefono',
-              assicurazione: 'Assicurazione',
-              scadenza_assicurazione: 'Scadenza assicurazione',
-              scadenza_certificato_medico: 'Scadenza certificato medico',
-                certificato_medico_tipo: 'Tipo certificato medico',
+              phone: t('profile.fields.phone', 'Telefono'),
+              assicurazione: t('profile.fields.insurance', 'Assicurazione'),
+              scadenza_assicurazione: t('profile.fields.insurance_expiry', 'Scadenza assicurazione'),
+              scadenza_certificato_medico: t('profile.fields.medical_cert_expiry', 'Scadenza certificato medico'),
+                certificato_medico_tipo: t('profile.fields.medical_cert_type', 'Tipo certificato medico'),
             };
             const human = miss.map((k:string)=> map[k] || k);
             setMissingFields(human);
@@ -132,7 +134,7 @@ export const EventPaymentButton = ({
             navigate('/auth');
             return;
           } else {
-            toast.error('Impossibile completare l\'iscrizione.');
+            toast.error(t('events.registration_error', 'Impossibile completare l\'iscrizione.'));
           }
           return;
         }
@@ -152,11 +154,11 @@ export const EventPaymentButton = ({
           // Ignora eventuali errori di aggiornamento cache: l'iscrizione è comunque avvenuta
         }
         setJustRegistered(true);
-        toast.success('Iscrizione completata!');
+        toast.success(t('events.registration_success', 'Iscrizione completata!'));
       }
     } catch (error) {
       console.error("Error creating checkout:", error);
-      toast.error("Errore nel processo di pagamento");
+      toast.error(t('events.payment_error', 'Errore nel processo di pagamento'));
     } finally {
       setIsLoading(false);
     }
@@ -172,18 +174,18 @@ export const EventPaymentButton = ({
       {isLoading ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Caricamento...
+          {t('common.loading', 'Caricamento...')}
         </>
       ) : (
         <>
           <CreditCard className="mr-2 h-4 w-4" />
           {isFull
-            ? 'Completo'
+            ? t('events.full', 'Completo')
             : (isAlreadyRegistered || justRegistered)
-              ? 'Iscritto'
+              ? t('events.enrolled', 'Iscritto')
               : (isOrganizer
-                  ? 'Organizzatore'
-                  : 'Iscriviti')}
+                  ? t('events.organizer', 'Organizzatore')
+                  : t('events.register', 'Iscriviti'))}
         </>
       )}
     </Button>
@@ -191,9 +193,9 @@ export const EventPaymentButton = ({
     <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Completa il tuo profilo</DialogTitle>
+          <DialogTitle>{t('profile.complete_profile', 'Completa il tuo profilo')}</DialogTitle>
           <DialogDescription>
-            Per procedere al pagamento, completa i seguenti campi del profilo:
+            {t('profile.complete_profile_desc', 'Per procedere al pagamento, completa i seguenti campi del profilo:')}
           </DialogDescription>
         </DialogHeader>
         <ul className="list-disc pl-5 space-y-1">
@@ -202,8 +204,8 @@ export const EventPaymentButton = ({
           ))}
         </ul>
         <DialogFooter className="mt-4">
-          <Button variant="secondary" onClick={() => setShowProfileModal(false)}>Chiudi</Button>
-          <Button onClick={() => { setShowProfileModal(false); navigate('/profile'); }}>Vai al profilo</Button>
+          <Button variant="secondary" onClick={() => setShowProfileModal(false)}>{t('common.close', 'Chiudi')}</Button>
+          <Button onClick={() => { setShowProfileModal(false); navigate('/profile'); }}>{t('common.go_to_profile', 'Vai al profilo')}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

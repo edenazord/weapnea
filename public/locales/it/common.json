@@ -3,11 +3,12 @@
     "home": "Home",
     "events": "Eventi",
     "about": "Chi Siamo",
+    "contact": "Contattaci",
     "blog": "Blog",
     "forum": "Forum",
-  "profile": "Profilo",
-  "dashboard": "Dashboard",
-  "logout": "Esci"
+    "profile": "Profilo",
+    "dashboard": "Dashboard",
+    "logout": "Esci"
   },
   "common": {
   "login": "Accedi",
@@ -15,7 +16,12 @@
   "error": "Errore",
   "unexpected_error": "Errore imprevisto",
   "cancel": "Annulla",
-  "delete": "Elimina"
+  "delete": "Elimina",
+  "loading": "Caricamento...",
+  "close": "Chiudi",
+  "go_to_profile": "Vai al profilo",
+  "loading_map": "Caricamento mappa...",
+  "loading_error": "Errore nel caricamento"
   },
   "homepage": {
     "uncategorized_events": "Allenamenti",
@@ -213,9 +219,44 @@
   },
   "events": {
     "participants": "partecipanti",
-  "details": "Dettagli",
-  "count_in_category": "eventi in questa categoria",
-  "none_in_category": "Nessun evento disponibile in questa categoria"
+    "details": "Dettagli",
+    "count_in_category": "eventi in questa categoria",
+    "none_in_category": "Nessun evento disponibile in questa categoria",
+    "enrolled_label": "Iscritti",
+    "enrolled": "Iscritto",
+    "participants_title": "Partecipanti",
+    "no_participants": "Nessun partecipante",
+    "request_info": "Richiedi info",
+    "register": "Iscriviti",
+    "full": "Completo",
+    "organizer": "Organizzatore",
+    "cost_label": "Costo",
+    "free": "Gratuito",
+    "nation_label": "Nazione",
+    "event_details": "Dettagli Evento",
+    "event_type_label": "Tipologia",
+    "discipline_label": "Disciplina",
+    "level_label": "Livello",
+    "language_label": "Lingua",
+    "included_not_included": "Incluso/Non Incluso",
+    "gallery_label": "Galleria",
+    "slots_full": "Posti esauriti per questo evento.",
+    "event_not_free": "Questo evento non è gratuito.",
+    "event_not_found": "Evento non trovato.",
+    "registration_error": "Impossibile completare l'iscrizione.",
+    "registration_success": "Iscrizione completata!",
+    "payment_error": "Errore nel processo di pagamento",
+    "view_participants": "Vedi partecipanti: {count} iscritti",
+    "total_participants": "Totale partecipanti:",
+    "total_revenue": "Ricavo totale:",
+    "remove_participant": "Rimuovi partecipante",
+    "confirm_remove_participant": "Rimuovere {name}?",
+    "participant_removed": "Partecipante rimosso",
+    "remove_participant_error": "Impossibile rimuovere il partecipante",
+    "upcoming_title": "Eventi Imminenti",
+    "upcoming_subtitle": "Tutti gli eventi in programma ordinati per data",
+    "no_upcoming": "Nessun evento imminente",
+    "check_back_soon": "Torna presto per i nuovi eventi!"
   },
   "forum": {
     "title": "Forum",
@@ -289,6 +330,16 @@
       "company": "Azienda",
       "sponsor": "Sponsor"
     },
+    "fields": {
+      "phone": "Telefono",
+      "insurance": "Assicurazione",
+      "insurance_expiry": "Scadenza assicurazione",
+      "medical_cert_expiry": "Scadenza certificato medico",
+      "medical_cert_type": "Tipo certificato medico"
+    },
+    "complete_profile": "Completa il tuo profilo",
+    "complete_profile_desc": "Per procedere al pagamento, completa i seguenti campi del profilo:",
+    "view_public_profile": "Vedi profilo pubblico",
     "sections": {
       "my_events": {
         "title": "I Miei Eventi",
@@ -371,5 +422,37 @@
       "update_error_desc": "Si è verificato un errore nell'aggiornare il profilo."
     },
     "login_required": "Devi essere autenticato per visualizzare il profilo."
+  },
+  "events": {
+    "upcoming_title": "Eventi Imminenti",
+    "upcoming_subtitle": "Tutti gli eventi in programma ordinati per data",
+    "no_upcoming": "Nessun evento imminente",
+    "check_back_soon": "Torna presto per vedere i nuovi eventi!"
+  },
+  "contact": {
+    "page_title": "Contattaci",
+    "page_subtitle": "Hai domande, suggerimenti o vuoi collaborare con noi? Scrivici!",
+    "name_label": "Nome",
+    "name_placeholder": "Il tuo nome",
+    "email_label": "Email",
+    "email_placeholder": "nome@esempio.com",
+    "message_label": "Messaggio",
+    "message_placeholder": "Come possiamo aiutarti?",
+    "response_time": "Rispondiamo in 24-48 ore lavorative",
+    "send_button": "Invia",
+    "sending": "Invio…",
+    "missing_fields_title": "Campi mancanti",
+    "missing_fields_desc": "Compila nome, email e messaggio.",
+    "invalid_email_title": "Email non valida",
+    "invalid_email_desc": "Inserisci un indirizzo email valido.",
+    "short_message_title": "Messaggio troppo breve",
+    "short_message_desc": "Aggiungi qualche dettaglio in più.",
+    "sent_title": "Messaggio inviato",
+    "sent_desc": "Ti risponderemo al più presto.",
+    "error_title": "Invio non riuscito",
+    "error_desc": "Riprova più tardi."
+  },
+  "not_found": {
+    "back_home": "Torna alla Home"
   }
 }

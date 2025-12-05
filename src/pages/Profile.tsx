@@ -671,7 +671,7 @@ const Profile = () => {
               {t('profile.tabs.bests', 'Record')}
             </TabsTrigger>
             <TabsTrigger value="visibility" className="whitespace-nowrap">
-              Visibilità
+              {t('profile.tabs.visibility', 'Visibilità')}
             </TabsTrigger>
             {/* Rimuovo tab separato Organizza: incorporato in Eventi con sottomenu */}
           </TabsList>
@@ -702,7 +702,7 @@ const Profile = () => {
                           `
                         }
                       >
-                        Elenco Iscrizioni
+                        {t('profile.sections.my_events.my_registrations_label', 'Elenco Iscrizioni')}
                       </button>
                       <button
                         type="button"
@@ -718,7 +718,7 @@ const Profile = () => {
                           `
                         }
                       >
-                        Organizza Evento
+                        {t('profile.sections.my_events.organize_event_label', 'Organizza Evento')}
                       </button>
                     </div>
                   </div>
@@ -776,10 +776,10 @@ const Profile = () => {
                     <div className="space-y-6">
                       <div className="text-sm text-muted-foreground">
                         {user?.role === 'admin'
-                          ? 'Accesso completo (admin).'
+                          ? t('profile.sections.my_events.admin_access', 'Accesso completo (admin).')
                           : organizerEligible
-                            ? 'Hai i requisiti necessari per organizzare. Puoi creare un nuovo evento.'
-                            : 'Per organizzare devi attivare il profilo pubblico e compilare le certificazioni obbligatorie.'}
+                            ? t('profile.sections.my_events.eligible_to_organize', 'Hai i requisiti necessari per organizzare. Puoi creare un nuovo evento.')
+                            : t('profile.sections.my_events.not_eligible_to_organize', 'Per organizzare devi attivare il profilo pubblico e compilare le certificazioni obbligatorie.')}
                       </div>
                       {(user?.role === 'admin' || organizerEligible) ? (
                         <div className="flex flex-wrap gap-2">

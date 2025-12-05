@@ -18,6 +18,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EventParticipantsModalProps {
   eventId: string;
@@ -34,6 +35,7 @@ export const EventParticipantsModal = ({
 }: EventParticipantsModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
+  const { t } = useLanguage();
   const qc = useQueryClient();
   const canManage = (user?.role === 'admin') || (!!organizerId && user?.id === organizerId);
 
@@ -65,7 +67,7 @@ export const EventParticipantsModal = ({
           variant="ghost"
           size="sm"
           className="h-8 w-8 p-0 hover:bg-blue-50"
-          title={`Vedi partecipanti: ${participantCount} iscritti`}
+          title={t('events.view_participants', `Vedi partecipanti: ${participantCount} iscritti`)}
         >
           <Users className="h-4 w-4 text-blue-600" />
         </Button>
@@ -74,7 +76,7 @@ export const EventParticipantsModal = ({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="h-5 w-5 text-blue-600" />
-            Partecipanti
+            {t('events.participants_title', 'Partecipanti')}
           </DialogTitle>
           <p className="text-sm text-gray-600">
             {eventTitle}
@@ -88,12 +90,12 @@ export const EventParticipantsModal = ({
             </div>
           ) : error ? (
             <div className="text-center py-8">
-              <p className="text-red-600 text-sm">Errore nel caricamento</p>
+              <p className="text-red-600 text-sm">{t('common.loading_error', 'Errore nel caricamento')}</p>
             </div>
           ) : !participants || participants.length === 0 ? (
             <div className="text-center py-8">
               <Users className="h-12 w-12 text-gray-300 mx-auto mb-2" />
-              <p className="text-gray-500 text-sm">Nessun partecipante</p>
+              <p className="text-gray-500 text-sm">{t('events.no_participants', 'Nessun partecipante')}</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -118,7 +120,7 @@ export const EventParticipantsModal = ({
                         <Link 
                           to={`/instructor/${participant.public_slug}`}
                           className="text-blue-600 hover:text-blue-800"
-                          title="Vedi profilo pubblico"
+                          title={t('profile.view_public_profile', 'Vedi profilo pubblico')}
                         >
                           <ExternalLink className="h-3 w-3" />
                         </Link>
@@ -156,16 +158,16 @@ export const EventParticipantsModal = ({
                       <button
                         type="button"
                         className="p-2 rounded hover:bg-red-50 text-red-600"
-                        title="Rimuovi partecipante"
+                        title={t('events.remove_participant', 'Rimuovi partecipante')}
                         onClick={async () => {
-                          const confirmed = window.confirm(`Rimuovere ${participant.full_name}?`);
+                          const confirmed = window.confirm(t('events.confirm_remove_participant', `Rimuovere ${participant.full_name}?`));
                           if (!confirmed) return;
                           try {
                             await removeEventParticipant(eventId, participant.user_id);
-                            toast.success('Partecipante rimosso');
+                            toast.success(t('events.participant_removed', 'Partecipante rimosso'));
                             await qc.invalidateQueries({ queryKey: ["event-participants", eventId] });
                           } catch (e) {
-                            toast.error('Impossibile rimuovere il partecipante');
+                            toast.error(t('events.remove_participant_error', 'Impossibile rimuovere il partecipante'));
                           }
                         }}
                       >
@@ -182,12 +184,12 @@ export const EventParticipantsModal = ({
         {participants && participants.length > 0 && (
           <div className="border-t pt-3 mt-3">
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600">Totale partecipanti:</span>
+              <span className="text-gray-600">{t('events.total_participants', 'Totale partecipanti:')}</span>
               <span className="font-medium">{participants.length}</span>
             </div>
             {participants.some(p => p.amount) && (
               <div className="flex justify-between items-center text-sm">
-                <span className="text-gray-600">Ricavo totale:</span>
+                <span className="text-gray-600">{t('events.total_revenue', 'Ricavo totale:')}</span>
                 <span className="font-medium text-green-600">
                   €{participants.reduce((sum, p) => sum + Number(p.amount || 0), 0).toFixed(2)}
                 </span>
