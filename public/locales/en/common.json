@@ -283,7 +283,27 @@
     "image_of": "Image {{current}} of {{total}}",
     "prev_image": "Previous image",
     "next_image": "Next image",
-    "gallery_image": "Gallery {{num}}"
+    "gallery_image": "Gallery {{num}}",
+    "event_types": {
+      "corso": "Course",
+      "escursione": "Trip",
+      "gara": "Competition",
+      "workshop": "Workshop",
+      "conferenza": "Conference",
+      "evento_sociale": "Social Event"
+    },
+    "levels": {
+      "principiante_senza_brevetto": "Beginner without certification",
+      "inesperto_con_brevetto": "Beginner with certification",
+      "avanzato_con_brevetto": "Advanced with certification",
+      "tutti_i_brevettati": "All certified",
+      "brevettati_e_non": "Certified and non-certified"
+    },
+    "disciplines": {
+      "indoor": "Indoor",
+      "outdoor": "Outdoor",
+      "indoor&outdoor": "Indoor & Outdoor"
+    }
   },
   "forum": {
     "title": "Forum",

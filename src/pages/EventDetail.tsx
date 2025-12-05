@@ -298,37 +298,24 @@ const EventDetail = () => {
     // Helper functions to format the display values
     const formatEventType = (eventType: string | null) => {
         if (!eventType) return null;
-        const typeMap: { [key: string]: string } = {
-            'corso': 'Corso',
-            'escursione': 'Escursione',
-            'gara': 'Gara',
-            'workshop': 'Workshop',
-            'conferenza': 'Conferenza',
-            'evento_sociale': 'Evento Sociale'
-        };
-        return typeMap[eventType] || eventType.charAt(0).toUpperCase() + eventType.slice(1);
+        const key = `events.event_types.${eventType}`;
+        // Fallback: capitalize first letter if translation not found
+        return t(key, eventType.charAt(0).toUpperCase() + eventType.slice(1));
     };
 
     const formatLevel = (level: string | null) => {
         if (!level) return null;
-        const levelMap: { [key: string]: string } = {
-            'principiante_senza_brevetto': 'Principiante senza brevetto',
-            'inesperto_con_brevetto': 'Inesperto con brevetto',
-            'avanzato_con_brevetto': 'Avanzato con brevetto',
-            'tutti_i_brevettati': 'Tutti i brevettati',
-            'brevettati_e_non': 'Sia brevettati che non'
-        };
-        return levelMap[level] || level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        const key = `events.levels.${level}`;
+        // Fallback: replace underscores and capitalize if translation not found
+        const fallback = level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        return t(key, fallback);
     };
 
     const formatDiscipline = (discipline: string | null) => {
         if (!discipline) return null;
-        const disciplineMap: { [key: string]: string } = {
-            'indoor': 'Indoor',
-            'outdoor': 'Outdoor',
-            'indoor&outdoor': 'Indoor & Outdoor'
-        };
-        return disciplineMap[discipline] || discipline.charAt(0).toUpperCase() + discipline.slice(1);
+        const key = `events.disciplines.${discipline}`;
+        // Fallback: capitalize first letter if translation not found
+        return t(key, discipline.charAt(0).toUpperCase() + discipline.slice(1));
     };
 
     if (isLoading) {
