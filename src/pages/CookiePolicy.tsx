@@ -75,6 +75,7 @@ const CookiePolicy = () => {
 export default CookiePolicy;
 
 function CookieAccordion() {
+  const { t } = useLanguage();
   const [open, setOpen] = useState<string | undefined>("cosa-sono");
   useEffect(() => {
     try {

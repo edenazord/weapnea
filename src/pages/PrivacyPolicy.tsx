@@ -85,6 +85,7 @@ export default PrivacyPolicy;
 
 // Accordion component to keep main render tidy
 function PrivacyAccordion() {
+  const { t } = useLanguage();
   const [open, setOpen] = useState<string | undefined>("titolare");
   useEffect(() => {
     try {
