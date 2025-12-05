@@ -6,17 +6,19 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { Shield, ListOrdered, CalendarDays } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const PrivacyPolicy = () => {
   const isMobile = useIsMobile();
+  const { t } = useLanguage();
 
   const Content = () => (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-purple-50">
       <PageTopBar />
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-10">
         <PageHeader
-          title={"WeApnea – Privacy Policy (UE/GDPR)"}
-          subtitle={"Ultimo aggiornamento: 06/10/2025"}
+          title={t('privacy.page_title', 'WeApnea – Privacy Policy (UE/GDPR)')}
+          subtitle={t('privacy.last_updated', 'Ultimo aggiornamento: 06/10/2025')}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -25,7 +27,7 @@ const PrivacyPolicy = () => {
             <div className="sticky top-24 bg-white/90 backdrop-blur-sm border border-white/30 rounded-xl shadow-md p-4">
               <div className="flex items-center gap-2 text-gray-700 font-semibold mb-3">
                 <ListOrdered className="h-4 w-4" />
-                Indice
+                {t('privacy.toc_title', 'Indice')}
               </div>
               <nav className="space-y-2 text-sm">
                 <a className="block hover:text-blue-700" href="#titolare">1. Titolare del Trattamento</a>
@@ -51,11 +53,11 @@ const PrivacyPolicy = () => {
             <div className="bg-white/90 backdrop-blur-sm border border-white/30 rounded-2xl shadow-xl p-6 md:p-8">
               <div className="flex items-center gap-3 mb-4 text-blue-700">
                 <Shield className="h-5 w-5" />
-                <span className="font-semibold">Informativa Privacy</span>
+                <span className="font-semibold">{t('privacy.heading', 'Informativa Privacy')}</span>
               </div>
               <div className="prose prose-slate max-w-none">
                 <p>
-                  La presente informativa descrive le modalità di trattamento dei dati personali degli utenti che visitano e utilizzano il sito www.weapnea.com (di seguito “Sito”).
+                  {t('privacy.intro', 'La presente informativa descrive le modalità di trattamento dei dati personali degli utenti che visitano e utilizzano il sito www.weapnea.com (di seguito "Sito").')}
                 </p>
 
                 {/* Accordion Sections */}

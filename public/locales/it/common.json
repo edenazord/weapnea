@@ -457,5 +457,18 @@
   },
   "not_found": {
     "back_home": "Torna alla Home"
+  },
+  "privacy": {
+    "page_title": "WeApnea – Privacy Policy (UE/GDPR)",
+    "last_updated": "Ultimo aggiornamento: 06/10/2025",
+    "toc_title": "Indice",
+    "heading": "Informativa Privacy",
+    "intro": "La presente informativa descrive le modalità di trattamento dei dati personali degli utenti che visitano e utilizzano il sito www.weapnea.com (di seguito \"Sito\")."
+  },
+  "cookie": {
+    "page_title": "WeApnea – Cookie Policy (UE/GDPR)",
+    "last_updated": "Ultimo aggiornamento: 06/10/2025",
+    "toc_title": "Indice",
+    "heading": "Informativa Cookie"
   }
 }
