@@ -548,7 +548,7 @@ const EventDetail = () => {
                 <div className={isMobile ? 'col-span-1' : 'md:col-span-1'}>
                     {/* Informazioni Rapide */}
                     <Card className={`shadow-lg p-6`}>
-                        <h2 className={`font-bold text-blue-900 mb-6 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.quick_info', 'Informazioni Rapide')}</h2>
+                        <h2 className={`font-bold text-blue-900 mb-6 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.quick_info')}</h2>
                         <div className="space-y-4">
                             <div className="flex items-start">
                                 <Calendar className="h-5 w-5 mr-3 mt-1 text-blue-600" />
