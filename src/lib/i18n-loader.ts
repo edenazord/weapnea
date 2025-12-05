@@ -22,7 +22,8 @@ function flatten(obj: Record<string, any>, prefix = ''): Record<string, string> 
 }
 
 export async function loadLanguages(): Promise<UILanguage[]> {
-  const res = await fetch('/locales/languages.json', { cache: 'no-store' });
+  // Use a conservative cache policy to avoid SW/CDN incompatibilities
+  const res = await fetch('/locales/languages.json', { cache: 'reload' });
   if (!res.ok) return [];
   const langs = (await res.json()) as UILanguage[];
   return langs;
@@ -30,10 +31,17 @@ export async function loadLanguages(): Promise<UILanguage[]> {
 
 export async function loadTranslations(lang: string): Promise<Record<string, string>> {
   // We use a single namespace common.json for now
-  // Add cache-busting to ensure latest translations in production (SW/CDN may cache)
-  const v = Date.now();
-  const res = await fetch(`/locales/${lang}/common.json?v=${v}`, { cache: 'no-store' });
-  if (!res.ok) return {};
-  const json = await res.json();
-  return flatten(json);
+  // Fetch with 'reload' to bypass HTTP cache but remain SW/CDN friendly
+  try {
+    const res = await fetch(`/locales/${lang}/common.json`, { cache: 'reload' });
+    if (!res.ok) {
+      console.error('i18n-loader: failed to fetch translations for', lang, res.status);
+      return {};
+    }
+    const json = await res.json();
+    return flatten(json);
+  } catch (e) {
+    console.error('i18n-loader: error fetching translations for', lang, e);
+    return {};
+  }
 }
