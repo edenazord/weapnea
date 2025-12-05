@@ -253,10 +253,13 @@
     "confirm_remove_participant": "Rimuovere {name}?",
     "participant_removed": "Partecipante rimosso",
     "remove_participant_error": "Impossibile rimuovere il partecipante",
-    "upcoming_title": "Eventi Imminenti",
-    "upcoming_subtitle": "Tutti gli eventi in programma ordinati per data",
-    "no_upcoming": "Nessun evento imminente",
-    "check_back_soon": "Torna presto per i nuovi eventi!"
+    "back_to_all": "Torna a tutti gli eventi",
+    "organized_by": "Organizzato da",
+    "location": "Posizione",
+    "objectives": "Obiettivi",
+    "about_us": "Chi Siamo",
+    "notes_warnings": "Note e Avvertenze",
+    "schedule_logistics": "Orari e Logistica"
   },
   "forum": {
     "title": "Forum",

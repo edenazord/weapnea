@@ -244,7 +244,14 @@
     "remove_participant": "Remove participant",
     "confirm_remove_participant": "Remove {name}?",
     "participant_removed": "Participant removed",
-    "remove_participant_error": "Unable to remove participant"
+    "remove_participant_error": "Unable to remove participant",
+    "back_to_all": "Back to all events",
+    "organized_by": "Organized by",
+    "location": "Location",
+    "objectives": "Objectives",
+    "about_us": "About Us",
+    "notes_warnings": "Notes and Warnings",
+    "schedule_logistics": "Schedule and Logistics"
   },
   "forum": {
     "title": "Forum",

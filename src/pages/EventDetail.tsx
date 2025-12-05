@@ -402,7 +402,7 @@ const EventDetail = () => {
     const content = (
         <div className={`${isMobile ? 'p-4' : 'container mx-auto px-4 py-8 md:py-12'}`}>
             <Button variant="ghost" asChild className={`mb-6 ${isMobile ? '' : '-ml-4'}`}>
-                <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" /> Torna a tutti gli eventi</Link>
+                <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" /> {t('events.back_to_all', 'Torna a tutti gli eventi')}</Link>
             </Button>
             <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
                 {/* Colonna sinistra - Contenuto principale */}
@@ -451,7 +451,7 @@ const EventDetail = () => {
                                                                                                                                     </AvatarFallback>
                                                                                                                                 </Avatar>
                                                                                                                                 <div className="flex flex-col leading-tight">
-                                                                                                                                    <span className="text-xs text-gray-500">Organizzato da</span>
+                                                                                                                                    <span className="text-xs text-gray-500">{t('events.organized_by', 'Organizzato da')}</span>
                                                                                                                                     <span className="text-sm font-medium text-blue-700 group-hover:underline">
                                                                                                                                         {event.organizer_name || organizerProfile?.company_name || organizerProfile?.full_name || event.organizer?.company_name || event.organizer?.full_name || 'Organizzatore'}
                                                                                                                                     </span>
@@ -466,7 +466,7 @@ const EventDetail = () => {
                                                                                                                                     </AvatarFallback>
                                                                                                                                 </Avatar>
                                                                                                                                 <div className="flex flex-col leading-tight">
-                                                                                                                                    <span className="text-xs text-gray-500">Organizzato da</span>
+                                                                                                                                    <span className="text-xs text-gray-500">{t('events.organized_by', 'Organizzato da')}</span>
                                                                                                                                     <span className="text-sm font-medium text-blue-700">
                                                                                                                                         {event.organizer_name}
                                                                                                                                     </span>
@@ -505,7 +505,7 @@ const EventDetail = () => {
                     {/* Mappa Google Maps */}
                     {event.location && (
                         <Card className="shadow-lg p-6 mt-8">
-                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Posizione</h2>
+                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.location', 'Posizione')}</h2>
                             <GoogleMap location={event.location} eventTitle={event.title} />
                         </Card>
                     )}
@@ -515,7 +515,7 @@ const EventDetail = () => {
                         <Card className={`shadow-lg p-6 mt-8`}>
                             <h2 className={`font-bold text-blue-900 mb-4 flex items-center ${isMobile ? 'text-xl' : 'text-2xl'}`}>
                                 <Target className="h-6 w-6 mr-2 text-blue-600" />
-                                Obiettivi
+                                {t('events.objectives', 'Obiettivi')}
                             </h2>
                             <div className={`text-gray-600 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
                                 {event.objectives}
@@ -526,7 +526,7 @@ const EventDetail = () => {
                     {/* Chi siamo */}
                     {event.about_us && (
                         <Card className={`shadow-lg p-6 mt-8`}>
-                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Chi Siamo</h2>
+                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.about_us', 'Chi Siamo')}</h2>
                             <div className={`text-gray-600 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
                                 {event.about_us}
                             </div>
@@ -536,7 +536,7 @@ const EventDetail = () => {
                     {/* Note e avvertenze */}
                     {event.notes && (
                         <Card className={`shadow-lg p-6 mt-8 border-orange-200 bg-orange-50`}>
-                            <h2 className={`font-bold text-orange-800 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Note e Avvertenze</h2>
+                            <h2 className={`font-bold text-orange-800 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.notes_warnings', 'Note e Avvertenze')}</h2>
                             <div className={`text-orange-700 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
                                 {event.notes}
                             </div>
@@ -548,7 +548,7 @@ const EventDetail = () => {
                         <Card className={`shadow-lg p-6 mt-8`}>
                             <h2 className={`font-bold text-blue-900 mb-4 flex items-center ${isMobile ? 'text-xl' : 'text-2xl'}`}>
                                 <Clock className="h-6 w-6 mr-2 text-blue-600" />
-                                Orari e Logistica
+                                {t('events.schedule_logistics', 'Orari e Logistica')}
                             </h2>
                             <div className={`text-gray-600 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
                                 {event.schedule_logistics}
