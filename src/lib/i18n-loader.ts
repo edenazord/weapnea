@@ -29,8 +29,8 @@ export async function loadLanguages(): Promise<UILanguage[]> {
 }
 
 export async function loadTranslations(lang: string): Promise<Record<string, string>> {
-  // Each language has its own file: en.json, it.json, es.json, etc.
-  const res = await fetch(`/locales/${lang}/${lang}.json`, { cache: 'no-store' });
+  // All language files are in the lang folder: /locales/lang/en.json, it.json, etc.
+  const res = await fetch(`/locales/lang/${lang}.json`, { cache: 'no-store' });
   if (!res.ok) return {};
   const json = await res.json();
   return flatten(json);

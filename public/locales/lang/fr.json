@@ -1,0 +1,593 @@
+{
+  "nav": {
+    "home": "Accueil",
+    "events": "Événements",
+    "about": "Qui sommes-nous",
+    "contact": "Contactez-nous",
+    "blog": "Blog",
+    "forum": "Forum",
+    "profile": "Profil",
+    "dashboard": "Tableau de bord",
+    "logout": "Déconnexion"
+  },
+  "common": {
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "error": "Erreur",
+    "unexpected_error": "Erreur inattendue",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "back": "Retour",
+    "loading": "Chargement...",
+    "close": "Fermer",
+    "go_to_profile": "Aller au profil",
+    "loading_map": "Chargement de la carte...",
+    "loading_error": "Erreur de chargement"
+  },
+  "homepage": {
+    "uncategorized_events": "Entraînements",
+    "loading_events": "Chargement des événements...",
+    "error_title": "Erreur de chargement",
+    "error_description": "Une erreur s'est produite lors du chargement des événements.",
+    "retry_btn": "Réessayer",
+    "no_events_title": "Aucun événement disponible",
+    "no_events_description": "Il n'y a actuellement aucun événement publié.",
+    "no_results_title": "Aucun événement trouvé",
+    "no_results_description": "Il n'y a pas d'événements à venir correspondant à vos filtres.",
+    "sponsors": {
+      "title": "Partenaires et Sponsors",
+      "learn_more": "En savoir plus"
+    }
+  },
+  "categories": {
+    "trainings": "Entraînements",
+    "trips": "Voyages",
+    "courses": "Cours",
+    "workshops": "Stages et Ateliers",
+    "competitions": "Compétitions",
+    "stages": "Stages",
+    "digital_training": "Formation Digitale Live"
+  },
+  "footer": {
+    "description": "Participez, créez, partagez avec notre communauté. Donnez vie à une apnée plus accessible, visible et connectée.",
+    "quick_links": "Liens rapides",
+    "contact": "Contacts",
+    "copyright": "Tous droits réservés."
+  },
+  "hero": {
+    "badge_text": "Découvrez le monde de l'apnée",
+    "title_line1": "Votre plateforme pour",
+    "title_line2": "l'apnée",
+    "description": "Trouvez des événements, cours et compétitions. Connectez-vous avec la communauté et découvrez de nouvelles opportunités pour améliorer vos performances.",
+    "btn_explore": "Explorer les événements",
+    "btn_community": "Rejoindre la communauté",
+    "stats_events": "Événements organisés",
+    "stats_freedivers": "Apnéistes actifs",
+    "stats_instructors": "Instructeurs certifiés"
+  },
+  "about_page": {
+    "title": "Qui sommes-nous",
+    "subtitle": "WeApnea est la première plateforme internationale dédiée à l'apnée, née de la passion d'un groupe d'apnéistes qui a voulu créer un espace d'échange et de croissance pour toute la communauté.\nLa communauté est composée d'athlètes, d'instructeurs, d'entraîneurs et de passionnés d'apnée indoor et outdoor. Pendant des années, nous avons vécu une réalité peu connectée : des événements dispersés entre forums, groupes sociaux et bouche à oreille. Aucun point de référence unique pour trouver stages, ateliers, cours, opportunités de formation, voyages et donner la visibilité et la démocratisation que notre sport mérite.\nNous avons donc décidé de construire ce point de référence nous-mêmes.\n\nWeApnea naît avec un objectif précis : rendre l'apnée plus accessible, visible et connectée.\n\nQue pouvez-vous trouver ici ?\nÉvénements d'apnée organisés par des instructeurs certifiés ou des écoles\nEntraînements partagés par des instructeurs certifiés\nCollaborations et avantages avec des marques et partenaires du secteur\nProjets spéciaux pour faire grandir la communauté\n\nNous ne sommes pas une fédération. Nous ne sommes pas un réseau social quelconque.\nNous sommes un point de rencontre. Un accélérateur pour ceux qui veulent vivre l'apnée comme un chemin de croissance dans l'eau et en soi-même.\nEt ce n'est que le début.",
+    "mission_title": "Notre mission",
+    "mission_desc": "Connecter les apnéistes du monde entier grâce à une plateforme qui facilite la participation aux événements, voyages et activités de formation. Nous voulons rendre l'apnée plus accessible et créer une communauté mondiale de passionnés.",
+    "vision_title": "Notre vision",
+    "vision_desc": "Devenir le point de référence international pour l'apnée, où chaque apnéiste peut trouver des opportunités de croissance, partager des expériences et se connecter authentiquement avec les autres membres de la communauté.",
+    "values_title": "Nos valeurs",
+    "values": {
+      "community_title": "Communauté",
+      "community_desc": "Nous croyons en la force de la communauté et au partage d'expériences pour grandir ensemble en tant qu'apnéistes.",
+      "passion_title": "Passion",
+      "passion_desc": "L'apnée est notre passion et nous voulons la transmettre à travers des événements et des expériences inoubliables.",
+      "innovation_title": "Innovation",
+      "innovation_desc": "Nous utilisons la technologie pour rendre l'apnée plus accessible et connecter les apnéistes du monde entier."
+    },
+    "team_title": "Notre équipe",
+    "team_desc": "Nous sommes une équipe d'apnéistes passionnés, de développeurs et de professionnels du secteur qui travaillent ensemble pour créer la meilleure expérience possible pour la communauté de l'apnée."
+  },
+  "blog_page": {
+    "title": "Blog WeApnea",
+    "subtitle": "Découvrez les dernières nouvelles du monde de l'apnée, techniques, conseils et histoires de notre communauté",
+    "search_placeholder": "Rechercher des articles...",
+    "read_more": "Lire la suite",
+    "author_fallback": "Auteur",
+    "no_results_title": "Aucun article trouvé",
+    "no_results_desc": "Essayez de modifier vos termes de recherche.",
+    "no_posts_title": "Aucun article publié",
+    "no_posts_desc": "Revenez bientôt pour du nouveau contenu !",
+    "back_to_blog": "Retour au Blog",
+    "share_button": "Partager",
+    "share_copied_title": "Lien copié !",
+    "share_copied_desc": "Le lien de l'article a été copié dans le presse-papiers.",
+    "not_found_title": "Article non trouvé",
+    "not_found_desc": "L'article que vous recherchez n'existe pas ou a été supprimé.",
+    "gallery_title": "Galerie"
+  },
+  "search": {
+    "placeholder": "Rechercher événements, cours, compétitions...",
+    "active_filters": "Filtres actifs",
+    "filter_results": "Filtrez vos résultats",
+    "category": "Catégorie",
+    "all_categories": "Toutes les catégories",
+    "discipline": "Discipline",
+    "all_disciplines": "Toutes les disciplines",
+    "nation": "Pays",
+    "all_nations": "Tous les pays",
+    "date": "Date",
+    "select_month": "Sélectionner le mois",
+    "disciplines": {
+      "indoor": "Indoor",
+      "outdoor": "Outdoor",
+      "indoor_outdoor": "Indoor et Outdoor"
+    }
+  },
+  "test": {
+    "hello": "Bonjour",
+    "welcome": "Bienvenue",
+    "goodbye": "Au revoir"
+  },
+  "auth": {
+    "login_title": "Bienvenue à nouveau sur WeApnea",
+    "login_subtitle": "Entrez vos identifiants pour accéder à votre compte.",
+    "register_title": "Créez un compte sur WeApnea",
+    "register_subtitle": "Rejoignez la communauté WeApnea.",
+    "back_home": "Retour à l'Accueil",
+    "login": {
+      "validation": {
+        "email_invalid": "Adresse email non valide.",
+        "password_required": "Le mot de passe est requis."
+      },
+      "success_title": "Connexion réussie",
+      "success_desc": "Bienvenue à nouveau sur WeApnea !",
+      "error_title": "Erreur de connexion",
+      "error_invalid": "Identifiants non valides. Veuillez réessayer.",
+      "error_generic": "Une erreur s'est produite. Veuillez réessayer.",
+      "form": {
+        "email_label": "Email",
+        "email_placeholder": "votre@email.com",
+        "password_label": "Mot de passe",
+        "submitting": "Connexion...",
+        "forgot_password": "Mot de passe oublié ?"
+      }
+    },
+    "register": {
+      "validation": {
+        "role_required": "Vous devez sélectionner un type de compte.",
+        "fullname_required": "Le nom complet est requis",
+        "email_invalid": "Adresse email non valide.",
+        "password_min": "Le mot de passe doit comporter au moins 6 caractères.",
+        "company_required": "Tous les champs sponsor sont requis si le rôle est 'Sponsor'."
+      },
+      "success_title": "Inscription terminée !",
+      "success_desc": "Vérifiez votre email pour confirmer votre compte et terminer l'inscription.",
+      "error_title": "Erreur d'inscription",
+      "error_generic": "Une erreur s'est produite lors de l'inscription.",
+      "error_try_later": "Une erreur s'est produite lors de l'inscription. Veuillez réessayer plus tard.",
+      "form": {
+        "role_label": "Type de compte",
+        "role_user": "Utilisateur",
+        "role_instructor": "Organisateur",
+        "role_company": "Sponsor",
+        "fullname_label": "Nom complet",
+        "fullname_placeholder": "Jean Dupont",
+        "email_label": "Email",
+        "email_placeholder": "votre@email.com",
+        "password_label": "Mot de passe",
+        "company_name_label": "Nom du sponsor",
+        "company_name_placeholder": "WeApnea SARL",
+        "vat_number_label": "Numéro SIRET/TVA",
+        "vat_number_placeholder": "FR12345678901",
+        "company_address_label": "Adresse du sponsor",
+        "company_address_placeholder": "123 Rue de la Plongée, 75001 Paris",
+        "submitting": "Inscription..."
+      }
+    }
+  },
+  "password_reset": {
+    "email_sent_title": "Email envoyé",
+    "email_sent_desc": "Vérifiez votre boîte de réception pour les instructions de récupération.",
+    "errors": {
+      "email_invalid": "Adresse email non valide.",
+      "password_min": "Le mot de passe doit comporter au moins 6 caractères.",
+      "confirm_required": "Confirmez le mot de passe.",
+      "password_mismatch": "Les mots de passe ne correspondent pas",
+      "send_failed": "Une erreur s'est produite lors de l'envoi de l'email de récupération.",
+      "invalid_link": "Lien de récupération non valide. Demandez un nouveau lien.",
+      "invalid_token": "Token non valide ou expiré.",
+      "update_failed": "Une erreur s'est produite lors de la mise à jour du mot de passe."
+    },
+    "email_sent_heading": "Email envoyé !",
+    "email_sent_help": "Nous avons envoyé les instructions pour réinitialiser votre mot de passe.",
+    "email_sent_follow": "Vérifiez votre boîte de réception et suivez les instructions pour réinitialiser votre mot de passe.",
+    "back_to_login": "Retour à la connexion",
+    "set_new_title": "Définir un nouveau mot de passe",
+    "request_title": "Récupérer le mot de passe",
+    "set_new_subtitle": "Entrez votre nouveau mot de passe.",
+    "request_subtitle": "Entrez votre adresse email et nous vous enverrons les instructions pour réinitialiser votre mot de passe.",
+    "new_password_label": "Nouveau mot de passe",
+    "new_password_placeholder": "Entrez le nouveau mot de passe",
+    "confirm_password_label": "Confirmer le mot de passe",
+    "updating": "Mise à jour...",
+    "update_button": "Mettre à jour le mot de passe",
+    "email_label": "Email",
+    "email_placeholder": "votre@email.com",
+    "sending": "Envoi...",
+    "send_button": "Envoyer l'email de récupération",
+    "updated_title": "Mot de passe mis à jour",
+    "updated_desc": "Votre mot de passe a été mis à jour avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe."
+  },
+  "not_found": {
+    "subtitle": "Oups ! Page non trouvée",
+    "back_home": "Retour à l'Accueil"
+  },
+  "events": {
+    "participants": "participants",
+    "details": "Détails",
+    "count_in_category": "événements dans cette catégorie",
+    "none_in_category": "Aucun événement disponible dans cette catégorie",
+    "enrolled_label": "Inscrits",
+    "enrolled": "Inscrit",
+    "participants_title": "Participants",
+    "no_participants": "Aucun participant",
+    "request_info": "Demander des infos",
+    "register": "S'inscrire",
+    "full": "Complet",
+    "organizer": "Organisateur",
+    "cost_label": "Coût",
+    "free": "Gratuit",
+    "nation_label": "Pays",
+    "event_details": "Détails de l'Événement",
+    "event_type_label": "Type",
+    "discipline_label": "Discipline",
+    "level_label": "Niveau",
+    "language_label": "Langue",
+    "included_not_included": "Inclus/Non Inclus",
+    "gallery_label": "Galerie",
+    "slots_full": "Plus de places disponibles pour cet événement.",
+    "event_not_free": "Cet événement n'est pas gratuit.",
+    "event_not_found": "Événement non trouvé.",
+    "registration_error": "Impossible de terminer l'inscription.",
+    "registration_success": "Inscription terminée !",
+    "payment_error": "Erreur dans le processus de paiement",
+    "view_participants": "Voir les participants : {count} inscrits",
+    "total_participants": "Total participants :",
+    "total_revenue": "Revenus totaux :",
+    "remove_participant": "Supprimer le participant",
+    "confirm_remove_participant": "Supprimer {name} ?",
+    "participant_removed": "Participant supprimé",
+    "remove_participant_error": "Impossible de supprimer le participant",
+    "back_to_all": "Retour à tous les événements",
+    "organized_by": "Organisé par",
+    "location": "Lieu",
+    "objectives": "Objectifs",
+    "about_us": "Qui Sommes-Nous",
+    "notes_warnings": "Notes et Avertissements",
+    "schedule_logistics": "Horaires et Logistique",
+    "quick_info": "Informations Rapides",
+    "date_label": "Date",
+    "place_label": "Lieu",
+    "enrolled_count": "Inscrits",
+    "activity_description": "Description de l'Activité",
+    "no_description": "Aucune description fournie pour cet événement.",
+    "request_info_button": "Demander des informations",
+    "recurring_appointment": "Rendez-vous récurrent",
+    "included_label": "Inclus",
+    "not_included_label": "Non Inclus",
+    "image_gallery_title": "Galerie d'images",
+    "image_zoom": "Agrandir l'image",
+    "prev_image": "Image précédente",
+    "next_image": "Image suivante",
+    "event_not_found_title": "Événement non trouvé",
+    "event_not_found_desc": "L'événement que vous recherchez n'existe pas ou a peut-être été supprimé.",
+    "back_to_home": "Retour à l'Accueil",
+    "go_to_admin": "Aller au Panneau Admin",
+    "debug_info": "Info de débogage",
+    "url_param": "Paramètre URL",
+    "type": "Type",
+    "possible_causes": "Causes possibles",
+    "cause_slug_changed": "Le slug de l'événement peut avoir changé après une mise à jour",
+    "cause_deleted": "L'événement peut avoir été supprimé",
+    "cause_link_outdated": "Le lien peut être obsolète",
+    "authenticated_tip": "Êtes-vous authentifié ? Vous pouvez essayer de voir tous les événements :",
+    "past_events_title": "Événements Passés",
+    "past_events_subtitle": "Tous les événements déjà réalisés, du plus récent"
+  },
+  "forum": {
+    "title": "Forum",
+    "subtitle": "Discutez avec la communauté de passionnés d'apnée",
+    "new_topic": "Nouveau Sujet",
+    "login_to_create_topic": "Connectez-vous pour créer un sujet",
+    "filter": {
+      "all": "Toutes"
+    },
+    "anonymous": "Anonyme",
+    "last_reply": "Dernière réponse :",
+    "no_topics": {
+      "title": "Aucun sujet trouvé",
+      "generic": "Il n'y a pas encore de discussions dans le forum.",
+      "in_category_prefix": "Il n'y a pas encore de discussions dans"
+    },
+    "create_first_topic": "Créez le premier sujet",
+    "login_to_create_first_topic": "Connectez-vous pour créer le premier sujet",
+    "back_to_forum": "Retour au Forum",
+    "topic_not_found": "Sujet non trouvé",
+    "replies": "Réponses",
+    "delete_topic": {
+      "title": "Supprimer ce sujet ?",
+      "description": "Cette action est irréversible. Le sujet et toutes ses réponses seront définitivement supprimés."
+    },
+    "delete_reply": {
+      "title": "Supprimer cette réponse ?",
+      "description": "Cette action est irréversible. La réponse sera définitivement supprimée."
+    },
+    "add_reply": {
+      "title": "Ajouter une réponse",
+      "placeholder": "Écrivez votre réponse...",
+      "send": "Envoyer la Réponse",
+      "sending": "Envoi..."
+    },
+    "locked": {
+      "title": "Ce sujet est verrouillé",
+      "description": "Il n'est pas possible d'ajouter de nouvelles réponses."
+    },
+    "login_cta": {
+      "title": "Participez à la discussion !",
+      "description": "Vous devez être authentifié pour répondre à ce sujet.",
+      "button": "Connectez-vous pour répondre"
+    },
+    "toasts": {
+      "topic_deleted": "Sujet supprimé avec succès !",
+      "topic_delete_error_prefix": "Erreur lors de la suppression du sujet : ",
+      "reply_deleted": "Réponse supprimée avec succès !",
+      "reply_delete_error_prefix": "Erreur lors de la suppression de la réponse : ",
+      "reply_added": "Réponse ajoutée avec succès !",
+      "reply_add_error_prefix": "Erreur lors de l'ajout de la réponse : "
+    }
+  },
+  "common_ext": {
+    "error": "Erreur",
+    "unexpected_error": "Erreur inattendue"
+  },
+  "profile": {
+    "title": "Mon Profil",
+    "subtitle": "Gérez vos informations personnelles",
+    "mobile_header_title": "Mon Profil",
+    "not_found": "Profil non trouvé",
+    "not_found_desc": "Le profil que vous recherchez n'existe pas ou n'est pas public.",
+    "role_label": "Rôle",
+    "roles": {
+      "user": "Utilisateur",
+      "instructor": "Organisateur",
+      "company": "Sponsor"
+    },
+    "tabs": {
+      "overview": "Profil",
+      "company": "Entreprise",
+      "sponsor": "Sponsor"
+    },
+    "fields": {
+      "phone": "Téléphone",
+      "insurance": "Assurance",
+      "insurance_expiry": "Expiration de l'assurance",
+      "medical_cert_expiry": "Expiration du certificat médical",
+      "medical_cert_type": "Type de certificat médical"
+    },
+    "complete_profile": "Complétez votre profil",
+    "complete_profile_desc": "Pour procéder au paiement, complétez les champs de profil suivants :",
+    "view_public_profile": "Voir le profil public",
+    "sections": {
+      "my_events": {
+        "title": "Mes Événements",
+        "description": "Gérez vos événements et votre liste de souhaits",
+        "participated_button": "Événements Participés",
+        "participated_sub": "Historique des événements",
+        "wishlist_button": "Liste de souhaits",
+        "wishlist_sub": "Événements enregistrés"
+      },
+      "personal_info": {
+        "title": "Informations Personnelles",
+        "description": "Mettez à jour vos informations personnelles et de contact",
+        "full_name_label": "Nom Complet",
+        "full_name_placeholder": "Votre nom complet",
+        "instagram_label": "Instagram",
+        "instagram_placeholder": "@utilisateur",
+        "phone_label": "Téléphone",
+        "phone_placeholder": "Ex. +33 6 12 34 56 78",
+        "bio_label": "Biographie",
+        "bio_placeholder": "Dites-nous quelque chose sur vous..."
+      },
+      "certifications": {
+        "title": "Certifications et Assurances",
+        "description": "Maintenez vos certifications à jour. Pour s'inscrire à des événements payants sont obligatoires : Téléphone, Assurance et dates d'expiration, Certificat médical valide.",
+        "brevetto_label": "Certification",
+        "brevetto_placeholder": "Sélectionner la certification",
+        "brevetto_options": {
+          "none": "Pas de certification",
+          "open_water": "Open Water",
+          "advanced": "Advanced",
+          "rescue": "Rescue",
+          "master": "Master",
+          "instructor": "Instructor"
+        },
+        "brevetto_expiry_label": "Expiration Certification",
+        "insurance_label": "Assurance",
+        "insurance_placeholder": "Nom de l'assurance",
+        "insurance_expiry_label": "Expiration Assurance",
+        "medical_expiry_label": "Expiration Certificat Médical"
+      },
+      "personal_bests": {
+        "title": "Records Personnels",
+        "description": "Enregistrez vos meilleurs résultats en apnée",
+        "static_apnea_label": "Apnée Statique (minutes:secondes)",
+        "static_apnea_placeholder": "ex. 4:30",
+        "dynamic_apnea_label": "Apnée Dynamique (mètres)",
+        "dynamic_apnea_placeholder": "ex. 75",
+        "free_immersion_label": "Immersion Libre (mètres)",
+        "free_immersion_placeholder": "ex. 30",
+        "constant_weight_label": "Poids Constant (mètres)",
+        "constant_weight_placeholder": "ex. 45"
+      },
+      "company": {
+        "title": "Informations de l'Entreprise",
+        "description": "Gérez les données de votre entreprise",
+        "fields": {
+          "company_name_label": "Nom de l'Entreprise",
+          "company_name_placeholder": "Nom de votre entreprise",
+          "vat_number_label": "Numéro SIRET/TVA",
+          "vat_number_placeholder": "FR12345678901",
+          "company_address_label": "Adresse de l'Entreprise",
+          "company_address_placeholder": "Adresse complète de l'entreprise"
+        }
+      },
+      "sponsor": {
+        "title": "Packs de Sponsoring",
+        "description": "Découvrez nos packs de sponsoring",
+        "cta_text": "Augmentez la visibilité de votre entreprise en sponsorisant des événements d'apnée.",
+        "cta_button": "Découvrir les Packs de Sponsoring"
+      }
+    },
+    "buttons": {
+      "save": "Enregistrer les Modifications",
+      "saving": "Enregistrement..."
+    },
+    "toasts": {
+      "update_success_title": "Succès",
+      "update_success_desc": "Profil mis à jour avec succès !",
+      "update_error_title": "Erreur",
+      "update_error_desc": "Une erreur s'est produite lors de la mise à jour du profil."
+    },
+    "login_required": "Vous devez être authentifié pour voir le profil."
+  },
+  "contact": {
+    "page_title": "Contactez-nous",
+    "page_subtitle": "Vous avez des questions, des suggestions ou vous souhaitez collaborer avec nous ? Écrivez-nous !",
+    "name_label": "Nom",
+    "name_placeholder": "Votre nom",
+    "email_label": "Email",
+    "email_placeholder": "nom@exemple.com",
+    "message_label": "Message",
+    "message_placeholder": "Comment pouvons-nous vous aider ?",
+    "response_time": "Nous répondons sous 24-48 heures ouvrables",
+    "send_button": "Envoyer",
+    "sending": "Envoi…",
+    "missing_fields_title": "Champs manquants",
+    "missing_fields_desc": "Complétez le nom, l'email et le message.",
+    "invalid_email_title": "Email non valide",
+    "invalid_email_desc": "Entrez une adresse email valide.",
+    "short_message_title": "Message trop court",
+    "short_message_desc": "Ajoutez plus de détails.",
+    "sent_title": "Message envoyé",
+    "sent_desc": "Nous vous répondrons dès que possible.",
+    "error_title": "Échec de l'envoi",
+    "error_desc": "Réessayez plus tard."
+  },
+  "privacy_policy": {
+    "title": "WeApnea – Politique de Confidentialité (UE/RGPD)",
+    "last_update": "Dernière mise à jour",
+    "toc_title": "Table des matières",
+    "info_title": "Informations sur la Confidentialité",
+    "intro": "Cette notice décrit comment les données personnelles des utilisateurs qui visitent et utilisent le site www.weapnea.com (ci-après « Site ») sont traitées.",
+    "sections": {
+      "titolare": {
+        "title": "1. Responsable du Traitement",
+        "content": "<strong>WeApnea</strong> (projet sportif en cours de formalisation légale)<br/>📧 Email de contact : <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a><br/>📍 Siège légal : À définir – structure légale en cours d'enregistrement.<br/>Cette notice sera mise à jour avec les données complètes de la société après la formalisation de l'entité légale (ex. société ou association)."
+      },
+      "tipologie": {
+        "title": "2. Types de données traitées",
+        "items": [
+          "Données fournies volontairement par l'utilisateur via les formulaires de contact, email ou inscription à la newsletter (ex. nom, prénom, email, informations liées à la pratique sportive saisies volontairement).",
+          "Données de navigation collectées automatiquement (IP, navigateur, appareil, pages visitées) à des fins statistiques et de sécurité.",
+          "Cookies et technologies similaires, comme indiqué dans la Politique de Cookies."
+        ]
+      },
+      "finalita": {
+        "title": "3. Finalité du traitement",
+        "items": [
+          "Répondre aux demandes ou contacts de l'utilisateur",
+          "Gérer les inscriptions aux services ou newsletters (uniquement avec consentement explicite)",
+          "Gérer la communauté, les profils d'athlètes ou la participation aux activités sportives/événements",
+          "Effectuer des analyses statistiques agrégées pour améliorer le Site",
+          "Remplir les obligations légales en cas de collaborations commerciales ou de sponsoring"
+        ]
+      },
+      "basi": {
+        "title": "4. Bases juridiques (Art. 6 RGPD)",
+        "items": [
+          "Exécution de mesures contractuelles ou précontractuelles à la demande de l'utilisateur",
+          "Consentement explicite à des fins de marketing ou de profilage",
+          "Intérêt légitime pour les analyses statistiques anonymes et la sécurité du site"
+        ]
+      },
+      "conservazione": {
+        "title": "5. Conservation des données",
+        "content": "Les données sont conservées pendant le temps nécessaire à la finalité pour laquelle elles ont été collectées ou jusqu'à la demande de suppression. Les données utilisées à des fins promotionnelles sont conservées jusqu'au retrait du consentement."
+      },
+      "terzi": {
+        "title": "6. Communication à des tiers",
+        "items": [
+          "Fournisseurs techniques (ex. hébergement, newsletters, outils d'analytics)",
+          "Partenaires ou sponsors uniquement avec le consentement explicite de l'utilisateur",
+          "Autorités compétentes en cas d'obligations réglementaires",
+          "Aucun transfert à des tiers à des fins commerciales non autorisées n'est prévu."
+        ]
+      },
+      "diritti": {
+        "title": "7. Droits de l'utilisateur (Art. 15–22 RGPD)",
+        "items": [
+          "Accéder à ses données",
+          "Demander la rectification ou la suppression",
+          "Limiter ou s'opposer au traitement",
+          "Retirer son consentement à tout moment"
+        ],
+        "contact": "Pour exercer ces droits : <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
+      },
+      "sicurezza": {
+        "title": "8. Sécurité",
+        "content": "WeApnea adopte des mesures techniques et organisationnelles appropriées pour protéger les données personnelles contre les accès non autorisés, la perte ou l'altération."
+      },
+      "minori": {
+        "title": "9. Mineurs",
+        "content": "Sauf indication contraire, les services du Site sont réservés aux utilisateurs majeurs. Les données fournies par les mineurs seront supprimées sur demande."
+      },
+      "modifiche": {
+        "title": "10. Modifications",
+        "content": "Cette notice peut être mise à jour. Les changements importants seront communiqués sur le Site ou par email aux utilisateurs enregistrés."
+      }
+    }
+  },
+  "cookie_policy": {
+    "title": "WeApnea – Politique de Cookies (UE/RGPD)",
+    "last_update": "Dernière mise à jour",
+    "toc_title": "Table des matières",
+    "info_title": "Informations sur les Cookies",
+    "sections": {
+      "cosa-sono": {
+        "title": "1. Qu'est-ce que les cookies",
+        "content": "Les cookies sont de petits fichiers enregistrés sur l'appareil de l'utilisateur pour améliorer la navigation et activer certaines fonctionnalités."
+      },
+      "tipologie": {
+        "title": "2. Types de cookies utilisés",
+        "items": [
+          "<strong>Techniques / Nécessaires</strong> : fonctionnement du site (ex. langue, connexion) – ne nécessitent pas de consentement.",
+          "<strong>Statistiques (anonymisés)</strong> : analyse des visites (ex. Google Analytics avec IP anonymisée) – nécessitent un consentement.",
+          "<strong>Marketing / Profilage</strong> : remarketing et personnalisation du contenu – nécessitent un consentement."
+        ]
+      },
+      "consenso": {
+        "title": "3. Gestion du consentement",
+        "content": "Lors du premier accès, une bannière de cookies s'affiche permettant d'accepter tous les cookies, de refuser les non-nécessaires ou de gérer les préférences. L'utilisateur peut modifier ses préférences à tout moment via le navigateur ou via un lien « Paramètres des Cookies » présent sur le Site."
+      },
+      "browser": {
+        "title": "4. Désactivation via le navigateur",
+        "content": "L'utilisateur peut gérer les cookies depuis les paramètres de son navigateur (Chrome, Firefox, Safari, etc.). La désactivation des cookies techniques peut compromettre certaines fonctionnalités du Site."
+      },
+      "terze-parti": {
+        "title": "5. Outils tiers",
+        "content": "Le Site peut utiliser des services externes comme Google Analytics ou des pixels sociaux. Les cookies marketing ne sont activés qu'avec un consentement explicite."
+      },
+      "contatti": {
+        "title": "6. Contacts",
+        "content": "Pour des éclaircissements ou des demandes concernant la gestion des données ou des cookies : <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
+      }
+    }
+  }
+}

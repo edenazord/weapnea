@@ -1,0 +1,593 @@
+{
+  "nav": {
+    "home": "Strona glowna",
+    "events": "Wydarzenia",
+    "about": "O nas",
+    "contact": "Kontakt",
+    "blog": "Blog",
+    "forum": "Forum",
+    "profile": "Profil",
+    "dashboard": "Panel",
+    "logout": "Wyloguj"
+  },
+  "common": {
+    "login": "Zaloguj sie",
+    "register": "Zarejestruj sie",
+    "error": "Blad",
+    "unexpected_error": "Nieoczekiwany blad",
+    "cancel": "Anuluj",
+    "delete": "Usun",
+    "back": "Wroc",
+    "loading": "Ladowanie...",
+    "close": "Zamknij",
+    "go_to_profile": "Przejdz do profilu",
+    "loading_map": "Ladowanie mapy...",
+    "loading_error": "Blad ladowania"
+  },
+  "homepage": {
+    "uncategorized_events": "Treningi",
+    "loading_events": "Ladowanie wydarzen...",
+    "error_title": "Blad ladowania",
+    "error_description": "Wystapil blad podczas ladowania wydarzen.",
+    "retry_btn": "Ponow",
+    "no_events_title": "Brak dostepnych wydarzen",
+    "no_events_description": "Obecnie nie ma opublikowanych wydarzen.",
+    "no_results_title": "Nie znaleziono wydarzen",
+    "no_results_description": "Nie ma nadchodzacych wydarzen pasujacych do Twoich filtrow.",
+    "sponsors": {
+      "title": "Partnerzy i Sponsorzy",
+      "learn_more": "Dowiedz sie wiecej"
+    }
+  },
+  "categories": {
+    "trainings": "Treningi",
+    "trips": "Podroze",
+    "courses": "Kursy",
+    "workshops": "Warsztaty i Obozy",
+    "competitions": "Zawody",
+    "stages": "Obozy",
+    "digital_training": "Szkolenie Cyfrowe Live"
+  },
+  "footer": {
+    "description": "Uczestnicz, tworz, dziel sie z nasza spolecznoscia. Daj zycie freedivingowi bardziej dostepnemu, widocznemu i polaczonemu.",
+    "quick_links": "Szybkie linki",
+    "contact": "Kontakty",
+    "copyright": "Wszelkie prawa zastrzezone."
+  },
+  "hero": {
+    "badge_text": "Odkryj swiat freedivingu",
+    "title_line1": "Twoja platforma dla",
+    "title_line2": "freedivingu",
+    "description": "Znajdz wydarzenia, kursy i zawody. Polacz sie ze spolecznoscia i odkryj nowe mozliwosci poprawy swoich wynikow.",
+    "btn_explore": "Przegladaj wydarzenia",
+    "btn_community": "Dolacz do spolecznosci",
+    "stats_events": "Zorganizowane wydarzenia",
+    "stats_freedivers": "Aktywni freediverzy",
+    "stats_instructors": "Certyfikowani instruktorzy"
+  },
+  "about_page": {
+    "title": "O nas",
+    "subtitle": "WeApnea to pierwsza miedzynarodowa platforma poswiecona freedivingowi, ktora powstala z pasji grupy freediverów, ktorzy chcieli stworzyc przestrzen wymiany i rozwoju dla calej spolecznosci.\nSpolecznosc sklada sie ze sportowcow, instruktorow, trenerow i pasjonatow freedivingu indoor i outdoor. Przez lata zylismy w slabo polaczonej rzeczywistosci: wydarzenia rozproszone miedzy forami, grupami spolecznosciowymi i poczta pantoflowa. Zaden pojedynczy punkt odniesienia do znajdowania obozow, warsztatow, kursow, mozliwosci szkoleniowych, podrozy i dawania widocznosci i demokratyzacji, na ktora zasluguje nasz sport.\nPostanowilismy wiec sami zbudowac ten punkt odniesienia.\n\nWeApnea powstaje z precyzyjnym celem: uczynic freediving bardziej dostepnym, widocznym i polaczonym.\n\nCo mozesz tu znalezc?\nWydarzenia freedivingowe organizowane przez certyfikowanych instruktorow lub szkoly\nTreningi udostepniane przez certyfikowanych instruktorow\nWspolprace i korzysci z markami i partnerami sektora\nSpecjalne projekty dla rozwoju spolecznosci\n\nNie jestesmy federacja. Nie jestesmy zwykla siecia spolecznosciowa.\nJestesmy miejscem spotkan. Akceleratorem dla tych, ktorzy chca przezywac freediving jako sciezke rozwoju w wodzie i w sobie.\nI to dopiero poczatek.",
+    "mission_title": "Nasza misja",
+    "mission_desc": "Laczyc freediverów z calego swiata poprzez platforme ulatwiajaca uczestnictwo w wydarzeniach, podrozach i dzialaniach szkoleniowych. Chcemy uczynic freediving bardziej dostepnym i stworzyc globalna spolecznosc entuzjastow.",
+    "vision_title": "Nasza wizja",
+    "vision_desc": "Stac sie miedzynarodowym punktem odniesienia dla freedivingu, gdzie kazdy freediver moze znalezc mozliwosci rozwoju, dzielic sie doswiadczeniami i autentycznie laczyc sie z innymi czlonkami spolecznosci.",
+    "values_title": "Nasze wartosci",
+    "values": {
+      "community_title": "Spolecznosc",
+      "community_desc": "Wierzymy w sile spolecznosci i dzielenie sie doswiadczeniami, aby razem rozwijac sie jako freediverzy.",
+      "passion_title": "Pasja",
+      "passion_desc": "Freediving to nasza pasja i chcemy ja przekazywac poprzez niezapomniane wydarzenia i doswiadczenia.",
+      "innovation_title": "Innowacja",
+      "innovation_desc": "Wykorzystujemy technologie, aby uczynic freediving bardziej dostepnym i laczyc freediverów z calego swiata."
+    },
+    "team_title": "Nasz zespol",
+    "team_desc": "Jestesmy zespolem pasjonatow freedivingu, programistow i profesjonalistow z branzy, ktorzy wspolnie pracuja nad stworzeniem najlepszego mozliwego doswiadczenia dla spolecznosci freedivingu."
+  },
+  "blog_page": {
+    "title": "Blog WeApnea",
+    "subtitle": "Odkryj najnowsze wiadomosci ze swiata freedivingu, techniki, porady i historie z naszej spolecznosci",
+    "search_placeholder": "Szukaj artykulow...",
+    "read_more": "Czytaj wiecej",
+    "author_fallback": "Autor",
+    "no_results_title": "Nie znaleziono artykulow",
+    "no_results_desc": "Sprobuj zmienic wyszukiwane hasla.",
+    "no_posts_title": "Brak opublikowanych artykulow",
+    "no_posts_desc": "Wroc wkrotce po nowe tresci!",
+    "back_to_blog": "Powrot do Bloga",
+    "share_button": "Udostepnij",
+    "share_copied_title": "Link skopiowany!",
+    "share_copied_desc": "Link do artykulu zostal skopiowany do schowka.",
+    "not_found_title": "Artykul nie znaleziony",
+    "not_found_desc": "Artykul, ktorego szukasz, nie istnieje lub zostal usuniety.",
+    "gallery_title": "Galeria"
+  },
+  "search": {
+    "placeholder": "Szukaj wydarzen, kursow, zawodow...",
+    "active_filters": "Aktywne filtry",
+    "filter_results": "Filtruj wyniki",
+    "category": "Kategoria",
+    "all_categories": "Wszystkie kategorie",
+    "discipline": "Dyscyplina",
+    "all_disciplines": "Wszystkie dyscypliny",
+    "nation": "Kraj",
+    "all_nations": "Wszystkie kraje",
+    "date": "Data",
+    "select_month": "Wybierz miesiac",
+    "disciplines": {
+      "indoor": "Indoor",
+      "outdoor": "Outdoor",
+      "indoor_outdoor": "Indoor i Outdoor"
+    }
+  },
+  "test": {
+    "hello": "Czesc",
+    "welcome": "Witaj",
+    "goodbye": "Do widzenia"
+  },
+  "auth": {
+    "login_title": "Witaj ponownie na WeApnea",
+    "login_subtitle": "Wprowadz swoje dane logowania, aby uzyskac dostep do konta.",
+    "register_title": "Utworz konto na WeApnea",
+    "register_subtitle": "Dolacz do spolecznosci WeApnea.",
+    "back_home": "Powrot do Strony glownej",
+    "login": {
+      "validation": {
+        "email_invalid": "Nieprawidlowy adres email.",
+        "password_required": "Haslo jest wymagane."
+      },
+      "success_title": "Zalogowano",
+      "success_desc": "Witaj ponownie na WeApnea!",
+      "error_title": "Blad logowania",
+      "error_invalid": "Nieprawidlowe dane logowania. Sprobuj ponownie.",
+      "error_generic": "Wystapil blad. Sprobuj ponownie.",
+      "form": {
+        "email_label": "Email",
+        "email_placeholder": "twoj@email.com",
+        "password_label": "Haslo",
+        "submitting": "Logowanie...",
+        "forgot_password": "Zapomnieles hasla?"
+      }
+    },
+    "register": {
+      "validation": {
+        "role_required": "Musisz wybrac typ konta.",
+        "fullname_required": "Imie i nazwisko jest wymagane",
+        "email_invalid": "Nieprawidlowy adres email.",
+        "password_min": "Haslo musi miec co najmniej 6 znakow.",
+        "company_required": "Wszystkie pola sponsora sa wymagane, jesli rola to 'Sponsor'."
+      },
+      "success_title": "Rejestracja zakonczona!",
+      "success_desc": "Sprawdz swoja skrzynke email, aby potwierdzic konto i zakonczyc rejestracje.",
+      "error_title": "Blad rejestracji",
+      "error_generic": "Wystapil blad podczas rejestracji.",
+      "error_try_later": "Wystapil blad podczas rejestracji. Sprobuj ponownie pozniej.",
+      "form": {
+        "role_label": "Typ konta",
+        "role_user": "Uzytkownik",
+        "role_instructor": "Organizator",
+        "role_company": "Sponsor",
+        "fullname_label": "Imie i nazwisko",
+        "fullname_placeholder": "Jan Kowalski",
+        "email_label": "Email",
+        "email_placeholder": "twoj@email.com",
+        "password_label": "Haslo",
+        "company_name_label": "Nazwa sponsora",
+        "company_name_placeholder": "WeApnea Sp. z o.o.",
+        "vat_number_label": "NIP",
+        "vat_number_placeholder": "1234567890",
+        "company_address_label": "Adres sponsora",
+        "company_address_placeholder": "ul. Nurkowa 1, 00-001 Warszawa",
+        "submitting": "Rejestracja..."
+      }
+    }
+  },
+  "password_reset": {
+    "email_sent_title": "Email wyslany",
+    "email_sent_desc": "Sprawdz swoja skrzynke odbiorcza, aby uzyskac instrukcje odzyskiwania.",
+    "errors": {
+      "email_invalid": "Nieprawidlowy adres email.",
+      "password_min": "Haslo musi miec co najmniej 6 znakow.",
+      "confirm_required": "Potwierdz haslo.",
+      "password_mismatch": "Hasla nie sa zgodne",
+      "send_failed": "Wystapil blad podczas wysylania emaila odzyskiwania.",
+      "invalid_link": "Nieprawidlowy link odzyskiwania. Popros o nowy link.",
+      "invalid_token": "Nieprawidlowy lub wygasly token.",
+      "update_failed": "Wystapil blad podczas aktualizacji hasla."
+    },
+    "email_sent_heading": "Email wyslany!",
+    "email_sent_help": "Wyslalismy instrukcje resetowania hasla na Twoj email.",
+    "email_sent_follow": "Sprawdz swoja skrzynke odbiorcza i postepuj zgodnie z instrukcjami, aby zresetowac haslo.",
+    "back_to_login": "Powrot do logowania",
+    "set_new_title": "Ustaw nowe haslo",
+    "request_title": "Odzyskaj haslo",
+    "set_new_subtitle": "Wprowadz swoje nowe haslo.",
+    "request_subtitle": "Wprowadz swoj adres email, a wyslemy Ci instrukcje resetowania hasla.",
+    "new_password_label": "Nowe haslo",
+    "new_password_placeholder": "Wprowadz nowe haslo",
+    "confirm_password_label": "Potwierdz haslo",
+    "updating": "Aktualizowanie...",
+    "update_button": "Zaktualizuj haslo",
+    "email_label": "Email",
+    "email_placeholder": "twoj@email.com",
+    "sending": "Wysylanie...",
+    "send_button": "Wyslij email odzyskiwania",
+    "updated_title": "Haslo zaktualizowane",
+    "updated_desc": "Twoje haslo zostalo pomyslnie zaktualizowane. Mozesz teraz zalogowac sie nowym haslem."
+  },
+  "not_found": {
+    "subtitle": "Ups! Strona nie znaleziona",
+    "back_home": "Powrot do Strony glownej"
+  },
+  "events": {
+    "participants": "uczestnikow",
+    "details": "Szczegoly",
+    "count_in_category": "wydarzenia w tej kategorii",
+    "none_in_category": "Brak dostepnych wydarzen w tej kategorii",
+    "enrolled_label": "Zapisani",
+    "enrolled": "Zapisany",
+    "participants_title": "Uczestnicy",
+    "no_participants": "Brak uczestnikow",
+    "request_info": "Popros o info",
+    "register": "Zapisz sie",
+    "full": "Pelne",
+    "organizer": "Organizator",
+    "cost_label": "Koszt",
+    "free": "Bezplatne",
+    "nation_label": "Kraj",
+    "event_details": "Szczegoly Wydarzenia",
+    "event_type_label": "Typ",
+    "discipline_label": "Dyscyplina",
+    "level_label": "Poziom",
+    "language_label": "Jezyk",
+    "included_not_included": "Wliczone/Niewliczone",
+    "gallery_label": "Galeria",
+    "slots_full": "Brak wolnych miejsc na to wydarzenie.",
+    "event_not_free": "To wydarzenie nie jest bezplatne.",
+    "event_not_found": "Wydarzenie nie znalezione.",
+    "registration_error": "Nie udalo sie zakonczyc rejestracji.",
+    "registration_success": "Rejestracja zakonczona!",
+    "payment_error": "Blad w procesie platnosci",
+    "view_participants": "Zobacz uczestnikow: {count} zapisanych",
+    "total_participants": "Laczna liczba uczestnikow:",
+    "total_revenue": "Calkowity przychod:",
+    "remove_participant": "Usun uczestnika",
+    "confirm_remove_participant": "Usunac {name}?",
+    "participant_removed": "Uczestnik usuniety",
+    "remove_participant_error": "Nie udalo sie usunac uczestnika",
+    "back_to_all": "Powrot do wszystkich wydarzen",
+    "organized_by": "Organizowane przez",
+    "location": "Lokalizacja",
+    "objectives": "Cele",
+    "about_us": "O Nas",
+    "notes_warnings": "Uwagi i Ostrzezenia",
+    "schedule_logistics": "Harmonogram i Logistyka",
+    "quick_info": "Szybkie Informacje",
+    "date_label": "Data",
+    "place_label": "Miejsce",
+    "enrolled_count": "Zapisani",
+    "activity_description": "Opis Aktywnosci",
+    "no_description": "Nie podano opisu dla tego wydarzenia.",
+    "request_info_button": "Popros o informacje",
+    "recurring_appointment": "Spotkanie cykliczne",
+    "included_label": "Wliczone",
+    "not_included_label": "Niewliczone",
+    "image_gallery_title": "Galeria zdjec",
+    "image_zoom": "Powieksz zdjecie",
+    "prev_image": "Poprzednie zdjecie",
+    "next_image": "Nastepne zdjecie",
+    "event_not_found_title": "Wydarzenie nie znalezione",
+    "event_not_found_desc": "Wydarzenie, ktorego szukasz, nie istnieje lub moglo zostac usuniete.",
+    "back_to_home": "Powrot do Strony glownej",
+    "go_to_admin": "Przejdz do Panelu Admin",
+    "debug_info": "Info debugowania",
+    "url_param": "Parametr URL",
+    "type": "Typ",
+    "possible_causes": "Mozliwe przyczyny",
+    "cause_slug_changed": "Slug wydarzenia mogl sie zmienic po aktualizacji",
+    "cause_deleted": "Wydarzenie moglo zostac usuniete",
+    "cause_link_outdated": "Link moze byc nieaktualny",
+    "authenticated_tip": "Jestes zalogowany? Mozesz sprobowac zobaczyc wszystkie wydarzenia:",
+    "past_events_title": "Przeszle Wydarzenia",
+    "past_events_subtitle": "Wszystkie wydarzenia juz zrealizowane, od najnowszego"
+  },
+  "forum": {
+    "title": "Forum",
+    "subtitle": "Dyskutuj ze spolecznoscia pasjonatow freedivingu",
+    "new_topic": "Nowy Temat",
+    "login_to_create_topic": "Zaloguj sie, aby utworzyc temat",
+    "filter": {
+      "all": "Wszystkie"
+    },
+    "anonymous": "Anonim",
+    "last_reply": "Ostatnia odpowiedz:",
+    "no_topics": {
+      "title": "Nie znaleziono tematow",
+      "generic": "Na forum nie ma jeszcze dyskusji.",
+      "in_category_prefix": "Nie ma jeszcze dyskusji w"
+    },
+    "create_first_topic": "Utworz pierwszy temat",
+    "login_to_create_first_topic": "Zaloguj sie, aby utworzyc pierwszy temat",
+    "back_to_forum": "Powrot do Forum",
+    "topic_not_found": "Temat nie znaleziony",
+    "replies": "Odpowiedzi",
+    "delete_topic": {
+      "title": "Usunac ten temat?",
+      "description": "Ta czynnosc jest nieodwracalna. Temat i wszystkie jego odpowiedzi zostana trwale usuniete."
+    },
+    "delete_reply": {
+      "title": "Usunac te odpowiedz?",
+      "description": "Ta czynnosc jest nieodwracalna. Odpowiedz zostanie trwale usunieta."
+    },
+    "add_reply": {
+      "title": "Dodaj odpowiedz",
+      "placeholder": "Napisz swoja odpowiedz...",
+      "send": "Wyslij Odpowiedz",
+      "sending": "Wysylanie..."
+    },
+    "locked": {
+      "title": "Ten temat jest zablokowany",
+      "description": "Nie mozna dodawac nowych odpowiedzi."
+    },
+    "login_cta": {
+      "title": "Wez udzial w dyskusji!",
+      "description": "Musisz byc zalogowany, aby odpowiedziec na ten temat.",
+      "button": "Zaloguj sie, aby odpowiedziec"
+    },
+    "toasts": {
+      "topic_deleted": "Temat usuniety pomyslnie!",
+      "topic_delete_error_prefix": "Blad podczas usuwania tematu: ",
+      "reply_deleted": "Odpowiedz usunieta pomyslnie!",
+      "reply_delete_error_prefix": "Blad podczas usuwania odpowiedzi: ",
+      "reply_added": "Odpowiedz dodana pomyslnie!",
+      "reply_add_error_prefix": "Blad podczas dodawania odpowiedzi: "
+    }
+  },
+  "common_ext": {
+    "error": "Blad",
+    "unexpected_error": "Nieoczekiwany blad"
+  },
+  "profile": {
+    "title": "Moj Profil",
+    "subtitle": "Zarzadzaj swoimi danymi osobowymi",
+    "mobile_header_title": "Moj Profil",
+    "not_found": "Profil nie znaleziony",
+    "not_found_desc": "Profil, ktorego szukasz, nie istnieje lub nie jest publiczny.",
+    "role_label": "Rola",
+    "roles": {
+      "user": "Uzytkownik",
+      "instructor": "Organizator",
+      "company": "Sponsor"
+    },
+    "tabs": {
+      "overview": "Profil",
+      "company": "Firma",
+      "sponsor": "Sponsor"
+    },
+    "fields": {
+      "phone": "Telefon",
+      "insurance": "Ubezpieczenie",
+      "insurance_expiry": "Wygasniecie ubezpieczenia",
+      "medical_cert_expiry": "Wygasniecie zaswiadczenia lekarskiego",
+      "medical_cert_type": "Typ zaswiadczenia lekarskiego"
+    },
+    "complete_profile": "Uzupelnij swoj profil",
+    "complete_profile_desc": "Aby kontynuowac platnosc, uzupelnij nastepujace pola profilu:",
+    "view_public_profile": "Zobacz profil publiczny",
+    "sections": {
+      "my_events": {
+        "title": "Moje Wydarzenia",
+        "description": "Zarzadzaj swoimi wydarzeniami i lista zyczen",
+        "participated_button": "Wydarzenia z udzialem",
+        "participated_sub": "Historia wydarzen",
+        "wishlist_button": "Lista zyczen",
+        "wishlist_sub": "Zapisane wydarzenia"
+      },
+      "personal_info": {
+        "title": "Dane Osobowe",
+        "description": "Zaktualizuj swoje dane osobowe i kontaktowe",
+        "full_name_label": "Imie i Nazwisko",
+        "full_name_placeholder": "Twoje pelne imie i nazwisko",
+        "instagram_label": "Instagram",
+        "instagram_placeholder": "@uzytkownik",
+        "phone_label": "Telefon",
+        "phone_placeholder": "Np. +48 123 456 789",
+        "bio_label": "Biografia",
+        "bio_placeholder": "Opowiedz nam cos o sobie..."
+      },
+      "certifications": {
+        "title": "Certyfikaty i Ubezpieczenia",
+        "description": "Utrzymuj swoje certyfikaty aktualne. Do zapisania sie na platne wydarzenia wymagane sa: Telefon, Ubezpieczenie i daty wygasniecia, Wazne zaswiadczenie lekarskie.",
+        "brevetto_label": "Certyfikat",
+        "brevetto_placeholder": "Wybierz certyfikat",
+        "brevetto_options": {
+          "none": "Brak certyfikatu",
+          "open_water": "Open Water",
+          "advanced": "Advanced",
+          "rescue": "Rescue",
+          "master": "Master",
+          "instructor": "Instructor"
+        },
+        "brevetto_expiry_label": "Wygasniecie Certyfikatu",
+        "insurance_label": "Ubezpieczenie",
+        "insurance_placeholder": "Nazwa ubezpieczenia",
+        "insurance_expiry_label": "Wygasniecie Ubezpieczenia",
+        "medical_expiry_label": "Wygasniecie Zaswiadczenia Lekarskiego"
+      },
+      "personal_bests": {
+        "title": "Rekordy Osobiste",
+        "description": "Zapisz swoje najlepsze wyniki we freedivingu",
+        "static_apnea_label": "Apnea Statyczna (minuty:sekundy)",
+        "static_apnea_placeholder": "np. 4:30",
+        "dynamic_apnea_label": "Apnea Dynamiczna (metry)",
+        "dynamic_apnea_placeholder": "np. 75",
+        "free_immersion_label": "Free Immersion (metry)",
+        "free_immersion_placeholder": "np. 30",
+        "constant_weight_label": "Constant Weight (metry)",
+        "constant_weight_placeholder": "np. 45"
+      },
+      "company": {
+        "title": "Dane Firmy",
+        "description": "Zarzadzaj danymi swojej firmy",
+        "fields": {
+          "company_name_label": "Nazwa Firmy",
+          "company_name_placeholder": "Nazwa Twojej firmy",
+          "vat_number_label": "NIP",
+          "vat_number_placeholder": "1234567890",
+          "company_address_label": "Adres Firmy",
+          "company_address_placeholder": "Pelny adres firmy"
+        }
+      },
+      "sponsor": {
+        "title": "Pakiety Sponsorskie",
+        "description": "Odkryj nasze pakiety sponsorskie",
+        "cta_text": "Zwieksz widocznosc swojej firmy sponsorujac wydarzenia freedivingowe.",
+        "cta_button": "Odkryj Pakiety Sponsorskie"
+      }
+    },
+    "buttons": {
+      "save": "Zapisz Zmiany",
+      "saving": "Zapisywanie..."
+    },
+    "toasts": {
+      "update_success_title": "Sukces",
+      "update_success_desc": "Profil zaktualizowany pomyslnie!",
+      "update_error_title": "Blad",
+      "update_error_desc": "Wystapil blad podczas aktualizacji profilu."
+    },
+    "login_required": "Musisz byc zalogowany, aby zobaczyc profil."
+  },
+  "contact": {
+    "page_title": "Skontaktuj sie z nami",
+    "page_subtitle": "Masz pytania, sugestie lub chcesz z nami wspolpracowac? Napisz do nas!",
+    "name_label": "Imie",
+    "name_placeholder": "Twoje imie",
+    "email_label": "Email",
+    "email_placeholder": "imie@przyklad.com",
+    "message_label": "Wiadomosc",
+    "message_placeholder": "Jak mozemy Ci pomoc?",
+    "response_time": "Odpowiadamy w ciagu 24-48 godzin roboczych",
+    "send_button": "Wyslij",
+    "sending": "Wysylanie...",
+    "missing_fields_title": "Brakujace pola",
+    "missing_fields_desc": "Uzupelnij imie, email i wiadomosc.",
+    "invalid_email_title": "Nieprawidlowy email",
+    "invalid_email_desc": "Wprowadz prawidlowy adres email.",
+    "short_message_title": "Wiadomosc zbyt krotka",
+    "short_message_desc": "Dodaj wiecej szczegolow.",
+    "sent_title": "Wiadomosc wyslana",
+    "sent_desc": "Odpowiemy tak szybko, jak to mozliwe.",
+    "error_title": "Wysylanie nie powiodlo sie",
+    "error_desc": "Sprobuj ponownie pozniej."
+  },
+  "privacy_policy": {
+    "title": "WeApnea - Polityka Prywatnosci (UE/RODO)",
+    "last_update": "Ostatnia aktualizacja",
+    "toc_title": "Spis tresci",
+    "info_title": "Informacje o Prywatnosci",
+    "intro": "Niniejsza informacja opisuje sposob przetwarzania danych osobowych uzytkownikow odwiedzajacych i korzystajacych ze strony www.weapnea.com (dalej Strona).",
+    "sections": {
+      "titolare": {
+        "title": "1. Administrator Danych",
+        "content": "<strong>WeApnea</strong> (projekt sportowy w trakcie formalizacji prawnej)<br/>Email kontaktowy: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a><br/>Siedziba: Do ustalenia - struktura prawna w trakcie rejestracji.<br/>Niniejsza informacja zostanie zaktualizowana o pelne dane spolki po sformalizowaniu podmiotu prawnego (np. spolka lub stowarzyszenie)."
+      },
+      "tipologie": {
+        "title": "2. Rodzaje przetwarzanych danych",
+        "items": [
+          "Dane podane dobrowolnie przez uzytkownika za posrednictwem formularzy kontaktowych, emaila lub subskrypcji newslettera (np. imie, nazwisko, email, informacje zwiazane z praktyka sportowa wprowadzone dobrowolnie).",
+          "Dane nawigacyjne zbierane automatycznie (IP, przegladarka, urzadzenie, odwiedzone strony) do celow statystycznych i bezpieczenstwa.",
+          "Pliki cookie i podobne technologie, zgodnie z Polityka Cookie."
+        ]
+      },
+      "finalita": {
+        "title": "3. Cel przetwarzania",
+        "items": [
+          "Odpowiadanie na zapytania lub kontakty uzytkownika",
+          "Zarzadzanie subskrypcjami uslug lub newsletterow (tylko za wyrazna zgoda)",
+          "Zarzadzanie spolecznoscia, profilami sportowcow lub uczestnictwem w dzialaniach sportowych/wydarzeniach",
+          "Przeprowadzanie zagregowanych analiz statystycznych w celu ulepszenia Strony",
+          "Wypelnianie obowiazkow prawnych w przypadku wspolprac komercyjnych lub sponsoringu"
+        ]
+      },
+      "basi": {
+        "title": "4. Podstawy prawne (Art. 6 RODO)",
+        "items": [
+          "Wykonanie srodkow kontraktowych lub przedkontraktowych na zadanie uzytkownika",
+          "Wyrazna zgoda na cele marketingowe lub profilowanie",
+          "Uzasadniony interes dla anonimowych analiz statystycznych i bezpieczenstwa strony"
+        ]
+      },
+      "conservazione": {
+        "title": "5. Przechowywanie danych",
+        "content": "Dane sa przechowywane przez czas niezbedny do realizacji celu, dla ktorego zostaly zebrane, lub do momentu zadania usuniecia. Dane wykorzystywane do celow promocyjnych sa przechowywane do momentu wycofania zgody."
+      },
+      "terzi": {
+        "title": "6. Udostepnianie osobom trzecim",
+        "items": [
+          "Dostawcom technicznym (np. hosting, newslettery, narzedzia analityczne)",
+          "Partnerom lub sponsorom tylko za wyrazna zgoda uzytkownika",
+          "Wlasciwym organom w przypadku obowiazkow regulacyjnych",
+          "Nie przewiduje sie przekazywania osobom trzecim w celach komercyjnych bez autoryzacji."
+        ]
+      },
+      "diritti": {
+        "title": "7. Prawa uzytkownika (Art. 15-22 RODO)",
+        "items": [
+          "Dostepu do swoich danych",
+          "Zadania sprostowania lub usuniecia",
+          "Ograniczenia lub sprzeciwu wobec przetwarzania",
+          "Wycofania zgody w dowolnym momencie"
+        ],
+        "contact": "Aby skorzystac z tych praw: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
+      },
+      "sicurezza": {
+        "title": "8. Bezpieczenstwo",
+        "content": "WeApnea stosuje odpowiednie srodki techniczne i organizacyjne w celu ochrony danych osobowych przed nieuprawnionym dostepem, utrata lub zmiana."
+      },
+      "minori": {
+        "title": "9. Osoby niepelnoletnie",
+        "content": "O ile nie wskazano inaczej, uslugi Strony sa przeznaczone dla uzytkownikow pelnoletnich. Dane podane przez osoby niepelnoletnie zostana usuniete na zadanie."
+      },
+      "modifiche": {
+        "title": "10. Zmiany",
+        "content": "Niniejsza informacja moze byc aktualizowana. Istotne zmiany beda komunikowane na Stronie lub droga mailowa do zarejestrowanych uzytkownikow."
+      }
+    }
+  },
+  "cookie_policy": {
+    "title": "WeApnea - Polityka Cookie (UE/RODO)",
+    "last_update": "Ostatnia aktualizacja",
+    "toc_title": "Spis tresci",
+    "info_title": "Informacje o Cookie",
+    "sections": {
+      "cosa-sono": {
+        "title": "1. Czym sa pliki cookie",
+        "content": "Pliki cookie to male pliki zapisywane na urzadzeniu uzytkownika w celu poprawy nawigacji i wlaczenia niektorych funkcjonalnosci."
+      },
+      "tipologie": {
+        "title": "2. Rodzaje uzywanych plikow cookie",
+        "items": [
+          "<strong>Techniczne / Niezbedne</strong>: dzialanie strony (np. jezyk, logowanie) - nie wymagaja zgody.",
+          "<strong>Statystyczne (anonimizowane)</strong>: analiza wizyt (np. Google Analytics z anonimizacja IP) - wymagaja zgody.",
+          "<strong>Marketingowe / Profilujace</strong>: remarketing i personalizacja tresci - wymagaja zgody."
+        ]
+      },
+      "consenso": {
+        "title": "3. Zarzadzanie zgoda",
+        "content": "Przy pierwszym wejsciu wyswietlany jest baner cookie pozwalajacy zaakceptowac wszystkie pliki cookie, odrzucic niezbedne lub zarzadzac preferencjami. Uzytkownik moze zmienic preferencje w dowolnym momencie w ustawieniach przegladarki lub poprzez link Ustawienia Cookie dostepny na Stronie."
+      },
+      "browser": {
+        "title": "4. Wylaczenie poprzez przegladarke",
+        "content": "Uzytkownik moze zarzadzac plikami cookie w ustawieniach swojej przegladarki (Chrome, Firefox, Safari itp.). Wylaczenie plikow cookie technicznych moze wplynac na niektore funkcjonalnosci Strony."
+      },
+      "terze-parti": {
+        "title": "5. Narzedzia zewnetrzne",
+        "content": "Strona moze korzystac z uslug zewnetrznych, takich jak Google Analytics lub piksele spolecznosciowe. Pliki cookie marketingowe sa aktywowane tylko za wyrazna zgoda."
+      },
+      "contatti": {
+        "title": "6. Kontakt",
+        "content": "W przypadku pytan lub prosb dotyczacych zarzadzania danymi lub plikami cookie: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
+      }
+    }
+  }
+}
