@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface BackButtonProps {
   fallbackPath?: string;
@@ -11,11 +12,13 @@ interface BackButtonProps {
 
 export const BackButton = ({ 
   fallbackPath = "/", 
-  label = "Indietro", 
+  label, 
   variant = "outline",
   className = ""
 }: BackButtonProps) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const buttonLabel = label || t('common.back', 'Indietro');
 
   const handleBack = () => {
     navigate(fallbackPath);
@@ -28,7 +31,7 @@ export const BackButton = ({
       className={className}
     >
       <ArrowLeft className="mr-2 h-4 w-4" />
-      {label}
+      {buttonLabel}
     </Button>
   );
 };

@@ -16,7 +16,9 @@
   "error": "Error",
   "unexpected_error": "Unexpected error",
   "cancel": "Cancel",
-  "delete": "Delete"
+  "delete": "Delete",
+  "back": "Back",
+  "loading": "Loading..."
   },
   "homepage": {
     "uncategorized_events": "Trainings",
