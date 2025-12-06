@@ -29,8 +29,8 @@ export async function loadLanguages(): Promise<UILanguage[]> {
 }
 
 export async function loadTranslations(lang: string): Promise<Record<string, string>> {
-  // We use a single namespace common.json for now
-  const res = await fetch(`/locales/${lang}/common.json`, { cache: 'no-store' });
+  // Each language has its own file: en.json, it.json, es.json, etc.
+  const res = await fetch(`/locales/${lang}/${lang}.json`, { cache: 'no-store' });
   if (!res.ok) return {};
   const json = await res.json();
   return flatten(json);
