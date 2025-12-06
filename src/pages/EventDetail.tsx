@@ -341,49 +341,49 @@ const EventDetail = () => {
         
         const errorContent = (
             <div className={`flex flex-col min-h-screen items-center justify-center bg-gray-50 text-center ${isMobile ? 'px-4' : 'px-4'}`}>
-                <h1 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-2xl' : 'text-4xl'}`}>Evento non trovato</h1>
+                <h1 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-2xl' : 'text-4xl'}`}>{t('events.event_not_found_title', 'Evento non trovato')}</h1>
                 <div className="max-w-2xl space-y-4">
                     <p className={`text-gray-600 mb-4 ${isMobile ? 'text-sm' : 'text-base'}`}>
-                        L'evento che stai cercando non esiste o potrebbe essere stato rimosso.
+                        {t('events.event_not_found_desc', "L'evento che stai cercando non esiste o potrebbe essere stato rimosso.")}
                     </p>
                     
                     {/* Show more helpful error information */}
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                         <p className={`text-blue-800 font-semibold mb-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
-                            Debug info:
+                            {t('events.debug_info', 'Debug info')}:
                         </p>
                         <ul className={`text-blue-700 text-left space-y-1 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                            <li>• Parametro URL: <code className="bg-gray-200 px-1 rounded">{slug || 'UNDEFINED'}</code></li>
-                            <li>• Tipo: {/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(slug || '') ? 'UUID' : 'Slug'}</li>
-                            <li>• Errore: {error?.message || 'Sconosciuto'}</li>
+                            <li>• {t('events.url_param', 'Parametro URL')}: <code className="bg-gray-200 px-1 rounded">{slug || 'UNDEFINED'}</code></li>
+                            <li>• {t('events.type', 'Tipo')}: {/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(slug || '') ? 'UUID' : 'Slug'}</li>
+                            <li>• {t('common.error', 'Errore')}: {error?.message || t('common.unexpected_error', 'Sconosciuto')}</li>
                         </ul>
                     </div>
                     
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                         <p className={`text-red-800 font-semibold mb-2 ${isMobile ? 'text-sm' : 'text-base'}`}>
-                            Possibili cause:
+                            {t('events.possible_causes', 'Possibili cause')}:
                         </p>
                         <ul className={`text-red-700 text-left space-y-1 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                            <li>• Lo slug dell'evento potrebbe essere cambiato dopo un aggiornamento</li>
-                            <li>• L'evento potrebbe essere stato eliminato</li>
-                            <li>• Il link potrebbe non essere aggiornato</li>
+                            <li>• {t('events.cause_slug_changed', "Lo slug dell'evento potrebbe essere cambiato dopo un aggiornamento")}</li>
+                            <li>• {t('events.cause_deleted', "L'evento potrebbe essere stato eliminato")}</li>
+                            <li>• {t('events.cause_link_outdated', 'Il link potrebbe non essere aggiornato')}</li>
                         </ul>
                     </div>
                 </div>
                 
                 <div className="space-y-3">
                     <Button asChild size={isMobile ? "sm" : "default"}>
-                        <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" /> Torna alla Home</Link>
+                        <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" /> {t('events.back_to_home', 'Torna alla Home')}</Link>
                     </Button>
                     
                     {/* Show link to admin if user might be able to create events */}
                     {user && (
                         <div className="pt-2">
                             <p className={`text-gray-600 mb-2 ${isMobile ? 'text-xs' : 'text-sm'}`}>
-                                Sei autenticato? Puoi provare a vedere tutti gli eventi:
+                                {t('events.authenticated_tip', 'Sei autenticato? Puoi provare a vedere tutti gli eventi:')}
                             </p>
                             <Button variant="outline" asChild size={isMobile ? "sm" : "default"}>
-                                <Link to="/admin">Vai al Pannello Admin</Link>
+                                <Link to="/admin">{t('events.go_to_admin', 'Vai al Pannello Admin')}</Link>
                             </Button>
                         </div>
                     )}
@@ -482,7 +482,7 @@ const EventDetail = () => {
                             {/* Nota: la sezione 'Organizzato da' è ora integrata sopra al titolo con avatar */}
                             
                             <div className={`prose max-w-none text-gray-700 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
-                                {event.description || "Nessuna descrizione fornita per questo evento."}
+                                {event.description || t('events.no_description', 'Nessuna descrizione fornita per questo evento.')}
                             </div>
                         </div>
                     </Card>
@@ -495,7 +495,7 @@ const EventDetail = () => {
                         return showAct;
                     })() && (
                         <Card className="shadow-lg p-6 mt-8">
-                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Descrizione Attività</h2>
+                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.activity_description', 'Descrizione Attività')}</h2>
                             <div className={`text-gray-600 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
                                 {event.activity_description}
                             </div>
@@ -561,12 +561,12 @@ const EventDetail = () => {
                 <div className={isMobile ? 'col-span-1' : 'md:col-span-1'}>
                     {/* Informazioni Rapide */}
                     <Card className={`shadow-lg p-6`}>
-                        <h2 className={`font-bold text-blue-900 mb-6 ${isMobile ? 'text-xl' : 'text-2xl'}`}>Informazioni Rapide</h2>
+                        <h2 className={`font-bold text-blue-900 mb-6 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.quick_info', 'Informazioni Rapide')}</h2>
                         <div className="space-y-4">
                             <div className="flex items-start">
                                 <Calendar className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                 <div>
-                                    <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Data</p>
+                                    <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.date_label', 'Data')}</p>
                                     <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{getDisplayDate()}</p>
                                 </div>
                             </div>
@@ -574,7 +574,7 @@ const EventDetail = () => {
                                 <div className="flex items-start">
                                     <MapPin className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                      <div>
-                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Luogo</p>
+                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.place_label', 'Luogo')}</p>
                                         <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{event.location}</p>
                                     </div>
                                 </div>
@@ -583,7 +583,7 @@ const EventDetail = () => {
                                 <div className="flex items-start">
                                     <Users className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                     <div>
-                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Iscritti</p>
+                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.enrolled_count', 'Iscritti')}</p>
                                         <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>
                                             {typeof event.participants === 'number' && event.participants > 0
                                                 ? `${Math.max(0, Number((event as any).participants_paid_count || 0))} / ${event.participants}`
@@ -653,10 +653,10 @@ const EventDetail = () => {
                                                         type="button"
                                                         onClick={handleWhatsappDetailClick}
                                                         className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-[#25D366] hover:bg-[#1EBE5B] text-white font-medium"
-                                                        title="Richiedi informazioni su WhatsApp"
+                                                        title={t('events.request_info_button', 'Richiedi informazioni')}
                                                     >
                                                         <MessageCircle className="h-4 w-4" />
-                                                        Richiedi informazioni
+                                                        {t('events.request_info_button', 'Richiedi informazioni')}
                                                     </button>
                                                 ) : null}
                     </Card>
@@ -757,8 +757,8 @@ const EventDetail = () => {
                     {/* Lightbox Dialog */}
                     <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
                         <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none">
-                            <DialogTitle className="sr-only">Galleria immagini</DialogTitle>
-                            <DialogDescription className="sr-only">Zoom immagine {lightboxIndex + 1} di {galleryAbs.length}</DialogDescription>
+                            <DialogTitle className="sr-only">{t('events.image_gallery_title', 'Galleria immagini')}</DialogTitle>
+                            <DialogDescription className="sr-only">{t('events.image_zoom', 'Zoom immagine')} {lightboxIndex + 1} / {galleryAbs.length}</DialogDescription>
                                                         <div className="relative w-screen h-screen flex items-center justify-center">
                                                                 {/* Image */}
                                 {hasGallery && (
@@ -776,7 +776,7 @@ const EventDetail = () => {
                                                                         {galleryAbs.length > 1 && (
                                                                             <button
                                                                                 type="button"
-                                                                                aria-label="Immagine precedente"
+                                                                                aria-label={t('events.prev_image', 'Immagine precedente')}
                                                                                 className="p-2 rounded-full bg-black/40 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50"
                                                                                 onClick={goPrev}
                                                                             >
@@ -791,7 +791,7 @@ const EventDetail = () => {
                                                                         {galleryAbs.length > 1 && (
                                                                             <button
                                                                                 type="button"
-                                                                                aria-label="Immagine successiva"
+                                                                                aria-label={t('events.next_image', 'Immagine successiva')}
                                                                                 className="p-2 rounded-full bg-black/40 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50"
                                                                                 onClick={goNext}
                                                                             >
