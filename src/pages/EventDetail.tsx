@@ -744,7 +744,7 @@ const EventDetail = () => {
                                     <img
                                         key={index}
                                         src={src || '/placeholder.svg'}
-                                        alt={t('events.gallery_image', `Galleria ${index + 1}`)}
+                                        alt={t('events.gallery_image', 'Galleria {{num}}', {num: index + 1})}
                                         className="w-full h-24 object-cover rounded-lg border border-gray-200 cursor-zoom-in"
                                         onClick={() => { setLightboxIndex(index); setLightboxOpen(true); }}
                                         onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
@@ -758,13 +758,13 @@ const EventDetail = () => {
                     <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
                         <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none">
                             <DialogTitle className="sr-only">{t('events.image_gallery', 'Galleria immagini')}</DialogTitle>
-                            <DialogDescription className="sr-only">{t('events.zoom_image', `Zoom immagine ${lightboxIndex + 1} di ${galleryAbs.length}`)}</DialogDescription>
+                            <DialogDescription className="sr-only">{t('events.zoom_image', 'Zoom immagine {{current}} di {{total}}', {current: lightboxIndex + 1, total: galleryAbs.length})}</DialogDescription>
                                                         <div className="relative w-screen h-screen flex items-center justify-center">
                                                                 {/* Image */}
                                 {hasGallery && (
                                     <img
                                         src={galleryAbs[lightboxIndex] || '/placeholder.svg'}
-                                        alt={t('events.image_of', `Immagine ${lightboxIndex + 1} di ${galleryAbs.length}`)}
+                                        alt={t('events.image_of', 'Immagine {{current}} di {{total}}', {current: lightboxIndex + 1, total: galleryAbs.length})}
                                         className="max-h-[90vh] max-w-[95vw] object-contain drop-shadow-2xl"
                                         onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
                                     />
