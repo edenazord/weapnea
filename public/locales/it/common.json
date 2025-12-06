@@ -291,27 +291,7 @@
     "image_of": "Immagine {{current}} di {{total}}",
     "prev_image": "Immagine precedente",
     "next_image": "Immagine successiva",
-    "gallery_image": "Galleria {{num}}",
-    "event_types": {
-      "corso": "Corso",
-      "escursione": "Escursione",
-      "gara": "Gara",
-      "workshop": "Workshop",
-      "conferenza": "Conferenza",
-      "evento_sociale": "Evento Sociale"
-    },
-    "levels": {
-      "principiante_senza_brevetto": "Principiante senza brevetto",
-      "inesperto_con_brevetto": "Inesperto con brevetto",
-      "avanzato_con_brevetto": "Avanzato con brevetto",
-      "tutti_i_brevettati": "Tutti i brevettati",
-      "brevettati_e_non": "Sia brevettati che non"
-    },
-    "disciplines": {
-      "indoor": "Indoor",
-      "outdoor": "Outdoor",
-      "indoor&outdoor": "Indoor & Outdoor"
-    }
+    "gallery_image": "Galleria {{num}}"
   },
   "forum": {
     "title": "Forum",
