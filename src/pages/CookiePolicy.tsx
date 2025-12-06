@@ -6,18 +6,20 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { Cookie, ListOrdered, CalendarDays } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const tocItems = [
-  { id: "cosa-sono", label: "1. Cosa sono i cookie" },
-  { id: "tipologie", label: "2. Tipologie di cookie utilizzati" },
-  { id: "consenso", label: "3. Gestione del consenso" },
-  { id: "browser", label: "4. Disabilitazione tramite browser" },
-  { id: "terze-parti", label: "5. Strumenti di terza parte" },
-  { id: "contatti", label: "6. Contatti" },
+const sectionIds = [
+  "cosa-sono",
+  "tipologie",
+  "consenso",
+  "browser",
+  "terze-parti",
+  "contatti",
 ];
 
 const CookiePolicy = () => {
   const isMobile = useIsMobile();
+  const { t, currentLanguage } = useLanguage();
   const [activeSection, setActiveSection] = useState<string | undefined>("cosa-sono");
 
   useEffect(() => {
@@ -32,7 +34,6 @@ const CookiePolicy = () => {
   const handleTocClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     setActiveSection(id);
-    // Scroll to the section
     setTimeout(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
@@ -43,8 +44,8 @@ const CookiePolicy = () => {
       <PageTopBar />
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-10">
         <PageHeader
-          title={"WeApnea – Cookie Policy (UE/GDPR)"}
-          subtitle={"Ultimo aggiornamento: 06/10/2025"}
+          title={t("cookie_policy.title", "WeApnea – Cookie Policy (UE/GDPR)")}
+          subtitle={`${t("cookie_policy.last_update", "Ultimo aggiornamento")}: 06/10/2025`}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -53,19 +54,19 @@ const CookiePolicy = () => {
             <div className="sticky top-24 bg-white/90 backdrop-blur-sm border border-white/30 rounded-xl shadow-md p-4">
               <div className="flex items-center gap-2 text-gray-700 font-semibold mb-3">
                 <ListOrdered className="h-4 w-4" />
-                Indice
+                {t("cookie_policy.toc_title", "Indice")}
               </div>
               <nav className="space-y-2 text-sm">
-                {tocItems.map((item) => (
+                {sectionIds.map((id) => (
                   <a
-                    key={item.id}
+                    key={id}
                     className={`block hover:text-blue-700 transition-all cursor-pointer ${
-                      activeSection === item.id ? "font-bold text-blue-700" : ""
+                      activeSection === id ? "font-bold text-blue-700" : ""
                     }`}
-                    href={`#${item.id}`}
-                    onClick={(e) => handleTocClick(e, item.id)}
+                    href={`#${id}`}
+                    onClick={(e) => handleTocClick(e, id)}
                   >
-                    {item.label}
+                    {t(`cookie_policy.sections.${id}.title`, id)}
                   </a>
                 ))}
               </nav>
@@ -81,10 +82,10 @@ const CookiePolicy = () => {
             <div className="bg-white/90 backdrop-blur-sm border border-white/30 rounded-2xl shadow-xl p-6 md:p-8">
               <div className="flex items-center gap-3 mb-4 text-blue-700">
                 <Cookie className="h-5 w-5" />
-                <span className="font-semibold">Informativa Cookie</span>
+                <span className="font-semibold">{t("cookie_policy.info_title", "Informativa Cookie")}</span>
               </div>
               <div className="prose prose-slate max-w-none">
-                <CookieAccordion activeSection={activeSection} onSectionChange={setActiveSection} />
+                <CookieAccordion activeSection={activeSection} onSectionChange={setActiveSection} t={t} />
               </div>
             </div>
           </main>
@@ -94,11 +95,11 @@ const CookiePolicy = () => {
   );
 
   return isMobile ? (
-    <MobileLayout>
+    <MobileLayout key={currentLanguage}>
       <Content />
     </MobileLayout>
   ) : (
-    <Layout>
+    <Layout key={currentLanguage}>
       <Content />
     </Layout>
   );
@@ -109,59 +110,55 @@ export default CookiePolicy;
 interface CookieAccordionProps {
   activeSection: string | undefined;
   onSectionChange: (section: string | undefined) => void;
+  t: (key: string, fallback?: string) => string;
 }
 
-function CookieAccordion({ activeSection, onSectionChange }: CookieAccordionProps) {
+function CookieAccordion({ activeSection, onSectionChange, t }: CookieAccordionProps) {
   return (
     <Accordion type="single" collapsible value={activeSection} onValueChange={onSectionChange}>
       <AccordionItem value="cosa-sono">
-        <AccordionTrigger id="cosa-sono">1. Cosa sono i cookie</AccordionTrigger>
+        <AccordionTrigger id="cosa-sono">{t("cookie_policy.sections.cosa-sono.title", "1. Cosa sono i cookie")}</AccordionTrigger>
         <AccordionContent>
-          <p>
-            I cookie sono piccoli file salvati nel dispositivo dell'utente per migliorare la navigazione e abilitare determinate funzionalità.
-          </p>
+          <p>{t("cookie_policy.sections.cosa-sono.content", "")}</p>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="tipologie">
-        <AccordionTrigger id="tipologie">2. Tipologie di cookie utilizzati</AccordionTrigger>
+        <AccordionTrigger id="tipologie">{t("cookie_policy.sections.tipologie.title", "2. Tipologie di cookie utilizzati")}</AccordionTrigger>
         <AccordionContent>
           <ul>
-            <li><strong>Tecnici / Necessari</strong>: funzionamento del sito (es. lingua, login) – non richiedono consenso.</li>
-            <li><strong>Statistici (anonimizzati)</strong>: analisi visite (es. Google Analytics con IP anonimizzato) – richiedono consenso.</li>
-            <li><strong>Marketing / Profilazione</strong>: remarketing e personalizzazione contenuti – richiedono consenso.</li>
+            {[0, 1, 2].map((i) => (
+              <li key={i} dangerouslySetInnerHTML={{ __html: t(`cookie_policy.sections.tipologie.items.${i}`, "") }} />
+            ))}
           </ul>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="consenso">
-        <AccordionTrigger id="consenso">3. Gestione del consenso</AccordionTrigger>
+        <AccordionTrigger id="consenso">{t("cookie_policy.sections.consenso.title", "3. Gestione del consenso")}</AccordionTrigger>
         <AccordionContent>
-          <p>
-            Al primo accesso viene mostrato un banner cookie che consente di accettare tutti i cookie, rifiutare quelli non necessari o gestire le preferenze. L'utente può modificare le preferenze in ogni momento tramite browser o tramite un link "Impostazioni Cookie" presente nel Sito.
-          </p>
+          <p>{t("cookie_policy.sections.consenso.content", "")}</p>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="browser">
-        <AccordionTrigger id="browser">4. Disabilitazione tramite browser</AccordionTrigger>
+        <AccordionTrigger id="browser">{t("cookie_policy.sections.browser.title", "4. Disabilitazione tramite browser")}</AccordionTrigger>
         <AccordionContent>
-          <p>
-            L'utente può gestire i cookie dalle impostazioni del proprio browser (Chrome, Firefox, Safari, ecc.). La disattivazione dei cookie tecnici può compromettere alcune funzionalità del Sito.
-          </p>
+          <p>{t("cookie_policy.sections.browser.content", "")}</p>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="terze-parti">
-        <AccordionTrigger id="terze-parti">5. Strumenti di terza parte</AccordionTrigger>
+        <AccordionTrigger id="terze-parti">{t("cookie_policy.sections.terze-parti.title", "5. Strumenti di terza parte")}</AccordionTrigger>
         <AccordionContent>
-          <p>
-            Il Sito può utilizzare servizi esterni come Google Analytics o pixel social. In caso di cookie marketing, questi vengono attivati solo previo consenso esplicito.
-          </p>
+          <p>{t("cookie_policy.sections.terze-parti.content", "")}</p>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="contatti">
-        <AccordionTrigger id="contatti">6. Contatti</AccordionTrigger>
+        <AccordionTrigger id="contatti">{t("cookie_policy.sections.contatti.title", "6. Contatti")}</AccordionTrigger>
         <AccordionContent>
-          <p>
-            Per chiarimenti o richieste sulla gestione dei dati o dei cookie: <a href="mailto:weapnea@gmail.com">weapnea@gmail.com</a>
-          </p>
+          <p dangerouslySetInnerHTML={{ __html: t("cookie_policy.sections.contatti.content", "") }} />
         </AccordionContent>
       </AccordionItem>
     </Accordion>

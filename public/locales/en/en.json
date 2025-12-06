@@ -475,5 +475,115 @@
   },
   "not_found": {
     "back_home": "Back to Home"
+  },
+  "privacy_policy": {
+    "title": "WeApnea – Privacy Policy (EU/GDPR)",
+    "last_update": "Last update",
+    "toc_title": "Index",
+    "info_title": "Privacy Notice",
+    "intro": "This notice describes how personal data of users who visit and use the website www.weapnea.com (hereinafter \"Site\") is processed.",
+    "sections": {
+      "titolare": {
+        "title": "1. Data Controller",
+        "content": "<strong>WeApnea</strong> (sports project in the process of legal formalization)<br/>📧 Contact email: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a><br/>📍 Registered office: To be defined – legal structure under registration.<br/>This notice will be updated with complete company data upon formalization of the legal entity (e.g., company or association)."
+      },
+      "tipologie": {
+        "title": "2. Types of data processed",
+        "items": [
+          "Data voluntarily provided by the user through contact forms, email, or newsletter subscription (e.g., name, surname, email, any information related to sports practice entered voluntarily).",
+          "Browsing data automatically collected (IP, browser, device, pages visited) for statistical and security purposes.",
+          "Cookies and similar technologies, as indicated in the Cookie Policy."
+        ]
+      },
+      "finalita": {
+        "title": "3. Purpose of processing",
+        "items": [
+          "Respond to user requests or contacts",
+          "Manage any subscriptions to services or newsletters (only with explicit consent)",
+          "Manage community, athlete profiles, or participation in sports/event activities",
+          "Perform aggregate statistical analyses to improve the Site",
+          "Comply with any legal obligations in case of commercial collaborations or sponsorships"
+        ]
+      },
+      "basi": {
+        "title": "4. Legal bases (Art. 6 GDPR)",
+        "items": [
+          "Execution of contractual or pre-contractual measures at the user's request",
+          "Explicit consent for marketing or profiling purposes",
+          "Legitimate interest for anonymous statistical analyses and site security"
+        ]
+      },
+      "conservazione": {
+        "title": "5. Data retention",
+        "content": "Data is retained for the time necessary for the purpose for which it was collected or until a deletion request is made. Data used for promotional purposes is retained until consent is withdrawn."
+      },
+      "terzi": {
+        "title": "6. Disclosure to third parties",
+        "items": [
+          "Technical suppliers (e.g., hosting, newsletter, analytics tools)",
+          "Partners or sponsors only with explicit user consent",
+          "Competent authorities in case of regulatory obligations",
+          "No transfer to third parties for unauthorized commercial purposes is planned."
+        ]
+      },
+      "diritti": {
+        "title": "7. User rights (Art. 15–22 GDPR)",
+        "items": [
+          "Access your data",
+          "Request rectification or deletion",
+          "Limit or oppose processing",
+          "Withdraw consent at any time"
+        ],
+        "contact": "To exercise these rights: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
+      },
+      "sicurezza": {
+        "title": "8. Security",
+        "content": "WeApnea adopts adequate technical and organizational measures to protect personal data from unauthorized access, loss, or alteration."
+      },
+      "minori": {
+        "title": "9. Minors",
+        "content": "Unless otherwise indicated, the Site's services are reserved for adult users. Any data provided by minors will be deleted upon request."
+      },
+      "modifiche": {
+        "title": "10. Changes",
+        "content": "This notice may be updated. Significant changes will be communicated on the Site or via email to registered users."
+      }
+    }
+  },
+  "cookie_policy": {
+    "title": "WeApnea – Cookie Policy (EU/GDPR)",
+    "last_update": "Last update",
+    "toc_title": "Index",
+    "info_title": "Cookie Notice",
+    "sections": {
+      "cosa-sono": {
+        "title": "1. What are cookies",
+        "content": "Cookies are small files saved on the user's device to improve browsing and enable certain features."
+      },
+      "tipologie": {
+        "title": "2. Types of cookies used",
+        "items": [
+          "<strong>Technical / Necessary</strong>: site operation (e.g., language, login) – no consent required.",
+          "<strong>Statistical (anonymized)</strong>: visit analysis (e.g., Google Analytics with anonymized IP) – consent required.",
+          "<strong>Marketing / Profiling</strong>: remarketing and content personalization – consent required."
+        ]
+      },
+      "consenso": {
+        "title": "3. Consent management",
+        "content": "On first access, a cookie banner is displayed that allows you to accept all cookies, reject non-necessary ones, or manage preferences. The user can change preferences at any time through the browser or via a \"Cookie Settings\" link on the Site."
+      },
+      "browser": {
+        "title": "4. Browser disabling",
+        "content": "The user can manage cookies from their browser settings (Chrome, Firefox, Safari, etc.). Disabling technical cookies may compromise some Site features."
+      },
+      "terze-parti": {
+        "title": "5. Third-party tools",
+        "content": "The Site may use external services such as Google Analytics or social pixels. Marketing cookies are only activated with explicit consent."
+      },
+      "contatti": {
+        "title": "6. Contacts",
+        "content": "For clarifications or requests regarding data or cookie management: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
+      }
+    }
   }
 }

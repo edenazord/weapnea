@@ -205,5 +205,118 @@
       "update_error_desc": "Se produjo un error al actualizar el perfil."
     },
     "login_required": "Debes estar autenticado para ver el perfil."
+  },
+  "not_found": {
+    "back_home": "Volver al Inicio"
+  },
+  "privacy_policy": {
+    "title": "WeApnea – Política de Privacidad (UE/RGPD)",
+    "last_update": "Última actualización",
+    "toc_title": "Índice",
+    "info_title": "Aviso de Privacidad",
+    "intro": "Este aviso describe cómo se procesan los datos personales de los usuarios que visitan y utilizan el sitio web www.weapnea.com (en adelante \"Sitio\").",
+    "sections": {
+      "titolare": {
+        "title": "1. Responsable del Tratamiento",
+        "content": "<strong>WeApnea</strong> (proyecto deportivo en proceso de formalización legal)<br/>📧 Email de contacto: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a><br/>📍 Domicilio legal: Por definir – estructura legal en registro.<br/>Este aviso se actualizará con los datos societarios completos tras la formalización de la entidad legal (ej. sociedad o asociación)."
+      },
+      "tipologie": {
+        "title": "2. Tipos de datos tratados",
+        "items": [
+          "Datos proporcionados voluntariamente por el usuario a través de formularios de contacto, correo electrónico o suscripción al boletín (ej. nombre, apellido, email, información relacionada con la práctica deportiva ingresada voluntariamente).",
+          "Datos de navegación recopilados automáticamente (IP, navegador, dispositivo, páginas visitadas) con fines estadísticos y de seguridad.",
+          "Cookies y tecnologías similares, según lo indicado en la Política de Cookies."
+        ]
+      },
+      "finalita": {
+        "title": "3. Finalidad del tratamiento",
+        "items": [
+          "Responder a solicitudes o contactos del usuario",
+          "Gestionar suscripciones a servicios o boletines (solo con consentimiento explícito)",
+          "Gestionar comunidad, perfiles de atletas o participación en actividades deportivas/eventos",
+          "Realizar análisis estadísticos agregados para mejorar el Sitio",
+          "Cumplir con obligaciones legales en caso de colaboraciones comerciales o patrocinios"
+        ]
+      },
+      "basi": {
+        "title": "4. Bases jurídicas (Art. 6 RGPD)",
+        "items": [
+          "Ejecución de medidas contractuales o precontractuales a solicitud del usuario",
+          "Consentimiento explícito para fines de marketing o perfilado",
+          "Interés legítimo para análisis estadísticos anónimos y seguridad del sitio"
+        ]
+      },
+      "conservazione": {
+        "title": "5. Conservación de datos",
+        "content": "Los datos se conservan durante el tiempo necesario para la finalidad para la que fueron recopilados o hasta que se solicite su eliminación. Los datos utilizados con fines promocionales se conservan hasta que se retire el consentimiento."
+      },
+      "terzi": {
+        "title": "6. Comunicación a terceros",
+        "items": [
+          "Proveedores técnicos (ej. hosting, boletines, herramientas de analytics)",
+          "Socios o patrocinadores solo con consentimiento explícito del usuario",
+          "Autoridades competentes en caso de obligaciones normativas",
+          "No está prevista la transferencia a terceros para fines comerciales no autorizados."
+        ]
+      },
+      "diritti": {
+        "title": "7. Derechos del usuario (Art. 15–22 RGPD)",
+        "items": [
+          "Acceder a sus datos",
+          "Solicitar rectificación o eliminación",
+          "Limitar u oponerse al tratamiento",
+          "Retirar el consentimiento en cualquier momento"
+        ],
+        "contact": "Para ejercer estos derechos: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
+      },
+      "sicurezza": {
+        "title": "8. Seguridad",
+        "content": "WeApnea adopta medidas técnicas y organizativas adecuadas para proteger los datos personales de accesos no autorizados, pérdida o alteración."
+      },
+      "minori": {
+        "title": "9. Menores",
+        "content": "Salvo indicación contraria, los servicios del Sitio están reservados a usuarios mayores de edad. Los datos proporcionados por menores serán eliminados previa solicitud."
+      },
+      "modifiche": {
+        "title": "10. Modificaciones",
+        "content": "Este aviso puede ser actualizado. Los cambios relevantes se comunicarán en el Sitio o por correo electrónico a los usuarios registrados."
+      }
+    }
+  },
+  "cookie_policy": {
+    "title": "WeApnea – Política de Cookies (UE/RGPD)",
+    "last_update": "Última actualización",
+    "toc_title": "Índice",
+    "info_title": "Aviso de Cookies",
+    "sections": {
+      "cosa-sono": {
+        "title": "1. Qué son las cookies",
+        "content": "Las cookies son pequeños archivos guardados en el dispositivo del usuario para mejorar la navegación y habilitar ciertas funcionalidades."
+      },
+      "tipologie": {
+        "title": "2. Tipos de cookies utilizadas",
+        "items": [
+          "<strong>Técnicas / Necesarias</strong>: funcionamiento del sitio (ej. idioma, login) – no requieren consentimiento.",
+          "<strong>Estadísticas (anonimizadas)</strong>: análisis de visitas (ej. Google Analytics con IP anonimizada) – requieren consentimiento.",
+          "<strong>Marketing / Perfilado</strong>: remarketing y personalización de contenidos – requieren consentimiento."
+        ]
+      },
+      "consenso": {
+        "title": "3. Gestión del consentimiento",
+        "content": "Al primer acceso se muestra un banner de cookies que permite aceptar todas las cookies, rechazar las no necesarias o gestionar las preferencias. El usuario puede modificar las preferencias en cualquier momento a través del navegador o mediante un enlace \"Configuración de Cookies\" presente en el Sitio."
+      },
+      "browser": {
+        "title": "4. Deshabilitación mediante navegador",
+        "content": "El usuario puede gestionar las cookies desde la configuración de su navegador (Chrome, Firefox, Safari, etc.). La desactivación de las cookies técnicas puede comprometer algunas funcionalidades del Sitio."
+      },
+      "terze-parti": {
+        "title": "5. Herramientas de terceros",
+        "content": "El Sitio puede utilizar servicios externos como Google Analytics o píxeles sociales. Las cookies de marketing solo se activan con consentimiento explícito."
+      },
+      "contatti": {
+        "title": "6. Contactos",
+        "content": "Para aclaraciones o solicitudes sobre la gestión de datos o cookies: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
+      }
+    }
   }
 }

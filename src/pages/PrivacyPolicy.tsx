@@ -6,22 +6,24 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { Shield, ListOrdered, CalendarDays } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
-const tocItems = [
-  { id: "titolare", label: "1. Titolare del Trattamento" },
-  { id: "tipologie", label: "2. Tipologie di dati trattati" },
-  { id: "finalita", label: "3. Finalità del trattamento" },
-  { id: "basi", label: "4. Basi giuridiche" },
-  { id: "conservazione", label: "5. Conservazione dei dati" },
-  { id: "terzi", label: "6. Comunicazione a terzi" },
-  { id: "diritti", label: "7. Diritti dell'utente" },
-  { id: "sicurezza", label: "8. Sicurezza" },
-  { id: "minori", label: "9. Minori" },
-  { id: "modifiche", label: "10. Modifiche" },
+const sectionIds = [
+  "titolare",
+  "tipologie", 
+  "finalita",
+  "basi",
+  "conservazione",
+  "terzi",
+  "diritti",
+  "sicurezza",
+  "minori",
+  "modifiche",
 ];
 
 const PrivacyPolicy = () => {
   const isMobile = useIsMobile();
+  const { t, currentLanguage } = useLanguage();
   const [activeSection, setActiveSection] = useState<string | undefined>("titolare");
 
   useEffect(() => {
@@ -36,7 +38,6 @@ const PrivacyPolicy = () => {
   const handleTocClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     setActiveSection(id);
-    // Scroll to the section
     setTimeout(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 100);
@@ -47,8 +48,8 @@ const PrivacyPolicy = () => {
       <PageTopBar />
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-10">
         <PageHeader
-          title={"WeApnea – Privacy Policy (UE/GDPR)"}
-          subtitle={"Ultimo aggiornamento: 06/10/2025"}
+          title={t("privacy_policy.title", "WeApnea – Privacy Policy (UE/GDPR)")}
+          subtitle={`${t("privacy_policy.last_update", "Ultimo aggiornamento")}: 06/10/2025`}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -57,19 +58,19 @@ const PrivacyPolicy = () => {
             <div className="sticky top-24 bg-white/90 backdrop-blur-sm border border-white/30 rounded-xl shadow-md p-4">
               <div className="flex items-center gap-2 text-gray-700 font-semibold mb-3">
                 <ListOrdered className="h-4 w-4" />
-                Indice
+                {t("privacy_policy.toc_title", "Indice")}
               </div>
               <nav className="space-y-2 text-sm">
-                {tocItems.map((item) => (
+                {sectionIds.map((id) => (
                   <a
-                    key={item.id}
+                    key={id}
                     className={`block hover:text-blue-700 transition-all cursor-pointer ${
-                      activeSection === item.id ? "font-bold text-blue-700" : ""
+                      activeSection === id ? "font-bold text-blue-700" : ""
                     }`}
-                    href={`#${item.id}`}
-                    onClick={(e) => handleTocClick(e, item.id)}
+                    href={`#${id}`}
+                    onClick={(e) => handleTocClick(e, id)}
                   >
-                    {item.label}
+                    {t(`privacy_policy.sections.${id}.title`, id)}
                   </a>
                 ))}
               </nav>
@@ -85,15 +86,12 @@ const PrivacyPolicy = () => {
             <div className="bg-white/90 backdrop-blur-sm border border-white/30 rounded-2xl shadow-xl p-6 md:p-8">
               <div className="flex items-center gap-3 mb-4 text-blue-700">
                 <Shield className="h-5 w-5" />
-                <span className="font-semibold">Informativa Privacy</span>
+                <span className="font-semibold">{t("privacy_policy.info_title", "Informativa Privacy")}</span>
               </div>
               <div className="prose prose-slate max-w-none">
-                <p>
-                  La presente informativa descrive le modalità di trattamento dei dati personali degli utenti che visitano e utilizzano il sito www.weapnea.com (di seguito "Sito").
-                </p>
+                <p>{t("privacy_policy.intro", "La presente informativa descrive le modalità di trattamento dei dati personali degli utenti che visitano e utilizzano il sito www.weapnea.com (di seguito \"Sito\").")}</p>
 
-                {/* Accordion Sections */}
-                <PrivacyAccordion activeSection={activeSection} onSectionChange={setActiveSection} />
+                <PrivacyAccordion activeSection={activeSection} onSectionChange={setActiveSection} t={t} />
               </div>
             </div>
           </main>
@@ -103,11 +101,11 @@ const PrivacyPolicy = () => {
   );
 
   return isMobile ? (
-    <MobileLayout>
+    <MobileLayout key={currentLanguage}>
       <Content />
     </MobileLayout>
   ) : (
-    <Layout>
+    <Layout key={currentLanguage}>
       <Content />
     </Layout>
   );
@@ -115,118 +113,103 @@ const PrivacyPolicy = () => {
 
 export default PrivacyPolicy;
 
-// Accordion component to keep main render tidy
 interface PrivacyAccordionProps {
   activeSection: string | undefined;
   onSectionChange: (section: string | undefined) => void;
+  t: (key: string, fallback?: string) => string;
 }
 
-function PrivacyAccordion({ activeSection, onSectionChange }: PrivacyAccordionProps) {
+function PrivacyAccordion({ activeSection, onSectionChange, t }: PrivacyAccordionProps) {
   return (
     <Accordion type="single" collapsible value={activeSection} onValueChange={onSectionChange}>
       <AccordionItem value="titolare">
-        <AccordionTrigger id="titolare">1. Titolare del Trattamento</AccordionTrigger>
+        <AccordionTrigger id="titolare">{t("privacy_policy.sections.titolare.title", "1. Titolare del Trattamento")}</AccordionTrigger>
         <AccordionContent>
-          <p>
-            <strong>WeApnea</strong> (progetto sportivo in fase di formalizzazione legale)
-            <br />
-            📧 Email di contatto: <a href="mailto:weapnea@gmail.com">weapnea@gmail.com</a>
-            <br />
-            📍 Sede legale: Da definire – struttura legale in fase di registrazione.
-            <br />
-            Questa informativa sarà aggiornata con i dati societari completi alla formalizzazione dell'entità legale (es. società o associazione).
-          </p>
+          <p dangerouslySetInnerHTML={{ __html: t("privacy_policy.sections.titolare.content", "") }} />
         </AccordionContent>
       </AccordionItem>
+      
       <AccordionItem value="tipologie">
-        <AccordionTrigger id="tipologie">2. Tipologie di dati trattati</AccordionTrigger>
+        <AccordionTrigger id="tipologie">{t("privacy_policy.sections.tipologie.title", "2. Tipologie di dati trattati")}</AccordionTrigger>
         <AccordionContent>
           <ul>
-            <li>
-              Dati forniti volontariamente dall'utente tramite form di contatto, email o iscrizione alla newsletter (es. nome, cognome, email, eventuali informazioni legate alla pratica sportiva inserite volontariamente).
-            </li>
-            <li>Dati di navigazione raccolti automaticamente (IP, browser, device, pagine visitate) a fini statistici e di sicurezza.</li>
-            <li>Cookie e tecnologie similari, secondo quanto indicato nella Cookie Policy.</li>
+            {[0, 1, 2].map((i) => (
+              <li key={i}>{t(`privacy_policy.sections.tipologie.items.${i}`, "")}</li>
+            ))}
           </ul>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="finalita">
-        <AccordionTrigger id="finalita">3. Finalità del trattamento</AccordionTrigger>
+        <AccordionTrigger id="finalita">{t("privacy_policy.sections.finalita.title", "3. Finalità del trattamento")}</AccordionTrigger>
         <AccordionContent>
           <ul>
-            <li>Rispondere a richieste o contatti dell'utente</li>
-            <li>Gestire eventuali iscrizioni a servizi o newsletter (solo con consenso esplicito)</li>
-            <li>Gestire community, profili atleta o partecipazione ad attività sportive/eventistiche</li>
-            <li>Effettuare analisi statistiche aggregate per migliorare il Sito</li>
-            <li>Adempiere ad eventuali obblighi legali in caso di collaborazioni commerciali o sponsorizzazioni</li>
+            {[0, 1, 2, 3, 4].map((i) => (
+              <li key={i}>{t(`privacy_policy.sections.finalita.items.${i}`, "")}</li>
+            ))}
           </ul>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="basi">
-        <AccordionTrigger id="basi">4. Basi giuridiche (art. 6 GDPR)</AccordionTrigger>
+        <AccordionTrigger id="basi">{t("privacy_policy.sections.basi.title", "4. Basi giuridiche (art. 6 GDPR)")}</AccordionTrigger>
         <AccordionContent>
           <ul>
-            <li>Esecuzione di misure contrattuali o precontrattuali su richiesta dell'utente</li>
-            <li>Consenso esplicito per finalità di marketing o profilazione</li>
-            <li>Legittimo interesse per analisi statistiche anonime e sicurezza del sito</li>
+            {[0, 1, 2].map((i) => (
+              <li key={i}>{t(`privacy_policy.sections.basi.items.${i}`, "")}</li>
+            ))}
           </ul>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="conservazione">
-        <AccordionTrigger id="conservazione">5. Conservazione dei dati</AccordionTrigger>
+        <AccordionTrigger id="conservazione">{t("privacy_policy.sections.conservazione.title", "5. Conservazione dei dati")}</AccordionTrigger>
         <AccordionContent>
-          <p>
-            I dati sono conservati per il tempo necessario alla finalità per cui sono stati raccolti o fino a richiesta di cancellazione. I dati utilizzati per finalità promozionali vengono conservati fino alla revoca del consenso.
-          </p>
+          <p>{t("privacy_policy.sections.conservazione.content", "")}</p>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="terzi">
-        <AccordionTrigger id="terzi">6. Comunicazione a terzi</AccordionTrigger>
+        <AccordionTrigger id="terzi">{t("privacy_policy.sections.terzi.title", "6. Comunicazione a terzi")}</AccordionTrigger>
         <AccordionContent>
           <ul>
-            <li>Fornitori tecnici (es. hosting, newsletter, strumenti di analytics)</li>
-            <li>Partner o sponsor solo previo consenso esplicito dell'utente</li>
-            <li>Autorità competenti in caso di obblighi normativi</li>
-            <li>Non è previsto trasferimento a terzi per finalità commerciali non autorizzate.</li>
+            {[0, 1, 2, 3].map((i) => (
+              <li key={i}>{t(`privacy_policy.sections.terzi.items.${i}`, "")}</li>
+            ))}
           </ul>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="diritti">
-        <AccordionTrigger id="diritti">7. Diritti dell'utente (artt. 15–22 GDPR)</AccordionTrigger>
+        <AccordionTrigger id="diritti">{t("privacy_policy.sections.diritti.title", "7. Diritti dell'utente (artt. 15–22 GDPR)")}</AccordionTrigger>
         <AccordionContent>
           <ul>
-            <li>Accedere ai propri dati</li>
-            <li>Chiederne rettifica o cancellazione</li>
-            <li>Limitare o opporsi al trattamento</li>
-            <li>Revocare in qualsiasi momento il consenso prestato</li>
+            {[0, 1, 2, 3].map((i) => (
+              <li key={i}>{t(`privacy_policy.sections.diritti.items.${i}`, "")}</li>
+            ))}
           </ul>
-          <p>
-            Per esercitare tali diritti: <a href="mailto:weapnea@gmail.com">weapnea@gmail.com</a>
-          </p>
+          <p dangerouslySetInnerHTML={{ __html: t("privacy_policy.sections.diritti.contact", "") }} />
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="sicurezza">
-        <AccordionTrigger id="sicurezza">8. Sicurezza</AccordionTrigger>
+        <AccordionTrigger id="sicurezza">{t("privacy_policy.sections.sicurezza.title", "8. Sicurezza")}</AccordionTrigger>
         <AccordionContent>
-          <p>
-            WeApnea adotta misure tecniche e organizzative adeguate per proteggere i dati personali da accessi non autorizzati, perdita o alterazione.
-          </p>
+          <p>{t("privacy_policy.sections.sicurezza.content", "")}</p>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="minori">
-        <AccordionTrigger id="minori">9. Minori</AccordionTrigger>
+        <AccordionTrigger id="minori">{t("privacy_policy.sections.minori.title", "9. Minori")}</AccordionTrigger>
         <AccordionContent>
-          <p>
-            Salvo diversa indicazione, i servizi del Sito sono riservati a utenti maggiorenni. Eventuali dati forniti da minori saranno eliminati su segnalazione.
-          </p>
+          <p>{t("privacy_policy.sections.minori.content", "")}</p>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="modifiche">
-        <AccordionTrigger id="modifiche">10. Modifiche</AccordionTrigger>
+        <AccordionTrigger id="modifiche">{t("privacy_policy.sections.modifiche.title", "10. Modifiche")}</AccordionTrigger>
         <AccordionContent>
-          <p>
-            La presente informativa può essere aggiornata. Le modifiche rilevanti saranno comunicate sul Sito o via email agli utenti registrati.
-          </p>
+          <p>{t("privacy_policy.sections.modifiche.content", "")}</p>
         </AccordionContent>
       </AccordionItem>
     </Accordion>

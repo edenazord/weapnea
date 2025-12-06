@@ -344,5 +344,118 @@
 			"update_error_desc": "Wystąpił błąd podczas aktualizacji profilu."
 		},
 		"login_required": "Musisz być zalogowany, aby wyświetlić profil."
+	},
+	"not_found": {
+		"back_home": "Powrót do Strony Głównej"
+	},
+	"privacy_policy": {
+		"title": "WeApnea – Polityka Prywatności (UE/RODO)",
+		"last_update": "Ostatnia aktualizacja",
+		"toc_title": "Spis treści",
+		"info_title": "Informacja o Prywatności",
+		"intro": "Niniejsza informacja opisuje, w jaki sposób przetwarzane są dane osobowe użytkowników odwiedzających i korzystających ze strony www.weapnea.com (dalej \"Strona\").",
+		"sections": {
+			"titolare": {
+				"title": "1. Administrator Danych",
+				"content": "<strong>WeApnea</strong> (projekt sportowy w trakcie formalizacji prawnej)<br/>📧 Email kontaktowy: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a><br/>📍 Siedziba: Do ustalenia – struktura prawna w trakcie rejestracji.<br/>Niniejsza informacja zostanie zaktualizowana o pełne dane firmy po sformalizowaniu podmiotu prawnego (np. spółki lub stowarzyszenia)."
+			},
+			"tipologie": {
+				"title": "2. Rodzaje przetwarzanych danych",
+				"items": [
+					"Dane dobrowolnie podane przez użytkownika poprzez formularze kontaktowe, e-mail lub zapis do newslettera (np. imię, nazwisko, email, informacje związane z praktyką sportową wprowadzone dobrowolnie).",
+					"Dane nawigacyjne zbierane automatycznie (IP, przeglądarka, urządzenie, odwiedzane strony) w celach statystycznych i bezpieczeństwa.",
+					"Pliki cookie i podobne technologie, zgodnie z Polityką Cookies."
+				]
+			},
+			"finalita": {
+				"title": "3. Cel przetwarzania",
+				"items": [
+					"Odpowiadanie na prośby lub kontakty użytkownika",
+					"Zarządzanie ewentualnymi subskrypcjami usług lub newsletterów (tylko za wyraźną zgodą)",
+					"Zarządzanie społecznością, profilami sportowców lub uczestnictwem w działaniach sportowych/wydarzeniach",
+					"Przeprowadzanie zagregowanych analiz statystycznych w celu ulepszenia Strony",
+					"Wypełnianie ewentualnych obowiązków prawnych w przypadku współpracy handlowej lub sponsoringu"
+				]
+			},
+			"basi": {
+				"title": "4. Podstawy prawne (Art. 6 RODO)",
+				"items": [
+					"Wykonanie środków umownych lub przedumownych na żądanie użytkownika",
+					"Wyraźna zgoda na cele marketingowe lub profilowanie",
+					"Uzasadniony interes w zakresie anonimowych analiz statystycznych i bezpieczeństwa strony"
+				]
+			},
+			"conservazione": {
+				"title": "5. Przechowywanie danych",
+				"content": "Dane są przechowywane przez czas niezbędny do realizacji celu, dla którego zostały zebrane, lub do momentu złożenia wniosku o usunięcie. Dane wykorzystywane w celach promocyjnych są przechowywane do momentu wycofania zgody."
+			},
+			"terzi": {
+				"title": "6. Udostępnianie stronom trzecim",
+				"items": [
+					"Dostawcy techniczni (np. hosting, newsletter, narzędzia analityczne)",
+					"Partnerzy lub sponsorzy tylko za wyraźną zgodą użytkownika",
+					"Właściwe organy w przypadku obowiązków regulacyjnych",
+					"Nie przewiduje się przekazywania danych stronom trzecim w nieautoryzowanych celach komercyjnych."
+				]
+			},
+			"diritti": {
+				"title": "7. Prawa użytkownika (Art. 15–22 RODO)",
+				"items": [
+					"Dostęp do swoich danych",
+					"Żądanie sprostowania lub usunięcia",
+					"Ograniczenie lub sprzeciw wobec przetwarzania",
+					"Wycofanie zgody w dowolnym momencie"
+				],
+				"contact": "Aby skorzystać z tych praw: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
+			},
+			"sicurezza": {
+				"title": "8. Bezpieczeństwo",
+				"content": "WeApnea stosuje odpowiednie środki techniczne i organizacyjne w celu ochrony danych osobowych przed nieautoryzowanym dostępem, utratą lub zmianą."
+			},
+			"minori": {
+				"title": "9. Osoby niepełnoletnie",
+				"content": "O ile nie wskazano inaczej, usługi Strony są zarezerwowane dla użytkowników pełnoletnich. Wszelkie dane podane przez osoby niepełnoletnie zostaną usunięte na zgłoszenie."
+			},
+			"modifiche": {
+				"title": "10. Zmiany",
+				"content": "Niniejsza informacja może być aktualizowana. Istotne zmiany będą komunikowane na Stronie lub drogą mailową do zarejestrowanych użytkowników."
+			}
+		}
+	},
+	"cookie_policy": {
+		"title": "WeApnea – Polityka Cookies (UE/RODO)",
+		"last_update": "Ostatnia aktualizacja",
+		"toc_title": "Spis treści",
+		"info_title": "Informacja o Cookies",
+		"sections": {
+			"cosa-sono": {
+				"title": "1. Czym są pliki cookie",
+				"content": "Pliki cookie to małe pliki zapisywane na urządzeniu użytkownika w celu poprawy nawigacji i włączenia określonych funkcji."
+			},
+			"tipologie": {
+				"title": "2. Rodzaje używanych cookies",
+				"items": [
+					"<strong>Techniczne / Niezbędne</strong>: działanie strony (np. język, logowanie) – nie wymagają zgody.",
+					"<strong>Statystyczne (zanonimizowane)</strong>: analiza odwiedzin (np. Google Analytics z zanonimizowanym IP) – wymagają zgody.",
+					"<strong>Marketingowe / Profilujące</strong>: remarketing i personalizacja treści – wymagają zgody."
+				]
+			},
+			"consenso": {
+				"title": "3. Zarządzanie zgodą",
+				"content": "Przy pierwszym dostępie wyświetlany jest baner cookie, który pozwala zaakceptować wszystkie cookies, odrzucić niepotrzebne lub zarządzać preferencjami. Użytkownik może zmienić preferencje w dowolnym momencie poprzez przeglądarkę lub link \"Ustawienia Cookies\" na Stronie."
+			},
+			"browser": {
+				"title": "4. Wyłączenie przez przeglądarkę",
+				"content": "Użytkownik może zarządzać cookies z ustawień przeglądarki (Chrome, Firefox, Safari, itp.). Wyłączenie cookies technicznych może wpłynąć na niektóre funkcje Strony."
+			},
+			"terze-parti": {
+				"title": "5. Narzędzia zewnętrzne",
+				"content": "Strona może korzystać z usług zewnętrznych, takich jak Google Analytics lub piksele społecznościowe. Cookies marketingowe są aktywowane tylko za wyraźną zgodą."
+			},
+			"contatti": {
+				"title": "6. Kontakt",
+				"content": "W celu uzyskania wyjaśnień lub złożenia wniosków dotyczących zarządzania danymi lub cookies: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
+			}
+		}
 	}
 }
