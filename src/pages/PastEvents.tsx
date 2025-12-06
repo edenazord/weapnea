@@ -6,12 +6,14 @@ import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import EventCard from "@/components/EventCard";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { format, parseISO, isValid, startOfDay } from "date-fns";
 import { it } from "date-fns/locale";
 import { BackButton } from "@/components/BackButton";
 
 const PastEvents = () => {
   const isMobile = useIsMobile();
+  const { t } = useLanguage();
 
   const { data: events, isLoading } = useQuery({
     queryKey: ["events"],
@@ -57,12 +59,12 @@ const PastEvents = () => {
     <div className={isMobile ? "px-4 py-6" : ""}>
       {/* Back Button */}
       <div className="mb-6">
-        <BackButton fallbackPath="/" label="Torna alla Home" />
+        <BackButton fallbackPath="/" label={t('not_found.back_home', 'Torna alla Home')} />
       </div>
       
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Eventi Passati</h1>
-        <p className="text-gray-600">Tutti gli eventi già svolti, dal più recente</p>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">{t('events.past_events_title', 'Eventi Passati')}</h1>
+        <p className="text-gray-600">{t('events.past_events_subtitle', 'Tutti gli eventi già svolti, dal più recente')}</p>
       </div>
 
       {isLoading ? (

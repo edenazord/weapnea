@@ -1,6 +1,7 @@
 
 import AdminLayout from "@/components/AdminLayout";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EventsManager from "@/components/admin/EventsManager";
@@ -16,6 +17,7 @@ import { useState } from "react";
 
 const AdminDashboard = () => {
     const { profile } = useAuth();
+    const { t } = useLanguage();
     const isMobile = useIsMobile();
     const [activeTab, setActiveTab] = useState("events");
 
@@ -120,7 +122,7 @@ const AdminDashboard = () => {
         <AdminLayout>
             {/* Back Button */}
             <div className="mb-6">
-                <BackButton fallbackPath="/" label="Torna alla Home" />
+                <BackButton fallbackPath="/" label={t('not_found.back_home', 'Torna alla Home')} />
             </div>
             
             <div className="mb-6">

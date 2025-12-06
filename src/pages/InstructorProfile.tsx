@@ -7,6 +7,7 @@ import { ArrowLeft, MapPin, Calendar, Globe, Instagram, Award, Shield, User } fr
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
 import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
@@ -59,6 +60,7 @@ const InstructorProfileSkeleton = () => (
 const InstructorProfile = () => {
   const { id } = useParams<{ id: string }>();
   const isMobile = useIsMobile();
+  const { t } = useLanguage();
   useScrollToTop();
 
   const { data: instructor, isLoading, error } = useQuery<InstructorProfile>({
@@ -80,10 +82,10 @@ const InstructorProfile = () => {
   if (error || !instructor) {
     const errorContent = (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Profilo non trovato</h1>
-        <p className="text-gray-600 mb-6">Il profilo che stai cercando non esiste o non è pubblico.</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">{t('profile.not_found', 'Profilo non trovato')}</h1>
+        <p className="text-gray-600 mb-6">{t('profile.not_found_desc', 'Il profilo che stai cercando non esiste o non è pubblico.')}</p>
         <Button asChild>
-          <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" /> Torna alla Home</Link>
+          <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" /> {t('not_found.back_home', 'Torna alla Home')}</Link>
         </Button>
       </div>
     );
@@ -93,7 +95,7 @@ const InstructorProfile = () => {
   const content = (
     <div className="max-w-4xl mx-auto">
       <Button variant="ghost" asChild className="mb-6 -ml-4">
-        <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" /> Torna agli eventi</Link>
+        <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" /> {t('events.back_to_all', 'Torna agli eventi')}</Link>
       </Button>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

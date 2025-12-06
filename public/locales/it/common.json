@@ -285,7 +285,9 @@
     "cause_slug_changed": "Lo slug dell'evento potrebbe essere cambiato dopo un aggiornamento",
     "cause_deleted": "L'evento potrebbe essere stato eliminato",
     "cause_link_outdated": "Il link potrebbe non essere aggiornato",
-    "authenticated_tip": "Sei autenticato? Puoi provare a vedere tutti gli eventi:"
+    "authenticated_tip": "Sei autenticato? Puoi provare a vedere tutti gli eventi:",
+    "past_events_title": "Eventi Passati",
+    "past_events_subtitle": "Tutti gli eventi già svolti, dal più recente"
   },
   "forum": {
     "title": "Forum",
@@ -348,6 +350,8 @@
     "title": "Il Mio Profilo",
     "subtitle": "Gestisci le tue informazioni personali",
     "mobile_header_title": "Il Mio Profilo",
+    "not_found": "Profilo non trovato",
+    "not_found_desc": "Il profilo che stai cercando non esiste o non è pubblico.",
     "role_label": "Ruolo",
     "roles": {
       "user": "Utente",

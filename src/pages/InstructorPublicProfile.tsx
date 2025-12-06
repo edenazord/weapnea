@@ -7,6 +7,7 @@ import { ArrowLeft, MapPin, Instagram, Award, Shield, User, Calendar, Target } f
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import EventCard from "@/components/EventCard";
@@ -41,6 +42,7 @@ type PublicInstructor = {
 export default function InstructorPublicProfile() {
   const { slug } = useParams<{ slug: string }>();
   const isMobile = useIsMobile();
+  const { t } = useLanguage();
 
   const publicCertVisible = (d: PublicInstructor) => {
     if (d.public_show_certifications === false) return false;
@@ -99,16 +101,16 @@ export default function InstructorPublicProfile() {
   }, [data]);
 
   const content = isLoading ? (
-    <div className="min-h-[50vh] flex items-center justify-center text-gray-500">Caricamento...</div>
+    <div className="min-h-[50vh] flex items-center justify-center text-gray-500">{t('common.loading', 'Caricamento...')}</div>
   ) : error || !data ? (
     <div className="min-h-[50vh] flex flex-col items-center justify-center text-center">
-      <h1 className="text-2xl font-bold mb-3">Profilo non trovato</h1>
-      <Button asChild><Link to="/"><ArrowLeft className="mr-2 h-4 w-4"/>Torna alla Home</Link></Button>
+      <h1 className="text-2xl font-bold mb-3">{t('profile.not_found', 'Profilo non trovato')}</h1>
+      <Button asChild><Link to="/"><ArrowLeft className="mr-2 h-4 w-4"/>{t('not_found.back_home', 'Torna alla Home')}</Link></Button>
     </div>
   ) : (
     <div className="max-w-4xl mx-auto">
       <Button variant="ghost" asChild className="mb-6 -ml-4">
-        <Link to="/"><ArrowLeft className="mr-2 h-4 w-4"/>Torna agli eventi</Link>
+        <Link to="/"><ArrowLeft className="mr-2 h-4 w-4"/>{t('events.back_to_all', 'Torna agli eventi')}</Link>
       </Button>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-1">

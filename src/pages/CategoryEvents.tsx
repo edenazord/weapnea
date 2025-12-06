@@ -58,7 +58,7 @@ const CategoryEvents = () => {
     <div className={isMobile ? "px-4 py-6" : ""}>
       {/* Back Button */}
       <div className="mb-6">
-        <BackButton fallbackPath="/" label="Torna alla Home" />
+        <BackButton fallbackPath="/" label={t('not_found.back_home', 'Torna alla Home')} />
       </div>
       
       <div className="mb-8">
