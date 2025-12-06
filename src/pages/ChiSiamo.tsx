@@ -115,7 +115,7 @@ const ChiSiamo = () => {
               <MemberCard 
                 name="Pol"
                 src="/images/team/Paolo.jpg"
-                desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante."
+                desc=""
               />
             </div>
 
@@ -124,12 +124,12 @@ const ChiSiamo = () => {
               <MemberCard 
                 name="Leo"
                 src="/images/team/Leo.jpg"
-                desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante."
+                desc=""
               />
               <MemberCard 
                 name="Marta"
                 src="/images/team/Marta.jpg"
-                desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante."
+                desc=""
               />
             </div>
 
@@ -138,12 +138,12 @@ const ChiSiamo = () => {
               <MemberCard 
                 name="Filippo"
                 src="/images/team/Filippo.jpg"
-                desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante."
+                desc=""
               />
               <MemberCard 
                 name="Ruggero"
                 src="/images/team/Ruggero.jpg"
-                desc="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante."
+                desc=""
               />
             </div>
           </div>
