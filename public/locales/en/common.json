@@ -443,12 +443,6 @@
     },
     "login_required": "You must be authenticated to view the profile."
   },
-  "events": {
-    "upcoming_title": "Upcoming Events",
-    "upcoming_subtitle": "All events scheduled ordered by date",
-    "no_upcoming": "No upcoming events",
-    "check_back_soon": "Check back soon for new events!"
-  },
   "contact": {
     "page_title": "Contact Us",
     "page_subtitle": "Do you have questions, suggestions or want to collaborate with us? Write to us!",

@@ -452,12 +452,6 @@
     },
     "login_required": "Devi essere autenticato per visualizzare il profilo."
   },
-  "events": {
-    "upcoming_title": "Eventi Imminenti",
-    "upcoming_subtitle": "Tutti gli eventi in programma ordinati per data",
-    "no_upcoming": "Nessun evento imminente",
-    "check_back_soon": "Torna presto per vedere i nuovi eventi!"
-  },
   "contact": {
     "page_title": "Contattaci",
     "page_subtitle": "Hai domande, suggerimenti o vuoi collaborare con noi? Scrivici!",
