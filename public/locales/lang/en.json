@@ -45,7 +45,10 @@
     "description": "Join, create, and share with our community. Give life to a freer, more accessible, visible, and connected apnea!",
     "quick_links": "Pages",
     "contact": "Contacts",
-    "copyright": "All rights reserved."
+    "copyright": "All rights reserved.",
+    "policy": "Policy",
+    "privacy_policy": "Privacy Policy",
+    "cookie_policy": "Cookie Policy"
   },
   "hero": {
     "badge_text": "Discover the world of freediving",

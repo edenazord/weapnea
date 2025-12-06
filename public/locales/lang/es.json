@@ -52,7 +52,10 @@
     "description": "Participa, crea, comparte con nuestra comunidad. Da aliento a una apnea más accesible, visible y conectada.",
     "quick_links": "Enlaces rápidos",
     "contact": "Contactos",
-    "copyright": "Todos los derechos reservados."
+    "copyright": "Todos los derechos reservados.",
+    "policy": "Política",
+    "privacy_policy": "Política de Privacidad",
+    "cookie_policy": "Política de Cookies"
   },
   "hero": {
     "badge_text": "Descubre el mundo de la apnea",

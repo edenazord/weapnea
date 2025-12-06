@@ -52,7 +52,10 @@
     "description": "Uczestnicz, tworz, dziel sie z nasza spolecznoscia. Daj zycie freedivingowi bardziej dostepnemu, widocznemu i polaczonemu.",
     "quick_links": "Szybkie linki",
     "contact": "Kontakty",
-    "copyright": "Wszelkie prawa zastrzezone."
+    "copyright": "Wszelkie prawa zastrzezone.",
+    "policy": "Polityka",
+    "privacy_policy": "Polityka Prywatnosci",
+    "cookie_policy": "Polityka Cookie"
   },
   "hero": {
     "badge_text": "Odkryj swiat freedivingu",

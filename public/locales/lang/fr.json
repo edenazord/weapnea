@@ -52,7 +52,10 @@
     "description": "Participez, créez, partagez avec notre communauté. Donnez vie à une apnée plus accessible, visible et connectée.",
     "quick_links": "Liens rapides",
     "contact": "Contacts",
-    "copyright": "Tous droits réservés."
+    "copyright": "Tous droits réservés.",
+    "policy": "Politique",
+    "privacy_policy": "Politique de Confidentialité",
+    "cookie_policy": "Politique de Cookies"
   },
   "hero": {
     "badge_text": "Découvrez le monde de l'apnée",
