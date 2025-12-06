@@ -90,7 +90,7 @@ const Footer = () => {
                   className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
                 >
                   <span className="relative">
-                    {t('footer.privacy', 'Privacy Policy')}
+                    {t('footer.privacy_policy', 'Privacy Policy')}
                     <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                   </span>
                 </Link>
@@ -101,7 +101,7 @@ const Footer = () => {
                   className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
                 >
                   <span className="relative">
-                    {t('footer.cookies', 'Cookie Policy')}
+                    {t('footer.cookie_policy', 'Cookie Policy')}
                     <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
                   </span>
                 </Link>
