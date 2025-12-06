@@ -75,7 +75,7 @@ const EventDetailSkeleton = () => (
 const EventDetail = () => {
     const { slug } = useParams<{ slug: string }>();
     const { user, loading: authLoading } = useAuth();
-    const { t } = useLanguage();
+    const { t, currentLanguage } = useLanguage();
     const isMobile = useIsMobile();
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
@@ -809,11 +809,11 @@ const EventDetail = () => {
     );
 
         if (isMobile) {
-                return <MobileLayout>{content}</MobileLayout>;
+                return <MobileLayout key={currentLanguage}>{content}</MobileLayout>;
         }
 
         // Desktop: usa Layout standard per avere navbar e footer coerenti con il resto del sito
-        return <Layout>{content}</Layout>;
+        return <Layout key={currentLanguage}>{content}</Layout>;
 };
 
 export default EventDetail;
