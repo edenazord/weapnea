@@ -566,7 +566,7 @@ const EventDetail = () => {
                             <div className="flex items-start">
                                 <Calendar className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                 <div>
-                                    <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.date_label', 'Data')}</p>
+                                    <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Data</p>
                                     <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{getDisplayDate()}</p>
                                 </div>
                             </div>
@@ -574,7 +574,7 @@ const EventDetail = () => {
                                 <div className="flex items-start">
                                     <MapPin className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                      <div>
-                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.place_label', 'Luogo')}</p>
+                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Luogo</p>
                                         <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{event.location}</p>
                                     </div>
                                 </div>
@@ -583,7 +583,7 @@ const EventDetail = () => {
                                 <div className="flex items-start">
                                     <Users className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                     <div>
-                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.enrolled_count', 'Iscritti')}</p>
+                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>Iscritti</p>
                                         <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>
                                             {typeof event.participants === 'number' && event.participants > 0
                                                 ? `${Math.max(0, Number((event as any).participants_paid_count || 0))} / ${event.participants}`
@@ -653,10 +653,10 @@ const EventDetail = () => {
                                                         type="button"
                                                         onClick={handleWhatsappDetailClick}
                                                         className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-[#25D366] hover:bg-[#1EBE5B] text-white font-medium"
-                                                        title={t('events.request_info', 'Richiedi informazioni')}
+                                                        title="Richiedi informazioni su WhatsApp"
                                                     >
                                                         <MessageCircle className="h-4 w-4" />
-                                                        {t('events.request_info', 'Richiedi informazioni')}
+                                                        Richiedi informazioni
                                                     </button>
                                                 ) : null}
                     </Card>
