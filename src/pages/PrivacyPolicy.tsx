@@ -7,8 +7,40 @@ import { Shield, ListOrdered, CalendarDays } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useEffect, useState } from "react";
 
+const tocItems = [
+  { id: "titolare", label: "1. Titolare del Trattamento" },
+  { id: "tipologie", label: "2. Tipologie di dati trattati" },
+  { id: "finalita", label: "3. Finalità del trattamento" },
+  { id: "basi", label: "4. Basi giuridiche" },
+  { id: "conservazione", label: "5. Conservazione dei dati" },
+  { id: "terzi", label: "6. Comunicazione a terzi" },
+  { id: "diritti", label: "7. Diritti dell'utente" },
+  { id: "sicurezza", label: "8. Sicurezza" },
+  { id: "minori", label: "9. Minori" },
+  { id: "modifiche", label: "10. Modifiche" },
+];
+
 const PrivacyPolicy = () => {
   const isMobile = useIsMobile();
+  const [activeSection, setActiveSection] = useState<string | undefined>("titolare");
+
+  useEffect(() => {
+    try {
+      const hash = window.location?.hash?.replace('#', '');
+      if (hash) setActiveSection(hash);
+    } catch (e) {
+      // no-op
+    }
+  }, []);
+
+  const handleTocClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setActiveSection(id);
+    // Scroll to the section
+    setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
 
   const Content = () => (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-purple-50">
@@ -28,16 +60,18 @@ const PrivacyPolicy = () => {
                 Indice
               </div>
               <nav className="space-y-2 text-sm">
-                <a className="block hover:text-blue-700" href="#titolare">1. Titolare del Trattamento</a>
-                <a className="block hover:text-blue-700" href="#tipologie">2. Tipologie di dati trattati</a>
-                <a className="block hover:text-blue-700" href="#finalita">3. Finalità del trattamento</a>
-                <a className="block hover:text-blue-700" href="#basi">4. Basi giuridiche</a>
-                <a className="block hover:text-blue-700" href="#conservazione">5. Conservazione dei dati</a>
-                <a className="block hover:text-blue-700" href="#terzi">6. Comunicazione a terzi</a>
-                <a className="block hover:text-blue-700" href="#diritti">7. Diritti dell’utente</a>
-                <a className="block hover:text-blue-700" href="#sicurezza">8. Sicurezza</a>
-                <a className="block hover:text-blue-700" href="#minori">9. Minori</a>
-                <a className="block hover:text-blue-700" href="#modifiche">10. Modifiche</a>
+                {tocItems.map((item) => (
+                  <a
+                    key={item.id}
+                    className={`block hover:text-blue-700 transition-all cursor-pointer ${
+                      activeSection === item.id ? "font-bold text-blue-700" : ""
+                    }`}
+                    href={`#${item.id}`}
+                    onClick={(e) => handleTocClick(e, item.id)}
+                  >
+                    {item.label}
+                  </a>
+                ))}
               </nav>
               <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
                 <CalendarDays className="h-4 w-4" />
@@ -55,11 +89,11 @@ const PrivacyPolicy = () => {
               </div>
               <div className="prose prose-slate max-w-none">
                 <p>
-                  La presente informativa descrive le modalità di trattamento dei dati personali degli utenti che visitano e utilizzano il sito www.weapnea.com (di seguito “Sito”).
+                  La presente informativa descrive le modalità di trattamento dei dati personali degli utenti che visitano e utilizzano il sito www.weapnea.com (di seguito "Sito").
                 </p>
 
                 {/* Accordion Sections */}
-                <PrivacyAccordion />
+                <PrivacyAccordion activeSection={activeSection} onSectionChange={setActiveSection} />
               </div>
             </div>
           </main>
@@ -82,18 +116,14 @@ const PrivacyPolicy = () => {
 export default PrivacyPolicy;
 
 // Accordion component to keep main render tidy
-function PrivacyAccordion() {
-  const [open, setOpen] = useState<string | undefined>("titolare");
-  useEffect(() => {
-    try {
-      const hash = window.location?.hash?.replace('#','');
-      if (hash) setOpen(hash);
-    } catch (e) {
-      // no-op
-    }
-  }, []);
+interface PrivacyAccordionProps {
+  activeSection: string | undefined;
+  onSectionChange: (section: string | undefined) => void;
+}
+
+function PrivacyAccordion({ activeSection, onSectionChange }: PrivacyAccordionProps) {
   return (
-    <Accordion type="single" collapsible value={open} onValueChange={setOpen}>
+    <Accordion type="single" collapsible value={activeSection} onValueChange={onSectionChange}>
       <AccordionItem value="titolare">
         <AccordionTrigger id="titolare">1. Titolare del Trattamento</AccordionTrigger>
         <AccordionContent>
@@ -104,7 +134,7 @@ function PrivacyAccordion() {
             <br />
             📍 Sede legale: Da definire – struttura legale in fase di registrazione.
             <br />
-            Questa informativa sarà aggiornata con i dati societari completi alla formalizzazione dell’entità legale (es. società o associazione).
+            Questa informativa sarà aggiornata con i dati societari completi alla formalizzazione dell'entità legale (es. società o associazione).
           </p>
         </AccordionContent>
       </AccordionItem>
@@ -113,7 +143,7 @@ function PrivacyAccordion() {
         <AccordionContent>
           <ul>
             <li>
-              Dati forniti volontariamente dall’utente tramite form di contatto, email o iscrizione alla newsletter (es. nome, cognome, email, eventuali informazioni legate alla pratica sportiva inserite volontariamente).
+              Dati forniti volontariamente dall'utente tramite form di contatto, email o iscrizione alla newsletter (es. nome, cognome, email, eventuali informazioni legate alla pratica sportiva inserite volontariamente).
             </li>
             <li>Dati di navigazione raccolti automaticamente (IP, browser, device, pagine visitate) a fini statistici e di sicurezza.</li>
             <li>Cookie e tecnologie similari, secondo quanto indicato nella Cookie Policy.</li>
@@ -124,7 +154,7 @@ function PrivacyAccordion() {
         <AccordionTrigger id="finalita">3. Finalità del trattamento</AccordionTrigger>
         <AccordionContent>
           <ul>
-            <li>Rispondere a richieste o contatti dell’utente</li>
+            <li>Rispondere a richieste o contatti dell'utente</li>
             <li>Gestire eventuali iscrizioni a servizi o newsletter (solo con consenso esplicito)</li>
             <li>Gestire community, profili atleta o partecipazione ad attività sportive/eventistiche</li>
             <li>Effettuare analisi statistiche aggregate per migliorare il Sito</li>
@@ -136,7 +166,7 @@ function PrivacyAccordion() {
         <AccordionTrigger id="basi">4. Basi giuridiche (art. 6 GDPR)</AccordionTrigger>
         <AccordionContent>
           <ul>
-            <li>Esecuzione di misure contrattuali o precontrattuali su richiesta dell’utente</li>
+            <li>Esecuzione di misure contrattuali o precontrattuali su richiesta dell'utente</li>
             <li>Consenso esplicito per finalità di marketing o profilazione</li>
             <li>Legittimo interesse per analisi statistiche anonime e sicurezza del sito</li>
           </ul>
@@ -155,14 +185,14 @@ function PrivacyAccordion() {
         <AccordionContent>
           <ul>
             <li>Fornitori tecnici (es. hosting, newsletter, strumenti di analytics)</li>
-            <li>Partner o sponsor solo previo consenso esplicito dell’utente</li>
+            <li>Partner o sponsor solo previo consenso esplicito dell'utente</li>
             <li>Autorità competenti in caso di obblighi normativi</li>
             <li>Non è previsto trasferimento a terzi per finalità commerciali non autorizzate.</li>
           </ul>
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="diritti">
-        <AccordionTrigger id="diritti">7. Diritti dell’utente (artt. 15–22 GDPR)</AccordionTrigger>
+        <AccordionTrigger id="diritti">7. Diritti dell'utente (artt. 15–22 GDPR)</AccordionTrigger>
         <AccordionContent>
           <ul>
             <li>Accedere ai propri dati</li>

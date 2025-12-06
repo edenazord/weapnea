@@ -14,6 +14,9 @@ const CATEGORY_KEY_MAP: Record<string, keyof typeof CATEGORY_KEYS> = {
   "gare": "competitions",
   "gare di apnea": "competitions",
   "stage": "stages",
+  "formazione digitale live": "digital_training",
+  "formazione digitale": "digital_training",
+  "digital training": "digital_training",
 };
 
 const CATEGORY_KEYS = {
@@ -23,6 +26,7 @@ const CATEGORY_KEYS = {
   workshops: "categories.workshops",
   competitions: "categories.competitions",
   stages: "categories.stages",
+  digital_training: "categories.digital_training",
 } as const;
 
 // Normalizza una stringa: minuscole, rimozione di accenti, punteggiatura e spazi multipli
@@ -43,7 +47,8 @@ export function localizeCategoryName(name: string | undefined | null, t: (k: str
   let key = CATEGORY_KEY_MAP[norm];
   if (!key) {
     // pattern generici: contiene parole chiave
-    if (/\bcorsi\b|\bcorso\b|\bcourse\b/.test(norm)) key = 'courses';
+    if (/\bformazione\b.*\bdigitale\b|\bdigital\b.*\btraining\b|\bonline\b.*\btraining\b/.test(norm)) key = 'digital_training';
+    else if (/\bcorsi\b|\bcorso\b|\bcourse\b/.test(norm)) key = 'courses';
     else if (/\bviaggi\b|\bviaggio\b|\btrip\b|\btravel\b/.test(norm)) key = 'trips';
     else if (/\ballenament/i.test(norm)) key = 'trainings';
     else if (/\bworkshop\b|\batelier\b|\blab\b/.test(norm)) key = 'workshops';

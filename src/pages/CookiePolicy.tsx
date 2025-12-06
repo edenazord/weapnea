@@ -7,8 +7,36 @@ import { Cookie, ListOrdered, CalendarDays } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useEffect, useState } from "react";
 
+const tocItems = [
+  { id: "cosa-sono", label: "1. Cosa sono i cookie" },
+  { id: "tipologie", label: "2. Tipologie di cookie utilizzati" },
+  { id: "consenso", label: "3. Gestione del consenso" },
+  { id: "browser", label: "4. Disabilitazione tramite browser" },
+  { id: "terze-parti", label: "5. Strumenti di terza parte" },
+  { id: "contatti", label: "6. Contatti" },
+];
+
 const CookiePolicy = () => {
   const isMobile = useIsMobile();
+  const [activeSection, setActiveSection] = useState<string | undefined>("cosa-sono");
+
+  useEffect(() => {
+    try {
+      const hash = window.location?.hash?.replace('#', '');
+      if (hash) setActiveSection(hash);
+    } catch (e) {
+      // no-op
+    }
+  }, []);
+
+  const handleTocClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    setActiveSection(id);
+    // Scroll to the section
+    setTimeout(() => {
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
+  };
 
   const Content = () => (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-purple-50">
@@ -28,12 +56,18 @@ const CookiePolicy = () => {
                 Indice
               </div>
               <nav className="space-y-2 text-sm">
-                <a className="block hover:text-blue-700" href="#cosa-sono">1. Cosa sono i cookie</a>
-                <a className="block hover:text-blue-700" href="#tipologie">2. Tipologie di cookie utilizzati</a>
-                <a className="block hover:text-blue-700" href="#consenso">3. Gestione del consenso</a>
-                <a className="block hover:text-blue-700" href="#browser">4. Disabilitazione tramite browser</a>
-                <a className="block hover:text-blue-700" href="#terze-parti">5. Strumenti di terza parte</a>
-                <a className="block hover:text-blue-700" href="#contatti">6. Contatti</a>
+                {tocItems.map((item) => (
+                  <a
+                    key={item.id}
+                    className={`block hover:text-blue-700 transition-all cursor-pointer ${
+                      activeSection === item.id ? "font-bold text-blue-700" : ""
+                    }`}
+                    href={`#${item.id}`}
+                    onClick={(e) => handleTocClick(e, item.id)}
+                  >
+                    {item.label}
+                  </a>
+                ))}
               </nav>
               <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
                 <CalendarDays className="h-4 w-4" />
@@ -50,7 +84,7 @@ const CookiePolicy = () => {
                 <span className="font-semibold">Informativa Cookie</span>
               </div>
               <div className="prose prose-slate max-w-none">
-                <CookieAccordion />
+                <CookieAccordion activeSection={activeSection} onSectionChange={setActiveSection} />
               </div>
             </div>
           </main>
@@ -72,23 +106,19 @@ const CookiePolicy = () => {
 
 export default CookiePolicy;
 
-function CookieAccordion() {
-  const [open, setOpen] = useState<string | undefined>("cosa-sono");
-  useEffect(() => {
-    try {
-      const hash = window.location?.hash?.replace('#','');
-      if (hash) setOpen(hash);
-    } catch (e) {
-      // no-op
-    }
-  }, []);
+interface CookieAccordionProps {
+  activeSection: string | undefined;
+  onSectionChange: (section: string | undefined) => void;
+}
+
+function CookieAccordion({ activeSection, onSectionChange }: CookieAccordionProps) {
   return (
-    <Accordion type="single" collapsible value={open} onValueChange={setOpen}>
+    <Accordion type="single" collapsible value={activeSection} onValueChange={onSectionChange}>
       <AccordionItem value="cosa-sono">
         <AccordionTrigger id="cosa-sono">1. Cosa sono i cookie</AccordionTrigger>
         <AccordionContent>
           <p>
-            I cookie sono piccoli file salvati nel dispositivo dell’utente per migliorare la navigazione e abilitare determinate funzionalità.
+            I cookie sono piccoli file salvati nel dispositivo dell'utente per migliorare la navigazione e abilitare determinate funzionalità.
           </p>
         </AccordionContent>
       </AccordionItem>
@@ -106,7 +136,7 @@ function CookieAccordion() {
         <AccordionTrigger id="consenso">3. Gestione del consenso</AccordionTrigger>
         <AccordionContent>
           <p>
-            Al primo accesso viene mostrato un banner cookie che consente di accettare tutti i cookie, rifiutare quelli non necessari o gestire le preferenze. L’utente può modificare le preferenze in ogni momento tramite browser o tramite un link “Impostazioni Cookie” presente nel Sito.
+            Al primo accesso viene mostrato un banner cookie che consente di accettare tutti i cookie, rifiutare quelli non necessari o gestire le preferenze. L'utente può modificare le preferenze in ogni momento tramite browser o tramite un link "Impostazioni Cookie" presente nel Sito.
           </p>
         </AccordionContent>
       </AccordionItem>
@@ -114,7 +144,7 @@ function CookieAccordion() {
         <AccordionTrigger id="browser">4. Disabilitazione tramite browser</AccordionTrigger>
         <AccordionContent>
           <p>
-            L’utente può gestire i cookie dalle impostazioni del proprio browser (Chrome, Firefox, Safari, ecc.). La disattivazione dei cookie tecnici può compromettere alcune funzionalità del Sito.
+            L'utente può gestire i cookie dalle impostazioni del proprio browser (Chrome, Firefox, Safari, ecc.). La disattivazione dei cookie tecnici può compromettere alcune funzionalità del Sito.
           </p>
         </AccordionContent>
       </AccordionItem>

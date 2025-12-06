@@ -85,7 +85,8 @@
 		"courses": "Cours",
 		"workshops": "Ateliers",
 		"competitions": "Compétitions",
-		"stages": "Stages"
+		"stages": "Stages",
+		"digital_training": "Formation Digitale Live"
 	},
 	"test": { "hello": "Bonjour", "welcome": "Bienvenue", "goodbye": "Au revoir" },
 	"auth": {
