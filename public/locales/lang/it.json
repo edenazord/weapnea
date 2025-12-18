@@ -46,11 +46,17 @@
     "workshops": "Stage & Workshop",
     "competitions": "Gare",
     "stages": "Stage",
-    "digital_training": "Formazione Digitale Live"
+    "digital_training": "Formazione Digitale Live",
+    "paid_training_session": "Allenamenti a Pagamento",
+    "let's_train_together_(for free)": "Alleniamoci Insieme (gratis)",
+    "digital_on-demand_training": "Formazione Digitale On Demand"
   },
 "footer": {
-    "description": "Partecipa, crea, condividi con la nostra community. Dai respiro ad un'apnea più accessibile, visibile e connessa.",
+    "description": "Partecipa, organizza e divertiti con la nostra community. Dai respiro ad un'apnea più accessibile, visibile e connessa.",
     "quick_links": "Link Rapidi",
+    "about": "Chi Siamo",
+    "contact": "Contattaci",
+    "blog": "Blog",
     "contact": "Contatti",
     "copyright": "Tutti i diritti riservati.",
     "policy": "Policy",
@@ -70,31 +76,31 @@
   },
   "about_page": {
     "title": "Chi Siamo",
-"subtitle": "WeApnea è la prima piattaforma dedicata agli eventi di apnea in Italia.\nLa community si compone di atleti, istruttori, allenatori ed appassionati di apnea indoor e outdoor. Abbiamo vissuto per anni una realtà poco connessa: eventi dispersi tra forum, gruppi social e passaparola. Nessun punto di riferimento unico per trovare stage, workshop, corsi, opportunità formative, viaggi e dare la giusta visibilità e democraticità al nostro sport.\nCosì questo punto di riferimento, questo contenitore, abbiamo deciso di costruirlo noi.\nWeApnea nasce con un obiettivo preciso: rendere l’apnea più accessibile, visibile e connessa.\nCosa puoi trovare qui?\ngli eventi di apnea organizzati da istruttori certificati o scuole di apnea\nallenamenti condivisi da istruttori certificati\nCollaborazioni e vantaggi con brand e partner del settore\nProgetti speciali per far crescere la community\n\nNon siamo una federazione. Non siamo un social qualunque.\nSiamo un punto d’incontro. Un acceleratore per chi vuole vivere l’apnea come un percorso di crescita in acqua e dentro di sé.\nE questo è solo l’inizio.",
+"subtitle": "WeApnea è la prima piattaforma dedicata agli eventi di apnea in Italia.\nLa community si compone di istruttori, allenatori, atleti agonisti ed appassionati di apnea indoor e outdoor. Abbiamo vissuto per anni una realtà frammentata e poco connessa: eventi dispersi tra forum, gruppi social e passaparola. Nessun punto di riferimento unico per trovare stage, workshop, corsi, opportunità formative, viaggi e dare la giusta visibilità e democraticità alla disciplina che amiamo.\nAbbiamo quindi pensato che andasse inaugurata una Piazza per tutti noi apneisti. Abbiamo deciso di offrire a tutta la comunità un punto di riferimento rispetto alle solite domande: cosa c'è in giro? che si fa?\nWeApnea nasce quindi con un obiettivo preciso: rendere l’apnea più accessibile, visibile e connessa.\nCosa puoi trovare qui?\nEventi ed allenamenti di apnea organizzati da istruttori certificati o scuole di apnea.\nTestimonianze, spunti, network e molto altro.\nNon siamo una federazione. Non siamo una didattica.Non siamo un social qualunque.\nSiamo un punto d’incontro di esperienze proposte con trasparenza. Un acceleratore per chi vuole vivere l’apnea come un percorso di crescita in acqua e dentro di sé.\nE questo è solo l’inizio...",
     "mission_title": "La Nostra Mission",
-    "mission_desc": "Connettere apneisti di tutto il mondo attraverso una piattaforma che facilita la partecipazione a eventi, viaggi e attività formative. Vogliamo rendere l'apnea più accessibile e creare una community globale di appassionati.",
+    "mission_desc": "Connettere apneisti di tutto il mondo attraverso una piattaforma che faciliti la partecipazione a eventi, viaggi e attività formative. Vogliamo rendere l'apnea più accessibile, dare trasparenza all'offerta e creare una community globale di appassionati.",
     "vision_title": "La Nostra Vision",
-    "vision_desc": "Diventare il punto di riferimento internazionale per l'apnea, dove ogni apneista può trovare opportunità di crescita, condivisione di esperienze e connessioni autentiche con altri membri della community.",
+    "vision_desc": "Diventare il punto di riferimento internazionale per gli eventi di apnea, la Piazza dove ogni apneista possa trovare opportunità di crescita, condivisione di esperienze e connessioni autentiche con altri membri della community.",
     "values_title": "I Nostri Valori",
     "values": {
       "community_title": "Community",
-      "community_desc": "Crediamo nella forza della community e nella condivisione di esperienze per crescere insieme come apneisti.",
+      "community_desc": "Crediamo nella forza della community e nella condivisione di esperienze per crescere insieme come apneisti e continuare a migliorare l'offerta.",
       "passion_title": "Passione",
-      "passion_desc": "L'apnea è la nostra passione e vogliamo trasmetterla attraverso eventi e esperienze indimenticabili.",
+      "passion_desc": "L'apnea è la nostra passione e vogliamo che sia resa fruibile attraverso eventi e esperienze indimenticabili.",
       "innovation_title": "Innovazione",
       "innovation_desc": "Utilizziamo la tecnologia per rendere l'apnea più accessibile e connettere apneisti in tutto il mondo."
     },
     "team_title": "Il Nostro Team",
-    "team_desc": "Siamo un team di apneisti appassionati, sviluppatori e professionisti del settore che lavorano insieme per creare la migliore esperienza possibile per la community dell'apnea."
+    "team_desc": "Siamo un Team fondato su una lunga amicizia e composto da professionisti provenienti da ambiti lavorativi distinti. La nostra unione è stata ispirata dalla grande passione di Pol (Paolo Frigo) per l'apnea e dalla volontà condivisa di promuovere momenti di socialità e di scambio, onorare la natura e l'ambiente marino, mettersi in gioco con impegno favorendo la crescita comunitaria. Ma è solo con voi che si può provare a creare la migliore esperienza possibile per la community dell'apnea: il vero Team è WeApnea!"
   },
   "blog_page": {
     "title": "Blog WeApnea",
-    "subtitle": "Scopri le ultime novità dal mondo dell'apnea, tecniche, consigli e storie dalla nostra community",
-    "search_placeholder": "Cerca articoli...",
+    "subtitle": "Condivisioni, punti di vista, aggiornamenti dal mondo dell'apnea: le storie dalla nostra community",
+    "search_placeholder": "Cerca contenuti...",
     "read_more": "Leggi di più",
     "author_fallback": "Autore",
     "no_results_title": "Nessun articolo trovato",
-    "no_results_desc": "Prova a modificare i termini di ricerca.",
+    "no_results_desc": "Prova a modificare i termini di ricerca",
     "no_posts_title": "Nessun articolo pubblicato",
     "no_posts_desc": "Torna presto per nuovi contenuti!",
     "back_to_blog": "Torna al Blog",
@@ -160,7 +166,7 @@
         "password_min": "La password deve contenere almeno 6 caratteri.",
         "company_required": "Tutti i campi sponsor sono obbligatori se il ruolo è 'Sponsor'."
       },
-      "success_title": "Registrazione completata!",
+      "success_title": "Benvenuto su WeApnea! Registrazione completata",
       "success_desc": "Controlla la tua email per confermare l'account e completare la registrazione.",
       "error_title": "Errore di registrazione",
       "error_generic": "Si è verificato un errore durante la registrazione.",
@@ -171,16 +177,16 @@
         "role_instructor": "Organizzatore",
         "role_company": "Sponsor",
         "fullname_label": "Nome e Cognome",
-        "fullname_placeholder": "Mario Rossi",
+        "fullname_placeholder": "Il tuo nominativo per esteso",
         "email_label": "Email",
         "email_placeholder": "tua@email.com",
         "password_label": "Password",
         "company_name_label": "Nome Sponsor",
-        "company_name_placeholder": "WeApnea SRL",
+        "company_name_placeholder": "Il nome della tua azienda",
         "vat_number_label": "Partita IVA",
         "vat_number_placeholder": "IT12345678901",
         "company_address_label": "Indirizzo Sponsor",
-        "company_address_placeholder": "Via Roma 1, 00100 Roma",
+        "company_address_placeholder": "Il tuo indirizzo legale",
         "submitting": "Registrazione..."
       }
     }
@@ -349,8 +355,7 @@
   "common_ext": {
     "error": "Errore",
     "unexpected_error": "Errore imprevisto"
-  }
-  ,
+  },
   "profile": {
     "title": "Il Mio Profilo",
     "subtitle": "Gestisci le tue informazioni personali",
@@ -381,7 +386,7 @@
     "sections": {
       "my_events": {
         "title": "I Miei Eventi",
-        "description": "Gestisci i tuoi eventi e la tua wishlist",
+        "description": "Verifica le attività a cui sei iscritto e organizza i tuoi eventi",
         "participated_button": "Eventi Partecipati",
         "participated_sub": "Cronologia eventi",
         "wishlist_button": "Wishlist",
@@ -425,9 +430,9 @@
         "static_apnea_placeholder": "es. 4:30",
         "dynamic_apnea_label": "Apnea Dinamica (metri)",
         "dynamic_apnea_placeholder": "es. 75",
-        "free_immersion_label": "Immersione Libera (metri)",
+        "free_immersion_label": "Free Immersion (metri)",
         "free_immersion_placeholder": "es. 30",
-        "constant_weight_label": "Peso Costante (metri)",
+        "constant_weight_label": "Assetto Costante (metri)",
         "constant_weight_placeholder": "es. 45"
       },
       "company": {
@@ -464,8 +469,8 @@
   "contact": {
     "page_title": "Contattaci",
     "page_subtitle": "Hai domande, suggerimenti o vuoi collaborare con noi? Scrivici!",
-    "name_label": "Nome",
-    "name_placeholder": "Il tuo nome",
+    "name_label": "Nome e Cognome",
+    "name_placeholder": "Il tuo nominativo completo",
     "email_label": "Email",
     "email_placeholder": "nome@esempio.com",
     "message_label": "Messaggio",
