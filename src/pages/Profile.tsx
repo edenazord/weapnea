@@ -43,17 +43,17 @@ type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 
 type BestEntry = { discipline: BestDiscipline; value: string };
 type PersonalBest = Record<string, string> | BestEntry[];
 
-const DISCIPLINES: { code: BestDiscipline; label: string; hint: string }[] = [
-  { code: 'STA', label: 'Apnea Statica', hint: 'mm:ss' },
-  { code: 'DYN', label: 'Apnea Dinamica', hint: 'metri' },
-  { code: 'DYNB', label: 'Apnea Dinamica Bipinne', hint: 'metri' },
-  { code: 'DNF', label: 'Apnea Dinamica senza pinne', hint: 'metri' },
-  { code: 'FIM', label: 'Free Immersion', hint: 'metri' },
-  { code: 'CWT', label: 'Assetto Costante (monopinna)', hint: 'metri' },
-  { code: 'CWTB', label: 'Assetto Costante (bipinne)', hint: 'metri' },
-  { code: 'CNF', label: 'Assetto Costante Senza Attrezzi', hint: 'metri' },
-  { code: 'VWT', label: 'Variable Weight', hint: 'metri' },
-  { code: 'NLT', label: 'No Limits', hint: 'metri' },
+const DISCIPLINE_CODES: { code: BestDiscipline; labelKey: string; hint: string }[] = [
+  { code: 'STA', labelKey: 'STA', hint: 'mm:ss' },
+  { code: 'DYN', labelKey: 'DYN', hint: 'metri' },
+  { code: 'DYNB', labelKey: 'DYNB', hint: 'metri' },
+  { code: 'DNF', labelKey: 'DNF', hint: 'metri' },
+  { code: 'FIM', labelKey: 'FIM', hint: 'metri' },
+  { code: 'CWT', labelKey: 'CWT', hint: 'metri' },
+  { code: 'CWTB', labelKey: 'CWTB', hint: 'metri' },
+  { code: 'CNF', labelKey: 'CNF', hint: 'metri' },
+  { code: 'VWT', labelKey: 'VWT', hint: 'metri' },
+  { code: 'NLT', labelKey: 'NLT', hint: 'metri' },
 ];
 
 const Profile = () => {
@@ -358,7 +358,7 @@ const Profile = () => {
           const seen = new Set<BestDiscipline>();
           for (const [k, v] of Object.entries(pb)) {
             const code = (mapLegacy[k] || k) as BestDiscipline;
-            if ((DISCIPLINES as any).some((d: any) => d.code === code) && v) {
+            if ((DISCIPLINE_CODES as any).some((d: any) => d.code === code) && v) {
               if (!seen.has(code)) {
                 entries.push({ discipline: code, value: String(v) });
                 seen.add(code);
@@ -366,8 +366,8 @@ const Profile = () => {
             }
           }
         }
-        // Ensure stable order by DISCIPLINES
-        const order: Record<string, number> = Object.fromEntries(DISCIPLINES.map((d, i) => [d.code, i]));
+        // Ensure stable order by DISCIPLINE_CODES
+        const order: Record<string, number> = Object.fromEntries(DISCIPLINE_CODES.map((d, i) => [d.code, i]));
         entries.sort((a, b) => (order[a.discipline] ?? 999) - (order[b.discipline] ?? 999));
         setBestEntries(entries);
       } else {
@@ -437,7 +437,7 @@ const Profile = () => {
 
   const addBest = () => {
     const used = new Set(bestEntries.map(b => b.discipline));
-    const next = DISCIPLINES.find(d => !used.has(d.code));
+    const next = DISCIPLINE_CODES.find(d => !used.has(d.code));
     if (next) setBestEntries(prev => [...prev, { discipline: next.code, value: '' }]);
   };
 
@@ -788,27 +788,27 @@ const Profile = () => {
                             onClick={handleOpenCreateEvent}
                             className="bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700"
                           >
-                            <PlusCircle className="mr-2 h-4 w-4" /> Crea Evento
+                            <PlusCircle className="mr-2 h-4 w-4" /> {t('profile.sections.my_events.create_event_btn', 'Crea Evento')}
                           </Button>
                         </div>
                       ) : null}
                       {!(user?.role === 'admin' || organizerEligible) && (
-                        <div className="text-xs text-muted-foreground">Completa le sezioni "Certificazioni" e "Visibilità" per abilitare la creazione.</div>
+                        <div className="text-xs text-muted-foreground">{t('profile.sections.my_events.complete_sections_hint', 'Completa le sezioni "Certificazioni" e "Visibilità" per abilitare la creazione.')}</div>
                       )}
                       <div className="mt-4">
-                        <h3 className="font-semibold mb-2">I tuoi eventi organizzati</h3>
+                        <h3 className="font-semibold mb-2">{t('profile.sections.my_events.your_organized_events', 'I tuoi eventi organizzati')}</h3>
                         {isLoadingOrganized ? (
-                          <div className="py-4 text-sm text-muted-foreground">Caricamento eventi...</div>
+                          <div className="py-4 text-sm text-muted-foreground">{t('profile.sections.my_events.loading_events', 'Caricamento eventi...')}</div>
                         ) : (organizedEvents && organizedEvents.length > 0 ? (
                           <Table>
                             <TableHeader>
                               <TableRow>
-                                <TableHead>Titolo / Categoria</TableHead>
-                                <TableHead>Disciplina / Livello</TableHead>
-                                <TableHead>Data / Ricorrenza & Luogo</TableHead>
-                                <TableHead className="text-center">Costo</TableHead>
-                                <TableHead className="text-center">Iscritti</TableHead>
-                                <TableHead className="text-right">Azioni</TableHead>
+                                <TableHead>{t('profile.sections.my_events.table_title_category', 'Titolo / Categoria')}</TableHead>
+                                <TableHead>{t('profile.sections.my_events.table_discipline_level', 'Disciplina / Livello')}</TableHead>
+                                <TableHead>{t('profile.sections.my_events.table_date_location', 'Data / Ricorrenza & Luogo')}</TableHead>
+                                <TableHead className="text-center">{t('profile.sections.my_events.table_cost', 'Costo')}</TableHead>
+                                <TableHead className="text-center">{t('profile.sections.my_events.table_enrolled', 'Iscritti')}</TableHead>
+                                <TableHead className="text-right">{t('profile.sections.my_events.table_actions', 'Azioni')}</TableHead>
                               </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -843,15 +843,15 @@ const Profile = () => {
                                   <TableCell className="text-sm text-center">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex gap-2 justify-end">
-                                      <Button type="button" asChild size="icon" variant="ghost" title="Apri" aria-label="Apri evento">
+                                      <Button type="button" asChild size="icon" variant="ghost" title={t('profile.sections.my_events.action_open', 'Apri')} aria-label={t('profile.sections.my_events.action_open', 'Apri evento')}>
                                         <Link to={buildFriendlyEventPath(ev.slug)}>
                                           <Eye className="h-4 w-4" />
                                         </Link>
                                       </Button>
-                                      <Button type="button" size="icon" variant="ghost" title="Iscritti" aria-label="Vedi iscritti" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
+                                      <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_enrolled', 'Iscritti')} aria-label={t('profile.sections.my_events.action_enrolled', 'Vedi iscritti')} onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
                                         <Users className="h-4 w-4" />
                                       </Button>
-                                      <Button type="button" size="icon" variant="ghost" title="Modifica" aria-label="Modifica evento" onClick={() => openEditEvent(ev)}>
+                                      <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_edit', 'Modifica')} aria-label={t('profile.sections.my_events.action_edit', 'Modifica evento')} onClick={() => openEditEvent(ev)}>
                                         <Pencil className="h-4 w-4" />
                                       </Button>
                                     </div>
@@ -862,7 +862,7 @@ const Profile = () => {
                           </Table>
                         ) : (
                           <div className="py-6 text-sm text-muted-foreground border rounded-md text-center">
-                            Nessun evento organizzato ancora.
+                            {t('profile.sections.my_events.no_organized_events', 'Nessun evento organizzato ancora.')}
                           </div>
                         ))}
                       </div>
@@ -913,10 +913,10 @@ const Profile = () => {
                   <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
                     <div className="flex items-center justify-between gap-2 px-6 py-3">
                       <SheetTitle className="text-base sm:text-lg">
-                        Modifica Evento
+                        {t('profile.sections.my_events.edit_event_sheet_title', 'Modifica Evento')}
                       </SheetTitle>
                       <SheetClose asChild>
-                        <Button type="button" variant="ghost" size="icon" aria-label="Chiudi">
+                        <Button type="button" variant="ghost" size="icon" aria-label={t('profile.sections.my_events.action_close', 'Chiudi')}>
                           <X className="h-4 w-4" />
                         </Button>
                       </SheetClose>
@@ -1423,7 +1423,7 @@ const Profile = () => {
                         const used = new Set(bestEntries.map((b, i) => i === idx ? undefined : b.discipline));
                         const invalid = !isValidBest(entry);
                         const placeholder = (() => {
-                          const d = DISCIPLINES.find(d => d.code === entry.discipline);
+                          const d = DISCIPLINE_CODES.find(d => d.code === entry.discipline);
                           return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_placeholder', 'es. 4:30') : t('profile.sections.personal_bests.meters_placeholder', 'es. 75');
                         })();
                         return (
@@ -1434,9 +1434,9 @@ const Profile = () => {
                                   <SelectValue placeholder={t('profile.sections.personal_bests.discipline_placeholder', 'Seleziona disciplina')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  {DISCIPLINES.map(d => (
+                                  {DISCIPLINE_CODES.map(d => (
                                     <SelectItem key={d.code} value={d.code} disabled={used.has(d.code)}>
-                                      {d.label}
+                                      {t(`profile.sections.personal_bests.disciplines.${d.labelKey}`, d.labelKey)}
                                     </SelectItem>
                                   ))}
                                 </SelectContent>
