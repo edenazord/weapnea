@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Waves, Mail, Phone, MapPin, Sparkles } from "lucide-react";
+import { Waves, Mail, MapPin, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const Footer = () => {
@@ -75,6 +75,17 @@ const Footer = () => {
                   </span>
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/contattaci"
+                  className="text-blue-200 hover:text-white transition-all duration-300 group flex items-center"
+                >
+                  <span className="relative">
+                    {t('nav.contact', 'Contattaci')}
+                    <div className="absolute inset-x-0 -bottom-1 h-0.5 bg-gradient-to-r from-blue-400 to-purple-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+                  </span>
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -119,13 +130,7 @@ const Footer = () => {
                 <div className="p-2 rounded-full bg-white/10 mr-3 group-hover:bg-white/20 transition-colors duration-300">
                   <Mail className="h-4 w-4" />
                 </div>
-                <span className="text-sm">info@weapnea.it</span>
-              </div>
-              <div className="flex items-center text-blue-200 hover:text-white transition-colors duration-300 group">
-                <div className="p-2 rounded-full bg-white/10 mr-3 group-hover:bg-white/20 transition-colors duration-300">
-                  <Phone className="h-4 w-4" />
-                </div>
-                <span className="text-sm">+39 123 456 789</span>
+                <span className="text-sm">weapnea@gmail.com</span>
               </div>
               <div className="flex items-center text-blue-200 hover:text-white transition-colors duration-300 group">
                 <div className="p-2 rounded-full bg-white/10 mr-3 group-hover:bg-white/20 transition-colors duration-300">
