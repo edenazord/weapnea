@@ -1054,16 +1054,16 @@ const Profile = () => {
             <TabsContent value="visibility">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Visibilità</CardTitle>
+                    <CardTitle>{t('profile.sections.visibility.title', 'Visibilità')}</CardTitle>
                     <CardDescription>
-                      Rendi visibile una pagina pubblica del tuo profilo su un URL parlante. Puoi scegliere cosa mostrare.
+                      {t('profile.sections.visibility.description', 'Rendi visibile una pagina pubblica del tuo profilo su un URL parlante. Puoi scegliere cosa mostrare.')}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-5">
                     <div className="flex items-center justify-between py-2">
                       <div>
-                        <Label htmlFor="public_profile_enabled">Attiva profilo pubblico</Label>
-                        <p className="text-sm text-muted-foreground">La pagina sarà visibile su /instructor/slug</p>
+                        <Label htmlFor="public_profile_enabled">{t('profile.sections.visibility.enable_public_profile', 'Attiva profilo pubblico')}</Label>
+                        <p className="text-sm text-muted-foreground">{t('profile.sections.visibility.enable_public_profile_desc', 'La pagina sarà visibile su /instructor/slug')}</p>
                       </div>
                       <Switch
                         id="public_profile_enabled"
@@ -1083,31 +1083,31 @@ const Profile = () => {
                     </div>
 
                     <div>
-                      <Label htmlFor="public_slug">Slug pubblico</Label>
+                      <Label htmlFor="public_slug">{t('profile.sections.visibility.public_slug_label', 'Slug pubblico')}</Label>
                       <Input
                         id="public_slug"
                         value={formData.public_slug}
                         onChange={(e) => setFormData(prev => ({ ...prev, public_slug: slugify(e.target.value) }))}
-                        placeholder="es. nome-cognome"
+                        placeholder={t('profile.sections.visibility.public_slug_placeholder', 'es. nome-cognome')}
                         disabled={!formData.public_profile_enabled || Boolean(user?.public_slug)}
                       />
                       <div className="flex items-center gap-3 mt-2">
-                        <p className="text-xs text-muted-foreground">URL: /instructor/{formData.public_slug || '<slug>'}</p>
+                        <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.public_url_prefix', 'URL: /instructor/')}{formData.public_slug || '<slug>'}</p>
                         {formData.public_profile_enabled && !user?.public_slug && (
                           slugStatus === 'checking' ? (
-                            <span className="text-xs text-blue-600">Verifica disponibilità...</span>
+                            <span className="text-xs text-blue-600">{t('profile.sections.visibility.slug_checking', 'Verifica disponibilità...')}</span>
                           ) : slugStatus === 'available' ? (
-                            <span className="text-xs text-green-600">Disponibile</span>
+                            <span className="text-xs text-green-600">{t('profile.sections.visibility.slug_available', 'Disponibile')}</span>
                           ) : slugStatus === 'taken' ? (
-                            <span className="text-xs text-red-600">Non disponibile</span>
+                            <span className="text-xs text-red-600">{t('profile.sections.visibility.slug_taken', 'Non disponibile')}</span>
                           ) : slugStatus === 'error' ? (
-                            <span className="text-xs text-amber-600">Impossibile verificare ora (server non raggiungibile)</span>
+                            <span className="text-xs text-amber-600">{t('profile.sections.visibility.slug_error', 'Impossibile verificare ora (server non raggiungibile)')}</span>
                           ) : null
                         )}
                         {formData.public_profile_enabled && formData.public_slug && (
                           <>
                             <Button asChild size="sm" variant="outline">
-                              <Link to={`/instructor/${formData.public_slug}`}>Apri profilo pubblico</Link>
+                              <Link to={`/instructor/${formData.public_slug}`}>{t('profile.sections.visibility.open_public_profile', 'Apri profilo pubblico')}</Link>
                             </Button>
                             <Button
                               size="sm"
@@ -1116,13 +1116,13 @@ const Profile = () => {
                               onClick={() => {
                                 const url = `${window.location.origin}/instructor/${formData.public_slug}`;
                                 navigator.clipboard.writeText(url).then(() => {
-                                  toast({ title: 'Link copiato', description: 'URL del profilo pubblico copiato negli appunti.' });
+                                  toast({ title: t('profile.sections.visibility.link_copied_title', 'Link copiato'), description: t('profile.sections.visibility.link_copied_desc', 'URL del profilo pubblico copiato negli appunti.') });
                                 }).catch(() => {
-                                  toast({ title: 'Impossibile copiare', description: 'Copia manualmente questo URL: ' + url });
+                                  toast({ title: t('profile.sections.visibility.copy_failed_title', 'Impossibile copiare'), description: 'Copia manualmente questo URL: ' + url });
                                 });
                               }}
                             >
-                              Copia link
+                              {t('profile.sections.visibility.copy_link', 'Copia link')}
                             </Button>
                           </>
                         )}
@@ -1132,8 +1132,8 @@ const Profile = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_events">Mostra Eventi</Label>
-                          <p className="text-xs text-muted-foreground">Rende visibile la sezione Eventi nella pagina pubblica</p>
+                          <Label htmlFor="public_show_events">{t('profile.sections.visibility.show_events', 'Mostra Eventi')}</Label>
+                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_events_desc', 'Rende visibile la sezione Eventi nella pagina pubblica')}</p>
                         </div>
                         <Switch
                           id="public_show_events"
@@ -1145,8 +1145,8 @@ const Profile = () => {
 
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_personal">Mostra Personali</Label>
-                          <p className="text-xs text-muted-foreground">Bio, Instagram e info aziendali (se presenti)</p>
+                          <Label htmlFor="public_show_personal">{t('profile.sections.visibility.show_personal', 'Mostra Personali')}</Label>
+                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_personal_desc', 'Bio, Instagram e info aziendali (se presenti)')}</p>
                         </div>
                         <Switch
                           id="public_show_personal"
@@ -1158,8 +1158,8 @@ const Profile = () => {
 
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_certifications">Mostra Certificazioni</Label>
-                          <p className="text-xs text-muted-foreground">Brevetto e assicurazione</p>
+                          <Label htmlFor="public_show_certifications">{t('profile.sections.visibility.show_certifications', 'Mostra Certificazioni')}</Label>
+                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_certifications_desc', 'Brevetto e assicurazione')}</p>
                         </div>
                         <Switch
                           id="public_show_certifications"
@@ -1171,8 +1171,8 @@ const Profile = () => {
 
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_records">Mostra Record</Label>
-                          <p className="text-xs text-muted-foreground">Record personali dalla sezione "Record"</p>
+                          <Label htmlFor="public_show_records">{t('profile.sections.visibility.show_records', 'Mostra Record')}</Label>
+                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_records_desc', 'Record personali dalla sezione Record')}</p>
                         </div>
                         <Switch
                           id="public_show_records"
@@ -1183,8 +1183,8 @@ const Profile = () => {
                       </div>
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_bio">Mostra biografia</Label>
-                          <p className="text-xs text-muted-foreground">La tua bio nella pagina pubblica</p>
+                          <Label htmlFor="public_show_bio">{t('profile.sections.visibility.show_bio', 'Mostra biografia')}</Label>
+                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_bio_desc', 'La tua bio nella pagina pubblica')}</p>
                         </div>
                         <Switch
                           id="public_show_bio"
@@ -1196,8 +1196,8 @@ const Profile = () => {
 
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_instagram">Mostra Instagram</Label>
-                          <p className="text-xs text-muted-foreground">Link al profilo Instagram</p>
+                          <Label htmlFor="public_show_instagram">{t('profile.sections.visibility.show_instagram', 'Mostra Instagram')}</Label>
+                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_instagram_desc', 'Link al profilo Instagram')}</p>
                         </div>
                         <Switch
                           id="public_show_instagram"
@@ -1209,8 +1209,8 @@ const Profile = () => {
 
                       <div className="flex items-center justify-between border rounded-md p-3">
                         <div>
-                          <Label htmlFor="public_show_company_info">Mostra info aziendali</Label>
-                          <p className="text-xs text-muted-foreground">Indirizzo e P.IVA (solo aziende)</p>
+                          <Label htmlFor="public_show_company_info">{t('profile.sections.visibility.show_company_info', 'Mostra info aziendali')}</Label>
+                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_company_info_desc', 'Indirizzo e P.IVA (solo aziende)')}</p>
                         </div>
                         <Switch
                           id="public_show_company_info"
@@ -1235,7 +1235,7 @@ const Profile = () => {
                   <Accordion type="single" collapsible>
                     <AccordionItem value="assicurazione">
                       <AccordionTrigger>
-                        <div className="flex items-center gap-2"><Shield className="h-4 w-4" /> Assicurazione</div>
+                        <div className="flex items-center gap-2"><Shield className="h-4 w-4" /> {t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1258,12 +1258,12 @@ const Profile = () => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                           <div>
-                            <Label htmlFor="numero_assicurazione">Numero assicurazione</Label>
+                            <Label htmlFor="numero_assicurazione">{t('profile.sections.certifications.insurance_number_label', 'Numero assicurazione')}</Label>
                             <Input
                               id="numero_assicurazione"
                               value={formData.numero_assicurazione}
                               onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)}
-                              placeholder="Inserire numero assicurazione"
+                              placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Inserire numero assicurazione')}
                             />
                           </div>
                         </div>
@@ -1274,7 +1274,7 @@ const Profile = () => {
                             onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_assicurazione_valida: Boolean(v) }))}
                           />
                           <Label htmlFor="dichiarazione_assicurazione_valida" className="text-sm cursor-pointer">
-                            Dichiaro di essere istruttore brevettato e di avere una copertura assicurativa in corso di validità
+                            {t('profile.sections.certifications.insurance_declaration', 'Dichiaro di essere istruttore brevettato e di avere una copertura assicurativa in corso di validità')}
                           </Label>
                         </div>
                       </AccordionContent>
@@ -1282,7 +1282,7 @@ const Profile = () => {
 
                     <AccordionItem value="medico">
                       <AccordionTrigger>
-                        <div className="flex items-center gap-2"><FileText className="h-4 w-4" /> Certificato medico</div>
+                        <div className="flex items-center gap-2"><FileText className="h-4 w-4" /> {t('profile.sections.certifications.accordion_medical', 'Certificato medico')}</div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <div>
@@ -1291,7 +1291,7 @@ const Profile = () => {
                             <DatePicker
                               date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined}
                               onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))}
-                              placeholder="Seleziona mese e anno"
+                              placeholder={t('profile.sections.certifications.medical_select_placeholder', 'Seleziona mese e anno')}
                               className="min-w-[180px]"
                             />
                             {formData.scadenza_certificato_medico && (
@@ -1300,17 +1300,17 @@ const Profile = () => {
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-muted-foreground mt-2">Clicca sul mese per modificarlo. Usa il selettore per scegliere una nuova scadenza (solo mesi futuri).</p>
+                          <p className="text-xs text-muted-foreground mt-2">{t('profile.sections.certifications.medical_change_hint', 'Clicca sul mese per modificarlo. Usa il selettore per scegliere una nuova scadenza (solo mesi futuri).')}</p>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                             <div>
-                              <Label htmlFor="certificato_medico_tipo">Tipo certificato medico</Label>
+                              <Label htmlFor="certificato_medico_tipo">{t('profile.sections.certifications.medical_type_label', 'Tipo certificato medico')}</Label>
                               <Select value={(formData as any).certificato_medico_tipo || ''} onValueChange={(v) => handleInputChange('certificato_medico_tipo', v)}>
                                 <SelectTrigger id="certificato_medico_tipo" className="select-trigger">
-                                  <SelectValue placeholder="Seleziona tipo" />
+                                  <SelectValue placeholder={t('profile.sections.certifications.medical_type_placeholder', 'Seleziona tipo')} />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="agonistico">Agonistico</SelectItem>
-                                  <SelectItem value="non_agonistico">Non agonistico</SelectItem>
+                                  <SelectItem value="agonistico">{t('profile.sections.certifications.medical_type_agonistico', 'Agonistico')}</SelectItem>
+                                  <SelectItem value="non_agonistico">{t('profile.sections.certifications.medical_type_non_agonistico', 'Non agonistico')}</SelectItem>
                                 </SelectContent>
                               </Select>
                             </div>
@@ -1321,7 +1321,7 @@ const Profile = () => {
 
                     <AccordionItem value="brevetto">
                       <AccordionTrigger>
-                        <div className="flex items-center gap-2"><FileText className="h-4 w-4" /> Brevetto (opzionale)</div>
+                        <div className="flex items-center gap-2"><FileText className="h-4 w-4" /> {t('profile.sections.certifications.accordion_brevetto', 'Brevetto (opzionale)')}</div>
                       </AccordionTrigger>
                       <AccordionContent>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1344,26 +1344,26 @@ const Profile = () => {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                           <div>
-                            <Label htmlFor="didattica_brevetto">Didattica brevetto</Label>
+                            <Label htmlFor="didattica_brevetto">{t('profile.sections.certifications.brevetto_didattica_label', 'Didattica brevetto')}</Label>
                             <Input
                               id="didattica_brevetto"
                               value={formData.didattica_brevetto}
                               onChange={(e) => handleInputChange('didattica_brevetto', e.target.value)}
-                              placeholder="Inserire didattica brevetto"
+                              placeholder={t('profile.sections.certifications.brevetto_didattica_placeholder', 'Inserire didattica brevetto')}
                             />
                           </div>
                           <div>
-                            <Label htmlFor="numero_brevetto">Numero brevetto</Label>
+                            <Label htmlFor="numero_brevetto">{t('profile.sections.certifications.brevetto_number_label', 'Numero brevetto')}</Label>
                             <Input
                               id="numero_brevetto"
                               value={formData.numero_brevetto}
                               onChange={(e) => handleInputChange('numero_brevetto', e.target.value)}
-                              placeholder="Inserire numero brevetto"
+                              placeholder={t('profile.sections.certifications.brevetto_number_placeholder', 'Inserire numero brevetto')}
                             />
                           </div>
                         </div>
                         <div className="space-y-2 mt-4">
-                          <Label>Foto brevetto</Label>
+                          <Label>{t('profile.sections.certifications.brevetto_photo_label', 'Foto brevetto')}</Label>
                           <ImageUpload
                             currentImageUrl={formData.foto_brevetto_url || undefined}
                             onImageUploaded={(url) => handleInputChange('foto_brevetto_url', url)}
@@ -1377,7 +1377,7 @@ const Profile = () => {
                             onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_brevetto_valido: Boolean(v) }))}
                           />
                           <Label htmlFor="dichiarazione_brevetto_valido" className="text-sm cursor-pointer">
-                            Dichiaro di essere istruttore certificato con BREVETTO in corso di validità
+                            {t('profile.sections.certifications.brevetto_declaration', 'Dichiaro di essere istruttore certificato con BREVETTO in corso di validità')}
                           </Label>
                         </div>
                       </AccordionContent>
