@@ -1401,7 +1401,7 @@ const Profile = () => {
                     <p className="text-sm text-muted-foreground">
                       {t('profile.sections.personal_bests.helper', 'Inserisci i tuoi migliori risultati: tempo in mm:ss per STA, metri per le altre discipline.')}
                     </p>
-                    {bestEntries.length < DISCIPLINES.length && (
+                    {bestEntries.length < DISCIPLINE_CODES.length && (
                       <Button type="button" variant="outline" onClick={addBest}>
                         {t('profile.sections.personal_bests.add', 'Aggiungi record')}
                       </Button>
