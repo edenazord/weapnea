@@ -22,7 +22,12 @@
     "close": "Fermer",
     "go_to_profile": "Aller au profil",
     "loading_map": "Chargement de la carte...",
-    "loading_error": "Erreur de chargement"
+    "loading_error": "Erreur de chargement",
+    "view": "Voir",
+    "actions": "Actions",
+    "save": "Enregistrer",
+    "edit": "Modifier",
+    "create": "Creer"
   },
   "homepage": {
     "uncategorized_events": "Entraînements",
@@ -247,6 +252,8 @@
     "gallery_label": "Galerie",
     "slots_full": "Plus de places disponibles pour cet événement.",
     "event_not_free": "Cet événement n'est pas gratuit.",
+    "date_tbd": "Date à définir",
+    "recurring_label": "Rendez-vous récurrent",
     "event_not_found": "Événement non trouvé.",
     "registration_error": "Impossible de terminer l'inscription.",
     "registration_success": "Inscription terminée !",
@@ -365,7 +372,12 @@
     "tabs": {
       "overview": "Profil",
       "company": "Entreprise",
-      "sponsor": "Sponsor"
+      "sponsor": "Sponsor",
+      "events": "Evenements",
+      "personal": "Personnels",
+      "certs": "Certifications",
+      "bests": "Records",
+      "visibility": "Visibilite"
     },
     "fields": {
       "phone": "Téléphone",
@@ -376,15 +388,21 @@
     },
     "complete_profile": "Complétez votre profil",
     "complete_profile_desc": "Pour procéder au paiement, complétez les champs de profil suivants :",
-    "view_public_profile": "Voir le profil public",
-    "sections": {
+    "view_public_profile": "Voir le profil public",    "no_participations": "Aucun evenement inscrit",
+    "no_participations_hint": "Vous n'avez pas encore effectue d'inscriptions.",
+    "discover_events": "Decouvrir les evenements",    "sections": {
       "my_events": {
         "title": "Mes Événements",
-        "description": "Gérez vos événements et votre liste de souhaits",
-        "participated_button": "Événements Participés",
-        "participated_sub": "Historique des événements",
+        "description": "Gerez vos evenements et creez-en de nouveaux",
+        "participated_button": "Evenements Participes",
+        "participated_sub": "Historique des evenements",
         "wishlist_button": "Liste de souhaits",
-        "wishlist_sub": "Événements enregistrés"
+        "wishlist_sub": "Evenements enregistres",
+        "my_registrations_label": "Liste des Inscriptions",
+        "organize_event_label": "Organiser un Evenement",
+        "admin_access": "Acces complet (admin).",
+        "eligible_to_organize": "Vous avez les conditions requises pour organiser. Vous pouvez creer un nouvel evenement.",
+        "not_eligible_to_organize": "Pour organiser, vous devez activer votre profil public et completer les certifications obligatoires."
       },
       "personal_info": {
         "title": "Informations Personnelles",
@@ -419,8 +437,14 @@
       },
       "personal_bests": {
         "title": "Records Personnels",
-        "description": "Enregistrez vos meilleurs résultats en apnée",
-        "static_apnea_label": "Apnée Statique (minutes:secondes)",
+        "description": "Enregistrez vos meilleurs résultats en apnée",        "helper": "Entrez vos meilleurs resultats : temps en mm:ss pour STA, metres pour les autres disciplines.",
+        "add": "Ajouter un record",
+        "empty": "Aucun record saisi. Ajoutez le premier !",
+        "discipline": "Discipline",
+        "value": "Valeur",
+        "time_placeholder": "ex. 4:30",
+        "meters_placeholder": "ex. 75",
+        "discipline_placeholder": "Selectionner une discipline",        "static_apnea_label": "Apnée Statique (minutes:secondes)",
         "static_apnea_placeholder": "ex. 4:30",
         "dynamic_apnea_label": "Apnée Dynamique (mètres)",
         "dynamic_apnea_placeholder": "ex. 75",
@@ -446,6 +470,38 @@
         "description": "Découvrez nos packs de sponsoring",
         "cta_text": "Augmentez la visibilité de votre entreprise en sponsorisant des événements d'apnée.",
         "cta_button": "Découvrir les Packs de Sponsoring"
+      },
+      "visibility": {
+        "title": "Visibilite",
+        "description": "Rendez visible une page publique de votre profil sur une URL conviviale. Vous pouvez choisir ce que vous montrez.",
+        "enable_public_profile": "Activer le profil public",
+        "enable_public_profile_desc": "La page sera visible sur /instructor/slug",
+        "public_slug_label": "Slug public",
+        "public_slug_placeholder": "ex. prenom-nom",
+        "public_url_prefix": "URL : /instructor/",
+        "slug_checking": "Verification de la disponibilite...",
+        "slug_available": "Disponible",
+        "slug_taken": "Non disponible",
+        "slug_error": "Impossible de verifier maintenant (serveur non accessible)",
+        "open_public_profile": "Ouvrir le profil public",
+        "copy_link": "Copier le lien",
+        "link_copied_title": "Lien copie",
+        "link_copied_desc": "URL du profil public copiee dans le presse-papiers.",
+        "copy_failed_title": "Impossible de copier",
+        "show_events": "Afficher les Evenements",
+        "show_events_desc": "Rend visible la section Evenements sur la page publique",
+        "show_personal": "Afficher les Personnels",
+        "show_personal_desc": "Bio, Instagram et infos entreprise (si presentes)",
+        "show_certifications": "Afficher les Certifications",
+        "show_certifications_desc": "Certification et assurance",
+        "show_records": "Afficher les Records",
+        "show_records_desc": "Records personnels de la section Records",
+        "show_bio": "Afficher la bio",
+        "show_bio_desc": "Votre bio sur la page publique",
+        "show_instagram": "Afficher Instagram",
+        "show_instagram_desc": "Lien vers le profil Instagram",
+        "show_company_info": "Afficher les infos entreprise",
+        "show_company_info_desc": "Adresse et SIRET (entreprises uniquement)"
       }
     },
     "buttons": {
@@ -453,10 +509,22 @@
       "saving": "Enregistrement..."
     },
     "toasts": {
-      "update_success_title": "Succès",
-      "update_success_desc": "Profil mis à jour avec succès !",
+      "update_success_title": "Succes",
+      "update_success_desc": "Profil mis a jour avec succes !",
       "update_error_title": "Erreur",
-      "update_error_desc": "Une erreur s'est produite lors de la mise à jour du profil."
+      "update_error_desc": "Une erreur s'est produite lors de la mise a jour du profil.",
+      "slug_missing_title": "Slug manquant",
+      "slug_missing_desc": "Entrez un slug pour le profil public ou desactivez la visibilite.",
+      "slug_taken_title": "Slug non disponible",
+      "slug_taken_desc": "Choisissez un slug different, l'actuel est deja pris.",
+      "slug_locked_title": "Slug verrouille",
+      "slug_locked_desc": "Le slug public est deja attribue et ne peut pas etre modifie pour le moment.",
+      "slug_conflict_title": "Slug en conflit",
+      "slug_conflict_desc": "Le slug choisi est deja utilise. Choisissez-en un autre et reessayez.",
+      "insurance_incomplete_title": "Donnees d'Assurance incompletes",
+      "insurance_incomplete_desc": "Remplissez assurance, numero et une date d'expiration future valide avant de confirmer la declaration.",
+      "brevetto_incomplete_title": "Donnees de Certification incompletes",
+      "brevetto_incomplete_desc": "Entrez certification, numero et une date d'expiration future avant de confirmer la declaration de certification valide."
     },
     "login_required": "Vous devez être authentifié pour voir le profil."
   },

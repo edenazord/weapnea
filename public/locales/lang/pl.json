@@ -22,7 +22,12 @@
     "close": "Zamknij",
     "go_to_profile": "Przejdz do profilu",
     "loading_map": "Ladowanie mapy...",
-    "loading_error": "Blad ladowania"
+    "loading_error": "Blad ladowania",
+    "view": "Zobacz",
+    "actions": "Akcje",
+    "save": "Zapisz",
+    "edit": "Edytuj",
+    "create": "Utworz"
   },
   "homepage": {
     "uncategorized_events": "Treningi",
@@ -247,6 +252,8 @@
     "gallery_label": "Galeria",
     "slots_full": "Brak wolnych miejsc na to wydarzenie.",
     "event_not_free": "To wydarzenie nie jest bezplatne.",
+    "date_tbd": "Data do ustalenia",
+    "recurring_label": "Spotkanie cykliczne",
     "event_not_found": "Wydarzenie nie znalezione.",
     "registration_error": "Nie udalo sie zakonczyc rejestracji.",
     "registration_success": "Rejestracja zakonczona!",
@@ -365,7 +372,12 @@
     "tabs": {
       "overview": "Profil",
       "company": "Firma",
-      "sponsor": "Sponsor"
+      "sponsor": "Sponsor",
+      "events": "Wydarzenia",
+      "personal": "Osobiste",
+      "certs": "Certyfikaty",
+      "bests": "Rekordy",
+      "visibility": "Widocznosc"
     },
     "fields": {
       "phone": "Telefon",
@@ -377,14 +389,22 @@
     "complete_profile": "Uzupelnij swoj profil",
     "complete_profile_desc": "Aby kontynuowac platnosc, uzupelnij nastepujace pola profilu:",
     "view_public_profile": "Zobacz profil publiczny",
+    "no_participations": "Brak zapisanych wydarzen",
+    "no_participations_hint": "Nie zapisales sie jeszcze na zadne wydarzenie.",
+    "discover_events": "Odkryj wydarzenia",
     "sections": {
       "my_events": {
         "title": "Moje Wydarzenia",
-        "description": "Zarzadzaj swoimi wydarzeniami i lista zyczen",
+        "description": "Zarzadzaj swoimi wydarzeniami i tworz nowe",
         "participated_button": "Wydarzenia z udzialem",
         "participated_sub": "Historia wydarzen",
         "wishlist_button": "Lista zyczen",
-        "wishlist_sub": "Zapisane wydarzenia"
+        "wishlist_sub": "Zapisane wydarzenia",
+        "my_registrations_label": "Lista Zapisow",
+        "organize_event_label": "Organizuj Wydarzenie",
+        "admin_access": "Pelny dostep (admin).",
+        "eligible_to_organize": "Masz wymagane uprawnienia do organizowania. Mozesz utworzyc nowe wydarzenie.",
+        "not_eligible_to_organize": "Aby organizowac, musisz aktywowac profil publiczny i uzupelnic wymagane certyfikaty."
       },
       "personal_info": {
         "title": "Dane Osobowe",
@@ -420,6 +440,14 @@
       "personal_bests": {
         "title": "Rekordy Osobiste",
         "description": "Zapisz swoje najlepsze wyniki we freedivingu",
+        "helper": "Wprowadz swoje najlepsze wyniki: czas w mm:ss dla STA, metry dla innych dyscyplin.",
+        "add": "Dodaj rekord",
+        "empty": "Brak wprowadzonych rekordow. Dodaj pierwszy!",
+        "discipline": "Dyscyplina",
+        "value": "Wartosc",
+        "time_placeholder": "np. 4:30",
+        "meters_placeholder": "np. 75",
+        "discipline_placeholder": "Wybierz dyscypline",
         "static_apnea_label": "Apnea Statyczna (minuty:sekundy)",
         "static_apnea_placeholder": "np. 4:30",
         "dynamic_apnea_label": "Apnea Dynamiczna (metry)",
@@ -446,6 +474,38 @@
         "description": "Odkryj nasze pakiety sponsorskie",
         "cta_text": "Zwieksz widocznosc swojej firmy sponsorujac wydarzenia freedivingowe.",
         "cta_button": "Odkryj Pakiety Sponsorskie"
+      },
+      "visibility": {
+        "title": "Widocznosc",
+        "description": "Udostepnij publiczna strone swojego profilu pod przyjaznym adresem URL. Mozesz wybrac co pokazac.",
+        "enable_public_profile": "Aktywuj profil publiczny",
+        "enable_public_profile_desc": "Strona bedzie widoczna pod /instructor/slug",
+        "public_slug_label": "Slug publiczny",
+        "public_slug_placeholder": "np. imie-nazwisko",
+        "public_url_prefix": "URL: /instructor/",
+        "slug_checking": "Sprawdzanie dostepnosci...",
+        "slug_available": "Dostepny",
+        "slug_taken": "Niedostepny",
+        "slug_error": "Nie mozna zweryfikowac (serwer nieosiagalny)",
+        "open_public_profile": "Otworz profil publiczny",
+        "copy_link": "Kopiuj link",
+        "link_copied_title": "Link skopiowany",
+        "link_copied_desc": "URL profilu publicznego skopiowany do schowka.",
+        "copy_failed_title": "Nie mozna skopiowac",
+        "show_events": "Pokaz Wydarzenia",
+        "show_events_desc": "Wyswietla sekcje Wydarzenia na stronie publicznej",
+        "show_personal": "Pokaz Osobiste",
+        "show_personal_desc": "Bio, Instagram i dane firmy (jesli obecne)",
+        "show_certifications": "Pokaz Certyfikaty",
+        "show_certifications_desc": "Certyfikat i ubezpieczenie",
+        "show_records": "Pokaz Rekordy",
+        "show_records_desc": "Rekordy osobiste z sekcji Rekordy",
+        "show_bio": "Pokaz biografię",
+        "show_bio_desc": "Twoja bio na stronie publicznej",
+        "show_instagram": "Pokaz Instagram",
+        "show_instagram_desc": "Link do profilu Instagram",
+        "show_company_info": "Pokaz dane firmy",
+        "show_company_info_desc": "Adres i NIP (tylko firmy)"
       }
     },
     "buttons": {
@@ -456,7 +516,19 @@
       "update_success_title": "Sukces",
       "update_success_desc": "Profil zaktualizowany pomyslnie!",
       "update_error_title": "Blad",
-      "update_error_desc": "Wystapil blad podczas aktualizacji profilu."
+      "update_error_desc": "Wystapil blad podczas aktualizacji profilu.",
+      "slug_missing_title": "Brak slug",
+      "slug_missing_desc": "Wprowadz slug dla profilu publicznego lub wylacz widocznosc.",
+      "slug_taken_title": "Slug niedostepny",
+      "slug_taken_desc": "Wybierz inny slug, obecny jest juz zajety.",
+      "slug_locked_title": "Slug zablokowany",
+      "slug_locked_desc": "Slug publiczny jest juz przypisany i nie moze byc teraz zmieniony.",
+      "slug_conflict_title": "Slug w konflikcie",
+      "slug_conflict_desc": "Wybrany slug jest juz w uzyciu. Wybierz inny i sprobuj ponownie.",
+      "insurance_incomplete_title": "Niekompletne dane ubezpieczenia",
+      "insurance_incomplete_desc": "Uzupelnij ubezpieczenie, numer i prawidlowa przyszla date wygasniecia przed potwierdzeniem deklaracji.",
+      "brevetto_incomplete_title": "Niekompletne dane certyfikatu",
+      "brevetto_incomplete_desc": "Wprowadz certyfikat, numer i przyszla date wygasniecia przed potwierdzeniem deklaracji waznego certyfikatu."
     },
     "login_required": "Musisz byc zalogowany, aby zobaczyc profil."
   },

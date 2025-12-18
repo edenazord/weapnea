@@ -22,7 +22,12 @@
     "close": "Закрыть",
     "go_to_profile": "Перейти в профиль",
     "loading_map": "Загрузка карты...",
-    "loading_error": "Ошибка загрузки"
+    "loading_error": "Ошибка загрузки",
+    "view": "Просмотр",
+    "actions": "Действия",
+    "save": "Сохранить",
+    "edit": "Редактировать",
+    "create": "Создать"
   },
   "homepage": {
     "uncategorized_events": "Тренировки",
@@ -247,6 +252,8 @@
     "gallery_label": "Галерея",
     "slots_full": "Места на это событие закончились.",
     "event_not_free": "Это событие не бесплатное.",
+    "date_tbd": "Дата уточняется",
+    "recurring_label": "Повторяющееся мероприятие",
     "event_not_found": "Событие не найдено.",
     "registration_error": "Не удалось завершить регистрацию.",
     "registration_success": "Регистрация завершена!",
@@ -365,7 +372,12 @@
     "tabs": {
       "overview": "Профиль",
       "company": "Компания",
-      "sponsor": "Спонсор"
+      "sponsor": "Спонсор",
+      "events": "События",
+      "personal": "Личные",
+      "certs": "Сертификаты",
+      "bests": "Рекорды",
+      "visibility": "Видимость"
     },
     "fields": {
       "phone": "Телефон",
@@ -377,14 +389,22 @@
     "complete_profile": "Заполните ваш профиль",
     "complete_profile_desc": "Для продолжения оплаты заполните следующие поля профиля:",
     "view_public_profile": "Посмотреть публичный профиль",
+    "no_participations": "Нет записанных событий",
+    "no_participations_hint": "Вы еще не записались ни на одно событие.",
+    "discover_events": "Открыть события",
     "sections": {
       "my_events": {
         "title": "Мои События",
-        "description": "Управляйте вашими событиями и списком желаний",
+        "description": "Управляйте вашими событиями и создавайте новые",
         "participated_button": "События с участием",
         "participated_sub": "История событий",
         "wishlist_button": "Список желаний",
-        "wishlist_sub": "Сохраненные события"
+        "wishlist_sub": "Сохраненные события",
+        "my_registrations_label": "Список Записей",
+        "organize_event_label": "Организовать Событие",
+        "admin_access": "Полный доступ (админ).",
+        "eligible_to_organize": "У вас есть необходимые права для организации. Вы можете создать новое событие.",
+        "not_eligible_to_organize": "Для организации необходимо активировать публичный профиль и заполнить обязательные сертификаты."
       },
       "personal_info": {
         "title": "Личная Информация",
@@ -420,6 +440,14 @@
       "personal_bests": {
         "title": "Личные Рекорды",
         "description": "Запишите ваши лучшие результаты во фридайвинге",
+        "helper": "Введите ваши лучшие результаты: время в мм:сс для STA, метры для других дисциплин.",
+        "add": "Добавить рекорд",
+        "empty": "Рекорды не введены. Добавьте первый!",
+        "discipline": "Дисциплина",
+        "value": "Значение",
+        "time_placeholder": "напр. 4:30",
+        "meters_placeholder": "напр. 75",
+        "discipline_placeholder": "Выберите дисциплину",
         "static_apnea_label": "Статическое Апноэ (минуты:секунды)",
         "static_apnea_placeholder": "напр. 4:30",
         "dynamic_apnea_label": "Динамическое Апноэ (метры)",
@@ -446,6 +474,38 @@
         "description": "Узнайте о наших спонсорских пакетах",
         "cta_text": "Увеличьте видимость вашей компании, спонсируя события фридайвинга.",
         "cta_button": "Узнать о Спонсорских Пакетах"
+      },
+      "visibility": {
+        "title": "Видимость",
+        "description": "Сделайте публичную страницу вашего профиля видимой по удобному URL. Вы можете выбрать что показывать.",
+        "enable_public_profile": "Активировать публичный профиль",
+        "enable_public_profile_desc": "Страница будет видна по /instructor/slug",
+        "public_slug_label": "Публичный slug",
+        "public_slug_placeholder": "напр. имя-фамилия",
+        "public_url_prefix": "URL: /instructor/",
+        "slug_checking": "Проверка доступности...",
+        "slug_available": "Доступен",
+        "slug_taken": "Недоступен",
+        "slug_error": "Невозможно проверить (сервер недоступен)",
+        "open_public_profile": "Открыть публичный профиль",
+        "copy_link": "Копировать ссылку",
+        "link_copied_title": "Ссылка скопирована",
+        "link_copied_desc": "URL публичного профиля скопирован в буфер обмена.",
+        "copy_failed_title": "Невозможно скопировать",
+        "show_events": "Показать События",
+        "show_events_desc": "Делает секцию События видимой на публичной странице",
+        "show_personal": "Показать Личные",
+        "show_personal_desc": "Био, Instagram и данные компании (если есть)",
+        "show_certifications": "Показать Сертификаты",
+        "show_certifications_desc": "Сертификат и страховка",
+        "show_records": "Показать Рекорды",
+        "show_records_desc": "Личные рекорды из секции Рекорды",
+        "show_bio": "Показать биографию",
+        "show_bio_desc": "Ваша био на публичной странице",
+        "show_instagram": "Показать Instagram",
+        "show_instagram_desc": "Ссылка на профиль Instagram",
+        "show_company_info": "Показать данные компании",
+        "show_company_info_desc": "Адрес и ИНН (только компании)"
       }
     },
     "buttons": {
@@ -456,7 +516,19 @@
       "update_success_title": "Успех",
       "update_success_desc": "Профиль успешно обновлен!",
       "update_error_title": "Ошибка",
-      "update_error_desc": "Произошла ошибка при обновлении профиля."
+      "update_error_desc": "Произошла ошибка при обновлении профиля.",
+      "slug_missing_title": "Отсутствует slug",
+      "slug_missing_desc": "Введите slug для публичного профиля или отключите видимость.",
+      "slug_taken_title": "Slug недоступен",
+      "slug_taken_desc": "Выберите другой slug, текущий уже занят.",
+      "slug_locked_title": "Slug заблокирован",
+      "slug_locked_desc": "Публичный slug уже назначен и не может быть изменен в данный момент.",
+      "slug_conflict_title": "Slug в конфликте",
+      "slug_conflict_desc": "Выбранный slug уже используется. Выберите другой и попробуйте снова.",
+      "insurance_incomplete_title": "Неполные данные страховки",
+      "insurance_incomplete_desc": "Заполните страховку, номер и действительную будущую дату истечения перед подтверждением декларации.",
+      "brevetto_incomplete_title": "Неполные данные сертификата",
+      "brevetto_incomplete_desc": "Введите сертификат, номер и будущую дату истечения перед подтверждением декларации действительного сертификата."
     },
     "login_required": "Вы должны быть авторизованы, чтобы просмотреть профиль."
   },
