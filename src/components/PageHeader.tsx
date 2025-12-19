@@ -21,7 +21,7 @@ export default function PageHeader({ icon, title, subtitle, actions }: PageHeade
         {title}
       </h1>
       {subtitle && (
-        <p className="text-base md:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+        <p className="text-base md:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed whitespace-pre-line">
           {subtitle}
         </p>
       )}
