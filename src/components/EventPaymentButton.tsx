@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Loader2, CreditCard } from "lucide-react";
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { backendConfig } from "@/lib/backendConfig";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { getPublicConfig } from "@/lib/publicConfig";
 
 interface EventPaymentButtonProps {
   eventId: string;
@@ -33,10 +34,17 @@ export const EventPaymentButton = ({
   const [justRegistered, setJustRegistered] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [eventsFreeMode, setEventsFreeMode] = useState(true); // default true per sicurezza
   const { user } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useLanguage();
+
+  // Carica la configurazione pubblica per eventsFreeMode
+  useEffect(() => {
+    getPublicConfig().then(cfg => setEventsFreeMode(cfg.eventsFreeMode));
+  }, []);
+
   const { data: myParticipations } = useQuery({
     queryKey: ["me", "participations"],
     queryFn: async () => {
@@ -98,12 +106,15 @@ export const EventPaymentButton = ({
         return;
       }
 
-      if (eventCost > 0) {
+      // Se eventsFreeMode è attivo, tratta tutti gli eventi come gratuiti
+      const treatAsFree = eventsFreeMode || eventCost <= 0;
+
+      if (!treatAsFree) {
         // Pagamenti non ancora abilitati: mostra messaggio informativo
         toast.info('Il pagamento online non è ancora disponibile. Per iscriverti, contatta l\'organizzatore.');
         return;
       } else {
-        // Evento gratuito - iscrizione diretta tramite API
+        // Evento gratuito (o freeMode attivo) - iscrizione diretta tramite API
         const token = localStorage.getItem('api_token') || import.meta.env.VITE_API_TOKEN;
         const res = await fetch(`${backendConfig.apiBaseUrl || ''}/api/events/${encodeURIComponent(eventId)}/register-free`, {
           method: 'POST',
