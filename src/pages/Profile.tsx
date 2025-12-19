@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 // import { supabase } from "@/integrations/supabase/client";
 import { apiSend, apiGet } from "@/lib/apiClient";
 import { backendConfig } from "@/lib/backendConfig";
+import { getPublicConfig } from "@/lib/publicConfig";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -63,6 +64,7 @@ const Profile = () => {
   const { t } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("events");
+  const [eventsFreeMode, setEventsFreeMode] = useState(true); // default true per sicurezza
   // Stato locale per mostrare vista organizzazione dentro la tab Eventi
   const [showOrganizer, setShowOrganizer] = useState(false);
   const [formData, setFormData] = useState({
@@ -375,6 +377,13 @@ const Profile = () => {
       }
     }
   }, [user]);
+
+  // Carica configurazione pubblica per eventsFreeMode
+  useEffect(() => {
+    let mounted = true;
+    getPublicConfig().then(cfg => { if (mounted) setEventsFreeMode(cfg.eventsFreeMode); });
+    return () => { mounted = false; };
+  }, []);
 
   // Live check disponibilità slug pubblico
   useEffect(() => {
@@ -806,7 +815,7 @@ const Profile = () => {
                                 <TableHead>{t('profile.sections.my_events.table_title_category', 'Titolo / Categoria')}</TableHead>
                                 <TableHead>{t('profile.sections.my_events.table_discipline_level', 'Disciplina / Livello')}</TableHead>
                                 <TableHead>{t('profile.sections.my_events.table_date_location', 'Data / Ricorrenza & Luogo')}</TableHead>
-                                <TableHead className="text-center">{t('profile.sections.my_events.table_cost', 'Costo')}</TableHead>
+                                {!eventsFreeMode && <TableHead className="text-center">{t('profile.sections.my_events.table_cost', 'Costo')}</TableHead>}
                                 <TableHead className="text-center">{t('profile.sections.my_events.table_enrolled', 'Iscritti')}</TableHead>
                                 <TableHead className="text-right">{t('profile.sections.my_events.table_actions', 'Azioni')}</TableHead>
                               </TableRow>
@@ -839,7 +848,7 @@ const Profile = () => {
                                       )}
                                     </div>
                                   </TableCell>
-                                  <TableCell className="text-sm text-center">{(ev.cost != null && ev.cost > 0) ? `€${Number(ev.cost).toFixed(2)}` : '—'}</TableCell>
+                                  {!eventsFreeMode && <TableCell className="text-sm text-center">{(ev.cost != null && ev.cost > 0) ? `€${Number(ev.cost).toFixed(2)}` : '—'}</TableCell>}
                                   <TableCell className="text-sm text-center">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</TableCell>
                                   <TableCell className="text-right">
                                     <div className="flex gap-2 justify-end">

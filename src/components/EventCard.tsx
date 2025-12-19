@@ -242,7 +242,8 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
               </div>
             ) : null}
 
-            {event.cost != null && Number(event.cost) > 0 && (
+            {/* Prezzo: nascosto se eventsFreeMode è attivo */}
+            {!eventsFree && event.cost != null && Number(event.cost) > 0 && (
               <div className="flex items-center gap-1 text-xs font-medium text-green-600">
                 <Euro className="h-4 w-4 flex-shrink-0" />
                 <span>€{Number(event.cost).toFixed(2)}</span>
