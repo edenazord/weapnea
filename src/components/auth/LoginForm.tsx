@@ -86,10 +86,6 @@ const LoginForm = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col items-center mb-4">
-        <img src="/images/weapnea-logo.png" alt="WeApnea Logo" className="h-16 mb-2" />
-        <span className="text-2xl font-bold text-blue-900">WeApnea</span>
-      </div>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
