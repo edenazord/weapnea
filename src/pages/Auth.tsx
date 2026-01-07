@@ -15,8 +15,8 @@ const AuthPage = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 p-4">
-       <Link to="/" className="flex items-center space-x-2 mb-8 no-underline">
-        <img src="/images/weapnea-logo.png" alt="WeApnea Logo" className="h-10 w-10" />
+       <Link to="/" className="flex items-center space-x-3 mb-8 no-underline">
+        <img src="/images/weapnea-logo.png" alt="WeApnea Logo" className="h-14 w-14" />
         <span className="text-4xl font-bold text-blue-900">WeApnea</span>
       </Link>
       <Tabs defaultValue={defaultTab} className="w-full max-w-md">
