@@ -2,17 +2,17 @@
   "nav": {
     "home": "Home",
     "events": "Events",
-    "about": "About",
+    "about": "About Us",
     "contact": "Contact Us",
     "blog": "Blog",
     "forum": "Forum",
     "profile": "Profile",
     "dashboard": "Dashboard",
-    "logout": "Log out"
+    "logout": "Logout"
   },
   "common": {
-    "login": "Log in",
-    "register": "Sign up",
+    "login": "Login",
+    "register": "Register",
     "error": "Error",
     "unexpected_error": "Unexpected error",
     "cancel": "Cancel",
@@ -22,7 +22,7 @@
     "close": "Close",
     "go_to_profile": "Go to profile",
     "loading_map": "Loading map...",
-    "loading_error": "Loading error",
+    "loading_error": "Error loading",
     "view": "View",
     "actions": "Actions",
     "save": "Save",
@@ -36,24 +36,32 @@
     "error_description": "An error occurred while loading events.",
     "retry_btn": "Retry",
     "no_events_title": "No events available",
-    "no_events_description": "There are no events published at the moment.",
+    "no_events_description": "There are currently no published events.",
     "no_results_title": "No events found",
-  "no_results_description": "There are no upcoming events matching your filters.",
-  "sponsors": {"title": "Partners & Sponsors", "learn_more": "Learn more"}
+    "no_results_description": "There are no upcoming events matching your filters.",
+    "sponsors": {
+      "title": "Partners & Sponsors",
+      "learn_more": "Learn more"
+    }
   },
   "categories": {
     "trainings": "Trainings",
     "trips": "Trips",
     "courses": "Courses",
-    "workshops": "Stage & Workshops",
+    "workshops": "Training Camps & Workshops",
     "competitions": "Competitions",
-    "stages": "Stages",
-    "digital_training": "Digital Training Live"
+    "stages": "Training Camps",
+    "digital_training": "Live Digital Training",
+    "paid_training_session": "Paid Training Sessions",
+    "let's_train_together_(for free)": "Let's Train Together (Free)",
+    "digital_on-demand_training": "On-Demand Digital Training"
   },
   "footer": {
-    "description": "Join, create, and share with our community. Give life to a freer, more accessible, visible, and connected apnea!",
-    "quick_links": "Pages",
-    "contact": "Contacts",
+    "description": "Join, organize and have fun with our community. Help make freediving more accessible, visible, and connected.",
+    "quick_links": "Quick Links",
+    "about": "About Us",
+    "contact": "Contact Us",
+    "blog": "Blog",
     "copyright": "All rights reserved.",
     "policy": "Policy",
     "privacy_policy": "Privacy Policy",
@@ -63,7 +71,7 @@
     "badge_text": "Discover the world of freediving",
     "title_line1": "Your platform for",
     "title_line2": "freediving",
-    "description": "Find events, courses and competitions. Connect with the community and discover new opportunities to improve your performance.",
+    "description": "Find freediving events, courses and competitions. Connect with the community and discover new opportunities to improve your performance.",
     "btn_explore": "Explore Events",
     "btn_community": "Join the Community",
     "stats_events": "Events Organized",
@@ -72,39 +80,39 @@
   },
   "about_page": {
     "title": "About Us",
-    "subtitle": "WeApnea is the first platform dedicated to freediving events in Italy.\nThe community is made up of athletes, instructors, coaches, and enthusiasts of both indoor and outdoor freediving. For years, we lived in a fragmented reality — with events scattered across forums, social groups, and word of mouth. There was no single reference point to find stages, workshops, courses, training opportunities, trips, and to give our sport the visibility and inclusiveness it deserves.\nSo we decided to build that reference point ourselves.\n\nWeApnea was born with a clear goal: to make freediving more accessible, visible, and connected.\n\nWhat can you find here?\nFreediving events organized by certified instructors or schools\nTraining sessions shared by certified instructors\nCollaborations and benefits with brands and partners in the industry\nSpecial projects to help the community grow\n\nWe are not a federation. We are not just another social platform.\nWe are a meeting point — an accelerator for those who want to experience freediving as a journey of growth, both in the water and within themselves.\nAnd this is only the beginning",
+    "subtitle": "WeApnea is the first platform dedicated to freediving events in Italy.\nThe community consists of instructors, coaches, competitive athletes and freediving enthusiasts, both indoor and outdoor.\nFor years, we lived with a fragmented and poorly connected reality: events scattered across forums, social groups and word of mouth. There was no single reference point to find training camps, workshops, courses, educational opportunities, trips and to give the discipline we love the proper visibility and accessibility.\nSo we thought it was time to create a Piazza (meeting place) for all of us freedivers.\nWe decided to offer the entire community a reference point for the usual questions: what’s out there? What’s happening?\nWeApnea was thus born with a clear goal: to make freediving more accessible, visible and connected.\nWhat can you find here?\nFreediving events and training sessions organized by certified instructors or freediving schools. Testimonials, ideas, networking and much more.\nWe are not a federation. We are not an educational organization. We are not just any social network.\nWe are a meeting point of experiences offered with transparency. An accelerator for those who want to live freediving as a journey of growth in the water and within themselves.\nAnd this is only the beginning...",
     "mission_title": "Our Mission",
-    "mission_desc": "Connect freedivers around the world through a platform that makes it easy to join events, trips and training activities. We want to make freediving more accessible and foster a global community of enthusiasts.",
+    "mission_desc": "Connect freedivers from all over the world through a platform that facilitates participation in events, trips and educational activities.\nWe want to make freediving more accessible, give transparency to what’s out there and create a global community of enthusiasts.",
     "vision_title": "Our Vision",
-    "vision_desc": "Become the international point of reference for freediving, where every freediver can find opportunities for growth, shared experiences and genuine connections with others in the community.",
+    "vision_desc": "To become the international point of reference for freediving events.\nTo be the Piazza where every freediver can find opportunities for growth, share experiences and authentic connections with other community members.",
     "values_title": "Our Values",
     "values": {
       "community_title": "Community",
-      "community_desc": "We believe in the power of community and sharing experiences to grow together as freedivers.",
+      "community_desc": "We believe in the power of community and sharing experiences to grow together as freedivers and continue to improve what we offer.",
       "passion_title": "Passion",
-      "passion_desc": "Freediving is our passion and we want to share it through events and unforgettable experiences.",
+      "passion_desc": "Freediving is our passion and we want it to be accessible through unforgettable events and experiences.",
       "innovation_title": "Innovation",
-      "innovation_desc": "We use technology to make freediving more accessible and to connect freedivers across the world."
+      "innovation_desc": "We use technology to make freediving more accessible and connect freedivers around the world."
     },
     "team_title": "Our Team",
-    "team_desc": "We are a team of passionate freedivers, developers and industry professionals working together to create the best possible experience for the freediving community."
+    "team_desc": "We are a team founded on a long friendship and composed of professionals from different fields.\nOur union was inspired by the great passion for freediving of Pol (Paolo Frigo) and by a shared desire to promote moments of socialization and exchange, to honor nature and the aquatic environment, to get involved with commitment and favor the growth of the discipline. But it is only with you that we can try to create the best possible experience for the freediving community:\nthe real team is WeApnea!"
   },
   "blog_page": {
     "title": "WeApnea Blog",
-    "subtitle": "Discover the latest news from the world of freediving, techniques, tips and stories from our community",
-    "search_placeholder": "Search articles...",
+    "subtitle": "Sharing, perspectives, updates from the freediving world: stories from our community",
+    "search_placeholder": "Search content...",
     "read_more": "Read more",
     "author_fallback": "Author",
     "no_results_title": "No articles found",
-    "no_results_desc": "Try changing the search terms.",
+    "no_results_desc": "Try changing the search terms",
     "no_posts_title": "No articles published",
     "no_posts_desc": "Check back soon for new content!",
     "back_to_blog": "Back to Blog",
     "share_button": "Share",
     "share_copied_title": "Link copied!",
-    "share_copied_desc": "The article link has been copied to the clipboard.",
+    "share_copied_desc": "The link to the article has been copied to the clipboard.",
     "not_found_title": "Article not found",
-    "not_found_desc": "The article you are looking for does not exist or has been removed.",
+    "not_found_desc": "The article you're looking for does not exist or has been removed.",
     "gallery_title": "Gallery"
   },
   "search": {
@@ -118,8 +126,12 @@
     "nation": "Country",
     "all_nations": "All Countries",
     "date": "Date",
-  "select_month": "Select month",
-  "disciplines": {"indoor": "Indoor", "outdoor": "Outdoor", "indoor_outdoor": "Indoor & Outdoor"}
+    "select_month": "Select month",
+    "disciplines": {
+      "indoor": "Indoor",
+      "outdoor": "Outdoor",
+      "indoor_outdoor": "Indoor & Outdoor"
+    }
   },
   "test": {
     "hello": "Hello",
@@ -131,34 +143,34 @@
     "login_subtitle": "Enter your credentials to access your account.",
     "register_title": "Create a WeApnea account",
     "register_subtitle": "Join the WeApnea community.",
-    "back_home": "Back to Homepage",
+    "back_home": "Back to Home",
     "login": {
       "validation": {
         "email_invalid": "Invalid email address.",
         "password_required": "Password is required."
       },
-      "success_title": "Logged in",
+      "success_title": "Login successful",
       "success_desc": "Welcome back to WeApnea!",
       "error_title": "Login error",
       "error_invalid": "Invalid credentials. Please try again.",
       "error_generic": "An error occurred. Please try again.",
       "form": {
         "email_label": "Email",
-        "email_placeholder": "you@example.com",
+        "email_placeholder": "your@email.com",
         "password_label": "Password",
-        "submitting": "Signing in...",
-        "forgot_password": "Forgot your password?"
+        "submitting": "Logging in...",
+        "forgot_password": "Forgot password?"
       }
     },
     "register": {
       "validation": {
         "role_required": "You must select an account type.",
-        "fullname_required": "Full name is required",
+        "fullname_required": "Full name is required.",
         "email_invalid": "Invalid email address.",
-        "password_min": "Password must be at least 6 characters.",
-        "company_required": "All sponsor fields are required if role is 'Sponsor'."
+        "password_min": "Password must be at least 6 characters long.",
+        "company_required": "All sponsor fields are required if the role is 'Sponsor'."
       },
-      "success_title": "Registration complete!",
+      "success_title": "Welcome to WeApnea! Registration completed",
       "success_desc": "Check your email to confirm your account and complete registration.",
       "error_title": "Registration error",
       "error_generic": "An error occurred during registration.",
@@ -168,17 +180,17 @@
         "role_user": "User",
         "role_instructor": "Organizer",
         "role_company": "Sponsor",
-        "fullname_label": "Full name",
-        "fullname_placeholder": "John Doe",
+        "fullname_label": "Full Name",
+        "fullname_placeholder": "Your full name",
         "email_label": "Email",
-        "email_placeholder": "you@example.com",
+        "email_placeholder": "your@email.com",
         "password_label": "Password",
-        "company_name_label": "Sponsor name",
-        "company_name_placeholder": "WeApnea LLC",
-        "vat_number_label": "VAT number",
-        "vat_number_placeholder": "GB123456789",
-        "company_address_label": "Sponsor address",
-        "company_address_placeholder": "1 Ocean Ave, 10001 Rome",
+        "company_name_label": "Sponsor Name",
+        "company_name_placeholder": "Your company name",
+        "vat_number_label": "VAT Number",
+        "vat_number_placeholder": "IT12345678901",
+        "company_address_label": "Sponsor Address",
+        "company_address_placeholder": "Your legal address",
         "submitting": "Registering..."
       }
     }
@@ -188,43 +200,39 @@
     "email_sent_desc": "Check your inbox for password recovery instructions.",
     "errors": {
       "email_invalid": "Invalid email address.",
-      "password_min": "Password must be at least 6 characters.",
-      "confirm_required": "Please confirm your password.",
-      "password_mismatch": "Passwords do not match",
+      "password_min": "Password must be at least 6 characters long.",
+      "confirm_required": "Confirm your password.",
+      "password_mismatch": "Passwords do not match.",
       "send_failed": "An error occurred while sending the recovery email.",
       "invalid_link": "Invalid recovery link. Request a new recovery link.",
       "invalid_token": "Invalid or expired token.",
       "update_failed": "An error occurred while updating the password."
     },
     "email_sent_heading": "Email Sent!",
-    "email_sent_help": "We've sent password reset instructions to your email.",
+    "email_sent_help": "We have sent instructions to reset your password to your email.",
     "email_sent_follow": "Check your inbox and follow the instructions to reset your password.",
     "back_to_login": "Back to Login",
     "set_new_title": "Set New Password",
     "request_title": "Recover Password",
     "set_new_subtitle": "Enter your new password.",
-    "request_subtitle": "Enter your email address and we'll send you instructions to reset your password.",
+    "request_subtitle": "Enter your email address and we will send you instructions to reset your password.",
     "new_password_label": "New Password",
     "new_password_placeholder": "Enter new password",
     "confirm_password_label": "Confirm Password",
     "updating": "Updating...",
     "update_button": "Update Password",
     "email_label": "Email",
-    "email_placeholder": "you@example.com",
+    "email_placeholder": "your@email.com",
     "sending": "Sending...",
     "send_button": "Send Recovery Email",
     "updated_title": "Password updated",
-    "updated_desc": "Your password has been updated successfully. You can now log in with the new password."
+    "updated_desc": "Your password has been successfully updated. You can now log in with your new password."
   },
   "not_found": {
     "subtitle": "Oops! Page not found",
-    "back_home": "Return to Home"
+    "back_home": "Back to Home"
   },
   "events": {
-    "upcoming_title": "Upcoming Events",
-    "upcoming_subtitle": "All events scheduled ordered by date",
-    "no_upcoming": "No upcoming events",
-    "check_back_soon": "Check back soon for new events!",
     "participants": "participants",
     "details": "Details",
     "count_in_category": "events in this category",
@@ -234,7 +242,7 @@
     "participants_title": "Participants",
     "no_participants": "No participants",
     "request_info": "Request info",
-    "register": "Sign up",
+    "register": "Register",
     "full": "Full",
     "organizer": "Organizer",
     "cost_label": "Cost",
@@ -247,21 +255,21 @@
     "language_label": "Language",
     "included_not_included": "Included/Not Included",
     "gallery_label": "Gallery",
-    "slots_full": "Slots full for this event.",
+    "slots_full": "All spots for this event are taken.",
     "event_not_free": "This event is not free.",
     "date_tbd": "Date to be defined",
     "recurring_label": "Recurring appointment",
     "event_not_found": "Event not found.",
     "registration_error": "Unable to complete registration.",
     "registration_success": "Registration completed!",
-    "payment_error": "Error in payment process",
+    "payment_error": "Payment processing error",
     "view_participants": "View participants: {count} enrolled",
     "total_participants": "Total participants:",
     "total_revenue": "Total revenue:",
     "remove_participant": "Remove participant",
     "confirm_remove_participant": "Remove {name}?",
     "participant_removed": "Participant removed",
-    "remove_participant_error": "Unable to remove participant",
+    "remove_participant_error": "Unable to remove the participant",
     "back_to_all": "Back to all events",
     "organized_by": "Organized by",
     "location": "Location",
@@ -271,11 +279,11 @@
     "schedule_logistics": "Schedule and Logistics",
     "quick_info": "Quick Info",
     "date_label": "Date",
-    "place_label": "Place",
+    "place_label": "Location",
     "enrolled_count": "Enrolled",
     "activity_description": "Activity Description",
     "no_description": "No description provided for this event.",
-    "request_info_button": "Request info",
+    "request_info_button": "Request information",
     "recurring_appointment": "Recurring appointment",
     "included_label": "Included",
     "not_included_label": "Not Included",
@@ -284,7 +292,7 @@
     "prev_image": "Previous image",
     "next_image": "Next image",
     "event_not_found_title": "Event not found",
-    "event_not_found_desc": "The event you are looking for does not exist or may have been removed.",
+    "event_not_found_desc": "The event you're looking for does not exist or may have been removed.",
     "back_to_home": "Back to Home",
     "go_to_admin": "Go to Admin Panel",
     "debug_info": "Debug info",
@@ -294,7 +302,7 @@
     "cause_slug_changed": "The event slug may have changed after an update",
     "cause_deleted": "The event may have been deleted",
     "cause_link_outdated": "The link may be outdated",
-    "authenticated_tip": "Authenticated? You can try to see all events:",
+    "authenticated_tip": "Are you logged in? You can try to see all events:",
     "past_events_title": "Past Events",
     "past_events_subtitle": "All past events, from the most recent"
   },
@@ -302,7 +310,7 @@
     "title": "Forum",
     "subtitle": "Discuss with the freediving community",
     "new_topic": "New Topic",
-    "login_to_create_topic": "Log in to create a topic",
+    "login_to_create_topic": "Login to create a topic",
     "filter": {
       "all": "All"
     },
@@ -314,7 +322,7 @@
       "in_category_prefix": "There are no discussions yet in"
     },
     "create_first_topic": "Create the first topic",
-    "login_to_create_first_topic": "Log in to create the first topic",
+    "login_to_create_first_topic": "Login to create the first topic",
     "back_to_forum": "Back to Forum",
     "topic_not_found": "Topic not found",
     "replies": "Replies",
@@ -334,19 +342,19 @@
     },
     "locked": {
       "title": "This topic is locked",
-      "description": "It is not possible to add new replies."
+      "description": "No new replies can be added."
     },
     "login_cta": {
-      "title": "Join the conversation!",
-      "description": "You must be authenticated to reply to this topic.",
-      "button": "Log in to reply"
+      "title": "Join the discussion!",
+      "description": "You must be logged in to reply to this topic.",
+      "button": "Login to reply"
     },
     "toasts": {
-      "topic_deleted": "Topic deleted successfully!",
+      "topic_deleted": "Topic successfully deleted!",
       "topic_delete_error_prefix": "Error deleting topic: ",
-      "reply_deleted": "Reply deleted successfully!",
+      "reply_deleted": "Reply successfully deleted!",
       "reply_delete_error_prefix": "Error deleting reply: ",
-      "reply_added": "Reply added successfully!",
+      "reply_added": "Reply successfully added!",
       "reply_add_error_prefix": "Error adding reply: "
     }
   },
@@ -383,7 +391,7 @@
       "medical_cert_expiry": "Medical Certificate Expiry",
       "medical_cert_type": "Medical Certificate Type"
     },
-    "complete_profile": "Complete Your Profile",
+    "complete_profile": "Complete your profile",
     "complete_profile_desc": "To proceed with payment, complete the following profile fields:",
     "view_public_profile": "View public profile",
     "no_participations": "No events registered",
@@ -392,21 +400,21 @@
     "sections": {
       "my_events": {
         "title": "My Events",
-        "description": "Manage your events and create new ones",
-        "participated_button": "Participated Events",
+        "description": "Monitor the activities you are registered for and organize your upcoming events",
+        "participated_button": "Your Participant Events",
         "participated_sub": "Event history",
         "wishlist_button": "Wishlist",
         "wishlist_sub": "Saved events",
-        "my_registrations_label": "Registrations List",
+        "my_registrations_label": "Registration List",
         "organize_event_label": "Organize Event",
         "admin_access": "Full access (admin).",
-        "eligible_to_organize": "You have the necessary requirements to organize. You can create a new event.",
-        "not_eligible_to_organize": "To organize you must enable your public profile and complete required certifications.",
+        "eligible_to_organize": "You have declared that you meet the requirements to organize. You can create a new event.",
+        "not_eligible_to_organize": "To organize events you must activate the public profile and declare that you have the required certifications.",
         "create_event_btn": "Create Event",
         "create_event_sheet_title": "Create Event",
         "edit_event_sheet_title": "Edit Event",
-        "complete_sections_hint": "Complete the \"Certifications\" and \"Visibility\" sections to enable creation.",
-        "your_organized_events": "Your organized events",
+        "complete_sections_hint": "Complete the \"Certifications\" and \"Visibility\" sections to enable event creation.",
+        "your_organized_events": "Your Organized Events",
         "loading_events": "Loading events...",
         "no_organized_events": "No organized events yet.",
         "table_title_category": "Title / Category",
@@ -422,46 +430,46 @@
       },
       "personal_info": {
         "title": "Personal Information",
-        "description": "Update your personal and contact information",
+        "description": "Keep your personal and contact information up to date",
         "full_name_label": "Full Name",
         "full_name_placeholder": "Your full name",
         "instagram_label": "Instagram",
         "instagram_placeholder": "@username",
-        "phone_label": "Phone",
-        "phone_placeholder": "+1 555 1234567",
-        "bio_label": "Bio",
-        "bio_placeholder": "Tell us something about you..."
+        "phone_label": "Mobile Number",
+        "phone_placeholder": "Ex. +39 333 1234567",
+        "bio_label": "Biography",
+        "bio_placeholder": "A brief bio about yourself; tell us about yourself as a freediver, a participant, an organizer, an athlete..."
       },
       "certifications": {
         "title": "Certifications and Insurance",
-        "description": "Keep your certifications up to date. To enroll in paid events you must provide: Phone, Insurance and its expiry dates, a valid medical certificate.",
+        "description": "Keep your certifications up to date. To register for paid events, the following are required: phone number, insurance and its expiration date, valid medical certificate.",
         "accordion_insurance": "Insurance",
         "accordion_medical": "Medical Certificate",
-        "accordion_brevetto": "Certification (optional)",
+        "accordion_brevetto": "Certification (if any)",
         "insurance_number_label": "Insurance number",
         "insurance_number_placeholder": "Enter insurance number",
-        "insurance_declaration": "I declare that I am a certified instructor and have valid insurance coverage",
+        "insurance_declaration": "I declare that I am a certified instructor and that I have valid insurance coverage",
         "medical_select_placeholder": "Select month and year",
-        "medical_change_hint": "Click on the month to change it. Use the selector to choose a new expiry date (future months only).",
+        "medical_change_hint": "Click on the month to modify it. Use the selector to choose a new expiration date (only future months).",
         "medical_type_label": "Medical certificate type",
         "medical_type_placeholder": "Select type",
         "medical_type_agonistico": "Competitive",
         "medical_type_non_agonistico": "Non-competitive",
-        "brevetto_didattica_label": "Certification body",
-        "brevetto_didattica_placeholder": "Enter certification body",
+        "brevetto_didattica_label": "Instructor Training",
+        "brevetto_didattica_placeholder": "Enter instructor training name",
         "brevetto_number_label": "Certification number",
         "brevetto_number_placeholder": "Enter certification number",
         "brevetto_photo_label": "Certification photo",
-        "brevetto_declaration": "I declare that I am a certified instructor with a valid CERTIFICATION",
+        "brevetto_declaration": "I declare that I am a certified instructor with a valid INSTRUCTOR CERTIFICATE",
         "brevetto_label": "Certification",
-        "brevetto_placeholder": "Select certification",
+        "brevetto_placeholder": "Enter certification type",
         "brevetto_options": {
-          "none": "No certification",
-          "open_water": "Open Water",
-          "advanced": "Advanced",
-          "rescue": "Rescue",
-          "master": "Master",
-          "instructor": "Instructor"
+          "none": "No certification/Discovery/Experience",
+          "first_level": "Open/1st Level/Freediver/Basic Freediver",
+          "second_level": "Advanced/2nd Level/Advanced Freediver",
+          "third_level": "Deep/3rd Level/Master Freediver",
+          "assistent": "Assistant Instructor/Divemaster",
+          "instructor": "Instructor/Basic Instructor/Advanced Instructor/Master Apnea"
         },
         "brevetto_expiry_label": "Certification Expiry",
         "insurance_label": "Insurance",
@@ -470,47 +478,47 @@
         "medical_expiry_label": "Medical Certificate Expiry"
       },
       "personal_bests": {
-        "title": "Personal Bests",
-        "description": "Record your best freediving results",
-        "helper": "Enter your best results: time in mm:ss for STA, meters for other disciplines.",
-        "add": "Add record",
-        "empty": "No records entered. Add the first one!",
+        "title": "Personal Records",
+        "description": "Record your personal best results in the various disciplines",
+        "helper": "Enter your personal bests: time in mm:ss for STA, meters for the other disciplines.",
+        "add": "Add Personal Best",
+        "empty": "No records entered. Add your first one!",
         "discipline": "Discipline",
-        "value": "Value",
-        "time_placeholder": "e.g. 4:30",
+        "value": "Measurement or Time",
+        "time_placeholder": "e.g. 2:30",
         "meters_placeholder": "e.g. 75",
         "discipline_placeholder": "Select discipline",
         "disciplines": {
-          "STA": "Static Apnea",
-          "DYN": "Dynamic Apnea",
-          "DYNB": "Dynamic Apnea Bi-fins",
-          "DNF": "Dynamic No Fins",
-          "FIM": "Free Immersion",
-          "CWT": "Constant Weight (monofin)",
-          "CWTB": "Constant Weight (bi-fins)",
-          "CNF": "Constant Weight No Fins",
-          "VWT": "Variable Weight",
-          "NLT": "No Limits"
+          "STA": "Static Apnea (STA)",
+          "DYN": "Dynamic Apnea (DYN)",
+          "DYNB": "Dynamic Apnea with Bi-Fins (DYNB)",
+          "DNF": "Dynamic Apnea No Fins (DNF)",
+          "FIM": "Free Immersion (FIM)",
+          "CWT": "Constant Weight (CWT)",
+          "CWTB": "Constant Weight with Bi-Fins (CWTB)",
+          "CNF": "Constant Weight No Fins (CNF)",
+          "VWT": "Variable Weight (VWT)",
+          "NLT": "No Limits (NLT)"
         },
         "static_apnea_label": "Static Apnea (minutes:seconds)",
-        "static_apnea_placeholder": "e.g. 4:30",
+        "static_apnea_placeholder": "e.g. 2:30",
         "dynamic_apnea_label": "Dynamic Apnea (meters)",
         "dynamic_apnea_placeholder": "e.g. 75",
         "free_immersion_label": "Free Immersion (meters)",
-        "free_immersion_placeholder": "e.g. 30",
+        "free_immersion_placeholder": "e.g. 18",
         "constant_weight_label": "Constant Weight (meters)",
-        "constant_weight_placeholder": "e.g. 45"
+        "constant_weight_placeholder": "e.g. 27"
       },
       "company": {
         "title": "Company Information",
         "description": "Manage your company data",
         "fields": {
           "company_name_label": "Company Name",
-          "company_name_placeholder": "Your company name",
-          "vat_number_label": "VAT number",
-          "vat_number_placeholder": "GB123456789",
+          "company_name_placeholder": "Name of your company",
+          "vat_number_label": "VAT Number",
+          "vat_number_placeholder": "IT12345678901",
           "company_address_label": "Company Address",
-          "company_address_placeholder": "Full company address"
+          "company_address_placeholder": "Company's full address"
         }
       },
       "sponsor": {
@@ -521,39 +529,39 @@
       },
       "visibility": {
         "title": "Visibility",
-        "description": "Make a public page of your profile visible on a friendly URL. You can choose what to show.",
+        "description": "Make your WeApnea profile page visible at a public URL and choose what to display.",
         "enable_public_profile": "Enable public profile",
-        "enable_public_profile_desc": "The page will be visible at /instructor/slug",
+        "enable_public_profile_desc": "The page will be visible at /profiloWeApnea/slug",
         "public_slug_label": "Public slug",
-        "public_slug_placeholder": "e.g. john-doe",
-        "public_url_prefix": "URL: /instructor/",
+        "public_slug_placeholder": "e.g. firstname-lastname",
+        "public_url_prefix": "URL: /profiloWeApnea/",
         "slug_checking": "Checking availability...",
         "slug_available": "Available",
         "slug_taken": "Not available",
-        "slug_error": "Unable to verify now (server not reachable)",
+        "slug_error": "Unable to verify right now (server unreachable)",
         "open_public_profile": "Open public profile",
         "copy_link": "Copy link",
         "link_copied_title": "Link copied",
         "link_copied_desc": "Public profile URL copied to clipboard.",
         "copy_failed_title": "Unable to copy",
         "show_events": "Show Events",
-        "show_events_desc": "Makes the Events section visible on the public page",
-        "show_personal": "Show Personal",
-        "show_personal_desc": "Bio, Instagram and company info (if present)",
+        "show_events_desc": "Makes the Events section visible on your public profile page",
+        "show_personal": "Show Personal Info",
+        "show_personal_desc": "Bio and Instagram on your public profile page (your mobile number will not appear)",
         "show_certifications": "Show Certifications",
-        "show_certifications_desc": "Certification and insurance",
+        "show_certifications_desc": "Brevetto and insurance on your public profile page",
         "show_records": "Show Records",
-        "show_records_desc": "Personal records from the Records section",
-        "show_bio": "Show bio",
-        "show_bio_desc": "Your bio on the public page",
+        "show_records_desc": "Your personal bests from the Records section on your public profile page",
+        "show_bio": "Show biography",
+        "show_bio_desc": "Your Bio on your public profile page",
         "show_instagram": "Show Instagram",
-        "show_instagram_desc": "Link to Instagram profile",
+        "show_instagram_desc": "Link to Instagram profile on your public profile page",
         "show_company_info": "Show company info",
-        "show_company_info_desc": "Address and VAT (companies only)"
+        "show_company_info_desc": "Address and VAT (companies only) on your public profile page"
       }
     },
     "buttons": {
-      "save": "Save Changes",
+      "save": "Save changes",
       "saving": "Saving..."
     },
     "toasts": {
@@ -561,118 +569,115 @@
       "update_success_desc": "Profile updated successfully!",
       "update_error_title": "Error",
       "update_error_desc": "An error occurred while updating the profile.",
-      "slug_missing_title": "Missing slug",
+      "slug_missing_title": "Slug missing",
       "slug_missing_desc": "Enter a slug for the public profile or disable visibility.",
       "slug_taken_title": "Slug not available",
       "slug_taken_desc": "Choose a different slug, the current one is already taken.",
       "slug_locked_title": "Slug locked",
-      "slug_locked_desc": "The public slug is already assigned and cannot be modified at this time.",
-      "slug_conflict_title": "Slug conflict",
-      "slug_conflict_desc": "The chosen slug is already in use. Choose another and try again.",
-      "insurance_incomplete_title": "Incomplete Insurance Data",
-      "insurance_incomplete_desc": "Fill in insurance, number and a valid future expiry date before confirming the declaration.",
-      "brevetto_incomplete_title": "Incomplete Certification Data",
-      "brevetto_incomplete_desc": "Enter certification, number and a future expiry date before confirming the valid certification declaration."
+      "slug_locked_desc": "The public slug is already assigned and cannot be changed at the moment.",
+      "slug_conflict_title": "Slug in conflict",
+      "slug_conflict_desc": "The chosen slug is already in use. Pick another one and try again.",
+      "insurance_incomplete_title": "Incomplete insurance data",
+      "insurance_incomplete_desc": "Fill in insurance, number and a valid future expiry date before confirming.",
+      "brevetto_incomplete_title": "Incomplete certification data",
+      "brevetto_incomplete_desc": "Enter certification, number and a future expiry date before confirming the valid certification statement."
     },
     "login_required": "You must be authenticated to view the profile."
   },
   "contact": {
     "page_title": "Contact Us",
-    "page_subtitle": "Do you have questions, suggestions or want to collaborate with us? Write to us!",
-    "name_label": "Name",
-    "name_placeholder": "Your name",
+    "page_subtitle": "Have questions, suggestions or want to collaborate with us? Write to us!",
+    "name_label": "Full Name",
+    "name_placeholder": "Your full name",
     "email_label": "Email",
     "email_placeholder": "name@example.com",
     "message_label": "Message",
     "message_placeholder": "How can we help you?",
     "response_time": "We respond within 24-48 business hours",
     "send_button": "Send",
-    "sending": "Sending…",
-    "missing_fields_title": "Missing Fields",
-    "missing_fields_desc": "Fill in name, email and message.",
-    "invalid_email_title": "Invalid Email",
-    "invalid_email_desc": "Enter a valid email address.",
-    "short_message_title": "Message Too Short",
-    "short_message_desc": "Add more details.",
-    "sent_title": "Message Sent",
-    "sent_desc": "We will respond as soon as possible.",
-    "error_title": "Send Failed",
-    "error_desc": "Try again later."
-  },
-  "not_found": {
-    "back_home": "Back to Home"
+    "sending": "Sending...",
+    "missing_fields_title": "Missing fields",
+    "missing_fields_desc": "Please fill in name, email and message.",
+    "invalid_email_title": "Invalid email",
+    "invalid_email_desc": "Please enter a valid email address.",
+    "short_message_title": "Message too short",
+    "short_message_desc": "Please add more details.",
+    "sent_title": "Message sent",
+    "sent_desc": "We will get back to you soon.",
+    "error_title": "Sending failed",
+    "error_desc": "Please try again later."
   },
   "privacy_policy": {
     "title": "WeApnea – Privacy Policy (EU/GDPR)",
     "last_update": "Last update",
     "toc_title": "Index",
     "info_title": "Privacy Notice",
-    "intro": "This notice describes how personal data of users who visit and use the website www.weapnea.com (hereinafter \"Site\") is processed.",
+    "intro": "This notice describes how personal data of users who visit and use the website www.weapnea.com (hereinafter \"Website\") is processed.",
     "sections": {
       "titolare": {
         "title": "1. Data Controller",
-        "content": "<strong>WeApnea</strong> (sports project in the process of legal formalization)<br/>📧 Contact email: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a><br/>📍 Registered office: To be defined – legal structure under registration.<br/>This notice will be updated with complete company data upon formalization of the legal entity (e.g., company or association)."
+        "content": "<strong>WeApnea</strong> (sports project in the process of legal formalization)<br/>📧 Contact email: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a><br/>📍 Legal office: To be determined – legal structure in the registration phase.<br/>This notice will be updated with complete company details upon formalization of the legal entity (e.g. company or association)."
       },
       "tipologie": {
         "title": "2. Types of data processed",
         "items": [
-          "Data voluntarily provided by the user through contact forms, email, or newsletter subscription (e.g., name, surname, email, any information related to sports practice entered voluntarily).",
+          "Data voluntarily provided by the user via contact form, email or newsletter subscription (e.g. name, surname, email, any information related to sports practice entered voluntarily).",
           "Browsing data automatically collected (IP, browser, device, pages visited) for statistical and security purposes.",
-          "Cookies and similar technologies, as indicated in the Cookie Policy."
+          "Cookies and similar technologies, as described in the Cookie Policy."
         ]
       },
       "finalita": {
-        "title": "3. Purpose of processing",
+        "title": "3. Purposes of processing",
         "items": [
           "Respond to user requests or contacts",
           "Manage any subscriptions to services or newsletters (only with explicit consent)",
-          "Manage community, athlete profiles, or participation in sports/event activities",
-          "Perform aggregate statistical analyses to improve the Site",
-          "Comply with any legal obligations in case of commercial collaborations or sponsorships"
+          "Manage communities, athlete profiles or participation in sports/events",
+          "Perform aggregated statistical analyses to improve the Website",
+          "Fulfill any legal obligations in case of commercial collaborations or sponsorships"
         ]
       },
       "basi": {
         "title": "4. Legal bases (Art. 6 GDPR)",
         "items": [
-          "Execution of contractual or pre-contractual measures at the user's request",
+          "Performance of contractual or pre-contractual measures at the user's request",
           "Explicit consent for marketing or profiling purposes",
-          "Legitimate interest for anonymous statistical analyses and site security"
+          "Legitimate interest for anonymous statistical analysis and site security"
         ]
       },
       "conservazione": {
         "title": "5. Data retention",
-        "content": "Data is retained for the time necessary for the purpose for which it was collected or until a deletion request is made. Data used for promotional purposes is retained until consent is withdrawn."
+        "content": "Data is retained for the time necessary for the purpose for which it was collected or until a deletion request. Data used for promotional purposes is retained until consent is revoked."
       },
       "terzi": {
-        "title": "6. Disclosure to third parties",
+        "title": "6. Communication to third parties",
         "items": [
-          "Technical suppliers (e.g., hosting, newsletter, analytics tools)",
+          "Technical providers (e.g. hosting, newsletter, analytics tools)",
           "Partners or sponsors only with explicit user consent",
           "Competent authorities in case of regulatory obligations",
-          "No transfer to third parties for unauthorized commercial purposes is planned."
+          "No transfer to third parties for unauthorized commercial purposes is expected."
         ]
       },
       "diritti": {
-        "title": "7. User rights (Art. 15–22 GDPR)",
+        "title": "7. User rights (Arts. 15–22 GDPR)",
         "items": [
           "Access your data",
-          "Request rectification or deletion",
-          "Limit or oppose processing",
-          "Withdraw consent at any time"
+          "Request correction or deletion",
+          "Restrict or object to processing",
+          "Revoke consent at any time"
         ],
         "contact": "To exercise these rights: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
       },
       "sicurezza": {
         "title": "8. Security",
-        "content": "WeApnea adopts adequate technical and organizational measures to protect personal data from unauthorized access, loss, or alteration."
+        "content": "WeApnea adopts appropriate technical and organizational measures to protect personal data from unauthorized access, loss or alteration."
       },
       "minori": {
         "title": "9. Minors",
-        "content": "Unless otherwise indicated, the Site's services are reserved for adult users. Any data provided by minors will be deleted upon request."
+        "content": "Unless otherwise indicated, the Website services are reserved for adult users. Any data provided by minors will be deleted upon notification."
       },
       "modifiche": {
         "title": "10. Changes",
-        "content": "This notice may be updated. Significant changes will be communicated on the Site or via email to registered users."
+        "content": "This notice may be updated. Relevant changes will be communicated on the Website or by email to registered users."
       }
     }
   },
@@ -684,27 +689,27 @@
     "sections": {
       "cosa-sono": {
         "title": "1. What are cookies",
-        "content": "Cookies are small files saved on the user's device to improve browsing and enable certain features."
+        "content": "Cookies are small files saved on the user's device to improve navigation and enable certain features."
       },
       "tipologie": {
         "title": "2. Types of cookies used",
         "items": [
-          "<strong>Technical / Necessary</strong>: site operation (e.g., language, login) – no consent required.",
-          "<strong>Statistical (anonymized)</strong>: visit analysis (e.g., Google Analytics with anonymized IP) – consent required.",
-          "<strong>Marketing / Profiling</strong>: remarketing and content personalization – consent required."
+          "<strong>Technical / Necessary</strong>: site functionality (e.g. language, login) – do not require consent.",
+          "<strong>Statistical (anonymized)</strong>: visit analysis (e.g. Google Analytics with anonymized IP) – require consent.",
+          "<strong>Marketing / Profiling</strong>: remarketing and content personalization – require consent."
         ]
       },
       "consenso": {
         "title": "3. Consent management",
-        "content": "On first access, a cookie banner is displayed that allows you to accept all cookies, reject non-necessary ones, or manage preferences. The user can change preferences at any time through the browser or via a \"Cookie Settings\" link on the Site."
+        "content": "Upon first access, a cookie banner is displayed allowing you to accept all cookies, reject non-essential ones, or manage preferences. The user can change preferences at any time via the browser or via a \"Cookie Settings\" link on the Website."
       },
       "browser": {
-        "title": "4. Browser disabling",
-        "content": "The user can manage cookies from their browser settings (Chrome, Firefox, Safari, etc.). Disabling technical cookies may compromise some Site features."
+        "title": "4. Disabling via browser",
+        "content": "The user can manage cookies from their browser settings (Chrome, Firefox, Safari, etc.). Disabling technical cookies may compromise some Website functionalities."
       },
       "terze-parti": {
         "title": "5. Third-party tools",
-        "content": "The Site may use external services such as Google Analytics or social pixels. Marketing cookies are only activated with explicit consent."
+        "content": "The Website may use external services such as Google Analytics or social pixels. In the case of marketing cookies, these are activated only with explicit consent."
       },
       "contatti": {
         "title": "6. Contacts",
@@ -712,4 +717,3 @@
       }
     }
   }
-}
