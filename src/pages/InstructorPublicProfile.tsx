@@ -144,7 +144,7 @@ export default function InstructorPublicProfile() {
           )}
         </div>
         <div className="lg:col-span-2 space-y-6">
-          {data.public_show_personal !== false && data.public_show_bio !== false && (
+          {data.public_show_personal !== false && (
             <Card>
               <CardHeader><CardTitle className="text-xl">Chi sono</CardTitle></CardHeader>
               <CardContent>
@@ -156,7 +156,7 @@ export default function InstructorPublicProfile() {
               </CardContent>
             </Card>
           )}
-          {data.public_show_personal !== false && data.public_show_certifications !== false && (
+          {data.public_show_certifications !== false && (
             <Card>
               <CardHeader><CardTitle className="text-xl">Certificazioni</CardTitle></CardHeader>
               <CardContent className="space-y-4">
