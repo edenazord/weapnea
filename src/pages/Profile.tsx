@@ -17,7 +17,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil } from "lucide-react";
+import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2 } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -34,7 +34,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createEvent, Event, getEvents, EventWithCategory, updateEvent } from "@/lib/api";
+import { createEvent, Event, getEvents, EventWithCategory, updateEvent, deleteEvent } from "@/lib/api";
 import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { EventForm } from "@/components/admin/EventForm";
 import { CenteredNotice } from "@/components/CenteredNotice";
@@ -197,6 +197,24 @@ const Profile = () => {
       toast({ title: 'Errore salvataggio', description: err?.message || 'Modifica fallita', variant: 'destructive' });
     }
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteEvent(id),
+    onSuccess: () => {
+      setNoticeMsg("Evento eliminato con successo!");
+      setNoticeOpen(true);
+      refetchOrganized();
+    },
+    onError: (err: any) => {
+      toast({ title: 'Errore eliminazione', description: err?.message || 'Eliminazione fallita', variant: 'destructive' });
+    }
+  });
+
+  const handleDeleteEvent = (id: string, title: string) => {
+    if (window.confirm(`Sei sicuro di voler eliminare l'evento "${title}"? Questa azione non può essere annullata.`)) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const handleOpenCreateEvent = () => { setIsSheetOpen(true); };
 
@@ -862,6 +880,9 @@ const Profile = () => {
                                       </Button>
                                       <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_edit', 'Modifica')} aria-label={t('profile.sections.my_events.action_edit', 'Modifica evento')} onClick={() => openEditEvent(ev)}>
                                         <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_delete', 'Elimina')} aria-label={t('profile.sections.my_events.action_delete', 'Elimina evento')} onClick={() => handleDeleteEvent(ev.id, ev.title)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                        <Trash2 className="h-4 w-4" />
                                       </Button>
                                     </div>
                                   </TableCell>
