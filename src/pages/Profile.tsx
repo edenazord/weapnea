@@ -1190,44 +1190,6 @@ const Profile = () => {
                           disabled={!formData.public_profile_enabled}
                         />
                       </div>
-                      <div className="flex items-center justify-between border rounded-md p-3">
-                        <div>
-                          <Label htmlFor="public_show_bio">{t('profile.sections.visibility.show_bio', 'Mostra biografia')}</Label>
-                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_bio_desc', 'La tua bio nella pagina pubblica')}</p>
-                        </div>
-                        <Switch
-                          id="public_show_bio"
-                          checked={formData.public_show_bio}
-                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_bio: Boolean(v) }))}
-                          disabled={!formData.public_profile_enabled}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between border rounded-md p-3">
-                        <div>
-                          <Label htmlFor="public_show_instagram">{t('profile.sections.visibility.show_instagram', 'Mostra Instagram')}</Label>
-                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_instagram_desc', 'Link al profilo Instagram')}</p>
-                        </div>
-                        <Switch
-                          id="public_show_instagram"
-                          checked={formData.public_show_instagram}
-                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_instagram: Boolean(v) }))}
-                          disabled={!formData.public_profile_enabled}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between border rounded-md p-3">
-                        <div>
-                          <Label htmlFor="public_show_company_info">{t('profile.sections.visibility.show_company_info', 'Mostra info aziendali')}</Label>
-                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_company_info_desc', 'Indirizzo e P.IVA (solo aziende)')}</p>
-                        </div>
-                        <Switch
-                          id="public_show_company_info"
-                          checked={formData.public_show_company_info}
-                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_show_company_info: Boolean(v) }))}
-                          disabled={!formData.public_profile_enabled}
-                        />
-                      </div>
 
                     </div>
                   </CardContent>
