@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Navigation } from 'lucide-react';
 import { loadGeocodingLibrary, loadMapsLibrary, loadMarkerLibrary } from '@/lib/googleMapsLoader';
@@ -18,7 +18,54 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
   const [geocoderRef, setGeocoderRef] = useState<any | null>(null);
   const [MapClass, setMapClass] = useState<any | null>(null);
   const [MarkerClass, setMarkerClass] = useState<any | null>(null);
+  const [isContainerReady, setIsContainerReady] = useState(false);
+  const pendingCoordsRef = useRef<{ lat: number; lng: number } | null>(null);
   const { t } = useLanguage();
+
+  // Controlla se il container è visibile e ha dimensioni valide
+  const checkContainerReady = useCallback(() => {
+    if (!mapRef.current) return false;
+    const rect = mapRef.current.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0;
+  }, []);
+
+  // Observer per rilevare quando il container diventa visibile
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+          setIsContainerReady(true);
+          
+          // Se la mappa esiste, triggera un resize
+          if (mapInstance) {
+            const google = (window as any).google;
+            if (google?.maps?.event) {
+              google.maps.event.trigger(mapInstance, 'resize');
+              if (coordinates) {
+                mapInstance.setCenter(coordinates);
+              }
+            }
+          }
+          
+          // Se abbiamo coordinate in attesa, inizializza la mappa
+          if (pendingCoordsRef.current && !mapInstance && MapClass) {
+            initializeGoogleMap(pendingCoordsRef.current);
+          }
+        }
+      }
+    });
+
+    observer.observe(mapRef.current);
+
+    // Check iniziale
+    if (checkContainerReady()) {
+      setIsContainerReady(true);
+    }
+
+    return () => observer.disconnect();
+  }, [mapInstance, coordinates, MapClass, checkContainerReady]);
 
   useEffect(() => {
     let cancelled = false;
@@ -65,7 +112,12 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
           const loc = results[0].geometry.location;
           const coords = { lat: loc.lat(), lng: loc.lng() };
           setCoordinates(coords);
-          initializeGoogleMap(coords);
+          pendingCoordsRef.current = coords;
+          
+          // Inizializza solo se il container è pronto
+          if (isContainerReady && checkContainerReady()) {
+            initializeGoogleMap(coords);
+          }
         } else {
           console.warn('Geocoding fallito:', status);
         }
@@ -75,8 +127,15 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
     }
   };
 
-  const initializeGoogleMap = (coords: { lat: number; lng: number }) => {
+  const initializeGoogleMap = useCallback((coords: { lat: number; lng: number }) => {
     if (!mapRef.current || !MapClass) return;
+    
+    // Verifica che il container abbia dimensioni valide
+    const rect = mapRef.current.getBoundingClientRect();
+    if (rect.width === 0 || rect.height === 0) {
+      pendingCoordsRef.current = coords;
+      return;
+    }
 
     let map = mapInstance;
     if (!map) {
@@ -89,6 +148,7 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
         mapId: 'weapnea-map', // Necessario per AdvancedMarkerElement
       });
       setMapInstance(map);
+      pendingCoordsRef.current = null;
     } else {
       map.setCenter(coords);
       map.setZoom(15);
@@ -107,7 +167,14 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
         console.warn('Marker creation warning:', e);
       }
     }
-  };
+  }, [MapClass, MarkerClass, mapInstance, eventTitle]);
+
+  // Effetto per inizializzare la mappa quando il container diventa pronto
+  useEffect(() => {
+    if (isContainerReady && pendingCoordsRef.current && !mapInstance && MapClass) {
+      initializeGoogleMap(pendingCoordsRef.current);
+    }
+  }, [isContainerReady, mapInstance, MapClass, initializeGoogleMap]);
 
   const handleGetDirections = () => {
     if (coordinates) {
