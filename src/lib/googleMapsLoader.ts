@@ -3,7 +3,8 @@ import { backendConfig } from '@/lib/backendConfig';
 let mapsPromise: Promise<any> | null = null;
 
 /**
- * Carica lo script di Google Maps JS API (con Places) una sola volta e restituisce l'oggetto google.
+ * Carica lo script di Google Maps JS API (con Places New) una sola volta e restituisce l'oggetto google.
+ * Usa la nuova Places API con importLibrary().
  */
 export function loadGoogleMaps(): Promise<any> {
   if (typeof window === 'undefined') {
@@ -32,12 +33,24 @@ export function loadGoogleMaps(): Promise<any> {
     script.id = 'google-maps-js';
     script.async = true;
     script.defer = true;
-    // v=weekly per avere aggiornamenti regolari, libraries=places per Autocomplete
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&libraries=places&v=weekly&language=it&region=IT`;
+    // Usa la nuova API con loading=async per supportare importLibrary()
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&loading=async&language=it&region=IT`;
     script.onload = () => resolve((window as any).google);
     script.onerror = () => reject(new Error('Google Maps failed to load'));
     document.body.appendChild(script);
   });
 
   return mapsPromise;
+}
+
+/**
+ * Carica la libreria Places (New) usando importLibrary
+ */
+export async function loadPlacesLibrary(): Promise<any> {
+  await loadGoogleMaps();
+  const google = (window as any).google;
+  if (!google?.maps?.importLibrary) {
+    throw new Error('Google Maps importLibrary not available');
+  }
+  return google.maps.importLibrary('places');
 }
