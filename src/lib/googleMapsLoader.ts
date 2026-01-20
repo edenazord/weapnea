@@ -54,3 +54,39 @@ export async function loadPlacesLibrary(): Promise<any> {
   }
   return google.maps.importLibrary('places');
 }
+
+/**
+ * Carica la libreria Geocoding usando importLibrary
+ */
+export async function loadGeocodingLibrary(): Promise<any> {
+  await loadGoogleMaps();
+  const google = (window as any).google;
+  if (!google?.maps?.importLibrary) {
+    throw new Error('Google Maps importLibrary not available');
+  }
+  return google.maps.importLibrary('geocoding');
+}
+
+/**
+ * Carica la libreria Maps (core) usando importLibrary
+ */
+export async function loadMapsLibrary(): Promise<any> {
+  await loadGoogleMaps();
+  const google = (window as any).google;
+  if (!google?.maps?.importLibrary) {
+    throw new Error('Google Maps importLibrary not available');
+  }
+  return google.maps.importLibrary('maps');
+}
+
+/**
+ * Carica la libreria Marker usando importLibrary
+ */
+export async function loadMarkerLibrary(): Promise<any> {
+  await loadGoogleMaps();
+  const google = (window as any).google;
+  if (!google?.maps?.importLibrary) {
+    throw new Error('Google Maps importLibrary not available');
+  }
+  return google.maps.importLibrary('marker');
+}

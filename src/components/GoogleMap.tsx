@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Navigation } from 'lucide-react';
-import { loadGoogleMaps } from '@/lib/googleMapsLoader';
+import { loadGeocodingLibrary, loadMapsLibrary, loadMarkerLibrary } from '@/lib/googleMapsLoader';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 interface GoogleMapProps {
@@ -15,34 +15,52 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [mapInstance, setMapInstance] = useState<any | null>(null);
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(null);
+  const [geocoderRef, setGeocoderRef] = useState<any | null>(null);
+  const [MapClass, setMapClass] = useState<any | null>(null);
+  const [MarkerClass, setMarkerClass] = useState<any | null>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
     let cancelled = false;
-    loadGoogleMaps()
-      .then(() => {
-        if (!cancelled) setIsLoaded(true);
-      })
-      .catch((e) => {
+    
+    const loadLibraries = async () => {
+      try {
+        // Carica tutte le librerie necessarie in parallelo
+        const [geocodingLib, mapsLib, markerLib] = await Promise.all([
+          loadGeocodingLibrary(),
+          loadMapsLibrary(),
+          loadMarkerLibrary(),
+        ]);
+        
+        if (!cancelled) {
+          setGeocoderRef(new geocodingLib.Geocoder());
+          setMapClass(() => mapsLib.Map);
+          setMarkerClass(() => markerLib.AdvancedMarkerElement || markerLib.Marker);
+          setIsLoaded(true);
+        }
+      } catch (e) {
         console.error('Google Maps load error:', e);
-      });
+      }
+    };
+    
+    loadLibraries();
+    
     return () => {
       cancelled = true;
     };
   }, []);
 
   useEffect(() => {
-    if (!isLoaded || !location) return;
+    if (!isLoaded || !location || !geocoderRef) return;
     geocodeWithGoogle(location);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoaded, location]);
+  }, [isLoaded, location, geocoderRef]);
 
   const geocodeWithGoogle = (address: string) => {
     try {
-      const g = (window as any).google;
-      if (!g || !g.maps) return;
-      const geocoder = new g.maps.Geocoder();
-      geocoder.geocode({ address, region: 'IT' }, (results: any, status: any) => {
+      if (!geocoderRef) return;
+      
+      geocoderRef.geocode({ address, region: 'IT' }, (results: any, status: any) => {
         if (status === 'OK' && results && results[0]) {
           const loc = results[0].geometry.location;
           const coords = { lat: loc.lat(), lng: loc.lng() };
@@ -58,17 +76,17 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
   };
 
   const initializeGoogleMap = (coords: { lat: number; lng: number }) => {
-    const g = (window as any).google;
-    if (!mapRef.current || !g || !g.maps) return;
+    if (!mapRef.current || !MapClass) return;
 
     let map = mapInstance;
     if (!map) {
-      map = new g.maps.Map(mapRef.current, {
+      map = new MapClass(mapRef.current, {
         center: coords,
         zoom: 15,
         fullscreenControl: false,
         mapTypeControl: false,
         streetViewControl: false,
+        mapId: 'weapnea-map', // Necessario per AdvancedMarkerElement
       });
       setMapInstance(map);
     } else {
@@ -76,11 +94,19 @@ export function GoogleMap({ location, eventTitle }: GoogleMapProps) {
       map.setZoom(15);
     }
 
-    new g.maps.Marker({
-      position: coords,
-      map,
-      title: eventTitle,
-    });
+    // Usa AdvancedMarkerElement se disponibile, altrimenti fallback
+    if (MarkerClass) {
+      try {
+        new MarkerClass({
+          position: coords,
+          map,
+          title: eventTitle,
+        });
+      } catch (e) {
+        // Fallback per marker legacy se AdvancedMarkerElement non funziona
+        console.warn('Marker creation warning:', e);
+      }
+    }
   };
 
   const handleGetDirections = () => {
