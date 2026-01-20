@@ -3,24 +3,44 @@ import { backendConfig } from '@/lib/backendConfig';
 let mapsPromise: Promise<any> | null = null;
 
 /**
- * Carica lo script di Google Maps JS API (con Places New) una sola volta e restituisce l'oggetto google.
- * Usa la nuova Places API con importLibrary().
+ * Attende che importLibrary sia disponibile (con retry)
+ */
+async function waitForImportLibrary(maxWait = 5000): Promise<boolean> {
+  const start = Date.now();
+  while (Date.now() - start < maxWait) {
+    const google = (window as any).google;
+    if (google?.maps?.importLibrary) {
+      return true;
+    }
+    await new Promise(r => setTimeout(r, 100));
+  }
+  return false;
+}
+
+/**
+ * Carica lo script di Google Maps JS API una sola volta.
+ * Forza sempre il reload se lo script esistente non supporta importLibrary.
  */
 export function loadGoogleMaps(): Promise<any> {
   if (typeof window === 'undefined') {
     return Promise.reject(new Error('Google Maps can only be loaded in the browser'));
   }
-  if ((window as any).google && (window as any).google.maps) {
-    return Promise.resolve((window as any).google);
+  
+  // Se Google Maps è già caricato con importLibrary, usa quello
+  const google = (window as any).google;
+  if (google?.maps?.importLibrary) {
+    return Promise.resolve(google);
   }
+  
   if (mapsPromise) return mapsPromise;
 
   mapsPromise = new Promise((resolve, reject) => {
+    // Rimuovi script esistente se non supporta importLibrary
     const existing = document.getElementById('google-maps-js');
     if (existing) {
-      (existing as HTMLScriptElement).addEventListener('load', () => resolve((window as any).google));
-      (existing as HTMLScriptElement).addEventListener('error', () => reject(new Error('Google Maps failed to load')));
-      return;
+      existing.remove();
+      // Pulisci anche l'oggetto google
+      delete (window as any).google;
     }
 
     const apiKey = backendConfig.googleMapsKey;
@@ -35,7 +55,15 @@ export function loadGoogleMaps(): Promise<any> {
     script.defer = true;
     // Usa la nuova API con loading=async per supportare importLibrary()
     script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(apiKey)}&loading=async&language=it&region=IT`;
-    script.onload = () => resolve((window as any).google);
+    script.onload = async () => {
+      // Attendi che importLibrary sia effettivamente disponibile
+      const ready = await waitForImportLibrary();
+      if (ready) {
+        resolve((window as any).google);
+      } else {
+        reject(new Error('Google Maps importLibrary not available after load'));
+      }
+    };
     script.onerror = () => reject(new Error('Google Maps failed to load'));
     document.body.appendChild(script);
   });
