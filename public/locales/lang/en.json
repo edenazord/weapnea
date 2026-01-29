@@ -477,6 +477,13 @@
         "cert_number_label": "Number (optional)",
         "cert_number_placeholder": "e.g. 123456",
         "cert_expiry": "Expiry (optional)",
+        "other_insurances": "Other insurances",
+        "add_insurance": "Add insurance",
+        "other_medicals": "Other medical certificates",
+        "add_medical": "Add medical certificate",
+        "medical_name_placeholder": "Certificate type",
+        "other_certificates": "Other certifications",
+        "add_certificate": "Add certification",
         "brevetto_label": "Certification",
         "brevetto_placeholder": "Enter certification type",
         "brevetto_options": {

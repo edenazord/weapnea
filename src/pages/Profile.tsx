@@ -43,7 +43,8 @@ import { CenteredNotice } from "@/components/CenteredNotice";
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
 type BestEntry = { discipline: BestDiscipline; value: string };
 type PersonalBest = Record<string, string> | BestEntry[];
-type CertEntry = { name: string; number: string; expiry: string };
+type CertEntryType = 'insurance' | 'medical' | 'certificate';
+type CertEntry = { type: CertEntryType; name: string; number: string; expiry: string };
 
 const DISCIPLINE_CODES: { code: BestDiscipline; labelKey: string; hint: string }[] = [
   { code: 'STA', labelKey: 'STA', hint: 'mm:ss' },
@@ -398,11 +399,12 @@ const Profile = () => {
         setBestEntries([]);
       }
 
-      // Carica certificazioni aggiuntive
+      // Carica certificazioni aggiuntive (assicurazioni, certificati medici, brevetti)
       if ((user as any).other_certifications) {
         const oc = (user as any).other_certifications as any;
         if (Array.isArray(oc)) {
-          setCertEntries(oc.filter((c: any) => c?.name).map((c: any) => ({
+          setCertEntries(oc.filter((c: any) => c?.name || c?.type).map((c: any) => ({
+            type: (c.type as CertEntryType) || 'certificate',
             name: String(c.name || ''),
             number: String(c.number || ''),
             expiry: String(c.expiry || ''),
@@ -500,18 +502,23 @@ const Profile = () => {
     return /^\d{1,3}(?:\.\d+)?$/.test(e.value.trim());
   };
 
-  // Funzioni per gestire certificazioni aggiuntive
+  // Funzioni per gestire certificazioni aggiuntive (assicurazioni, certificati medici, brevetti)
   const handleCertChange = (idx: number, patch: Partial<CertEntry>) => {
     setCertEntries(prev => prev.map((e, i) => (i === idx ? { ...e, ...patch } : e)));
   };
 
-  const addCert = () => {
-    setCertEntries(prev => [...prev, { name: '', number: '', expiry: '' }]);
+  const addCert = (type: CertEntryType) => {
+    setCertEntries(prev => [...prev, { type, name: '', number: '', expiry: '' }]);
   };
 
   const removeCert = (idx: number) => {
     setCertEntries(prev => prev.filter((_, i) => i !== idx));
   };
+
+  // Filtra le certificazioni per tipo
+  const insuranceEntries = certEntries.map((e, i) => ({ ...e, originalIdx: i })).filter(e => e.type === 'insurance');
+  const medicalEntries = certEntries.map((e, i) => ({ ...e, originalIdx: i })).filter(e => e.type === 'medical');
+  const certificateEntries = certEntries.map((e, i) => ({ ...e, originalIdx: i })).filter(e => e.type === 'certificate');
 
   const handleAvatarUpdate = (url: string) => {
     setFormData(prev => ({ ...prev, avatar_url: url }));
@@ -614,7 +621,8 @@ const Profile = () => {
           }
           return obj;
         })(),
-        other_certifications: certEntries.filter(c => c.name.trim()).map(c => ({
+        other_certifications: certEntries.filter(c => c.name.trim() || c.number.trim()).map(c => ({
+          type: c.type,
           name: c.name.trim(),
           number: c.number.trim(),
           expiry: c.expiry || null,
@@ -1307,6 +1315,43 @@ const Profile = () => {
                             {t('profile.sections.certifications.insurance_declaration', 'Dichiaro di essere istruttore brevettato e di avere una copertura assicurativa in corso di validità')}
                           </Label>
                         </div>
+
+                        {/* Assicurazioni aggiuntive */}
+                        {insuranceEntries.length > 0 && (
+                          <div className="mt-4 space-y-3">
+                            <p className="text-sm font-medium">{t('profile.sections.certifications.other_insurances', 'Altre assicurazioni')}</p>
+                            {insuranceEntries.map((entry) => (
+                              <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
+                                <div className="flex justify-between items-start">
+                                  <span className="text-xs text-muted-foreground">#{insuranceEntries.indexOf(entry) + 1}</span>
+                                  <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}>
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                  <Input
+                                    value={entry.name}
+                                    onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })}
+                                    placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')}
+                                  />
+                                  <Input
+                                    value={entry.number}
+                                    onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })}
+                                    placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Numero')}
+                                  />
+                                  <DatePicker
+                                    date={entry.expiry ? new Date(entry.expiry) : undefined}
+                                    onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => addCert('insurance')}>
+                          <PlusCircle className="h-4 w-4 mr-2" />
+                          {t('profile.sections.certifications.add_insurance', 'Aggiungi assicurazione')}
+                        </Button>
                       </AccordionContent>
                     </AccordionItem>
 
@@ -1346,6 +1391,43 @@ const Profile = () => {
                             </div>
                           </div>
                         </div>
+
+                        {/* Certificati medici aggiuntivi */}
+                        {medicalEntries.length > 0 && (
+                          <div className="mt-4 space-y-3">
+                            <p className="text-sm font-medium">{t('profile.sections.certifications.other_medicals', 'Altri certificati medici')}</p>
+                            {medicalEntries.map((entry) => (
+                              <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
+                                <div className="flex justify-between items-start">
+                                  <span className="text-xs text-muted-foreground">#{medicalEntries.indexOf(entry) + 1}</span>
+                                  <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}>
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                  <Input
+                                    value={entry.name}
+                                    onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })}
+                                    placeholder={t('profile.sections.certifications.medical_name_placeholder', 'Tipo certificato')}
+                                  />
+                                  <Input
+                                    value={entry.number}
+                                    onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })}
+                                    placeholder={t('profile.sections.certifications.cert_number_placeholder', 'Numero')}
+                                  />
+                                  <DatePicker
+                                    date={entry.expiry ? new Date(entry.expiry) : undefined}
+                                    onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => addCert('medical')}>
+                          <PlusCircle className="h-4 w-4 mr-2" />
+                          {t('profile.sections.certifications.add_medical', 'Aggiungi certificato medico')}
+                        </Button>
                       </AccordionContent>
                     </AccordionItem>
 
@@ -1410,70 +1492,43 @@ const Profile = () => {
                             {t('profile.sections.certifications.brevetto_declaration', 'Dichiaro di essere istruttore certificato con BREVETTO in corso di validità')}
                           </Label>
                         </div>
-                      </AccordionContent>
-                    </AccordionItem>
 
-                    <AccordionItem value="other_certifications">
-                      <AccordionTrigger>
-                        <div className="flex items-center gap-2"><FileText className="h-4 w-4" /> {t('profile.sections.certifications.accordion_other', 'Altri brevetti / Certificazioni')}</div>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="space-y-4">
-                          <div className="flex justify-between items-center">
-                            <p className="text-sm text-muted-foreground">
-                              {t('profile.sections.certifications.other_helper', 'Aggiungi altri brevetti o certificazioni che possiedi.')}
-                            </p>
-                            <Button type="button" variant="outline" onClick={addCert}>
-                              <PlusCircle className="h-4 w-4 mr-2" />
-                              {t('profile.sections.certifications.add_cert', 'Aggiungi')}
-                            </Button>
-                          </div>
-                          {certEntries.length === 0 ? (
-                            <p className="text-sm text-muted-foreground italic">
-                              {t('profile.sections.certifications.no_other_certs', 'Nessuna certificazione aggiuntiva inserita.')}
-                            </p>
-                          ) : (
-                            <div className="space-y-4">
-                              {certEntries.map((entry, idx) => (
-                                <div key={idx} className="p-4 border rounded-md space-y-3">
-                                  <div className="flex justify-between items-start">
-                                    <span className="text-sm font-medium text-muted-foreground">
-                                      {t('profile.sections.certifications.cert_number', 'Certificazione')} #{idx + 1}
-                                    </span>
-                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(idx)}>
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  </div>
-                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                    <div>
-                                      <Label>{t('profile.sections.certifications.cert_name', 'Nome certificazione')}</Label>
-                                      <Input
-                                        value={entry.name}
-                                        onChange={(e) => handleCertChange(idx, { name: e.target.value })}
-                                        placeholder={t('profile.sections.certifications.cert_name_placeholder', 'es. PADI Open Water')}
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label>{t('profile.sections.certifications.cert_number_label', 'Numero (opzionale)')}</Label>
-                                      <Input
-                                        value={entry.number}
-                                        onChange={(e) => handleCertChange(idx, { number: e.target.value })}
-                                        placeholder={t('profile.sections.certifications.cert_number_placeholder', 'es. 123456')}
-                                      />
-                                    </div>
-                                    <div>
-                                      <Label>{t('profile.sections.certifications.cert_expiry', 'Scadenza (opzionale)')}</Label>
-                                      <DatePicker
-                                        date={entry.expiry ? new Date(entry.expiry) : undefined}
-                                        onDateChange={(date) => handleCertChange(idx, { expiry: toLocalDateString(date) })}
-                                      />
-                                    </div>
-                                  </div>
+                        {/* Brevetti aggiuntivi */}
+                        {certificateEntries.length > 0 && (
+                          <div className="mt-4 space-y-3">
+                            <p className="text-sm font-medium">{t('profile.sections.certifications.other_certificates', 'Altri brevetti / certificazioni')}</p>
+                            {certificateEntries.map((entry) => (
+                              <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
+                                <div className="flex justify-between items-start">
+                                  <span className="text-xs text-muted-foreground">#{certificateEntries.indexOf(entry) + 1}</span>
+                                  <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}>
+                                    <X className="h-4 w-4" />
+                                  </Button>
                                 </div>
-                              ))}
-                            </div>
-                          )}
-                        </div>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                  <Input
+                                    value={entry.name}
+                                    onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })}
+                                    placeholder={t('profile.sections.certifications.cert_name_placeholder', 'es. PADI Open Water')}
+                                  />
+                                  <Input
+                                    value={entry.number}
+                                    onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })}
+                                    placeholder={t('profile.sections.certifications.cert_number_placeholder', 'Numero')}
+                                  />
+                                  <DatePicker
+                                    date={entry.expiry ? new Date(entry.expiry) : undefined}
+                                    onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })}
+                                  />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => addCert('certificate')}>
+                          <PlusCircle className="h-4 w-4 mr-2" />
+                          {t('profile.sections.certifications.add_certificate', 'Aggiungi brevetto')}
+                        </Button>
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>

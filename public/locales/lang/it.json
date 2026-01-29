@@ -477,6 +477,13 @@
 				"cert_number_label": "Numero (opzionale)",
 				"cert_number_placeholder": "es. 123456",
 				"cert_expiry": "Scadenza (opzionale)",
+				"other_insurances": "Altre assicurazioni",
+				"add_insurance": "Aggiungi assicurazione",
+				"other_medicals": "Altri certificati medici",
+				"add_medical": "Aggiungi certificato medico",
+				"medical_name_placeholder": "Tipo certificato",
+				"other_certificates": "Altri brevetti / certificazioni",
+				"add_certificate": "Aggiungi brevetto",
 				"brevetto_label": "Brevetto",
 				"brevetto_placeholder": "Inserire tipologia brevetto",
 				"brevetto_options": {
