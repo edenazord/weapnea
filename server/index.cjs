@@ -470,13 +470,22 @@ async function getPublicProfileSettings(userId) {
   return (val && typeof val === 'object') ? val : null;
 }
 
-// --- Email templates helpers ---
-async function getEmailTemplate(type) {
+// --- Email templates helpers (JSON-based multilingual) ---
+const LOCALES_PATH = path.join(__dirname, '..', 'public', 'locales', 'lang');
+
+// Helper: get email template from locale JSON file
+async function getEmailTemplateFromLocale(type, lang = 'it') {
   try {
-    const { rows } = await pool.query('SELECT subject, COALESCE(html_content, html) AS html FROM public.email_templates WHERE template_type = $1 LIMIT 1', [type]);
-    return rows[0] || null;
+    const filePath = path.join(LOCALES_PATH, `${lang}.json`);
+    const content = await fsp.readFile(filePath, 'utf-8');
+    const data = JSON.parse(content);
+    return data?.emails?.[type] || null;
   } catch (e) {
-    console.warn('[email] get template failed:', type, e?.message || e);
+    console.warn(`[email] Failed to read template ${type} for lang ${lang}:`, e?.message || e);
+    // Fallback to Italian
+    if (lang !== 'it') {
+      return getEmailTemplateFromLocale(type, 'it');
+    }
     return null;
   }
 }
@@ -487,20 +496,6 @@ function simpleRender(template, vars = {}) {
     const v = vars && Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : '';
     return v == null ? '' : String(v);
   });
-}
-
-async function renderEmailWithTemplate(type, vars, fallbackSubject, fallbackHtml) {
-  const tpl = await getEmailTemplate(type);
-  const subject = tpl?.subject ? simpleRender(tpl.subject, vars) : fallbackSubject;
-  const raw = tpl?.html ? simpleRender(tpl.html, vars) : fallbackHtml;
-  // Support semplici blocchi condizionali {{#if var}}...{{/if}}
-  const html = String(raw || '').replace(/{{#if\s+([a-zA-Z0-9_\.]+)\s*}}([\s\S]*?){{\/if}}/g, (_m, key, inner) => {
-    const v = vars && Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : undefined;
-    if (v === undefined || v === null) return '';
-    if (typeof v === 'string') return v.trim() ? inner : '';
-    return v ? inner : '';
-  });
-  return { subject, html };
 }
 
 // Branded base template (inline-friendly styles)
@@ -518,6 +513,101 @@ const BASE_EMAIL_STYLE = `
   .footer{padding:16px;text-align:center}
 `;
 
+// Build branded HTML email from JSON template data
+function buildBrandedEmail(tpl, vars, ctaText = null, ctaUrl = null) {
+  const publicBase = vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com';
+  const appName = vars.app_name || APP_NAME;
+  
+  // Convert body text with \n to HTML paragraphs
+  const bodyHtml = (tpl.body || '')
+    .split('\n')
+    .filter(line => line.trim())
+    .map(line => `<p>${simpleRender(line, vars)}</p>`)
+    .join('\n');
+  
+  const greeting = tpl.greeting ? `<p>${simpleRender(tpl.greeting, vars)}</p>` : '';
+  const closing = tpl.closing ? `<p>${simpleRender(tpl.closing, vars)}</p>` : '';
+  const signature = tpl.signature ? `<p><strong>${simpleRender(tpl.signature, vars).replace(/\n/g, '<br/>')}</strong></p>` : '';
+  const ignoreNotice = tpl.ignore_notice ? `<p class="muted">${simpleRender(tpl.ignore_notice, vars)}</p>` : '';
+  
+  const ctaButton = ctaText && ctaUrl 
+    ? `<p style="margin:20px 0 8px 0;"><a class="btn" href="${simpleRender(ctaUrl, vars)}" target="_blank" rel="noopener noreferrer">${simpleRender(ctaText, vars)}</a></p>` 
+    : '';
+
+  return `<!doctype html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>${BASE_EMAIL_STYLE}</style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <div class="header">
+          <a class="brand" href="${publicBase}" target="_blank" rel="noopener noreferrer">${appName}</a>
+        </div>
+        <div class="content">
+          ${greeting}
+          ${bodyHtml}
+          ${ctaButton}
+          ${ignoreNotice}
+          <div class="divider"></div>
+          ${closing}
+          ${signature}
+        </div>
+      </div>
+    </div>
+  </body>
+</html>`;
+}
+
+// Render email with template from JSON locale files (multilingual)
+async function renderEmailWithTemplate(type, vars, fallbackSubject, fallbackHtml, lang = 'it') {
+  const tpl = await getEmailTemplateFromLocale(type, lang);
+  
+  if (tpl) {
+    const subject = simpleRender(tpl.subject || fallbackSubject, vars);
+    
+    // Determine CTA button based on template type
+    let ctaText = null;
+    let ctaUrl = null;
+    switch (type) {
+      case 'welcome':
+        ctaText = 'Apri WeApnea';
+        ctaUrl = vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com';
+        break;
+      case 'password_reset':
+        ctaText = tpl.link_label || 'Reset Password';
+        ctaUrl = vars.reset_link;
+        break;
+      case 'event_registration_user':
+        ctaText = 'Contattaci';
+        ctaUrl = tpl.contact_link || 'https://www.weapnea.com/contattaci';
+        break;
+      case 'event_registration_organizer':
+        ctaText = 'Apri Dashboard';
+        ctaUrl = (vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com') + '/profilo';
+        break;
+    }
+    
+    const html = buildBrandedEmail(tpl, vars, ctaText, ctaUrl);
+    return { subject, html };
+  }
+  
+  // Fallback to old hardcoded templates if JSON not found
+  const subject = simpleRender(fallbackSubject, vars);
+  const raw = simpleRender(fallbackHtml, vars);
+  const html = String(raw || '').replace(/{{#if\s+([a-zA-Z0-9_\.]+)\s*}}([\s\S]*?){{\/if}}/g, (_m, key, inner) => {
+    const v = vars && Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : undefined;
+    if (v === undefined || v === null) return '';
+    if (typeof v === 'string') return v.trim() ? inner : '';
+    return v ? inner : '';
+  });
+  return { subject, html };
+}
+
+// Old BASE_EMAIL_TEMPLATE kept for backwards compatibility with fallback
 const BASE_EMAIL_TEMPLATE = (
   title, bodyHtml, ctaText = null, ctaUrl = null, footerHtml = `Questa è una comunicazione automatica di {{app_name}}.`
 ) => `<!doctype html>
@@ -978,17 +1068,10 @@ app.post('/api/email/test', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// Seed default email templates (admin only)
+// Seed default email templates - DEPRECATED (now using JSON locale files)
+// Kept for backwards compatibility but does nothing
 app.post('/api/email-templates/seed-defaults', requireAuth, requireAdmin, async (_req, res) => {
-  try {
-    const entries = Object.entries(DEFAULT_TEMPLATES);
-    for (const [type, tpl] of entries) {
-      await upsertEmailTemplate(type, tpl.subject, tpl.html);
-    }
-    res.json({ ok: true, count: entries.length });
-  } catch (e) {
-    res.status(500).json({ error: String(e?.message || e) });
-  }
+  res.json({ ok: true, message: 'Email templates are now managed via JSON locale files', count: 0 });
 });
 
 // Profile endpoints (API mode)
@@ -2350,62 +2433,100 @@ app.get('/api/i18n/translations/by-keys', async (req, res) => {
 });
 
 // -----------------------------
-// Email templates endpoints
+// Email templates endpoints (JSON-based multilingual)
 // -----------------------------
+const LOCALES_DIR = path.join(__dirname, '..', 'public', 'locales', 'lang');
+const SUPPORTED_LANGUAGES = ['it', 'en', 'es', 'fr', 'pl'];
+const EMAIL_TEMPLATE_TYPES = ['welcome', 'password_reset', 'event_registration_user', 'event_registration_organizer'];
+
+// Helper: read locale JSON file
+async function readLocaleFile(lang) {
+  const filePath = path.join(LOCALES_DIR, `${lang}.json`);
+  try {
+    const content = await fsp.readFile(filePath, 'utf-8');
+    return JSON.parse(content);
+  } catch (e) {
+    console.warn(`[locale] Failed to read ${lang}.json:`, e?.message || e);
+    return null;
+  }
+}
+
+// Helper: write locale JSON file
+async function writeLocaleFile(lang, data) {
+  const filePath = path.join(LOCALES_DIR, `${lang}.json`);
+  await fsp.writeFile(filePath, JSON.stringify(data, null, 2), 'utf-8');
+}
+
+// Get all email templates for all languages
 app.get('/api/email-templates', requireAuth, requireAdmin, async (_req, res) => {
   try {
-    const { rows } = await pool.query(`
-      SELECT 
-        template_type,
-        subject,
-        COALESCE(html_content, html) AS html_content,
-        COALESCE(is_active, true) AS is_active,
-        created_at,
-        updated_at
-      FROM email_templates
-      ORDER BY template_type ASC
-    `);
-    res.json(rows);
+    const result = {};
+    for (const lang of SUPPORTED_LANGUAGES) {
+      const localeData = await readLocaleFile(lang);
+      if (localeData?.emails) {
+        result[lang] = localeData.emails;
+      }
+    }
+    res.json(result);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
-app.get('/api/email-templates/:type', requireAuth, requireAdmin, async (req, res) => {
+// Get email templates for a specific language
+app.get('/api/email-templates/lang/:lang', requireAuth, requireAdmin, async (req, res) => {
+  const { lang } = req.params;
+  if (!SUPPORTED_LANGUAGES.includes(lang)) {
+    return res.status(400).json({ error: 'Unsupported language' });
+  }
   try {
-    const { rows } = await pool.query(`
-      SELECT 
-        template_type,
-        subject,
-        COALESCE(html_content, html) AS html_content,
-        COALESCE(is_active, true) AS is_active,
-        created_at,
-        updated_at
-      FROM email_templates WHERE template_type = $1 LIMIT 1
-    `, [req.params.type]);
-    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
+    const localeData = await readLocaleFile(lang);
+    if (!localeData?.emails) {
+      return res.status(404).json({ error: 'Email templates not found for this language' });
+    }
+    res.json(localeData.emails);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
-app.put('/api/email-templates/:type', requireAuth, requireAdmin, async (req, res) => {
-  const { subject, html_content, is_active } = req.body || {};
-  const fields = [];
-  const values = [];
-  if (subject !== undefined) { fields.push('subject'); values.push(subject); }
-  if (html_content !== undefined) { fields.push('html_content'); values.push(html_content); }
-  if (typeof is_active === 'boolean') { fields.push('is_active'); values.push(is_active); }
-  if (fields.length === 0) return res.status(400).json({ error: 'no fields to update' });
-  const sets = fields.map((k,i)=> `${k} = $${i+1}`).join(', ');
+// Update a specific email template for a specific language
+app.put('/api/email-templates/lang/:lang/:type', requireAuth, requireAdmin, async (req, res) => {
+  const { lang, type } = req.params;
+  if (!SUPPORTED_LANGUAGES.includes(lang)) {
+    return res.status(400).json({ error: 'Unsupported language' });
+  }
+  if (!EMAIL_TEMPLATE_TYPES.includes(type)) {
+    return res.status(400).json({ error: 'Invalid template type' });
+  }
+  const templateData = req.body;
+  if (!templateData || typeof templateData !== 'object') {
+    return res.status(400).json({ error: 'Invalid template data' });
+  }
   try {
-    const { rows } = await pool.query(`UPDATE email_templates SET ${sets}, updated_at = now() WHERE template_type = $${fields.length+1} RETURNING *`, [...values, req.params.type]);
-    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
+    const localeData = await readLocaleFile(lang);
+    if (!localeData) {
+      return res.status(404).json({ error: 'Locale file not found' });
+    }
+    if (!localeData.emails) {
+      localeData.emails = {};
+    }
+    localeData.emails[type] = templateData;
+    await writeLocaleFile(lang, localeData);
+    res.json({ ok: true, lang, type, template: templateData });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
+});
+
+// Get supported languages
+app.get('/api/email-templates/languages', requireAuth, requireAdmin, async (_req, res) => {
+  res.json(SUPPORTED_LANGUAGES);
+});
+
+// Get template types
+app.get('/api/email-templates/types', requireAuth, requireAdmin, async (_req, res) => {
+  res.json(EMAIL_TEMPLATE_TYPES);
 });
 
 // Update event

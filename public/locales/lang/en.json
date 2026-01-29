@@ -716,5 +716,37 @@
         "content": "For clarifications or requests regarding data or cookie management: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
       }
     }
+  },
+  "emails": {
+    "welcome": {
+      "subject": "Welcome to the WeApnea Community!",
+      "greeting": "Hi,",
+      "body": "Thank you for joining the WeApnea Community.\n\nYou can now fill in your profile details in the Member Area (top right) and stay updated on all published activities.\n\nIf you are a certified instructor, you can also start publishing your upcoming events!\n\nWeApnea has only recently launched and, as we are still in the testing phase, your feedback or comments would be invaluable to us.\n\nThank you for supporting us in this dive toward a more inclusive and collaborative freediving experience.",
+      "signature": "Best,\nPaolo and the WeApnea Team"
+    },
+    "password_reset": {
+      "subject": "Reset your WeApnea password",
+      "greeting": "Hi,",
+      "body": "You requested a password reset for your WeApnea account.\nNo problem, you can set a new password by clicking the link below:",
+      "link_label": "Reset Password",
+      "ignore_notice": "If you didn't make this request, you can safely ignore this email.",
+      "closing": "Stay in touch,",
+      "signature": "The WeApnea Team"
+    },
+    "event_registration_user": {
+      "subject": "Booking Confirmation on WeApnea: you're all set for your event!",
+      "greeting": "Hi,",
+      "body": "This email confirms your registration for the event you selected on WeApnea.\n\nYou can stay in touch with the organizer using the contact details provided on their profile.\n\nIf you need any assistance, feel free to contact us here:",
+      "contact_link": "https://www.weapnea.com/contattaci",
+      "closing": "Have fun!",
+      "signature": "The WeApnea Team"
+    },
+    "event_registration_organizer": {
+      "subject": "Registration Confirmed on WeApnea: contact the participant!",
+      "greeting": "Dear Instructor,",
+      "body": "We are writing to inform you that there is a new confirmed registration for your event on WeApnea.\n\nYou can find all the details on your Dashboard, within the Personal Area dedicated to your events.\n\nWe encourage you to reach out and get in touch with the registered user.",
+      "closing": "Best regards,",
+      "signature": "The WeApnea Team"
+    }
   }
 }

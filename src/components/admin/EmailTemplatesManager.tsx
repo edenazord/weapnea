@@ -5,23 +5,48 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/components/ui/use-toast';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { getEmailTemplates, updateEmailTemplate, EmailTemplate, seedEmailTemplatesDefaults } from '@/lib/email-templates-api';
-import { Mail, Save, Eye, Database } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { apiGet, apiSend } from '@/lib/apiClient';
+import { Mail, Save, Globe } from 'lucide-react';
+
+type EmailTemplate = {
+  subject: string;
+  greeting: string;
+  body: string;
+  signature: string;
+  link_label?: string;
+  ignore_notice?: string;
+  closing?: string;
+  contact_link?: string;
+};
+
+type EmailTemplates = {
+  [templateType: string]: EmailTemplate;
+};
+
+type AllLanguagesTemplates = {
+  [lang: string]: EmailTemplates;
+};
+
+const TEMPLATE_TYPES = ['welcome', 'password_reset', 'event_registration_user', 'event_registration_organizer'];
+const LANGUAGES = [
+  { code: 'it', name: 'Italiano', flag: '🇮🇹' },
+  { code: 'en', name: 'English', flag: '🇬🇧' },
+];
 
 const EmailTemplatesManager = () => {
-  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
+  const [templates, setTemplates] = useState<AllLanguagesTemplates>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState<string | null>(null);
-  const [seeding, setSeeding] = useState(false);
+  const [selectedLang, setSelectedLang] = useState('it');
   const { toast } = useToast();
 
   const loadTemplates = useCallback(async () => {
     try {
-      const data = await getEmailTemplates();
-      setTemplates(data);
+      const data = await apiGet('/api/email-templates');
+      setTemplates(data as AllLanguagesTemplates);
     } catch (error) {
       toast({
         title: 'Errore',
@@ -37,18 +62,16 @@ const EmailTemplatesManager = () => {
     loadTemplates();
   }, [loadTemplates]);
 
-  const handleSave = async (template: EmailTemplate) => {
-    setSaving(template.id);
+  const handleSave = async (templateType: string) => {
+    const template = templates[selectedLang]?.[templateType];
+    if (!template) return;
+
+    setSaving(templateType);
     try {
-      await updateEmailTemplate(template.template_type, {
-        subject: template.subject,
-        html_content: template.html_content,
-        is_active: template.is_active,
-      });
-      
+      await apiSend(`/api/email-templates/lang/${selectedLang}/${templateType}`, 'PUT', template);
       toast({
         title: 'Successo',
-        description: 'Template email aggiornato',
+        description: `Template "${getTemplateTitle(templateType)}" aggiornato per ${getLangName(selectedLang)}`,
       });
     } catch (error) {
       toast({
@@ -61,139 +84,164 @@ const EmailTemplatesManager = () => {
     }
   };
 
-  const updateTemplate = (index: number, field: keyof EmailTemplate, value: any) => {
-    setTemplates(prev => prev.map((template, i) => 
-      i === index ? { ...template, [field]: value } : template
-    ));
+  const updateTemplate = (templateType: string, field: keyof EmailTemplate, value: string) => {
+    setTemplates(prev => ({
+      ...prev,
+      [selectedLang]: {
+        ...prev[selectedLang],
+        [templateType]: {
+          ...prev[selectedLang]?.[templateType],
+          [field]: value,
+        },
+      },
+    }));
   };
 
   const getTemplateTitle = (type: string) => {
     switch (type) {
       case 'welcome':
-        return 'Iscrizione';
+        return 'Benvenuto / Welcome';
       case 'password_reset':
         return 'Recupero Password';
       case 'event_registration_user':
         return 'Iscrizione Evento (Utente)';
       case 'event_registration_organizer':
-        return 'Conferma Iscrizione (Organizzatore)';
+        return 'Iscrizione Evento (Organizzatore)';
       default:
         return type;
     }
+  };
+
+  const getLangName = (code: string) => {
+    return LANGUAGES.find(l => l.code === code)?.name || code;
+  };
+
+  const getTemplateFields = (type: string): (keyof EmailTemplate)[] => {
+    const baseFields: (keyof EmailTemplate)[] = ['subject', 'greeting', 'body', 'signature'];
+    switch (type) {
+      case 'password_reset':
+        return [...baseFields, 'link_label', 'ignore_notice', 'closing'];
+      case 'event_registration_user':
+        return [...baseFields, 'contact_link', 'closing'];
+      case 'event_registration_organizer':
+        return [...baseFields, 'closing'];
+      default:
+        return baseFields;
+    }
+  };
+
+  const getFieldLabel = (field: keyof EmailTemplate) => {
+    const labels: Record<keyof EmailTemplate, string> = {
+      subject: 'Oggetto',
+      greeting: 'Saluto iniziale',
+      body: 'Corpo del messaggio',
+      signature: 'Firma',
+      link_label: 'Testo del pulsante',
+      ignore_notice: 'Avviso ignora email',
+      closing: 'Chiusura',
+      contact_link: 'Link contatti',
+    };
+    return labels[field] || field;
   };
 
   if (loading) {
     return <div className="flex justify-center p-8">Caricamento...</div>;
   }
 
+  const currentTemplates = templates[selectedLang] || {};
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-2">
-        <Mail className="h-6 w-6" />
-        <h2 className="text-2xl font-bold">Gestione Template Email</h2>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <Mail className="h-6 w-6" />
+          <h2 className="text-2xl font-bold">Gestione Template Email</h2>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Globe className="h-4 w-4 text-muted-foreground" />
+          <Select value={selectedLang} onValueChange={setSelectedLang}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {LANGUAGES.map(lang => (
+                <SelectItem key={lang.code} value={lang.code}>
+                  <span className="flex items-center gap-2">
+                    <span>{lang.flag}</span>
+                    <span>{lang.name}</span>
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {templates.length === 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Nessun template trovato</CardTitle>
-            <CardDescription>
-              Puoi caricare i template predefiniti per iniziare: Iscrizione, Recupero Password, Iscrizione Evento (Utente), Conferma Iscrizione (Organizzatore)
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button
-              onClick={async () => {
-                setSeeding(true);
-                const res = await seedEmailTemplatesDefaults();
-                if (res) {
-                  const n = (res && (res.count ?? res.inserted)) ?? null;
-                  toast({ title: 'Template creati', description: n ? `${n} template caricati` : 'Template predefiniti caricati' });
-                  await loadTemplates();
-                } else {
-                  toast({ title: 'Errore', description: 'Impossibile caricare i template predefiniti', variant: 'destructive' });
-                }
-                setSeeding(false);
-              }}
-              disabled={seeding}
-            >
-              <Database className="h-4 w-4 mr-2" />
-              {seeding ? 'Caricamento...' : 'Carica template predefiniti'}
-            </Button>
-          </CardContent>
-        </Card>
-      )}
+      <Card className="bg-blue-50 border-blue-200">
+        <CardContent className="pt-4">
+          <p className="text-sm text-blue-800">
+            <strong>Multilingua:</strong> Seleziona la lingua dal menu in alto a destra per modificare i template in quella lingua.
+            Le email verranno inviate nella lingua impostata dall'utente.
+          </p>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="welcome" className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-          {templates.map((template) => (
-            <TabsTrigger key={template.template_type} value={template.template_type}>
-              {getTemplateTitle(template.template_type)}
+          {TEMPLATE_TYPES.map((type) => (
+            <TabsTrigger key={type} value={type}>
+              {getTemplateTitle(type).split(' / ')[0]}
             </TabsTrigger>
           ))}
         </TabsList>
 
-        {templates.map((template, index) => (
-          <TabsContent key={template.template_type} value={template.template_type}>
+        {TEMPLATE_TYPES.map((templateType) => (
+          <TabsContent key={templateType} value={templateType}>
             <Card>
               <CardHeader>
-                <CardTitle>{getTemplateTitle(template.template_type)}</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  {getTemplateTitle(templateType)}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    ({getLangName(selectedLang)})
+                  </span>
+                </CardTitle>
                 <CardDescription>
-                  Personalizza il template per le email di {getTemplateTitle(template.template_type).toLowerCase()}
+                  Personalizza il template per le email di {getTemplateTitle(templateType).toLowerCase().split(' / ')[0]}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={template.is_active}
-                    onCheckedChange={(checked) => updateTemplate(index, 'is_active', checked)}
-                  />
-                  <Label>Template attivo</Label>
-                </div>
+                {getTemplateFields(templateType).map(field => (
+                  <div key={field} className="space-y-2">
+                    <Label htmlFor={`${templateType}-${field}`}>{getFieldLabel(field)}</Label>
+                    {field === 'body' ? (
+                      <Textarea
+                        id={`${templateType}-${field}`}
+                        value={currentTemplates[templateType]?.[field] || ''}
+                        onChange={(e) => updateTemplate(templateType, field, e.target.value)}
+                        placeholder={getFieldLabel(field)}
+                        rows={8}
+                        className="font-mono text-sm"
+                      />
+                    ) : (
+                      <Input
+                        id={`${templateType}-${field}`}
+                        value={currentTemplates[templateType]?.[field] || ''}
+                        onChange={(e) => updateTemplate(templateType, field, e.target.value)}
+                        placeholder={getFieldLabel(field)}
+                      />
+                    )}
+                  </div>
+                ))}
 
-                <div className="space-y-2">
-                  <Label htmlFor={`subject-${template.template_type}`}>Oggetto</Label>
-                  <Input
-                    id={`subject-${template.template_type}`}
-                    value={template.subject}
-                    onChange={(e) => updateTemplate(index, 'subject', e.target.value)}
-                    placeholder="Oggetto dell'email"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor={`content-${template.template_type}`}>Contenuto HTML</Label>
-                  <Textarea
-                    id={`content-${template.template_type}`}
-                    value={template.html_content}
-                    onChange={(e) => updateTemplate(index, 'html_content', e.target.value)}
-                    placeholder="Contenuto HTML dell'email"
-                    rows={10}
-                  />
-                </div>
-
-                <div className="flex justify-between">
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      // Preview functionality could be implemented here
-                      toast({
-                        title: 'Info',
-                        description: 'Funzionalità di anteprima in sviluppo',
-                      });
-                    }}
-                  >
-                    <Eye className="h-4 w-4 mr-2" />
-                    Anteprima
-                  </Button>
-
+                <div className="flex justify-end pt-4">
                   <Button
                     variant="brand"
-                    onClick={() => handleSave(template)}
-                    disabled={saving === template.id}
+                    onClick={() => handleSave(templateType)}
+                    disabled={saving === templateType}
                   >
                     <Save className="h-4 w-4 mr-2" />
-                    {saving === template.id ? 'Salvataggio...' : 'Salva'}
+                    {saving === templateType ? 'Salvataggio...' : 'Salva'}
                   </Button>
                 </div>
               </CardContent>

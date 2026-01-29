@@ -716,5 +716,37 @@
 				"content": "Per chiarimenti o richieste sulla gestione dei dati o dei cookie: <a href=\"mailto:weapnea@gmail.com\">weapnea@gmail.com</a>"
 			}
 		}
+	},
+	"emails": {
+		"welcome": {
+			"subject": "Benvenuto nella Community WeApnea!",
+			"greeting": "Ciao,",
+			"body": "grazie di essere entrato a far parte della Community WeApnea.\nOra potrai inserire i tuoi dati nell'Area Riservata (in alto a dx) ed informarti sulle attività pubblicate.\nSe sei già un istruttore certificato potrai anche pubblicare i tuoi prossimi eventi!\nWeApnea è un portale nato da pochissimo e, trattandosi ancora di una fase di test, ogni tua segnalazione o commento sarà preziosissimo.\nGrazie di supportarci in questo tuffo verso un'apnea più corale.",
+			"signature": "Paolo e il Team di WeApnea"
+		},
+		"password_reset": {
+			"subject": "Recupero Password WeApnea",
+			"greeting": "Ciao,",
+			"body": "hai segnalato l'esigenza di recuperare la password di WeApnea.\nNessun problema, puoi inserire una nuova password cliccando al seguente link:",
+			"link_label": "Reset Password",
+			"ignore_notice": "Se si tratta di un errore, puoi tranquillamente ignorare questa mail.",
+			"closing": "Restiamo in contatto per qualsiasi esigenza,",
+			"signature": "Il Team di WeApnea"
+		},
+		"event_registration_user": {
+			"subject": "Iscrizione Confermata su WeApnea: è tutto pronto per il tuo evento!",
+			"greeting": "Ciao,",
+			"body": "ti confermiamo l'iscrizione all'evento che hai scelto su WeApnea.\nResta in contatto con l'organizzatore utilizzando i contatti che compaiono sul suo profilo.\nPer ogni esigenza puoi contattarci da qui:",
+			"contact_link": "https://www.weapnea.com/contattaci",
+			"closing": "Buon divertimento!",
+			"signature": "Il Team di WeApnea"
+		},
+		"event_registration_organizer": {
+			"subject": "Iscrizione Confermata su WeApnea: contatta il partecipante!",
+			"greeting": "Gentile Istruttore/Istruttrice,",
+			"body": "ti segnaliamo che c'è una nuova conferma di partecipazione al tuo evento su WeApnea.\nLo troverai sulla Dashboard nella tua Area Personale dedicata agli eventi.\nTi invitiamo a prendere contatto con l'utente iscritto.",
+			"closing": "Buon lavoro,",
+			"signature": "il Team di WeApnea"
+		}
 	}
 }
