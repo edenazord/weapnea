@@ -222,7 +222,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-change-me';
 let HAS_PERSONAL_BEST = false;
 let HAS_USER_PACKAGES = false;
 let HAS_PUBLIC_PROFILE_FIELDS = false;
-let HAS_ORGANIZER_REQUEST = false; 
+let HAS_ORGANIZER_REQUEST = false;
+let HAS_OTHER_CERTIFICATIONS = false;
 
 async function ensurePersonalBestColumnAtRuntime() {
   try {
@@ -230,6 +231,15 @@ async function ensurePersonalBestColumnAtRuntime() {
     HAS_PERSONAL_BEST = true;
   } catch (e) {
     console.warn('[personal_best] ensure column failed:', e?.message || e);
+  }
+}
+
+async function ensureOtherCertificationsColumnAtRuntime() {
+  try {
+    await pool.query("ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS other_certifications jsonb");
+    HAS_OTHER_CERTIFICATIONS = true;
+  } catch (e) {
+    console.warn('[other_certifications] ensure column failed:', e?.message || e);
   }
 }
 // Ensure column for medical certificate type (agonistico/non_agonistico)
@@ -312,6 +322,14 @@ async function detectSchema() {
     const { rowCount } = await pool.query(q);
     HAS_PERSONAL_BEST = rowCount > 0;
     if (!HAS_PERSONAL_BEST) console.warn('[startup] profiles.personal_best NOT present');
+    
+    // Check other_certifications
+    const qoc = `SELECT 1 FROM information_schema.columns 
+               WHERE table_schema='public' AND table_name='profiles' AND column_name='other_certifications'`;
+    const { rowCount: rcOc } = await pool.query(qoc);
+    HAS_OTHER_CERTIFICATIONS = rcOc > 0;
+    if (!HAS_OTHER_CERTIFICATIONS) console.warn('[startup] profiles.other_certifications NOT present');
+    
     const r2 = await pool.query("SELECT to_regclass('public.user_packages') as t");
     HAS_USER_PACKAGES = !!r2.rows?.[0]?.t;
     if (!HAS_USER_PACKAGES) console.warn('[startup] user_packages table NOT present');
@@ -1002,16 +1020,20 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
   if (!HAS_PERSONAL_BEST) { await ensurePersonalBestColumnAtRuntime(); }
+  if (!HAS_OTHER_CERTIFICATIONS) { await ensureOtherCertificationsColumnAtRuntime(); }
   const pb = HAS_PERSONAL_BEST
     ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best"
     : ", '{}'::jsonb AS personal_best";
+  const oc = HAS_OTHER_CERTIFICATIONS
+    ? ", COALESCE(other_certifications, '[]'::jsonb) AS other_certifications"
+    : ", '[]'::jsonb AS other_certifications";
   const pub = HAS_PUBLIC_PROFILE_FIELDS
     ? ", COALESCE(public_profile_enabled,false) AS public_profile_enabled, public_slug, COALESCE(public_show_bio,true) AS public_show_bio, COALESCE(public_show_instagram,true) AS public_show_instagram, COALESCE(public_show_company_info,true) AS public_show_company_info, COALESCE(public_show_certifications,true) AS public_show_certifications, COALESCE(public_show_events,true) AS public_show_events, COALESCE(public_show_records,true) AS public_show_records, COALESCE(public_show_personal,true) AS public_show_personal"
     : ", false AS public_profile_enabled, NULL::text AS public_slug, true AS public_show_bio, true AS public_show_instagram, true AS public_show_company_info, true AS public_show_certifications, true AS public_show_events, true AS public_show_records, true AS public_show_personal";
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico, certificato_medico_tipo,
-    assicurazione, scadenza_assicurazione, instagram_contact${pb},
+    assicurazione, scadenza_assicurazione, instagram_contact${pb}${oc},
     company_name, vat_number, company_address, phone${pub}
      FROM profiles WHERE id = $1 LIMIT 1`;
   const { rows } = await pool.query(sql, [req.user.id]);
@@ -1127,6 +1149,7 @@ app.put('/api/profile', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
     if (!HAS_PERSONAL_BEST) { await ensurePersonalBestColumnAtRuntime(); }
+    if (!HAS_OTHER_CERTIFICATIONS) { await ensureOtherCertificationsColumnAtRuntime(); }
     if (!HAS_PUBLIC_PROFILE_FIELDS) {
       try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
     }
@@ -1140,6 +1163,7 @@ app.put('/api/profile', requireAuth, async (req, res) => {
     // Accetta sempre i flag pubblici; se le colonne mancassero, effettueremo un ensure e un retry sotto
   allowed.push('public_profile_enabled','public_slug','public_show_bio','public_show_instagram','public_show_company_info','public_show_certifications','public_show_events','public_show_records','public_show_personal');
     if (HAS_PERSONAL_BEST) allowed.push('personal_best');
+    if (HAS_OTHER_CERTIFICATIONS) allowed.push('other_certifications');
     const p = req.body || {};
     // Sanitizza/normalizza slug lato server (sicurezza/coerenza)
     if (typeof p.public_slug === 'string') {
@@ -1172,13 +1196,13 @@ app.put('/api/profile', requireAuth, async (req, res) => {
     if (fields.length === 0) return res.status(400).json({ error: 'no valid fields to update' });
     // Serialize JSON fields
     const values = fields.map((k) => {
-      if (k === 'personal_best' && p[k] && typeof p[k] !== 'string') {
+      if ((k === 'personal_best' || k === 'other_certifications') && p[k] && typeof p[k] !== 'string') {
         return JSON.stringify(p[k]);
       }
       return p[k];
     });
     const sets = fields.map((k,i)=> {
-      if (k === 'personal_best') return `${k} = $${i+1}::jsonb`;
+      if (k === 'personal_best' || k === 'other_certifications') return `${k} = $${i+1}::jsonb`;
       return `${k} = $${i+1}`;
     }).join(', ');
   const sql = `UPDATE profiles SET ${sets}, updated_at = now() WHERE id = $${fields.length+1} RETURNING *`;
@@ -1704,14 +1728,16 @@ app.get('/api/events/:id/organizer-contact', requireAuth, async (req, res) => {
     if (!prof) return res.status(404).json({ error: 'Profile not found' });
     const isEmpty = (v) => !v || String(v).trim() === '';
     const today = new Date();
+    // Tolleranza di 1 mese: chi scade nel mese corrente può ancora iscriversi
+    const toleranceDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
     const sa = prof.scadenza_assicurazione ? new Date(prof.scadenza_assicurazione) : null;
     const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
     const tipo = prof.certificato_medico_tipo ? String(prof.certificato_medico_tipo) : '';
     const ok = (
       !isEmpty(prof.phone) &&
       !isEmpty(prof.assicurazione) &&
-      sa && sa instanceof Date && !isNaN(sa.getTime()) && sa >= today &&
-      sc && sc instanceof Date && !isNaN(sc.getTime()) && sc >= today &&
+      sa && sa instanceof Date && !isNaN(sa.getTime()) && sa >= toleranceDate &&
+      sc && sc instanceof Date && !isNaN(sc.getTime()) && sc >= toleranceDate &&
       (tipo === 'agonistico' || tipo === 'non_agonistico')
     );
     if (!ok) return res.status(403).json({ error: 'not_eligible' });
@@ -2145,10 +2171,12 @@ app.post('/api/events', requireAuth, async (req, res) => {
       if (isEmpty(prof.phone)) missing.push('phone');
       if (isEmpty(prof.assicurazione)) missing.push('assicurazione');
       const today = new Date();
+      // Tolleranza di 1 mese: chi scade nel mese corrente può ancora operare
+      const toleranceDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
       const sa = prof.scadenza_assicurazione ? new Date(prof.scadenza_assicurazione) : null;
       const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
-      if (!sa || isNaN(sa.getTime()) || sa < today) missing.push('scadenza_assicurazione');
-      if (!sc || isNaN(sc.getTime()) || sc < today) missing.push('scadenza_certificato_medico');
+      if (!sa || isNaN(sa.getTime()) || sa < toleranceDate) missing.push('scadenza_assicurazione');
+      if (!sc || isNaN(sc.getTime()) || sc < toleranceDate) missing.push('scadenza_certificato_medico');
       if (missing.length) {
         return res.status(400).json({ error: 'organizer_requirements_missing', missing });
       }
@@ -2209,13 +2237,15 @@ app.post('/api/payments/create-checkout-session', requireAuth, async (req, res) 
     if (!prof) return res.status(404).json({ error: 'Profile not found' });
     const missing = [];
     const today = new Date();
+    // Tolleranza di 1 mese: chi scade nel mese corrente può ancora iscriversi
+    const toleranceDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
     const isEmpty = (v) => !v || String(v).trim() === '';
     if (isEmpty(prof.phone)) missing.push('phone');
     if (isEmpty(prof.assicurazione)) missing.push('assicurazione');
     const sa = prof.scadenza_assicurazione ? new Date(prof.scadenza_assicurazione) : null;
     const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
-    if (!sa || !(sa instanceof Date) || isNaN(sa.getTime()) || sa < today) missing.push('scadenza_assicurazione');
-    if (!sc || !(sc instanceof Date) || isNaN(sc.getTime()) || sc < today) missing.push('scadenza_certificato_medico');
+    if (!sa || !(sa instanceof Date) || isNaN(sa.getTime()) || sa < toleranceDate) missing.push('scadenza_assicurazione');
+    if (!sc || !(sc instanceof Date) || isNaN(sc.getTime()) || sc < toleranceDate) missing.push('scadenza_certificato_medico');
     if (missing.length) {
       return res.status(400).json({ error: 'profile_incomplete', missing });
     }
@@ -3109,13 +3139,15 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
       if (!prof) return res.status(404).json({ error: 'Profile not found' });
       const missing = [];
       const today = new Date();
+      // Tolleranza di 1 mese: chi scade nel mese corrente può ancora iscriversi
+      const toleranceDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
       const isEmpty = (v) => !v || String(v).trim() === '';
       if (isEmpty(prof.phone)) missing.push('phone');
       if (isEmpty(prof.assicurazione)) missing.push('assicurazione');
       const sa = prof.scadenza_assicurazione ? new Date(prof.scadenza_assicurazione) : null;
       const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
-      if (!sa || !(sa instanceof Date) || isNaN(sa.getTime()) || sa < today) missing.push('scadenza_assicurazione');
-      if (!sc || !(sc instanceof Date) || isNaN(sc.getTime()) || sc < today) missing.push('scadenza_certificato_medico');
+      if (!sa || !(sa instanceof Date) || isNaN(sa.getTime()) || sa < toleranceDate) missing.push('scadenza_assicurazione');
+      if (!sc || !(sc instanceof Date) || isNaN(sc.getTime()) || sc < toleranceDate) missing.push('scadenza_certificato_medico');
       if (missing.length) {
         return res.status(400).json({ error: 'profile_incomplete', missing });
       }

@@ -33,6 +33,8 @@ export const EventPaymentButton = ({
   const [isLoading, setIsLoading] = useState(false);
   const [justRegistered, setJustRegistered] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [eventsFreeMode, setEventsFreeMode] = useState(true); // default true per sicurezza
   const { user } = useAuth();
@@ -82,30 +84,37 @@ export const EventPaymentButton = ({
       return;
     }
 
+    // Controlla SEMPRE i campi profilo obbligatori (sia eventi a pagamento che gratuiti)
+    const missing: string[] = [];
+    const today = new Date();
+    // Tolleranza di 1 mese: chi scade nel mese corrente può ancora iscriversi
+    const toleranceDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+    const isEmpty = (v?: string | null) => !v || String(v).trim() === '';
+    if (isEmpty(user.phone)) missing.push(t('profile.fields.phone', 'Telefono'));
+    if (isEmpty(user.assicurazione)) missing.push(t('profile.fields.insurance', 'Assicurazione'));
+    const sa = user.scadenza_assicurazione ? new Date(user.scadenza_assicurazione) : null;
+    const sc = user.scadenza_certificato_medico ? new Date(user.scadenza_certificato_medico) : null;
+    if (!sa || isNaN(sa.getTime()) || sa < toleranceDate) missing.push(t('profile.fields.insurance_expiry', 'Scadenza assicurazione'));
+    if (!sc || isNaN(sc.getTime()) || sc < toleranceDate) missing.push(t('profile.fields.medical_cert_expiry', 'Scadenza certificato medico'));
+    // Richiedi anche il tipo di certificato medico (agonistico/non_agonistico)
+    const tipo = (user as any).certificato_medico_tipo as string | null | undefined;
+    if (!tipo || !['agonistico', 'non_agonistico'].includes(String(tipo))) {
+      missing.push(t('profile.fields.medical_cert_type', 'Tipo certificato medico'));
+    }
+    if (missing.length) {
+      setMissingFields(missing);
+      setShowProfileModal(true);
+      return;
+    }
+
+    // Mostra dialog di conferma prima di procedere
+    setShowConfirmDialog(true);
+  };
+
+  const handleConfirmRegistration = async () => {
+    setShowConfirmDialog(false);
     setIsLoading(true);
     try {
-      // Controlla SEMPRE i campi profilo obbligatori (sia eventi a pagamento che gratuiti)
-      const missing: string[] = [];
-      const today = new Date();
-      const isEmpty = (v?: string | null) => !v || String(v).trim() === '';
-      if (isEmpty(user.phone)) missing.push(t('profile.fields.phone', 'Telefono'));
-      if (isEmpty(user.assicurazione)) missing.push(t('profile.fields.insurance', 'Assicurazione'));
-      const sa = user.scadenza_assicurazione ? new Date(user.scadenza_assicurazione) : null;
-      const sc = user.scadenza_certificato_medico ? new Date(user.scadenza_certificato_medico) : null;
-      if (!sa || isNaN(sa.getTime()) || sa < today) missing.push(t('profile.fields.insurance_expiry', 'Scadenza assicurazione'));
-      if (!sc || isNaN(sc.getTime()) || sc < today) missing.push(t('profile.fields.medical_cert_expiry', 'Scadenza certificato medico'));
-      // Richiedi anche il tipo di certificato medico (agonistico/non_agonistico)
-      const tipo = (user as any).certificato_medico_tipo as string | null | undefined;
-      if (!tipo || !['agonistico', 'non_agonistico'].includes(String(tipo))) {
-        missing.push(t('profile.fields.medical_cert_type', 'Tipo certificato medico'));
-      }
-      if (missing.length) {
-        setMissingFields(missing);
-        setShowProfileModal(true);
-        setIsLoading(false);
-        return;
-      }
-
       // Se eventsFreeMode è attivo, tratta tutti gli eventi come gratuiti
       const treatAsFree = eventsFreeMode || eventCost <= 0;
 
@@ -165,7 +174,8 @@ export const EventPaymentButton = ({
           // Ignora eventuali errori di aggiornamento cache: l'iscrizione è comunque avvenuta
         }
         setJustRegistered(true);
-        toast.success(t('events.registration_success', 'Iscrizione completata!'));
+        // Mostra dialog di successo invece del toast
+        setShowSuccessDialog(true);
       }
     } catch (error) {
       console.error("Error creating checkout:", error);
@@ -200,6 +210,40 @@ export const EventPaymentButton = ({
         </>
       )}
     </Button>
+
+    {/* Dialog di conferma iscrizione */}
+    <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('events.confirm_registration_title', 'Conferma iscrizione')}</DialogTitle>
+          <DialogDescription>
+            {t('events.confirm_registration_desc', 'Inviare la conferma d\'iscrizione all\'organizzatore?')}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="mt-4">
+          <Button variant="secondary" onClick={() => setShowConfirmDialog(false)}>{t('events.confirm_cancel', 'Annulla')}</Button>
+          <Button onClick={handleConfirmRegistration} disabled={isLoading}>
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            {t('events.confirm_ok', 'OK')}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+
+    {/* Dialog di successo iscrizione */}
+    <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t('events.registration_success_title', 'Iscrizione completata')}</DialogTitle>
+          <DialogDescription>
+            {t('events.registration_success_desc', 'Sei iscritto! La tua mail è stata inviata.')}
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="mt-4">
+          <Button onClick={() => setShowSuccessDialog(false)}>{t('common.ok', 'OK')}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
 
     <Dialog open={showProfileModal} onOpenChange={setShowProfileModal}>
       <DialogContent>
