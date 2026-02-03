@@ -836,7 +836,7 @@ app.post('/api/contact', async (req, res) => {
     if (!/.+@.+\..+/.test(e)) return res.status(400).json({ error: 'Invalid email' });
     if (m.length < 10) return res.status(400).json({ error: 'Message too short' });
 
-    const to = process.env.CONTACT_TO_EMAIL || process.env.ADMIN_EMAIL || process.env.RESEND_FROM_EMAIL || 'support@weapnea.com';
+    const to = process.env.CONTACT_TO_EMAIL || process.env.ADMIN_EMAIL || process.env.RESEND_FROM_EMAIL || 'weapnea@gmail.com';
     const subject = `[Contatti] Messaggio da ${n}`;
     const escaped = (s) => String(s).replace(/[&<>]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
     const html = BASE_EMAIL_TEMPLATE(
