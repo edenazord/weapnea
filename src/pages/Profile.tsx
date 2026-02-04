@@ -786,22 +786,48 @@ const Profile = () => {
                       >
                         {t('profile.sections.my_events.my_registrations_label', 'Elenco Iscrizioni')}
                       </button>
-                      <button
-                        type="button"
-                        role="tab"
-                        aria-selected={showOrganizer}
-                        disabled={!organizerEligible && user?.role !== 'admin'}
-                        onClick={() => setShowOrganizer(true)}
-                        className={
-                          `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
-                          ${showOrganizer
-                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
-                            : 'bg-transparent text-purple-700 hover:bg-purple-50 disabled:opacity-50 disabled:cursor-not-allowed dark:text-purple-300 dark:hover:bg-purple-800/30'}
-                          `
-                        }
-                      >
-                        {t('profile.sections.my_events.organize_event_label', 'Organizza Evento')}
-                      </button>
+                      {(!organizerEligible && user?.role !== 'admin') ? (
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              role="tab"
+                              aria-selected={showOrganizer}
+                              disabled
+                              className={
+                                `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
+                                bg-transparent text-purple-700 opacity-50 cursor-not-allowed dark:text-purple-300`
+                              }
+                            >
+                              {t('profile.sections.my_events.organize_event_label', 'Organizza Evento')}
+                            </button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="max-w-xs">
+                            <p className="font-semibold mb-1">{t('profile.sections.my_events.missing_requirements', 'Requisiti mancanti:')}</p>
+                            <ul className="list-disc list-inside text-sm space-y-0.5">
+                              {missingRequirements.map((req, i) => (
+                                <li key={i}>{req}</li>
+                              ))}
+                            </ul>
+                          </TooltipContent>
+                        </Tooltip>
+                      ) : (
+                        <button
+                          type="button"
+                          role="tab"
+                          aria-selected={showOrganizer}
+                          onClick={() => setShowOrganizer(true)}
+                          className={
+                            `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
+                            ${showOrganizer
+                              ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
+                              : 'bg-transparent text-purple-700 hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-800/30'}
+                            `
+                          }
+                        >
+                          {t('profile.sections.my_events.organize_event_label', 'Organizza Evento')}
+                        </button>
+                      )}
                     </div>
                   </div>
                   {!showOrganizer ? (
