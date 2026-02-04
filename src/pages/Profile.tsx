@@ -147,6 +147,15 @@ const Profile = () => {
   const hasSlug = !!(formData.public_slug && formData.public_slug.trim());
   const organizerEligible = publicEnabled && hasSlug && hasPhone && hasInsurance && insuranceOk && medicalOk;
 
+  // Lista requisiti mancanti per organizzare
+  const missingRequirements: string[] = [];
+  if (!publicEnabled) missingRequirements.push(t('profile.requirements.public_profile', 'Profilo pubblico attivo'));
+  if (!hasSlug) missingRequirements.push(t('profile.requirements.public_slug', 'Slug profilo pubblico'));
+  if (!hasPhone) missingRequirements.push(t('profile.requirements.phone', 'Numero di telefono'));
+  if (!hasInsurance) missingRequirements.push(t('profile.requirements.insurance', 'Assicurazione'));
+  if (hasInsurance && !insuranceOk) missingRequirements.push(t('profile.requirements.insurance_valid', 'Assicurazione in corso di validità'));
+  if (!medicalOk) missingRequirements.push(t('profile.requirements.medical', 'Certificato medico in corso di validità'));
+
   // Nessun calcolo di progress: le sezioni sono opzionali/variabili per ruolo
 
   // Stato per modale laterale (Sheet) come nei modali originali
@@ -865,8 +874,16 @@ const Profile = () => {
                           </Button>
                         </div>
                       ) : null}
-                      {!(user?.role === 'admin' || organizerEligible) && (
-                        <div className="text-xs text-muted-foreground">{t('profile.sections.my_events.complete_sections_hint', 'Completa le sezioni "Certificazioni" e "Visibilità" per abilitare la creazione.')}</div>
+                      {!(user?.role === 'admin' || organizerEligible) && missingRequirements.length > 0 && (
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                          <p className="text-sm font-medium text-amber-800 mb-2">{t('profile.sections.my_events.missing_requirements', 'Requisiti mancanti per organizzare eventi:')}</p>
+                          <ul className="list-disc list-inside text-sm text-amber-700 space-y-1">
+                            {missingRequirements.map((req, i) => (
+                              <li key={i}>{req}</li>
+                            ))}
+                          </ul>
+                          <p className="text-xs text-amber-600 mt-2">{t('profile.sections.my_events.complete_sections_hint', 'Completa le sezioni "Certificazioni" e "Visibilità" per abilitare la creazione.')}</p>
+                        </div>
                       )}
                       <div className="mt-4">
                         <h3 className="font-semibold mb-2">{t('profile.sections.my_events.your_organized_events', 'I tuoi eventi organizzati')}</h3>

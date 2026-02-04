@@ -1104,6 +1104,7 @@ app.get('/api/profile', requireAuth, async (req, res) => {
   if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
   try {
   if (!HAS_PERSONAL_BEST) { await ensurePersonalBestColumnAtRuntime(); }
+  if (!HAS_OTHER_CERTIFICATIONS) { await ensureOtherCertificationsColumnAtRuntime(); }
   // Prova a garantire le colonne del profilo pubblico anche in GET
   if (!HAS_PUBLIC_PROFILE_FIELDS) {
     try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {}
@@ -1112,13 +1113,16 @@ app.get('/api/profile', requireAuth, async (req, res) => {
   const pb = HAS_PERSONAL_BEST
     ? ", COALESCE(personal_best, '{}'::jsonb) AS personal_best"
     : ", '{}'::jsonb AS personal_best";
+  const oc = HAS_OTHER_CERTIFICATIONS
+    ? ", COALESCE(other_certifications, '[]'::jsonb) AS other_certifications"
+    : ", '[]'::jsonb AS other_certifications";
   const pub = HAS_PUBLIC_PROFILE_FIELDS
     ? ", COALESCE(public_profile_enabled,false) AS public_profile_enabled, public_slug, COALESCE(public_show_bio,true) AS public_show_bio, COALESCE(public_show_instagram,true) AS public_show_instagram, COALESCE(public_show_company_info,true) AS public_show_company_info, COALESCE(public_show_certifications,true) AS public_show_certifications, COALESCE(public_show_events,true) AS public_show_events, COALESCE(public_show_records,true) AS public_show_records, COALESCE(public_show_personal,true) AS public_show_personal"
     : ", false AS public_profile_enabled, NULL::text AS public_slug, true AS public_show_bio, true AS public_show_instagram, true AS public_show_company_info, true AS public_show_certifications, true AS public_show_events, true AS public_show_records, true AS public_show_personal";
   const sql = `SELECT 
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico, certificato_medico_tipo,
-    assicurazione, scadenza_assicurazione, instagram_contact${pb},
+    assicurazione, scadenza_assicurazione, instagram_contact${pb}${oc},
     company_name, vat_number, company_address, phone${pub}, organizer_upgrade_requested_at
     , didattica_brevetto, numero_brevetto, foto_brevetto_url, numero_assicurazione
     , COALESCE(dichiarazione_brevetto_valido,false) AS dichiarazione_brevetto_valido
