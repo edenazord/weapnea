@@ -1148,7 +1148,11 @@ const Profile = () => {
                         id="phone"
                         type="tel"
                         value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        onChange={(e) => {
+                          // Accetta solo numeri, +, spazi e trattini
+                          const cleaned = e.target.value.replace(/[^0-9+\s\-]/g, '');
+                          handleInputChange('phone', cleaned);
+                        }}
                         placeholder={t('profile.sections.personal_info.phone_placeholder', 'Es. +39 333 1234567')}
                       />
                     </div>
