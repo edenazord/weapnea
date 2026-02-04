@@ -841,13 +841,14 @@ app.post('/api/contact', async (req, res) => {
     const to = process.env.CONTACT_TO_EMAIL || process.env.ADMIN_EMAIL || 'weapnea@gmail.com';
     const subject = `[Contatti] Messaggio da ${n}`;
     const escaped = (s) => String(s).replace(/[&<>]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-    const html = BASE_EMAIL_TEMPLATE(
+    const rawHtml = BASE_EMAIL_TEMPLATE(
       'Nuovo messaggio contatti',
       `<p><strong>Nome:</strong> ${escaped(n)}</p>
        <p><strong>Email:</strong> ${escaped(e)}</p>
        <p><strong>Messaggio:</strong></p>
        <p style="white-space:pre-line">${escaped(m)}</p>`
     );
+    const html = simpleRender(rawHtml, { app_name: APP_NAME, public_base: PRODUCTION_BASE_URL });
     await sendEmail({ to, subject, html });
     return res.json({ ok: true });
   } catch (err) {
