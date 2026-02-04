@@ -20,6 +20,8 @@ const { Resend } = require('resend');
 const fsp = require('fs/promises');
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5174;
+// URL pubblico di produzione usato come fallback per le email
+const PRODUCTION_BASE_URL = 'https://www.weapnea.com';
 const DATABASE_URL = process.env.POSTGRES_URL || process.env.DATABASE_URL || process.env.RENDER_EXTERNAL_DB_URL;
 if (!DATABASE_URL) {
   console.error('Missing POSTGRES_URL env var');
@@ -836,15 +838,15 @@ app.post('/api/contact', async (req, res) => {
     if (!/.+@.+\..+/.test(e)) return res.status(400).json({ error: 'Invalid email' });
     if (m.length < 10) return res.status(400).json({ error: 'Message too short' });
 
-    const to = process.env.CONTACT_TO_EMAIL || process.env.ADMIN_EMAIL || process.env.RESEND_FROM_EMAIL || 'weapnea@gmail.com';
+    const to = process.env.CONTACT_TO_EMAIL || process.env.ADMIN_EMAIL || 'weapnea@gmail.com';
     const subject = `[Contatti] Messaggio da ${n}`;
     const escaped = (s) => String(s).replace(/[&<>]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
     const html = BASE_EMAIL_TEMPLATE(
+      'Nuovo messaggio contatti',
       `<p><strong>Nome:</strong> ${escaped(n)}</p>
        <p><strong>Email:</strong> ${escaped(e)}</p>
        <p><strong>Messaggio:</strong></p>
-       <p style="white-space:pre-line">${escaped(m)}</p>`,
-      'Nuovo messaggio contatti'
+       <p style="white-space:pre-line">${escaped(m)}</p>`
     );
     await sendEmail({ to, subject, html });
     return res.json({ ok: true });
@@ -977,7 +979,7 @@ app.post('/api/auth/request-password-reset', async (req, res) => {
        ON CONFLICT (user_id) DO UPDATE SET token_hash = EXCLUDED.token_hash, expires_at = EXCLUDED.expires_at`,
       [user.id, resetToken]
     );
-  const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+  const base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
   const link = `${base.replace(/\/$/, '')}/password-reset?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(user.email)}&type=recovery`;
     const rendered = await renderEmailWithTemplate('password_reset', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME, reset_link: link },
       'Recupero password {{app_name}}',
@@ -1075,7 +1077,7 @@ app.post('/api/email/test', requireAuth, requireAdmin, async (req, res) => {
     if (!to) return res.status(400).json({ error: 'to is required' });
     let finalSubject = subject;
     let finalHtml = html;
-    const public_base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+    const public_base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
     const boundVars = { app_name: APP_NAME, public_base, ...(vars || {}) };
     if (template_type) {
       const rendered = await renderEmailWithTemplate(template_type, boundVars, subject, html);
@@ -1415,7 +1417,7 @@ app.post('/api/me/request-organizer', requireAuth, async (req, res) => {
         const requesterName = meRows[0]?.name || requesterEmail;
         const { rows: admins } = await pool.query("SELECT email, COALESCE(NULLIF(TRIM(full_name), ''), email) AS name FROM profiles WHERE role = 'admin' AND COALESCE(is_active, true) = true AND email IS NOT NULL");
         if (admins.length === 0) return;
-        const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+        const base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
         const adminUrl = `${String(base).replace(/\/$/, '')}/admin`;
         for (const a of admins) {
           const tpl = await renderEmailWithTemplate(
@@ -2255,8 +2257,8 @@ app.post('/api/payments/create-checkout-session', requireAuth, async (req, res) 
 
     // Amount in cents
     const unit_amount = Math.round(amount * 100);
-    const successUrl = (process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`) + `/payments/success?eventId=${encodeURIComponent(eventId)}&session_id={CHECKOUT_SESSION_ID}`;
-    const cancelUrl = (process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`) + `/events/${encodeURIComponent(req.body.slug || '')}`;
+    const successUrl = (process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL) + `/payments/success?eventId=${encodeURIComponent(eventId)}&session_id={CHECKOUT_SESSION_ID}`;
+    const cancelUrl = (process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL) + `/events/${encodeURIComponent(req.body.slug || '')}`;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
@@ -2290,7 +2292,7 @@ app.post('/api/payments/create-package-checkout', requireAuth, async (req, res) 
     if (!packageId || typeof amount !== 'number') return res.status(400).json({ error: 'packageId and amount are required' });
 
     const unit_amount = Math.round(amount * 100);
-    const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+    const base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
     const successPath = kind === 'organizer_package' ? '/organizer-packages' : '/sponsor-packages';
     const successUrl = `${base}${successPath}?success=true&package=${encodeURIComponent(packageId)}`;
     const cancelUrl = `${base}${successPath}?canceled=true`;
@@ -3008,7 +3010,7 @@ app.post('/api/auth/request-password-reset-by-id', requireAuth, requireAdmin, as
        ON CONFLICT (user_id) DO UPDATE SET token_hash = EXCLUDED.token_hash, expires_at = EXCLUDED.expires_at`,
       [user.id, resetToken]
     );
-  const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+  const base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
   const link = `${base.replace(/\/$/, '')}/password-reset?token=${encodeURIComponent(resetToken)}&email=${encodeURIComponent(user.email)}&type=recovery`;
     await sendEmail({
       to: user.email,
@@ -3175,7 +3177,7 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
     // Fire-and-forget emails: to participant and organizer (if any)
     (async () => {
       try {
-  const base = process.env.PUBLIC_BASE_URL || `http://localhost:${PORT}`;
+  const base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
   const safeBase = base.replace(/\/$/, '');
   const eventUrl = ev.slug ? `${safeBase}/events/${encodeURIComponent(ev.slug)}` : safeBase;
         // Load current user profile (participant)
