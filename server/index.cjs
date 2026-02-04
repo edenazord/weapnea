@@ -1933,11 +1933,12 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
     // 1) Prova via colonne native, se presenti
     if (HAS_PUBLIC_PROFILE_FIELDS) {
       try {
+        const ocCol = HAS_OTHER_CERTIFICATIONS ? ", COALESCE(other_certifications, '[]'::jsonb) AS other_certifications" : ", '[]'::jsonb AS other_certifications";
         const { rows } = await pool.query(
           `SELECT 
             id, full_name, company_name, bio, avatar_url, instagram_contact, role,
             brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
-            scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number, personal_best,
+            scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number, personal_best${ocCol},
             public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications, public_show_events, public_show_records, public_show_personal
            FROM profiles
            WHERE lower(public_slug) = lower($1)
@@ -1955,11 +1956,12 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
     const ownerId = await getSlugOwner(slug);
     if (!ownerId) return res.status(404).json({ error: 'Not found' });
     // recupera profilo base
+    const ocColFallback = HAS_OTHER_CERTIFICATIONS ? ", COALESCE(other_certifications, '[]'::jsonb) AS other_certifications" : "";
     const { rows: baseRows } = await pool.query(
       `SELECT id, full_name, company_name, bio, avatar_url, instagram_contact, role,
               brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
               scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number, personal_best,
-              COALESCE(is_active, true) AS is_active
+              COALESCE(is_active, true) AS is_active${ocColFallback}
          FROM profiles WHERE id = $1 LIMIT 1`,
       [ownerId]
     );
@@ -1987,6 +1989,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
       company_address: base.company_address,
       vat_number: base.vat_number,
       personal_best: base.personal_best || null,
+      other_certifications: base.other_certifications || [],
       public_profile_enabled: true,
   public_slug: pp.slug || slug,
       public_show_bio: pp.show_bio !== false,

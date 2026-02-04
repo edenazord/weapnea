@@ -12,6 +12,13 @@ import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import EventCard from "@/components/EventCard";
 
+type OtherCertification = {
+  type?: string;
+  name: string;
+  number?: string;
+  expiry?: string | null;
+};
+
 type PublicInstructor = {
   id: string;
   full_name: string | null;
@@ -37,6 +44,7 @@ type PublicInstructor = {
   public_show_records?: boolean;
   public_show_personal?: boolean;
   personal_best?: Record<string, string> | null;
+  other_certifications?: OtherCertification[] | null;
 };
 
 export default function InstructorPublicProfile() {
@@ -172,7 +180,20 @@ export default function InstructorPublicProfile() {
                     <p className="text-gray-600 ml-6">{data.assicurazione}</p>
                   </div>
                 )}
-                {!data.brevetto && !data.assicurazione && (
+                {/* Altre certificazioni */}
+                {data.other_certifications && data.other_certifications.length > 0 && (
+                  <div className="space-y-3">
+                    <p className="font-semibold text-gray-800">Altre certificazioni</p>
+                    {data.other_certifications.map((cert, idx) => (
+                      <div key={idx} className="ml-6 p-3 bg-gray-50 rounded-lg">
+                        <p className="font-medium text-gray-800">{cert.name || 'Certificazione'}</p>
+                        {cert.number && <p className="text-sm text-gray-600">N° {cert.number}</p>}
+                        {cert.expiry && <p className="text-sm text-gray-500">Scadenza: {new Date(cert.expiry).toLocaleDateString('it-IT')}</p>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {!data.brevetto && !data.assicurazione && (!data.other_certifications || data.other_certifications.length === 0) && (
                   <div className="text-gray-500">Nessuna certificazione disponibile</div>
                 )}
               </CardContent>
