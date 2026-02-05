@@ -1087,7 +1087,7 @@ const Profile = () => {
                             <TableRow key={p.id}>
                               <TableCell>
                                 {p.public_profile_enabled && p.public_slug ? (
-                                  <Link className="underline" to={`/instructor/${p.public_slug}`} target="_blank" rel="noreferrer">
+                                  <Link className="underline" to={`/profile/${p.public_slug}`} target="_blank" rel="noreferrer">
                                     {p.full_name || p.company_name || p.user_id}
                                   </Link>
                                 ) : (
@@ -1199,7 +1199,7 @@ const Profile = () => {
                     <div className="flex items-center justify-between py-2">
                       <div>
                         <Label htmlFor="public_profile_enabled">{t('profile.sections.visibility.enable_public_profile', 'Attiva profilo pubblico')}</Label>
-                        <p className="text-sm text-muted-foreground">{t('profile.sections.visibility.enable_public_profile_desc', 'La pagina sarà visibile su /instructor/slug')}</p>
+                        <p className="text-sm text-muted-foreground">{t('profile.sections.visibility.enable_public_profile_desc', 'La pagina sarà visibile su /profile/slug')}</p>
                       </div>
                       <Switch
                         id="public_profile_enabled"
@@ -1228,7 +1228,7 @@ const Profile = () => {
                         disabled={!formData.public_profile_enabled || Boolean(user?.public_slug)}
                       />
                       <div className="flex items-center gap-3 mt-2">
-                        <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.public_url_prefix', 'URL: /instructor/')}{formData.public_slug || '<slug>'}</p>
+                        <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.public_url_prefix', 'URL: /profile/')}{formData.public_slug || '<slug>'}</p>
                         {formData.public_profile_enabled && !user?.public_slug && (
                           slugStatus === 'checking' ? (
                             <span className="text-xs text-blue-600">{t('profile.sections.visibility.slug_checking', 'Verifica disponibilità...')}</span>
@@ -1243,14 +1243,14 @@ const Profile = () => {
                         {formData.public_profile_enabled && formData.public_slug && (
                           <>
                             <Button asChild size="sm" variant="outline">
-                              <Link to={`/instructor/${formData.public_slug}`}>{t('profile.sections.visibility.open_public_profile', 'Apri profilo pubblico')}</Link>
+                              <Link to={`/profile/${formData.public_slug}`}>{t('profile.sections.visibility.open_public_profile', 'Apri profilo pubblico')}</Link>
                             </Button>
                             <Button
                               size="sm"
                               type="button"
                               variant="secondary"
                               onClick={() => {
-                                const url = `${window.location.origin}/instructor/${formData.public_slug}`;
+                                const url = `${window.location.origin}/profile/${formData.public_slug}`;
                                 navigator.clipboard.writeText(url).then(() => {
                                   toast({ title: t('profile.sections.visibility.link_copied_title', 'Link copiato'), description: t('profile.sections.visibility.link_copied_desc', 'URL del profilo pubblico copiato negli appunti.') });
                                 }).catch(() => {

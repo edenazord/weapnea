@@ -118,7 +118,7 @@ export const EventParticipantsModal = ({
                       </h4>
                       {participant.role === 'instructor' && participant.public_profile_enabled && participant.public_slug ? (
                         <Link 
-                          to={`/instructor/${participant.public_slug}`}
+                          to={`/profile/${participant.public_slug}`}
                           className="text-blue-600 hover:text-blue-800"
                           title={t('profile.view_public_profile', 'Vedi profilo pubblico')}
                         >

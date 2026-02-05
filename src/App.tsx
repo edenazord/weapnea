@@ -96,9 +96,9 @@ const App = () => {
                   {/* SEO-friendly public event route (root-level, single segment) */}
                   <Route path=":slug" element={<EventDetail />} />
                   {/* Public SEO-friendly route by slug must come before the id route if patterns overlap */}
-                  <Route path="/instructor/:slug" element={<InstructorPublicProfile />} />
-                  {/* Internal/admin route by id moved under /instructor/id/:id to avoid ambiguity */}
-                  <Route path="/instructor/id/:id" element={<InstructorProfile />} />
+                  <Route path="/profile/:slug" element={<InstructorPublicProfile />} />
+                  {/* Internal/admin route by id */}
+                  <Route path="/profile/id/:id" element={<InstructorProfile />} />
                   <Route path="/eventi-imminenti" element={<UpcomingEvents />} />
                   <Route path="/categories/:categorySlug" element={<CategoryEvents />} />
                   <Route path="/blog" element={<Blog />} />

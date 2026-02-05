@@ -80,7 +80,7 @@ export default function InstructorPublicProfile() {
   // Set canonical URL dynamically when data is available
   useEffect(() => {
     if (!data?.public_slug) return;
-    const canonicalHref = `${window.location.origin}/instructor/${data.public_slug}`;
+    const canonicalHref = `${window.location.origin}/profile/${data.public_slug}`;
     let link: HTMLLinkElement | null = document.querySelector('link[rel="canonical"]');
     if (!link) {
       link = document.createElement('link');
