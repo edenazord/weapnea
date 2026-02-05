@@ -165,26 +165,6 @@ const EventDetail = () => {
             }
         );
 
-    // Organizer contact (phone) for eligible users only
-    const { data: organizerContact } = useQuery<{ phone: string } | null>({
-        queryKey: ['event-organizer-contact', event?.id],
-        queryFn: async () => {
-            if (!event?.id) return null as any;
-            try {
-                const res = await apiGet(`/api/events/${encodeURIComponent(event.id)}/organizer-contact`);
-                // Se 204 o 403, apiGet potrebbe lanciare: gestisci silenziosamente
-                if (res && typeof res === 'object' && 'phone' in res) return res as any;
-                return null as any;
-            } catch {
-                return null as any;
-            }
-        },
-        enabled: !!user && !!event?.id,
-        staleTime: 60_000,
-        retry: false,
-        refetchOnWindowFocus: false,
-    });
-
     const navigate = useNavigate();
     const openChat = useChatStore((state) => state.openChat);
 
