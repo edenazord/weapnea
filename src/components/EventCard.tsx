@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, MapPin, Users, Euro, Image as ImageIcon, Target, MessageCircle } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import type { EventWithCategory } from "@/lib/api";
 import { ensureAbsoluteUrl } from "@/lib/utils";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -14,6 +14,7 @@ import { getPublicConfig } from "@/lib/publicConfig";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiGet } from "@/lib/apiClient";
 import { toast } from "sonner";
+import { useChatStore } from "@/hooks/useChatStore";
 
 interface EventCardProps {
   event: EventWithCategory;
@@ -24,11 +25,12 @@ interface EventCardProps {
 
 const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = true }: EventCardProps) => {
   const [imageError, setImageError] = useState(false);
-  const [contactLoading, setContactLoading] = useState(false);
   // null = sconosciuto (evita lampeggio del prezzo prima di caricare la config)
   const [eventsFree, setEventsFree] = useState<boolean | null>(null);
   const { t } = useLanguage();
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const openChat = useChatStore((state) => state.openChat);
   
   const handleImageError = () => {
     console.log('Image failed to load for event:', event.title, 'URL:', event.image_url);
@@ -46,47 +48,21 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
   const imageUrl = ensureAbsoluteUrl(primary);
   const showImage = imageUrl && !imageError;
 
-  const eligibleForActions = (() => {
-    if (!user) return false;
-    const isEmpty = (v?: string | null) => !v || String(v).trim() === '';
-    const today = new Date();
-    const sa = user.scadenza_assicurazione ? new Date(user.scadenza_assicurazione) : null;
-    const sc = user.scadenza_certificato_medico ? new Date(user.scadenza_certificato_medico) : null;
-    const tipo = (user as any).certificato_medico_tipo as string | null | undefined;
-    const tipoOk = tipo === 'agonistico' || tipo === 'non_agonistico';
-    return !isEmpty(user.phone)
-      && !isEmpty(user.assicurazione)
-      && !!sa && !isNaN(sa.getTime()) && sa >= today
-      && !!sc && !isNaN(sc.getTime()) && sc >= today
-      && tipoOk;
-  })();
-
-  const handleWhatsapp = async () => {
-    if (!eligibleForActions) {
-      toast.info(t('events.complete_profile_first', 'Per contattare l\'organizzatore completa prima il profilo.'));
+  // Handle contact organizer via internal chat
+  const handleContactOrganizer = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user) {
+      toast.info(t('chat.login_required', 'Accedi per contattare l\'organizzatore'));
+      navigate('/auth');
       return;
     }
-    setContactLoading(true);
-    try {
-      const res = await apiGet(`/api/events/${encodeURIComponent(event.id)}/organizer-contact`);
-      const phone = (res && typeof res === 'object' && 'phone' in res) ? (res as any).phone as string : '';
-      if (!phone) {
-        toast.error(t('events.organizer_no_phone', 'Contatto organizzatore non disponibile'));
-        return;
-      }
-      const digits = String(phone).replace(/\D+/g, '');
-      if (!digits) {
-        toast.error(t('events.organizer_no_phone', 'Contatto organizzatore non disponibile'));
-        return;
-      }
-      const text = encodeURIComponent(`Ciao, sono interessato all'evento "${event.title}" su WeApnea.`);
-      const url = `https://wa.me/${digits}?text=${text}`;
-      window.open(url, '_blank', 'noopener,noreferrer');
-    } catch {
-      toast.error(t('events.organizer_contact_error', 'Impossibile recuperare il contatto dell\'organizzatore'));
-    } finally {
-      setContactLoading(false);
+    if (!event.created_by) {
+      toast.error(t('chat.organizer_not_found', 'Organizzatore non trovato'));
+      return;
     }
+    // Open chat with organizer for this event
+    openChat(event.created_by, event.id);
   };
 
   useEffect(() => {
@@ -124,40 +100,34 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
-          {/* Badge 'Gratuito' rimosso in free mode */}
-          {eligibleForActions && (
-            <button
-              type="button"
-              onClick={handleWhatsapp}
-              className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-600/90 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-white/60"
-              aria-label="Richiedi informazioni su WhatsApp"
-              title="Richiedi informazioni"
-              disabled={contactLoading}
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
-            </button>
-          )}
+          {/* Bottone chat per contattare organizzatore */}
+          <button
+            type="button"
+            onClick={handleContactOrganizer}
+            className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground hover:bg-primary focus:outline-none focus:ring-2 focus:ring-white/60"
+            aria-label={t('events.request_info', 'Richiedi info')}
+            title={t('events.request_info', 'Richiedi info')}
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
+          </button>
         </div>
       )}
       
       {!showImage && (
         <div className="relative aspect-[16/9] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0">
           <ImageIcon className="h-12 w-12 text-gray-400" />
-          {/* Overlay WhatsApp anche quando non c'è immagine */}
-          {eligibleForActions && (
-            <button
-              type="button"
-              onClick={handleWhatsapp}
-              className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-600/90 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-white/60"
-              aria-label="Richiedi informazioni su WhatsApp"
-              title="Richiedi informazioni"
-              disabled={contactLoading}
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
-            </button>
-          )}
+          {/* Bottone chat anche quando non c'è immagine */}
+          <button
+            type="button"
+            onClick={handleContactOrganizer}
+            className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground hover:bg-primary focus:outline-none focus:ring-2 focus:ring-white/60"
+            aria-label={t('events.request_info', 'Richiedi info')}
+            title={t('events.request_info', 'Richiedi info')}
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
+          </button>
         </div>
       )}
 

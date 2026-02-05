@@ -35,6 +35,8 @@ import Contattaci from "./pages/Contattaci";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ChatWidget from "./components/ChatWidget";
+import { useChatStore } from "./hooks/useChatStore";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,6 +58,18 @@ const LegacyEventRedirect = () => {
   return <Navigate to={target} replace />;
 };
 
+// Chat wrapper component to access store
+const ChatWidgetWrapper = () => {
+  const { targetUserId, targetEventId, resetTarget } = useChatStore();
+  return (
+    <ChatWidget
+      openWithUserId={targetUserId || undefined}
+      openWithEventId={targetEventId || undefined}
+      onClose={resetTarget}
+    />
+  );
+};
+
 const App = () => {
   console.log('App component rendering...');
   
@@ -68,6 +82,7 @@ const App = () => {
               <div className="min-h-screen">
                 <Toaster />
                 <Sonner />
+                <ChatWidgetWrapper />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/chi-siamo" element={<ChiSiamo />} />

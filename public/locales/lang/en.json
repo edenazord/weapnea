@@ -775,5 +775,18 @@
       "closing": "Best regards,",
       "signature": "The WeApnea Team"
     }
+  },
+  "chat": {
+    "title": "Messages",
+    "open": "Open messages",
+    "no_conversations": "No conversations yet. Contact an organizer from an event!",
+    "no_messages": "No messages. Start the conversation!",
+    "no_messages_yet": "No messages",
+    "unknown_user": "User",
+    "type_message": "Type a message...",
+    "login_required": "Login to contact the organizer",
+    "organizer_not_found": "Organizer not found",
+    "new_message_notification": "New message from {name}",
+    "messages_tab": "Messages"
   }
 }

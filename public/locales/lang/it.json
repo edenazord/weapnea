@@ -775,5 +775,18 @@
 			"closing": "Buon lavoro,",
 			"signature": "il Team di WeApnea"
 		}
+	},
+	"chat": {
+		"title": "Messaggi",
+		"open": "Apri messaggi",
+		"no_conversations": "Nessuna conversazione. Contatta un organizzatore da un evento!",
+		"no_messages": "Nessun messaggio. Inizia la conversazione!",
+		"no_messages_yet": "Nessun messaggio",
+		"unknown_user": "Utente",
+		"type_message": "Scrivi un messaggio...",
+		"login_required": "Accedi per contattare l'organizzatore",
+		"organizer_not_found": "Organizzatore non trovato",
+		"new_message_notification": "Nuovo messaggio da {name}",
+		"messages_tab": "Messaggi"
 	}
 }

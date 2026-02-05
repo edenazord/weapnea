@@ -1,5 +1,5 @@
 
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEventById, getEventBySlug, EventWithCategory } from "@/lib/api";
@@ -25,6 +25,8 @@ import { ensureAbsoluteUrl } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { friendlyToCanonicalSlug } from "@/lib/seo-utils";
+import { useChatStore } from "@/hooks/useChatStore";
+import { toast } from "sonner";
 
 const EventDetailSkeleton = () => (
     <div className="min-h-screen bg-blue-50">
@@ -183,43 +185,22 @@ const EventDetail = () => {
         refetchOnWindowFocus: false,
     });
 
-    const buildWhatsappLink = (raw?: string | null) => {
-        if (!raw) return null;
-        // Rimuovi tutto tranne le cifre. wa.me richiede numero in formato internazionale senza + e simboli
-        const digits = String(raw).replace(/\D+/g, '');
-        if (!digits) return null;
-        const text = encodeURIComponent(`Ciao, sono interessato all'evento "${event?.title || ''}" su WeApnea.`);
-        return `https://wa.me/${digits}?text=${text}`;
-    };
+    const navigate = useNavigate();
+    const openChat = useChatStore((state) => state.openChat);
 
-    const handleWhatsappDetailClick = async () => {
-        try {
-            // Usa quello già in cache se disponibile
-            const linkFromCache = buildWhatsappLink(organizerContact?.phone);
-            if (linkFromCache) {
-                window.open(linkFromCache, '_blank', 'noopener,noreferrer');
-                return;
-            }
-            // Altrimenti prova a recuperare adesso
-            if (!event?.id) return;
-            const res = await apiGet(`/api/events/${encodeURIComponent(event.id)}/organizer-contact`);
-            const phone = (res && typeof res === 'object' && 'phone' in res) ? (res as any).phone as string : '';
-            const link = buildWhatsappLink(phone);
-            if (link) {
-                window.open(link, '_blank', 'noopener,noreferrer');
-                return;
-            }
-        } catch (e) {
-            // Ignora: gestiamo sotto con il messaggio
+    // Handle contact organizer via internal chat
+    const handleContactOrganizer = () => {
+        if (!user) {
+            toast.info(t('chat.login_required', 'Accedi per contattare l\'organizzatore'));
+            navigate('/auth');
+            return;
         }
-        // Se arrivo qui, non posso contattare: guida l'utente a completare il profilo
-        // Import dinamico per evitare import multipli di toast in header
-        try {
-            const mod = await import('sonner');
-            mod.toast.info('Per contattare l\'organizzatore completa prima il profilo.');
-        } catch (_) {
-            // Ignora errori del dinamico: se non riusciamo a importare, pazienza
+        if (!event?.created_by) {
+            toast.error(t('chat.organizer_not_found', 'Organizzatore non trovato'));
+            return;
         }
+        // Open chat with organizer for this event
+        openChat(event.created_by, event.id);
     };
 
     const formatEventDate = (dateString: string) => {
@@ -644,21 +625,16 @@ const EventDetail = () => {
                                                     ) : null;
                                                 })()}
 
-                                                {/* Bottone WhatsApp "Richiedi informazioni" sotto Iscriviti:
-                                                    - visibile agli utenti autenticati
-                                                    - al click recupera (se necessario) il contatto in modo sicuro
-                                                    - se non idoneo, mostra un messaggio per completare il profilo */}
-                                                {user ? (
-                                                    <button
-                                                        type="button"
-                                                        onClick={handleWhatsappDetailClick}
-                                                        className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-[#25D366] hover:bg-[#1EBE5B] text-white font-medium"
-                                                        title={t('events.request_info_button', 'Richiedi informazioni')}
-                                                    >
-                                                        <MessageCircle className="h-4 w-4" />
-                                                        {t('events.request_info_button', 'Richiedi informazioni')}
-                                                    </button>
-                                                ) : null}
+                                                {/* Bottone "Richiedi informazioni" - apre chat interna */}
+                                                <button
+                                                    type="button"
+                                                    onClick={handleContactOrganizer}
+                                                    className="w-full mt-3 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-md bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                                                    title={t('events.request_info_button', 'Richiedi informazioni')}
+                                                >
+                                                    <MessageCircle className="h-4 w-4" />
+                                                    {t('events.request_info_button', 'Richiedi informazioni')}
+                                                </button>
                     </Card>
 
                     {/* Informazioni Dettagliate - senza logistica che è stata spostata a sinistra */}

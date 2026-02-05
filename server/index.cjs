@@ -3267,6 +3267,227 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// CHAT SYSTEM API
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Get all conversations for current user
+app.get('/api/conversations', authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT 
+        c.id,
+        c.event_id,
+        c.last_message_at,
+        c.created_at,
+        CASE 
+          WHEN c.participant_1 = $1 THEN c.participant_2 
+          ELSE c.participant_1 
+        END as other_user_id,
+        p.full_name as other_user_name,
+        p.avatar_url as other_user_avatar,
+        e.title as event_title,
+        e.slug as event_slug,
+        (SELECT content FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) as last_message,
+        (SELECT COUNT(*) FROM messages m WHERE m.conversation_id = c.id AND m.sender_id != $1 AND m.read_at IS NULL) as unread_count
+      FROM conversations c
+      JOIN profiles p ON p.id = CASE WHEN c.participant_1 = $1 THEN c.participant_2 ELSE c.participant_1 END
+      LEFT JOIN events e ON e.id = c.event_id
+      WHERE c.participant_1 = $1 OR c.participant_2 = $1
+      ORDER BY c.last_message_at DESC
+    `, [req.user.id]);
+    res.json(rows);
+  } catch (e) {
+    console.error('[chat] get conversations error:', e?.message || e);
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Get unread messages count for current user
+app.get('/api/conversations/unread-count', authenticateToken, async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT COUNT(*) as count
+      FROM messages m
+      JOIN conversations c ON c.id = m.conversation_id
+      WHERE (c.participant_1 = $1 OR c.participant_2 = $1)
+        AND m.sender_id != $1
+        AND m.read_at IS NULL
+    `, [req.user.id]);
+    res.json({ count: parseInt(rows[0]?.count || '0', 10) });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Get or create conversation with another user (optionally for an event)
+app.post('/api/conversations', authenticateToken, async (req, res) => {
+  try {
+    const { otherUserId, eventId } = req.body;
+    if (!otherUserId) return res.status(400).json({ error: 'otherUserId required' });
+    if (otherUserId === req.user.id) return res.status(400).json({ error: 'Cannot chat with yourself' });
+
+    // Normalize order to avoid duplicates
+    const [p1, p2] = [req.user.id, otherUserId].sort();
+    
+    // Check if conversation already exists
+    let query = eventId
+      ? `SELECT id FROM conversations WHERE participant_1 = $1 AND participant_2 = $2 AND event_id = $3`
+      : `SELECT id FROM conversations WHERE participant_1 = $1 AND participant_2 = $2 AND event_id IS NULL`;
+    const params = eventId ? [p1, p2, eventId] : [p1, p2];
+    
+    let { rows } = await pool.query(query, params);
+    
+    if (rows.length > 0) {
+      return res.json({ id: rows[0].id, existing: true });
+    }
+
+    // Create new conversation
+    const insertQuery = eventId
+      ? `INSERT INTO conversations (participant_1, participant_2, event_id) VALUES ($1, $2, $3) RETURNING id`
+      : `INSERT INTO conversations (participant_1, participant_2) VALUES ($1, $2) RETURNING id`;
+    const insertParams = eventId ? [p1, p2, eventId] : [p1, p2];
+    
+    const result = await pool.query(insertQuery, insertParams);
+    res.status(201).json({ id: result.rows[0].id, existing: false });
+  } catch (e) {
+    console.error('[chat] create conversation error:', e?.message || e);
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Get messages for a conversation
+app.get('/api/conversations/:conversationId/messages', authenticateToken, async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { limit = 50, before } = req.query;
+
+    // Verify user is participant
+    const { rows: convRows } = await pool.query(
+      `SELECT id FROM conversations WHERE id = $1 AND (participant_1 = $2 OR participant_2 = $2)`,
+      [conversationId, req.user.id]
+    );
+    if (convRows.length === 0) return res.status(403).json({ error: 'Not a participant' });
+
+    let query = `
+      SELECT m.id, m.content, m.sender_id, m.read_at, m.created_at,
+             p.full_name as sender_name, p.avatar_url as sender_avatar
+      FROM messages m
+      JOIN profiles p ON p.id = m.sender_id
+      WHERE m.conversation_id = $1
+    `;
+    const params = [conversationId];
+    
+    if (before) {
+      query += ` AND m.created_at < $${params.length + 1}`;
+      params.push(before);
+    }
+    
+    query += ` ORDER BY m.created_at DESC LIMIT $${params.length + 1}`;
+    params.push(parseInt(limit, 10));
+
+    const { rows } = await pool.query(query, params);
+    
+    // Mark messages as read
+    await pool.query(`
+      UPDATE messages SET read_at = NOW()
+      WHERE conversation_id = $1 AND sender_id != $2 AND read_at IS NULL
+    `, [conversationId, req.user.id]);
+
+    res.json(rows.reverse()); // Return in chronological order
+  } catch (e) {
+    console.error('[chat] get messages error:', e?.message || e);
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Send a message
+app.post('/api/conversations/:conversationId/messages', authenticateToken, async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { content } = req.body;
+    
+    if (!content || !content.trim()) return res.status(400).json({ error: 'Content required' });
+
+    // Verify user is participant
+    const { rows: convRows } = await pool.query(
+      `SELECT id, participant_1, participant_2, event_id FROM conversations WHERE id = $1 AND (participant_1 = $2 OR participant_2 = $2)`,
+      [conversationId, req.user.id]
+    );
+    if (convRows.length === 0) return res.status(403).json({ error: 'Not a participant' });
+
+    const conv = convRows[0];
+    const otherUserId = conv.participant_1 === req.user.id ? conv.participant_2 : conv.participant_1;
+
+    // Insert message
+    const { rows } = await pool.query(`
+      INSERT INTO messages (conversation_id, sender_id, content)
+      VALUES ($1, $2, $3)
+      RETURNING id, content, sender_id, created_at
+    `, [conversationId, req.user.id, content.trim()]);
+
+    // Update conversation last_message_at
+    await pool.query(`UPDATE conversations SET last_message_at = NOW(), updated_at = NOW() WHERE id = $1`, [conversationId]);
+
+    // Send email notification to other user (fire-and-forget)
+    (async () => {
+      try {
+        const { rows: senderRows } = await pool.query('SELECT full_name, email FROM profiles WHERE id = $1', [req.user.id]);
+        const { rows: recipientRows } = await pool.query('SELECT full_name, email FROM profiles WHERE id = $1', [otherUserId]);
+        const sender = senderRows[0];
+        const recipient = recipientRows[0];
+        
+        if (recipient?.email) {
+          const base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
+          const messagesUrl = `${base.replace(/\/$/, '')}/profile?tab=messages`;
+          
+          await sendEmail({
+            to: recipient.email,
+            subject: `Nuovo messaggio da ${sender?.full_name || 'un utente'} su WeApnea`,
+            html: `
+              <p>Ciao ${recipient.full_name || ''},</p>
+              <p><strong>${sender?.full_name || 'Un utente'}</strong> ti ha inviato un messaggio:</p>
+              <blockquote style="background:#f5f5f5;padding:12px;border-left:4px solid #0073e6;margin:16px 0;">${content.trim().substring(0, 300)}${content.length > 300 ? '...' : ''}</blockquote>
+              <p><a href="${messagesUrl}" style="background:#0073e6;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;">Rispondi su WeApnea</a></p>
+              <p>— Il team WeApnea</p>
+            `
+          });
+        }
+      } catch (emailErr) {
+        console.warn('[chat] email notification failed:', emailErr?.message || emailErr);
+      }
+    })().catch(() => {});
+
+    res.status(201).json(rows[0]);
+  } catch (e) {
+    console.error('[chat] send message error:', e?.message || e);
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Mark messages as read
+app.post('/api/conversations/:conversationId/read', authenticateToken, async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    
+    // Verify user is participant
+    const { rows: convRows } = await pool.query(
+      `SELECT id FROM conversations WHERE id = $1 AND (participant_1 = $2 OR participant_2 = $2)`,
+      [conversationId, req.user.id]
+    );
+    if (convRows.length === 0) return res.status(403).json({ error: 'Not a participant' });
+
+    await pool.query(`
+      UPDATE messages SET read_at = NOW()
+      WHERE conversation_id = $1 AND sender_id != $2 AND read_at IS NULL
+    `, [conversationId, req.user.id]);
+
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 app.listen(PORT, () => {
   const base = process.env.API_PUBLIC_BASE_URL || `http://0.0.0.0:${PORT}`;
   console.log(`API listening on ${base}`);
