@@ -243,6 +243,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
     
     // Inline the open logic to avoid stale closure issues
     const token = getToken();
+    console.log('[ChatWidget] Token present:', !!token, 'Token value:', token ? token.substring(0, 20) + '...' : 'NULL');
     if (!token) {
       console.warn('[ChatWidget] No auth token, cannot open conversation');
       return;
