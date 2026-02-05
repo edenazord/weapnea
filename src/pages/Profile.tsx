@@ -86,6 +86,7 @@ const Profile = () => {
     scadenza_assicurazione: "",
     instagram_contact: "",
     phone: "",
+    contact_email: "",
     avatar_url: "",
     company_name: "",
     vat_number: "",
@@ -361,6 +362,7 @@ const Profile = () => {
         scadenza_assicurazione: user.scadenza_assicurazione || "",
         instagram_contact: user.instagram_contact || "",
         phone: (user as any).phone || "",
+        contact_email: (user as any).contact_email || "",
         avatar_url: user.avatar_url || "",
         company_name: user.company_name || "",
         vat_number: user.vat_number || "",
@@ -620,6 +622,7 @@ const Profile = () => {
         dichiarazione_assicurazione_valida: Boolean(formData.dichiarazione_assicurazione_valida),
         instagram_contact: formData.instagram_contact || null,
         phone: formData.phone || null,
+        contact_email: formData.contact_email || null,
         company_name: formData.company_name || null,
         vat_number: formData.vat_number || null,
         company_address: formData.company_address || null,
@@ -1155,6 +1158,19 @@ const Profile = () => {
                         }}
                         placeholder={t('profile.sections.personal_info.phone_placeholder', 'Es. +39 333 1234567')}
                       />
+                    </div>
+                    <div>
+                      <Label htmlFor="contact_email">{t('profile.sections.personal_info.contact_email_label', 'Email di contatto')}</Label>
+                      <Input
+                        id="contact_email"
+                        type="email"
+                        value={formData.contact_email}
+                        onChange={(e) => handleInputChange('contact_email', e.target.value)}
+                        placeholder={t('profile.sections.personal_info.contact_email_placeholder', 'email@esempio.com')}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t('profile.sections.personal_info.contact_email_hint', 'Obbligatoria se non vuoi condividere il telefono')}
+                      </p>
                     </div>
                   </div>
 

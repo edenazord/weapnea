@@ -90,7 +90,12 @@ export const EventPaymentButton = ({
     // Tolleranza di 1 mese: chi scade nel mese corrente può ancora iscriversi
     const toleranceDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
     const isEmpty = (v?: string | null) => !v || String(v).trim() === '';
-    if (isEmpty(user.phone)) missing.push(t('profile.fields.phone', 'Telefono'));
+    // Richiedi telefono O email di contatto (almeno uno dei due)
+    const hasPhone = !isEmpty(user.phone);
+    const hasContactEmail = !isEmpty((user as any).contact_email);
+    if (!hasPhone && !hasContactEmail) {
+      missing.push(t('profile.fields.phone_or_email', 'Telefono o Email di contatto'));
+    }
     if (isEmpty(user.assicurazione)) missing.push(t('profile.fields.insurance', 'Assicurazione'));
     const sa = user.scadenza_assicurazione ? new Date(user.scadenza_assicurazione) : null;
     const sc = user.scadenza_certificato_medico ? new Date(user.scadenza_certificato_medico) : null;

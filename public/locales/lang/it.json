@@ -392,6 +392,8 @@
 		},
 		"fields": {
 			"phone": "Telefono",
+			"phone_or_email": "Telefono o Email di contatto",
+			"contact_email": "Email di contatto",
 			"insurance": "Assicurazione",
 			"insurance_expiry": "Scadenza assicurazione",
 			"medical_cert_expiry": "Scadenza certificato medico",
@@ -443,12 +445,15 @@
 				"instagram_placeholder": "@username",
 				"phone_label": "Numero Mobile",
 				"phone_placeholder": "Es. +39 333 1234567",
+				"contact_email_label": "Email di contatto",
+				"contact_email_placeholder": "email@esempio.com",
+				"contact_email_hint": "Obbligatoria se non vuoi condividere il telefono",
 				"bio_label": "Biografia",
 				"bio_placeholder": "Una breve Bio su di te, raccontati come apneista, come partecipante, come organizzatore,come atleta..."
 			},
 			"certifications": {
 				"title": "Certificazioni e Assicurazioni",
-				"description": "Mantieni aggiornate le tue certificazioni. Per iscriversi agli eventi a pagamento sono obbligatori: Telefono, Assicurazione e relative scadenze, Certificato medico valido.",
+				"description": "Mantieni aggiornate le tue certificazioni. Per iscriversi agli eventi sono obbligatori: Telefono o Email di contatto, Assicurazione e relative scadenze, Certificato medico valido.",
 				"accordion_insurance": "Assicurazione",
 				"accordion_medical": "Certificato medico",
 				"accordion_brevetto": "Brevetto (se in possesso)",

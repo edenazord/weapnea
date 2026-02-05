@@ -1123,7 +1123,7 @@ app.get('/api/profile', requireAuth, async (req, res) => {
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico, certificato_medico_tipo,
     assicurazione, scadenza_assicurazione, instagram_contact${pb}${oc},
-    company_name, vat_number, company_address, phone${pub}, organizer_upgrade_requested_at
+    company_name, vat_number, company_address, phone, contact_email${pub}, organizer_upgrade_requested_at
     , didattica_brevetto, numero_brevetto, foto_brevetto_url, numero_assicurazione
     , COALESCE(dichiarazione_brevetto_valido,false) AS dichiarazione_brevetto_valido
     , COALESCE(dichiarazione_assicurazione_valida,false) AS dichiarazione_assicurazione_valida
@@ -1163,7 +1163,7 @@ app.put('/api/profile', requireAuth, async (req, res) => {
     const allowed = [
       'full_name','avatar_url','bio','brevetto','scadenza_brevetto','scadenza_certificato_medico','certificato_medico_tipo',
       'assicurazione','scadenza_assicurazione','instagram_contact',
-      'company_name','vat_number','company_address','phone',
+      'company_name','vat_number','company_address','phone','contact_email',
       'didattica_brevetto','numero_brevetto','foto_brevetto_url','numero_assicurazione',
       'dichiarazione_brevetto_valido','dichiarazione_assicurazione_valida'
     ];
