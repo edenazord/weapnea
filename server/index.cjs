@@ -3460,35 +3460,6 @@ app.post('/api/conversations/:conversationId/messages', requireAuth, async (req,
     // Update conversation last_message_at
     await pool.query(`UPDATE conversations SET last_message_at = NOW(), updated_at = NOW() WHERE id = $1`, [conversationId]);
 
-    // Send email notification to other user (fire-and-forget)
-    (async () => {
-      try {
-        const { rows: senderRows } = await pool.query('SELECT full_name, email FROM profiles WHERE id = $1', [req.user.id]);
-        const { rows: recipientRows } = await pool.query('SELECT full_name, email FROM profiles WHERE id = $1', [otherUserId]);
-        const sender = senderRows[0];
-        const recipient = recipientRows[0];
-        
-        if (recipient?.email) {
-          const base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
-          const messagesUrl = `${base.replace(/\/$/, '')}/profile?tab=messages`;
-          
-          await sendEmail({
-            to: recipient.email,
-            subject: `Nuovo messaggio da ${sender?.full_name || 'un utente'} su WeApnea`,
-            html: `
-              <p>Ciao ${recipient.full_name || ''},</p>
-              <p><strong>${sender?.full_name || 'Un utente'}</strong> ti ha inviato un messaggio:</p>
-              <blockquote style="background:#f5f5f5;padding:12px;border-left:4px solid #0073e6;margin:16px 0;">${content.trim().substring(0, 300)}${content.length > 300 ? '...' : ''}</blockquote>
-              <p><a href="${messagesUrl}" style="background:#0073e6;color:white;padding:10px 20px;text-decoration:none;border-radius:4px;display:inline-block;">Rispondi su WeApnea</a></p>
-              <p>— Il team WeApnea</p>
-            `
-          });
-        }
-      } catch (emailErr) {
-        console.warn('[chat] email notification failed:', emailErr?.message || emailErr);
-      }
-    })().catch(() => {});
-
     res.status(201).json(rows[0]);
   } catch (e) {
     console.error('[chat] send message error:', e?.message || e);
