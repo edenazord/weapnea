@@ -125,25 +125,6 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
     }
   }, []);
 
-  // Fetch messages for active conversation
-  const fetchMessages = useCallback(async (conversationId: string) => {
-    const token = getToken();
-    if (!token) return;
-    try {
-      const res = await fetch(`${API_BASE}/api/conversations/${conversationId}/messages`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setMessages(data);
-        // After reading messages, update unread count (messages are marked read server-side)
-        fetchUnreadCount();
-      }
-    } catch (e) {
-      console.error('Failed to fetch messages:', e);
-    }
-  }, [fetchUnreadCount]);
-
   // Fetch unread count
   const fetchUnreadCount = useCallback(async () => {
     const token = getToken();
@@ -162,6 +143,25 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       // silent
     }
   }, []);
+
+  // Fetch messages for active conversation
+  const fetchMessages = useCallback(async (conversationId: string) => {
+    const token = getToken();
+    if (!token) return;
+    try {
+      const res = await fetch(`${API_BASE}/api/conversations/${conversationId}/messages`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setMessages(data);
+        // After reading messages, update unread count (messages are marked read server-side)
+        fetchUnreadCount();
+      }
+    } catch (e) {
+      console.error('Failed to fetch messages:', e);
+    }
+  }, [fetchUnreadCount]);
 
   // Open/create conversation with user
   const openConversationWith = useCallback(async (otherUserId: string, eventId?: string) => {
