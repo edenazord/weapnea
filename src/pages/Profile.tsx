@@ -587,12 +587,9 @@ const Profile = () => {
     try {
       // Autogenera slug se visibilità attiva e slug mancante
       let computedSlug = formData.public_slug?.trim() ? slugify(formData.public_slug) : "";
-      // Se lo slug è già stato assegnato (immutabile), impedisci modifica o rimozione lato client
+      // Se lo slug è già stato assegnato, usa quello esistente (il server ignorerà modifiche)
       if (user?.public_slug) {
-        if (!computedSlug || computedSlug.toLowerCase() !== String(user.public_slug).toLowerCase()) {
-          toast({ title: 'Slug bloccato', description: 'Lo slug pubblico è già assegnato e non può essere modificato per il momento.', variant: 'destructive' });
-          return;
-        }
+        computedSlug = String(user.public_slug);
       }
       if (formData.public_profile_enabled && !computedSlug) {
         const base = formData.full_name || formData.company_name || user.email?.split('@')[0] || '';
@@ -601,7 +598,7 @@ const Profile = () => {
           throw new Error('Slug mancante');
         }
       }
-      if (formData.public_profile_enabled && slugStatus === 'taken') {
+      if (formData.public_profile_enabled && slugStatus === 'taken' && !user?.public_slug) {
         throw new Error('Slug non disponibile');
       }
       const dataToUpdate: any = {

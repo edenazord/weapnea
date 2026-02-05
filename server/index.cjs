@@ -1220,13 +1220,31 @@ app.put('/api/profile', requireAuth, async (req, res) => {
       try {
         // If slug present, ensure atomic claim first, then update profile
         if (fields.includes('public_slug')) {
-          const newSlug = p.public_slug || null;
+          const newSlug = (p.public_slug || '').toLowerCase() || null;
           // Load previous slug (if any)
           const { rows: cur } = await pool.query('SELECT public_slug FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
           const prevSlug = (cur[0]?.public_slug || '').toLowerCase() || null;
-          // Immutabilità: se esiste già un prevSlug, non è consentito modificarlo o rimuoverlo
-          if (prevSlug && (!newSlug || newSlug !== prevSlug)) {
-            return res.status(400).json({ error: 'slug_locked' });
+          // Immutabilità: se esiste già un prevSlug, ignora silenziosamente modifiche allo slug (non bloccare l'update)
+          if (prevSlug) {
+            // Rimuovi public_slug dai campi da aggiornare, mantieni quello esistente
+            const slugIdx = fields.indexOf('public_slug');
+            if (slugIdx !== -1) {
+              fields.splice(slugIdx, 1);
+              values.splice(slugIdx, 1);
+            }
+            // Ricostruisci la query senza lo slug
+            if (fields.length === 0) {
+              // Nessun altro campo da aggiornare, restituisci il profilo attuale
+              const { rows } = await pool.query('SELECT * FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
+              return rows;
+            }
+            const newSets = fields.map((k,i)=> {
+              if (k === 'personal_best' || k === 'other_certifications') return `${k} = $${i+1}::jsonb`;
+              return `${k} = $${i+1}`;
+            }).join(', ');
+            const newSql = `UPDATE profiles SET ${newSets}, updated_at = now() WHERE id = $${fields.length+1} RETURNING *`;
+            const { rows } = await pool.query(newSql, [...values, req.user.id]);
+            return rows;
           }
           // Prima assegnazione: claim atomico
           if (!prevSlug && newSlug) {
