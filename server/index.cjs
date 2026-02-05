@@ -3287,6 +3287,7 @@ app.get('/api/conversations', requireAuth, async (req, res) => {
         END as other_user_id,
         p.full_name as other_user_name,
         p.avatar_url as other_user_avatar,
+        CASE WHEN p.is_public_profile = true THEN p.public_slug ELSE NULL END as other_user_slug,
         e.title as event_title,
         e.slug as event_slug,
         (SELECT content FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) as last_message,
@@ -3357,7 +3358,7 @@ app.post('/api/conversations', requireAuth, async (req, res) => {
 
     // Fetch other user info and event info
     const { rows: userRows } = await pool.query(
-      `SELECT full_name, avatar_url FROM profiles WHERE id = $1`,
+      `SELECT full_name, avatar_url, CASE WHEN is_public_profile = true THEN public_slug ELSE NULL END as public_slug FROM profiles WHERE id = $1`,
       [otherUserId]
     );
     const otherUser = userRows[0] || {};
@@ -3378,6 +3379,7 @@ app.post('/api/conversations', requireAuth, async (req, res) => {
       existing,
       other_user_name: otherUser.full_name || '',
       other_user_avatar: otherUser.avatar_url || null,
+      other_user_slug: otherUser.public_slug || null,
       ...eventInfo
     });
   } catch (e) {

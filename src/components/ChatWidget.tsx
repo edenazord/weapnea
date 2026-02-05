@@ -25,6 +25,7 @@ interface Conversation {
   other_user_id: string;
   other_user_name: string;
   other_user_avatar: string | null;
+  other_user_slug: string | null;
   event_title: string | null;
   event_slug: string | null;
   last_message: string | null;
@@ -289,6 +290,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
             other_user_id: openWithUserId,
             other_user_name: data.other_user_name || '',
             other_user_avatar: data.other_user_avatar || null,
+            other_user_slug: data.other_user_slug || null,
             event_id: openWithEventId || null,
             event_title: data.event_title || null,
             event_slug: data.event_slug || null,
@@ -381,18 +383,36 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                 <button onClick={handleBack} className="p-1 hover:bg-muted rounded">
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <div className="flex items-center gap-2 flex-1 min-w-0 ml-2">
-                  <Avatar className="w-8 h-8">
-                    <AvatarImage src={activeConversation.other_user_avatar || undefined} />
-                    <AvatarFallback>{activeConversation.other_user_name?.charAt(0) || '?'}</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{activeConversation.other_user_name || t('chat.unknown_user', 'Utente')}</p>
-                    {activeConversation.event_title && (
-                      <p className="text-xs text-muted-foreground truncate">{activeConversation.event_title}</p>
-                    )}
+                {activeConversation.other_user_slug ? (
+                  <a 
+                    href={`/profiloWeApnea/${activeConversation.other_user_slug}`}
+                    className="flex items-center gap-2 flex-1 min-w-0 ml-2 hover:opacity-80 transition-opacity cursor-pointer"
+                  >
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={activeConversation.other_user_avatar || undefined} />
+                      <AvatarFallback>{activeConversation.other_user_name?.charAt(0) || '?'}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate hover:underline">{activeConversation.other_user_name || t('chat.unknown_user', 'Utente')}</p>
+                      {activeConversation.event_title && (
+                        <p className="text-xs text-muted-foreground truncate">{activeConversation.event_title}</p>
+                      )}
+                    </div>
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-2 flex-1 min-w-0 ml-2">
+                    <Avatar className="w-8 h-8">
+                      <AvatarImage src={activeConversation.other_user_avatar || undefined} />
+                      <AvatarFallback>{activeConversation.other_user_name?.charAt(0) || '?'}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm truncate">{activeConversation.other_user_name || t('chat.unknown_user', 'Utente')}</p>
+                      {activeConversation.event_title && (
+                        <p className="text-xs text-muted-foreground truncate">{activeConversation.event_title}</p>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
               </>
             ) : (
               <h3 className="font-semibold">{t('chat.title', 'Messaggi')}</h3>
@@ -406,7 +426,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
           {activeConversation ? (
             <>
               {/* Messages */}
-              <ScrollArea className="flex-1 p-4">
+              <ScrollArea className="flex-1 p-4 [&_[data-radix-scroll-area-viewport]]:!overflow-y-scroll [&_[data-radix-scroll-area-scrollbar]]:!opacity-100 [&_[data-radix-scroll-area-thumb]]:!bg-gray-400">
                 {messages.length === 0 ? (
                   <div className="text-center text-muted-foreground text-sm py-8">
                     {t('chat.no_messages', 'Nessun messaggio. Inizia la conversazione!')}
