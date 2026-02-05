@@ -273,6 +273,9 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
     }
   };
 
+  // Debug: log render state
+  console.log('[ChatWidget] Render - isOpen:', isOpen, 'user:', !!user, 'activeConversation:', !!activeConversation, 'loading:', loading);
+
   return (
     <>
       {/* Floating button */}
