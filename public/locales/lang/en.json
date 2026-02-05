@@ -447,9 +447,6 @@
         "phone_placeholder": "Ex. +39 333 1234567",
         "account_email_label": "Account Email",
         "account_email_hint": "Email used for registration (not editable)",
-        "contact_email_label": "Alternative Contact Email",
-        "contact_email_placeholder": "email@example.com",
-        "contact_email_hint": "Only if different from your account email",
         "bio_label": "Biography",
         "bio_placeholder": "A brief bio about yourself; tell us about yourself as a freediver, a participant, an organizer, an athlete..."
       },

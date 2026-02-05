@@ -1169,19 +1169,6 @@ const Profile = () => {
                         {t('profile.sections.personal_info.account_email_hint', 'Email usata per la registrazione (non modificabile)')}
                       </p>
                     </div>
-                    <div>
-                      <Label htmlFor="contact_email">{t('profile.sections.personal_info.contact_email_label', 'Email di contatto alternativa')}</Label>
-                      <Input
-                        id="contact_email"
-                        type="email"
-                        value={formData.contact_email}
-                        onChange={(e) => handleInputChange('contact_email', e.target.value)}
-                        placeholder={t('profile.sections.personal_info.contact_email_placeholder', 'email@esempio.com')}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {t('profile.sections.personal_info.contact_email_hint', 'Solo se diversa dall\'email account')}
-                      </p>
-                    </div>
                   </div>
 
                   <div>
