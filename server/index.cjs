@@ -1,4 +1,5 @@
 // Minimal API server to read directly from Postgres and expose REST endpoints
+// Version: 2.0.0 - Added chat system endpoints
 // Usage:
 //   POSTGRES_URL=postgres://user:pass@host:port/db node server/index.cjs
 // Optional:
