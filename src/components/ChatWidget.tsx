@@ -385,7 +385,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                 </button>
                 {activeConversation.other_user_slug ? (
                   <a 
-                    href={`/profiloWeApnea/${activeConversation.other_user_slug}`}
+                    href={`/instructor/${activeConversation.other_user_slug}`}
                     className="flex items-center gap-2 flex-1 min-w-0 ml-2 hover:opacity-80 transition-opacity cursor-pointer"
                   >
                     <Avatar className="w-8 h-8">
