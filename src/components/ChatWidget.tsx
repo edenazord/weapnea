@@ -124,9 +124,11 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       return;
     }
     console.log('[ChatWidget] Opening conversation with:', otherUserId, 'event:', eventId);
+    console.log('[ChatWidget] Setting isOpen to true');
     setLoading(true);
     setIsOpen(true); // Open widget immediately
     try {
+      console.log('[ChatWidget] Calling API:', `${API_BASE}/api/conversations`);
       const res = await fetch(`${API_BASE}/api/conversations`, {
         method: 'POST',
         headers: {
@@ -135,6 +137,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
         },
         body: JSON.stringify({ otherUserId, eventId: eventId || null })
       });
+      console.log('[ChatWidget] API response status:', res.status);
       if (res.ok) {
         const data = await res.json();
         console.log('[ChatWidget] Conversation created/fetched:', data);
@@ -156,7 +159,8 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
         await fetchMessages(data.id);
         fetchConversations(); // Update list in background
       } else {
-        console.error('[ChatWidget] Failed to create conversation:', res.status, await res.text());
+        const errText = await res.text();
+        console.error('[ChatWidget] Failed to create conversation:', res.status, errText);
       }
     } catch (e) {
       console.error('[ChatWidget] Failed to open conversation:', e);
@@ -225,10 +229,14 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
     };
   }, [user, isOpen, activeConversation, fetchConversations, fetchMessages, fetchUnreadCount]);
 
-  // Handle external open request
+  // Handle external open request - use ref to track if we've already processed this request
+  const lastProcessedRef = useRef<string | null>(null);
+  
   useEffect(() => {
-    if (openWithUserId && user) {
+    const requestKey = openWithUserId ? `${openWithUserId}-${openWithEventId || 'no-event'}` : null;
+    if (openWithUserId && user && requestKey !== lastProcessedRef.current) {
       console.log('[ChatWidget] Opening chat with user:', openWithUserId, 'event:', openWithEventId);
+      lastProcessedRef.current = requestKey;
       openConversationWith(openWithUserId, openWithEventId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
