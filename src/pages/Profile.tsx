@@ -1157,7 +1157,20 @@ const Profile = () => {
                       />
                     </div>
                     <div>
-                      <Label htmlFor="contact_email">{t('profile.sections.personal_info.contact_email_label', 'Email di contatto')}</Label>
+                      <Label htmlFor="account_email">{t('profile.sections.personal_info.account_email_label', 'Email account')}</Label>
+                      <Input
+                        id="account_email"
+                        type="email"
+                        value={user?.email || ''}
+                        disabled
+                        className="bg-muted cursor-not-allowed"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t('profile.sections.personal_info.account_email_hint', 'Email usata per la registrazione (non modificabile)')}
+                      </p>
+                    </div>
+                    <div>
+                      <Label htmlFor="contact_email">{t('profile.sections.personal_info.contact_email_label', 'Email di contatto alternativa')}</Label>
                       <Input
                         id="contact_email"
                         type="email"
@@ -1166,7 +1179,7 @@ const Profile = () => {
                         placeholder={t('profile.sections.personal_info.contact_email_placeholder', 'email@esempio.com')}
                       />
                       <p className="text-xs text-muted-foreground mt-1">
-                        {t('profile.sections.personal_info.contact_email_hint', 'Obbligatoria se non vuoi condividere il telefono')}
+                        {t('profile.sections.personal_info.contact_email_hint', 'Solo se diversa dall\'email account')}
                       </p>
                     </div>
                   </div>
