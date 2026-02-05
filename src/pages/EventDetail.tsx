@@ -170,6 +170,7 @@ const EventDetail = () => {
 
     // Handle contact organizer via internal chat
     const handleContactOrganizer = () => {
+        console.log('[EventDetail] handleContactOrganizer called, user:', !!user, 'event.created_by:', event?.created_by);
         if (!user) {
             toast.info(t('chat.login_required', 'Accedi per contattare l\'organizzatore'));
             navigate('/auth');
@@ -180,6 +181,7 @@ const EventDetail = () => {
             return;
         }
         // Open chat with organizer for this event
+        console.log('[EventDetail] Calling openChat with:', event.created_by, event.id);
         openChat(event.created_by, event.id);
     };
 

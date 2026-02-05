@@ -13,7 +13,13 @@ export const useChatStore = create<ChatStore>((set) => ({
   isOpen: false,
   targetUserId: null,
   targetEventId: null,
-  openChat: (userId, eventId) => set({ isOpen: true, targetUserId: userId, targetEventId: eventId || null }),
+  openChat: (userId, eventId) => {
+    console.log('[useChatStore] openChat called with userId:', userId, 'eventId:', eventId);
+    set({ isOpen: true, targetUserId: userId, targetEventId: eventId || null });
+  },
   closeChat: () => set({ isOpen: false }),
-  resetTarget: () => set({ targetUserId: null, targetEventId: null }),
+  resetTarget: () => {
+    console.log('[useChatStore] resetTarget called');
+    set({ targetUserId: null, targetEventId: null });
+  },
 }));

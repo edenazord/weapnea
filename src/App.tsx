@@ -61,6 +61,7 @@ const LegacyEventRedirect = () => {
 // Chat wrapper component to access store
 const ChatWidgetWrapper = () => {
   const { targetUserId, targetEventId, resetTarget } = useChatStore();
+  console.log('[ChatWidgetWrapper] Store values - targetUserId:', targetUserId, 'targetEventId:', targetEventId);
   return (
     <ChatWidget
       openWithUserId={targetUserId || undefined}
