@@ -14,7 +14,7 @@ import { it, enUS } from 'date-fns/locale';
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
 // Helper to get token from localStorage
-const getToken = () => localStorage.getItem('auth_token');
+const getToken = () => localStorage.getItem('api_token') || import.meta.env.VITE_API_TOKEN;
 
 interface Conversation {
   id: string;
