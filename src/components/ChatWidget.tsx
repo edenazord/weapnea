@@ -10,8 +10,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { it, enUS } from 'date-fns/locale';
+import { backendConfig } from '@/lib/backendConfig';
 
-const API_BASE = import.meta.env.VITE_API_URL || '';
+const API_BASE = backendConfig.apiBaseUrl;
 
 // Helper to get token from localStorage
 const getToken = () => localStorage.getItem('api_token') || import.meta.env.VITE_API_TOKEN;
