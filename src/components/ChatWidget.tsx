@@ -214,7 +214,11 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   useEffect(() => {
     const token = getToken();
     if (user && token) {
-      fetchConversations();
+      // Only fetch conversation list if widget is open via button (not via external request)
+      // External requests handle their own conversation loading
+      if (!openWithUserId) {
+        fetchConversations();
+      }
       fetchUnreadCount();
       
       // Poll for new messages every 10 seconds when open
@@ -228,7 +232,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
     return () => {
       if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     };
-  }, [user, isOpen, activeConversation, fetchConversations, fetchMessages, fetchUnreadCount]);
+  }, [user, fetchConversations, fetchMessages, fetchUnreadCount, openWithUserId]);
 
   // Handle external open request - inline logic to avoid stale closure
   const lastProcessedRef = useRef<string | null>(null);
@@ -324,6 +328,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   const handleClose = () => {
     setIsOpen(false);
     setActiveConversation(null);
+    lastProcessedRef.current = null; // Reset so next external open works
     onClose?.();
   };
 
@@ -334,6 +339,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
 
   const handleBack = () => {
     setActiveConversation(null);
+    lastProcessedRef.current = null; // Reset for next external open
     fetchConversations();
   };
 
