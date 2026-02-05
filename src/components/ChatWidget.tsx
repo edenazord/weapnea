@@ -229,17 +229,74 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
     };
   }, [user, isOpen, activeConversation, fetchConversations, fetchMessages, fetchUnreadCount]);
 
-  // Handle external open request - use ref to track if we've already processed this request
+  // Handle external open request - inline logic to avoid stale closure
   const lastProcessedRef = useRef<string | null>(null);
   
   useEffect(() => {
     const requestKey = openWithUserId ? `${openWithUserId}-${openWithEventId || 'no-event'}` : null;
-    if (openWithUserId && user && requestKey !== lastProcessedRef.current) {
-      console.log('[ChatWidget] Opening chat with user:', openWithUserId, 'event:', openWithEventId);
-      lastProcessedRef.current = requestKey;
-      openConversationWith(openWithUserId, openWithEventId);
+    if (!openWithUserId || !user || requestKey === lastProcessedRef.current) {
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
+    console.log('[ChatWidget] External open request for user:', openWithUserId, 'event:', openWithEventId);
+    lastProcessedRef.current = requestKey;
+    
+    // Inline the open logic to avoid stale closure issues
+    const token = getToken();
+    if (!token) {
+      console.warn('[ChatWidget] No auth token, cannot open conversation');
+      return;
+    }
+    
+    console.log('[ChatWidget] Opening widget and creating conversation...');
+    setLoading(true);
+    setIsOpen(true);
+    
+    (async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/conversations`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ otherUserId: openWithUserId, eventId: openWithEventId || null })
+        });
+        console.log('[ChatWidget] API response status:', res.status);
+        if (res.ok) {
+          const data = await res.json();
+          console.log('[ChatWidget] Conversation created/fetched:', data);
+          const conv: Conversation = {
+            id: data.id,
+            other_user_id: openWithUserId,
+            other_user_name: data.other_user_name || '',
+            other_user_avatar: data.other_user_avatar || null,
+            event_id: openWithEventId || null,
+            event_title: data.event_title || null,
+            event_slug: data.event_slug || null,
+            last_message: null,
+            last_message_at: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            unread_count: 0
+          };
+          setActiveConversation(conv);
+          // Fetch messages
+          const msgRes = await fetch(`${API_BASE}/api/conversations/${data.id}/messages`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (msgRes.ok) {
+            const msgData = await msgRes.json();
+            setMessages(msgData);
+          }
+        } else {
+          console.error('[ChatWidget] Failed to create conversation:', res.status);
+        }
+      } catch (e) {
+        console.error('[ChatWidget] Error opening conversation:', e);
+      } finally {
+        setLoading(false);
+      }
+    })();
   }, [openWithUserId, openWithEventId, user]);
 
   // Don't render if not logged in
