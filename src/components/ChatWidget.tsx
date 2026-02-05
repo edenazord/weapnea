@@ -238,8 +238,10 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
     const requestKey = openWithUserId ? `${openWithUserId}-${openWithEventId || 'no-event'}` : null;
     console.log('[ChatWidget] requestKey:', requestKey, 'lastProcessedRef:', lastProcessedRef.current);
     
+    // Reset the ref when openWithUserId becomes null (store was reset)
     if (!openWithUserId) {
-      console.log('[ChatWidget] Skipping: no openWithUserId');
+      console.log('[ChatWidget] Resetting lastProcessedRef (no openWithUserId)');
+      lastProcessedRef.current = null;
       return;
     }
     if (!user) {
@@ -324,6 +326,8 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   const handleClose = () => {
     setIsOpen(false);
     setActiveConversation(null);
+    // Reset the processed ref so the same conversation can be opened again
+    lastProcessedRef.current = null;
     onClose?.();
   };
 
