@@ -17,6 +17,29 @@ const API_BASE = backendConfig.apiBaseUrl;
 // Helper to get token from localStorage
 const getToken = () => localStorage.getItem('api_token') || import.meta.env.VITE_API_TOKEN;
 
+// Helper to convert URLs in text to clickable links
+const linkifyText = (text: string): (string | JSX.Element)[] => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g;
+  const parts = text.split(urlRegex);
+  return parts.map((part, i) => {
+    if (urlRegex.test(part)) {
+      return (
+        <a
+          key={i}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:opacity-80"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {part}
+        </a>
+      );
+    }
+    return part;
+  });
+};
+
 interface Conversation {
   id: string;
   event_id: string | null;
@@ -394,9 +417,6 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate hover:underline">{activeConversation.other_user_name || t('chat.unknown_user', 'Utente')}</p>
-                      {activeConversation.event_title && (
-                        <p className="text-xs text-muted-foreground truncate">{activeConversation.event_title}</p>
-                      )}
                     </div>
                   </a>
                 ) : (
@@ -407,9 +427,6 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="font-medium text-sm truncate">{activeConversation.other_user_name || t('chat.unknown_user', 'Utente')}</p>
-                      {activeConversation.event_title && (
-                        <p className="text-xs text-muted-foreground truncate">{activeConversation.event_title}</p>
-                      )}
                     </div>
                   </div>
                 )}
@@ -443,7 +460,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                               ? 'bg-primary text-primary-foreground rounded-br-none'
                               : 'bg-muted rounded-bl-none'
                           )}>
-                            <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                            <p className="whitespace-pre-wrap break-words">{linkifyText(msg.content)}</p>
                             <p className={cn(
                               'text-[10px] mt-1',
                               isOwn ? 'text-primary-foreground/70' : 'text-muted-foreground'
@@ -511,9 +528,6 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                             {formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true, locale: dateLocale })}
                           </span>
                         </div>
-                        {conv.event_title && (
-                          <p className="text-xs text-primary truncate">{conv.event_title}</p>
-                        )}
                         <div className="flex items-center justify-between gap-2 mt-0.5">
                           <p className="text-xs text-muted-foreground truncate">
                             {conv.last_message || t('chat.no_messages_yet', 'Nessun messaggio')}

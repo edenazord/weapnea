@@ -3272,13 +3272,13 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
 // CHAT SYSTEM API
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Get all conversations for current user
+// Get all conversations for current user (grouped by person, not event)
 app.get('/api/conversations', requireAuth, async (req, res) => {
   try {
+    // Get unique conversations per user (pick the most recent one if multiple exist)
     const { rows } = await pool.query(`
-      SELECT 
+      SELECT DISTINCT ON (other_user_id)
         c.id,
-        c.event_id,
         c.last_message_at,
         c.created_at,
         CASE 
@@ -3288,17 +3288,22 @@ app.get('/api/conversations', requireAuth, async (req, res) => {
         p.full_name as other_user_name,
         p.avatar_url as other_user_avatar,
         CASE WHEN p.public_profile_enabled = true THEN p.public_slug ELSE NULL END as other_user_slug,
-        e.title as event_title,
-        e.slug as event_slug,
         (SELECT content FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) as last_message,
-        (SELECT COUNT(*) FROM messages m WHERE m.conversation_id = c.id AND m.sender_id != $1 AND m.read_at IS NULL) as unread_count
+        (SELECT COUNT(*) FROM messages m 
+         JOIN conversations cc ON cc.id = m.conversation_id 
+         WHERE ((cc.participant_1 = $1 AND cc.participant_2 = CASE WHEN c.participant_1 = $1 THEN c.participant_2 ELSE c.participant_1 END)
+            OR (cc.participant_2 = $1 AND cc.participant_1 = CASE WHEN c.participant_1 = $1 THEN c.participant_2 ELSE c.participant_1 END))
+           AND m.sender_id != $1 AND m.read_at IS NULL) as unread_count
       FROM conversations c
       JOIN profiles p ON p.id = CASE WHEN c.participant_1 = $1 THEN c.participant_2 ELSE c.participant_1 END
-      LEFT JOIN events e ON e.id = c.event_id
       WHERE (c.participant_1 = $1 OR c.participant_2 = $1)
         AND EXISTS (SELECT 1 FROM messages m WHERE m.conversation_id = c.id)
-      ORDER BY c.last_message_at DESC
+      ORDER BY other_user_id, c.last_message_at DESC
     `, [req.user.id]);
+    
+    // Sort by last_message_at descending
+    rows.sort((a, b) => new Date(b.last_message_at) - new Date(a.last_message_at));
+    
     res.json(rows);
   } catch (e) {
     console.error('[chat] get conversations error:', e?.message || e);
@@ -3323,23 +3328,21 @@ app.get('/api/conversations/unread-count', requireAuth, async (req, res) => {
   }
 });
 
-// Get or create conversation with another user (optionally for an event)
+// Get or create conversation with another user (one conversation per person pair)
 app.post('/api/conversations', requireAuth, async (req, res) => {
   try {
-    const { otherUserId, eventId } = req.body;
+    const { otherUserId } = req.body;
     if (!otherUserId) return res.status(400).json({ error: 'otherUserId required' });
     if (otherUserId === req.user.id) return res.status(400).json({ error: 'Cannot chat with yourself' });
 
     // Normalize order to avoid duplicates
     const [p1, p2] = [req.user.id, otherUserId].sort();
     
-    // Check if conversation already exists
-    let query = eventId
-      ? `SELECT id FROM conversations WHERE participant_1 = $1 AND participant_2 = $2 AND event_id = $3`
-      : `SELECT id FROM conversations WHERE participant_1 = $1 AND participant_2 = $2 AND event_id IS NULL`;
-    const params = eventId ? [p1, p2, eventId] : [p1, p2];
-    
-    let { rows } = await pool.query(query, params);
+    // Check if conversation already exists (ignore event_id - one chat per person)
+    let { rows } = await pool.query(
+      `SELECT id FROM conversations WHERE participant_1 = $1 AND participant_2 = $2 ORDER BY last_message_at DESC LIMIT 1`,
+      [p1, p2]
+    );
     let conversationId;
     let existing = false;
     
@@ -3347,40 +3350,27 @@ app.post('/api/conversations', requireAuth, async (req, res) => {
       conversationId = rows[0].id;
       existing = true;
     } else {
-      // Create new conversation
-      const insertQuery = eventId
-        ? `INSERT INTO conversations (participant_1, participant_2, event_id) VALUES ($1, $2, $3) RETURNING id`
-        : `INSERT INTO conversations (participant_1, participant_2) VALUES ($1, $2) RETURNING id`;
-      const insertParams = eventId ? [p1, p2, eventId] : [p1, p2];
-      const result = await pool.query(insertQuery, insertParams);
+      // Create new conversation (without event_id)
+      const result = await pool.query(
+        `INSERT INTO conversations (participant_1, participant_2) VALUES ($1, $2) RETURNING id`,
+        [p1, p2]
+      );
       conversationId = result.rows[0].id;
     }
 
-    // Fetch other user info and event info
+    // Fetch other user info
     const { rows: userRows } = await pool.query(
       `SELECT full_name, avatar_url, CASE WHEN public_profile_enabled = true THEN public_slug ELSE NULL END as public_slug FROM profiles WHERE id = $1`,
       [otherUserId]
     );
     const otherUser = userRows[0] || {};
 
-    let eventInfo = {};
-    if (eventId) {
-      const { rows: eventRows } = await pool.query(
-        `SELECT title, slug FROM events WHERE id = $1`,
-        [eventId]
-      );
-      if (eventRows[0]) {
-        eventInfo = { event_title: eventRows[0].title, event_slug: eventRows[0].slug };
-      }
-    }
-
     res.status(existing ? 200 : 201).json({
       id: conversationId,
       existing,
       other_user_name: otherUser.full_name || '',
       other_user_avatar: otherUser.avatar_url || null,
-      other_user_slug: otherUser.public_slug || null,
-      ...eventInfo
+      other_user_slug: otherUser.public_slug || null
     });
   } catch (e) {
     console.error('[chat] create conversation error:', e?.message || e);
@@ -3388,27 +3378,33 @@ app.post('/api/conversations', requireAuth, async (req, res) => {
   }
 });
 
-// Get messages for a conversation
+// Get messages for a conversation (fetch from all conversations with same person)
 app.get('/api/conversations/:conversationId/messages', requireAuth, async (req, res) => {
   try {
     const { conversationId } = req.params;
     const { limit = 50, before } = req.query;
 
-    // Verify user is participant
+    // Get conversation and other user
     const { rows: convRows } = await pool.query(
-      `SELECT id FROM conversations WHERE id = $1 AND (participant_1 = $2 OR participant_2 = $2)`,
+      `SELECT id, participant_1, participant_2 FROM conversations WHERE id = $1 AND (participant_1 = $2 OR participant_2 = $2)`,
       [conversationId, req.user.id]
     );
     if (convRows.length === 0) return res.status(403).json({ error: 'Not a participant' });
 
+    // Get the other user from this conversation
+    const conv = convRows[0];
+    const otherUserId = conv.participant_1 === req.user.id ? conv.participant_2 : conv.participant_1;
+
+    // Get messages from ALL conversations with this person (merged chat)
     let query = `
       SELECT m.id, m.content, m.sender_id, m.read_at, m.created_at,
              p.full_name as sender_name, p.avatar_url as sender_avatar
       FROM messages m
       JOIN profiles p ON p.id = m.sender_id
-      WHERE m.conversation_id = $1
+      JOIN conversations c ON c.id = m.conversation_id
+      WHERE ((c.participant_1 = $1 AND c.participant_2 = $2) OR (c.participant_1 = $2 AND c.participant_2 = $1))
     `;
-    const params = [conversationId];
+    const params = [req.user.id, otherUserId];
     
     if (before) {
       query += ` AND m.created_at < $${params.length + 1}`;
@@ -3420,11 +3416,14 @@ app.get('/api/conversations/:conversationId/messages', requireAuth, async (req, 
 
     const { rows } = await pool.query(query, params);
     
-    // Mark messages as read
+    // Mark messages as read in ALL conversations with this person
     await pool.query(`
       UPDATE messages SET read_at = NOW()
-      WHERE conversation_id = $1 AND sender_id != $2 AND read_at IS NULL
-    `, [conversationId, req.user.id]);
+      WHERE conversation_id IN (
+        SELECT id FROM conversations 
+        WHERE (participant_1 = $1 AND participant_2 = $2) OR (participant_1 = $2 AND participant_2 = $1)
+      ) AND sender_id != $1 AND read_at IS NULL
+    `, [req.user.id, otherUserId]);
 
     res.json(rows.reverse()); // Return in chronological order
   } catch (e) {
