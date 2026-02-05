@@ -3294,7 +3294,8 @@ app.get('/api/conversations', requireAuth, async (req, res) => {
       FROM conversations c
       JOIN profiles p ON p.id = CASE WHEN c.participant_1 = $1 THEN c.participant_2 ELSE c.participant_1 END
       LEFT JOIN events e ON e.id = c.event_id
-      WHERE c.participant_1 = $1 OR c.participant_2 = $1
+      WHERE (c.participant_1 = $1 OR c.participant_2 = $1)
+        AND EXISTS (SELECT 1 FROM messages m WHERE m.conversation_id = c.id)
       ORDER BY c.last_message_at DESC
     `, [req.user.id]);
     res.json(rows);
