@@ -3273,7 +3273,7 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // Get all conversations for current user
-app.get('/api/conversations', authenticateToken, async (req, res) => {
+app.get('/api/conversations', requireAuth, async (req, res) => {
   try {
     const { rows } = await pool.query(`
       SELECT 
@@ -3305,7 +3305,7 @@ app.get('/api/conversations', authenticateToken, async (req, res) => {
 });
 
 // Get unread messages count for current user
-app.get('/api/conversations/unread-count', authenticateToken, async (req, res) => {
+app.get('/api/conversations/unread-count', requireAuth, async (req, res) => {
   try {
     const { rows } = await pool.query(`
       SELECT COUNT(*) as count
@@ -3322,7 +3322,7 @@ app.get('/api/conversations/unread-count', authenticateToken, async (req, res) =
 });
 
 // Get or create conversation with another user (optionally for an event)
-app.post('/api/conversations', authenticateToken, async (req, res) => {
+app.post('/api/conversations', requireAuth, async (req, res) => {
   try {
     const { otherUserId, eventId } = req.body;
     if (!otherUserId) return res.status(400).json({ error: 'otherUserId required' });
@@ -3358,7 +3358,7 @@ app.post('/api/conversations', authenticateToken, async (req, res) => {
 });
 
 // Get messages for a conversation
-app.get('/api/conversations/:conversationId/messages', authenticateToken, async (req, res) => {
+app.get('/api/conversations/:conversationId/messages', requireAuth, async (req, res) => {
   try {
     const { conversationId } = req.params;
     const { limit = 50, before } = req.query;
@@ -3403,7 +3403,7 @@ app.get('/api/conversations/:conversationId/messages', authenticateToken, async 
 });
 
 // Send a message
-app.post('/api/conversations/:conversationId/messages', authenticateToken, async (req, res) => {
+app.post('/api/conversations/:conversationId/messages', requireAuth, async (req, res) => {
   try {
     const { conversationId } = req.params;
     const { content } = req.body;
@@ -3467,7 +3467,7 @@ app.post('/api/conversations/:conversationId/messages', authenticateToken, async
 });
 
 // Mark messages as read
-app.post('/api/conversations/:conversationId/read', authenticateToken, async (req, res) => {
+app.post('/api/conversations/:conversationId/read', requireAuth, async (req, res) => {
   try {
     const { conversationId } = req.params;
     
