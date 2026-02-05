@@ -17,7 +17,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2 } from "lucide-react";
+import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -38,6 +38,7 @@ import { createEvent, Event, getEvents, EventWithCategory, updateEvent, deleteEv
 import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
 import { EventForm } from "@/components/admin/EventForm";
 import { CenteredNotice } from "@/components/CenteredNotice";
+import { useChatStore } from "@/hooks/useChatStore";
 // Rimosso dropdown per sostituirlo con sotto-tab statiche interne alla sezione Eventi
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
@@ -64,6 +65,7 @@ const Profile = () => {
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const { t } = useLanguage();
+  const { openChat } = useChatStore();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("events");
   const [eventsFreeMode, setEventsFreeMode] = useState(true); // default true per sicurezza
@@ -1080,6 +1082,7 @@ const Profile = () => {
                           <TableRow>
                             <TableHead>Nome</TableHead>
                             <TableHead>Pagato il</TableHead>
+                            <TableHead className="w-10"></TableHead>
                           </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -1096,6 +1099,21 @@ const Profile = () => {
                               </TableCell>
                               <TableCell className="text-sm text-muted-foreground">
                                 {p.paid_at ? format(parseISO(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: itLocale }) : '-'}
+                              </TableCell>
+                              <TableCell>
+                                {user?.id !== p.user_id && (
+                                  <button
+                                    type="button"
+                                    className="p-2 rounded hover:bg-blue-50 text-blue-600"
+                                    title="Chatta con questo partecipante"
+                                    onClick={() => {
+                                      openChat(p.user_id, participantsEventId);
+                                      setParticipantsOpen(false);
+                                    }}
+                                  >
+                                    <MessageCircle className="h-4 w-4" />
+                                  </button>
+                                )}
                               </TableCell>
                             </TableRow>
                           ))}
