@@ -233,8 +233,20 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   const lastProcessedRef = useRef<string | null>(null);
   
   useEffect(() => {
+    console.log('[ChatWidget] useEffect triggered - openWithUserId:', openWithUserId, 'user:', !!user);
     const requestKey = openWithUserId ? `${openWithUserId}-${openWithEventId || 'no-event'}` : null;
-    if (!openWithUserId || !user || requestKey === lastProcessedRef.current) {
+    console.log('[ChatWidget] requestKey:', requestKey, 'lastProcessedRef:', lastProcessedRef.current);
+    
+    if (!openWithUserId) {
+      console.log('[ChatWidget] Skipping: no openWithUserId');
+      return;
+    }
+    if (!user) {
+      console.log('[ChatWidget] Skipping: no user');
+      return;
+    }
+    if (requestKey === lastProcessedRef.current) {
+      console.log('[ChatWidget] Skipping: already processed this request');
       return;
     }
     
