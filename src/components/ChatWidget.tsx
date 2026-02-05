@@ -40,6 +40,22 @@ const linkifyText = (text: string): (string | JSX.Element)[] => {
   });
 };
 
+// Favicon notification helpers
+const ORIGINAL_FAVICON = '/favicon.svg';
+const NOTIFICATION_FAVICON = 'data:image/svg+xml,' + encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="45" fill="%231e40af"/>
+  <circle cx="75" cy="25" r="20" fill="%23ef4444"/>
+</svg>
+`);
+
+const setFavicon = (hasNotification: boolean) => {
+  const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+  if (link) {
+    link.href = hasNotification ? NOTIFICATION_FAVICON : ORIGINAL_FAVICON;
+  }
+};
+
 interface Conversation {
   id: string;
   event_id: string | null;
@@ -100,7 +116,9 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       if (res.ok) {
         const data = await res.json();
         setConversations(data);
-        setUnreadTotal(data.reduce((sum: number, c: Conversation) => sum + (c.unread_count || 0), 0));
+        const count = data.reduce((sum: number, c: Conversation) => sum + (c.unread_count || 0), 0);
+        setUnreadTotal(count);
+        setFavicon(count > 0);
       }
     } catch (e) {
       console.error('Failed to fetch conversations:', e);
@@ -118,11 +136,13 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       if (res.ok) {
         const data = await res.json();
         setMessages(data);
+        // After reading messages, update unread count (messages are marked read server-side)
+        fetchUnreadCount();
       }
     } catch (e) {
       console.error('Failed to fetch messages:', e);
     }
-  }, []);
+  }, [fetchUnreadCount]);
 
   // Fetch unread count
   const fetchUnreadCount = useCallback(async () => {
@@ -134,7 +154,9 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       });
       if (res.ok) {
         const data = await res.json();
-        setUnreadTotal(data.count || 0);
+        const count = data.count || 0;
+        setUnreadTotal(count);
+        setFavicon(count > 0);
       }
     } catch (e) {
       // silent
