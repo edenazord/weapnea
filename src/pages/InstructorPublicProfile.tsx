@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Instagram, Award, Shield, User, Calendar, Target } from "lucide-react";
+import { ArrowLeft, MapPin, Instagram, Award, Shield, User, Calendar, Target, MessageCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -11,6 +11,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import EventCard from "@/components/EventCard";
+import { useChatStore } from "@/hooks/useChatStore";
+import { useAuth } from "@/contexts/AuthContext";
 
 type OtherCertification = {
   type?: string;
@@ -51,6 +53,8 @@ export default function InstructorPublicProfile() {
   const { slug } = useParams<{ slug: string }>();
   const isMobile = useIsMobile();
   const { t } = useLanguage();
+  const { openChat } = useChatStore();
+  const { user } = useAuth();
 
   const publicCertVisible = (d: PublicInstructor) => {
     if (d.public_show_certifications === false) return false;
@@ -136,6 +140,17 @@ export default function InstructorPublicProfile() {
                     <a href={`https://instagram.com/${data.instagram_contact.replace('@','')}`} target="_blank" rel="noopener noreferrer">
                       <Instagram className="w-4 h-4 mr-2"/>Instagram
                     </a>
+                  </Button>
+                </div>
+              )}
+              {user && user.id !== data.id && (
+                <div className="mt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => openChat(data.id)}
+                  >
+                    <MessageCircle className="w-4 h-4 mr-2"/>Chat
                   </Button>
                 </div>
               )}

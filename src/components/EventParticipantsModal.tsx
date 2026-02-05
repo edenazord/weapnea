@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, ExternalLink, Calendar, Euro, Phone } from "lucide-react";
+import { Users, ExternalLink, Calendar, Euro, Phone, MessageCircle } from "lucide-react";
 import { getEventParticipants, EventParticipant, removeEventParticipant } from "@/lib/payments-api";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -19,6 +19,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useChatStore } from "@/hooks/useChatStore";
 
 interface EventParticipantsModalProps {
   eventId: string;
@@ -37,6 +38,7 @@ export const EventParticipantsModal = ({
   const { user } = useAuth();
   const { t } = useLanguage();
   const qc = useQueryClient();
+  const { openChat } = useChatStore();
   const canManage = (user?.role === 'admin') || (!!organizerId && user?.id === organizerId);
 
   const { data: participants, isLoading, error } = useQuery({
@@ -116,7 +118,7 @@ export const EventParticipantsModal = ({
                       <h4 className="font-medium text-gray-900 truncate">
                         {participant.full_name}
                       </h4>
-                      {participant.role === 'instructor' && participant.public_profile_enabled && participant.public_slug ? (
+                      {participant.public_profile_enabled && participant.public_slug ? (
                         <Link 
                           to={`/profile/${participant.public_slug}`}
                           className="text-blue-600 hover:text-blue-800"
@@ -125,6 +127,19 @@ export const EventParticipantsModal = ({
                           <ExternalLink className="h-3 w-3" />
                         </Link>
                       ) : null}
+                      {canManage && user?.id !== participant.user_id && (
+                        <button
+                          type="button"
+                          className="text-blue-600 hover:text-blue-800"
+                          title="Chatta con questo partecipante"
+                          onClick={() => {
+                            openChat(participant.user_id, eventId);
+                            setIsOpen(false);
+                          }}
+                        >
+                          <MessageCircle className="h-3 w-3" />
+                        </button>
+                      )}
                     </div>
                     
                     {participant.company_name && (
