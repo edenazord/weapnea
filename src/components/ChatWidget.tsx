@@ -42,17 +42,23 @@ const linkifyText = (text: string): (string | JSX.Element)[] => {
 
 // Favicon notification helpers
 const ORIGINAL_FAVICON = '/favicon.svg';
-const NOTIFICATION_FAVICON = 'data:image/svg+xml,' + encodeURIComponent(`
+
+const createNotificationFavicon = (count: number): string => {
+  const displayCount = count > 99 ? '99+' : String(count);
+  const fontSize = count > 99 ? 24 : count > 9 ? 28 : 32;
+  return 'data:image/svg+xml,' + encodeURIComponent(`
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
   <circle cx="50" cy="50" r="45" fill="%231e40af"/>
-  <circle cx="75" cy="25" r="20" fill="%23ef4444"/>
+  <circle cx="72" cy="28" r="26" fill="%23ef4444"/>
+  <text x="72" y="28" text-anchor="middle" dominant-baseline="central" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="${fontSize}">${displayCount}</text>
 </svg>
 `);
+};
 
-const setFavicon = (hasNotification: boolean) => {
+const setFavicon = (count: number) => {
   const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
   if (link) {
-    link.href = hasNotification ? NOTIFICATION_FAVICON : ORIGINAL_FAVICON;
+    link.href = count > 0 ? createNotificationFavicon(count) : ORIGINAL_FAVICON;
   }
 };
 
@@ -118,7 +124,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
         setConversations(data);
         const count = data.reduce((sum: number, c: Conversation) => sum + (c.unread_count || 0), 0);
         setUnreadTotal(count);
-        setFavicon(count > 0);
+        setFavicon(count);
       }
     } catch (e) {
       console.error('Failed to fetch conversations:', e);
@@ -137,7 +143,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
         const data = await res.json();
         const count = data.count || 0;
         setUnreadTotal(count);
-        setFavicon(count > 0);
+        setFavicon(count);
       }
     } catch (e) {
       // silent
