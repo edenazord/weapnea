@@ -127,19 +127,6 @@ export const EventParticipantsModal = ({
                           <ExternalLink className="h-3 w-3" />
                         </Link>
                       ) : null}
-                      {canManage && user?.id !== participant.user_id && (
-                        <button
-                          type="button"
-                          className="text-blue-600 hover:text-blue-800"
-                          title="Chatta con questo partecipante"
-                          onClick={() => {
-                            openChat(participant.user_id, eventId);
-                            setIsOpen(false);
-                          }}
-                        >
-                          <MessageCircle className="h-3 w-3" />
-                        </button>
-                      )}
                     </div>
                     
                     {participant.company_name && (
@@ -169,7 +156,20 @@ export const EventParticipantsModal = ({
                     ) : null}
                   </div>
                   {canManage && (
-                    <div className="ml-2">
+                    <div className="ml-2 flex items-center gap-1">
+                      {user?.id !== participant.user_id && (
+                        <button
+                          type="button"
+                          className="p-2 rounded hover:bg-blue-50 text-blue-600"
+                          title="Chatta con questo partecipante"
+                          onClick={() => {
+                            openChat(participant.user_id, eventId);
+                            setIsOpen(false);
+                          }}
+                        >
+                          <MessageCircle className="h-4 w-4" />
+                        </button>
+                      )}
                       <button
                         type="button"
                         className="p-2 rounded hover:bg-red-50 text-red-600"
