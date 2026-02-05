@@ -3338,19 +3338,47 @@ app.post('/api/conversations', requireAuth, async (req, res) => {
     const params = eventId ? [p1, p2, eventId] : [p1, p2];
     
     let { rows } = await pool.query(query, params);
+    let conversationId;
+    let existing = false;
     
     if (rows.length > 0) {
-      return res.json({ id: rows[0].id, existing: true });
+      conversationId = rows[0].id;
+      existing = true;
+    } else {
+      // Create new conversation
+      const insertQuery = eventId
+        ? `INSERT INTO conversations (participant_1, participant_2, event_id) VALUES ($1, $2, $3) RETURNING id`
+        : `INSERT INTO conversations (participant_1, participant_2) VALUES ($1, $2) RETURNING id`;
+      const insertParams = eventId ? [p1, p2, eventId] : [p1, p2];
+      const result = await pool.query(insertQuery, insertParams);
+      conversationId = result.rows[0].id;
     }
 
-    // Create new conversation
-    const insertQuery = eventId
-      ? `INSERT INTO conversations (participant_1, participant_2, event_id) VALUES ($1, $2, $3) RETURNING id`
-      : `INSERT INTO conversations (participant_1, participant_2) VALUES ($1, $2) RETURNING id`;
-    const insertParams = eventId ? [p1, p2, eventId] : [p1, p2];
-    
-    const result = await pool.query(insertQuery, insertParams);
-    res.status(201).json({ id: result.rows[0].id, existing: false });
+    // Fetch other user info and event info
+    const { rows: userRows } = await pool.query(
+      `SELECT full_name, avatar_url FROM profiles WHERE id = $1`,
+      [otherUserId]
+    );
+    const otherUser = userRows[0] || {};
+
+    let eventInfo = {};
+    if (eventId) {
+      const { rows: eventRows } = await pool.query(
+        `SELECT title, slug FROM events WHERE id = $1`,
+        [eventId]
+      );
+      if (eventRows[0]) {
+        eventInfo = { event_title: eventRows[0].title, event_slug: eventRows[0].slug };
+      }
+    }
+
+    res.status(existing ? 200 : 201).json({
+      id: conversationId,
+      existing,
+      other_user_name: otherUser.full_name || '',
+      other_user_avatar: otherUser.avatar_url || null,
+      ...eventInfo
+    });
   } catch (e) {
     console.error('[chat] create conversation error:', e?.message || e);
     res.status(500).json({ error: String(e?.message || e) });
