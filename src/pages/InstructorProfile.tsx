@@ -124,7 +124,11 @@ const InstructorProfile = () => {
 
               {instructor.instagram_contact && (
                 <div className="mt-4">
-                  <Button variant="outline" size="sm" asChild>
+                  <Button 
+                    size="sm" 
+                    asChild
+                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white border-0 hover:from-purple-600 hover:via-pink-600 hover:to-orange-500 shadow-md hover:shadow-lg transition-all"
+                  >
                     <a href={`https://instagram.com/${instructor.instagram_contact.replace('@', '')}`} target="_blank" rel="noopener noreferrer">
                       <Instagram className="w-4 h-4 mr-2" />
                       Instagram

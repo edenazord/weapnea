@@ -412,10 +412,17 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       {!isOpen && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-4 right-4 z-50 w-14 h-14 bg-primary text-primary-foreground rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center"
+          className="fixed bottom-4 right-4 z-50 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 hover:from-blue-600 hover:to-purple-700 flex items-center gap-2"
           aria-label={t('chat.open', 'Apri messaggi')}
         >
-          <MessageCircle className="w-6 h-6" />
+          <img 
+            src="/images/weapnea-logo.png" 
+            alt="" 
+            className="w-7 h-7 rounded-full bg-white/20 p-0.5"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          />
+          <span className="font-semibold text-sm">Chat</span>
+          <MessageCircle className="w-5 h-5" />
           {unreadTotal > 0 && (
             <Badge className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs">
               {unreadTotal > 99 ? '99+' : unreadTotal}

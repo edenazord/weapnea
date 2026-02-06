@@ -135,8 +135,12 @@ export default function InstructorPublicProfile() {
               <h1 className="text-2xl font-bold text-gray-900 mb-2">{data.full_name || 'Nome non specificato'}</h1>
               {data.company_name && <p className="text-lg text-blue-600 mb-2">{data.company_name}</p>}
               {data.public_show_personal !== false && data.instagram_contact && (
-                <div className="mt-2">
-                  <Button variant="outline" size="sm" asChild>
+                <div className="mt-3">
+                  <Button 
+                    size="sm" 
+                    asChild
+                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white border-0 hover:from-purple-600 hover:via-pink-600 hover:to-orange-500 shadow-md hover:shadow-lg transition-all"
+                  >
                     <a href={`https://instagram.com/${data.instagram_contact.replace('@','')}`} target="_blank" rel="noopener noreferrer">
                       <Instagram className="w-4 h-4 mr-2"/>Instagram
                     </a>
@@ -144,11 +148,11 @@ export default function InstructorPublicProfile() {
                 </div>
               )}
               {user && user.id !== data.id && (
-                <div className="mt-2">
+                <div className="mt-3">
                   <Button 
-                    variant="outline" 
                     size="sm"
                     onClick={() => openChat(data.id)}
+                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
                   >
                     <MessageCircle className="w-4 h-4 mr-2"/>Chat
                   </Button>
