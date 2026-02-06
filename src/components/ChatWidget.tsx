@@ -421,7 +421,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
             className="w-7 h-7 rounded-full bg-white/20 p-0.5"
             onError={(e) => { e.currentTarget.style.display = 'none'; }}
           />
-          <span className="font-semibold text-sm">Chat</span>
+          <span className="font-semibold text-sm">Community Chat</span>
           <MessageCircle className="w-5 h-5" />
           {unreadTotal > 0 && (
             <Badge className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs">
