@@ -139,7 +139,7 @@ export default function InstructorPublicProfile() {
                   <Button 
                     size="sm" 
                     asChild
-                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white border-0 hover:from-purple-600 hover:via-pink-600 hover:to-orange-500 shadow-md hover:shadow-lg transition-all"
+                    className="w-full bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white border-0 hover:from-purple-600 hover:via-pink-600 hover:to-orange-500 shadow-md hover:shadow-lg transition-all"
                   >
                     <a href={`https://instagram.com/${data.instagram_contact.replace('@','')}`} target="_blank" rel="noopener noreferrer">
                       <Instagram className="w-4 h-4 mr-2"/>Instagram
@@ -148,14 +148,15 @@ export default function InstructorPublicProfile() {
                 </div>
               )}
               {user && user.id !== data.id && (
-                <div className="mt-3">
+                <div className="mt-3 text-center">
                   <Button 
                     size="sm"
                     onClick={() => openChat(data.id)}
-                    className="bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
+                    className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
                   >
                     <MessageCircle className="w-4 h-4 mr-2"/>Chat
                   </Button>
+                  <p className="text-xs text-muted-foreground mt-1">Community Chat</p>
                 </div>
               )}
             </CardContent>
