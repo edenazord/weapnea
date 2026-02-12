@@ -12,8 +12,10 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { apiSend } from '@/lib/apiClient';
@@ -26,6 +28,7 @@ const formSchema = z.object({
   title: z.string().min(2, { message: "Il titolo deve essere di almeno 2 caratteri." }),
   content: z.string().min(10, { message: "Il contenuto deve essere di almeno 10 caratteri." }),
   image_url: z.string().url().optional(),
+  published: z.boolean().default(false),
 });
 
 interface BlogFormProps {
@@ -37,6 +40,7 @@ interface BlogFormProps {
     cover_image_url?: string | null; // campo reale restituito dall'API
     category?: string;
     slug?: string; // facoltativo, utile per non rigenerare slug se già esistente
+    published?: boolean;
   };
   onSave: () => void;
   onCancel: () => void;
@@ -96,6 +100,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
       content: article?.content || "",
       // mappiamo cover_image_url nel campo di form image_url
       image_url: article?.cover_image_url || "",
+      published: article?.published ?? false,
     },
   });
 
@@ -107,6 +112,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
         title: article.title || '',
         content: article.content || '',
         image_url: article.cover_image_url || '',
+        published: article.published ?? false,
       });
     } else {
       form.reset({
@@ -114,6 +120,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
         title: '',
         content: '',
         image_url: '',
+        published: false,
       });
     }
   }, [article, form]);
@@ -140,7 +147,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
         author_id: user.id,
         // Se siamo in edit manteniamo lo slug esistente (evita 404 su link già pubblicati)
         slug: article?.slug || generatedSlug,
-        // published lasciato invariato lato server (default false)
+        published: values.published,
       };
 
       if (article) {
@@ -232,6 +239,26 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
           </FormControl>
           <FormMessage />
         </FormItem>
+        <FormField
+          control={form.control}
+          name="published"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Pubblica</FormLabel>
+                <FormDescription>
+                  Rendi l'articolo visibile nella pagina pubblica del blog
+                </FormDescription>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="ghost" onClick={onCancel}>
             Annulla

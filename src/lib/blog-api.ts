@@ -26,14 +26,16 @@ export type BlogArticleWithAuthor = BlogArticle & {
 };
 
 // Blog Articles API
+// publishedOnly: true = solo pubblicati, false = tutti (incluse bozze per admin)
 export const getBlogArticles = async (
-  published: boolean = true,
+  publishedOnly: boolean = true,
   searchTerm?: string,
   sort: { column: string; direction: string } = { column: 'created_at', direction: 'desc' },
   language?: 'it' | 'en' | 'es' | 'fr' | 'pl' | 'ru'
 ): Promise<BlogArticleWithAuthor[]> => {
   const params = new URLSearchParams();
-  if (published) params.set('published', 'true');
+  // Invia esplicitamente il filtro published
+  params.set('published', publishedOnly ? 'true' : 'false');
   if (searchTerm) params.set('searchTerm', searchTerm);
   if (sort?.column) params.set('sortColumn', sort.column);
   if (sort?.direction) params.set('sortDirection', sort.direction);
