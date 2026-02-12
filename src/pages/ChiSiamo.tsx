@@ -5,14 +5,15 @@ import { Users, Target, Heart, Globe, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import PageHeader from "@/components/PageHeader";
 import PageTopBar from "@/components/PageTopBar";
+import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 const ChiSiamo = () => {
   const isMobile = useIsMobile();
   const { t } = useLanguage();
   
   const MemberCard = ({ name, src, desc }: { name: string; src: string; desc: string }) => (
-    <div className="text-center">
-      <div className="mx-auto w-36 h-36 md:w-40 md:h-40 rounded-full overflow-hidden ring-2 ring-white/70 shadow-md bg-gradient-to-br from-blue-100 to-purple-100">
+    <div className="text-center px-2">
+      <div className="mx-auto w-32 h-32 md:w-36 md:h-36 rounded-lg overflow-hidden ring-2 ring-white/70 shadow-md bg-gradient-to-br from-blue-100 to-purple-100">
         <img
           src={src}
           alt={name}
@@ -100,52 +101,43 @@ const ChiSiamo = () => {
         </section>
 
         {/* Team */}
-        <section className="text-center">
+        <section className="text-left">
           <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-900 to-purple-700 bg-clip-text text-transparent">
             {t('about_page.team_title', 'Il Nostro Team')}
           </h2>
-          <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed whitespace-pre-line">
+          <p className="text-lg md:text-xl text-gray-600 max-w-3xl leading-relaxed whitespace-pre-line mb-8">
             {t('about_page.team_desc', "Siamo un team di apneisti appassionati, sviluppatori e professionisti del settore che lavorano insieme per creare la migliore esperienza possibile per la community dell'apnea.")}
           </p>
 
-          {/* Team layout: 1 / 2 / 2 */}
-          <div className="mt-8 md:mt-10 space-y-10">
-            {/* Row 1: Pol (Paolo) */}
-            <div className="flex justify-center">
-              <MemberCard 
-                name="Pol"
-                src="/images/team/Paolo.jpg"
-                desc=""
-              />
-            </div>
-
-            {/* Row 2: Leo e Marta */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 justify-items-center">
-              <MemberCard 
-                name="Leo"
-                src="/images/team/Leo.jpg"
-                desc=""
-              />
-              <MemberCard 
-                name="Marta"
-                src="/images/team/Marta.jpg"
-                desc=""
-              />
-            </div>
-
-            {/* Row 3: Filippo e Ruggero */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-10 justify-items-center">
-              <MemberCard 
-                name="Filippo"
-                src="/images/team/Filippo.jpg"
-                desc=""
-              />
-              <MemberCard 
-                name="Ruggero"
-                src="/images/team/Ruggero.jpg"
-                desc=""
-              />
-            </div>
+          {/* Team carousel - foto quadrate in una riga */}
+          <div className="relative">
+            <Carousel
+              opts={{
+                align: "start",
+                loop: true,
+              }}
+              className="w-full"
+            >
+              <CarouselContent className="-ml-2 md:-ml-4">
+                <CarouselItem className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/5">
+                  <MemberCard name="Pol" src="/images/team/Paolo.jpg" desc="Founder" />
+                </CarouselItem>
+                <CarouselItem className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/5">
+                  <MemberCard name="Leo" src="/images/team/Leo.jpg" desc="Co-Founder" />
+                </CarouselItem>
+                <CarouselItem className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/5">
+                  <MemberCard name="Marta" src="/images/team/Marta.jpg" desc="Marketing" />
+                </CarouselItem>
+                <CarouselItem className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/5">
+                  <MemberCard name="Filippo" src="/images/team/Filippo.jpg" desc="Tech" />
+                </CarouselItem>
+                <CarouselItem className="pl-2 md:pl-4 basis-1/2 sm:basis-1/3 md:basis-1/5">
+                  <MemberCard name="Ruggero" src="/images/team/Ruggero.jpg" desc="Operations" />
+                </CarouselItem>
+              </CarouselContent>
+              <CarouselPrevious className="left-0 z-20 bg-white/90 backdrop-blur-sm border-2 border-gray-200 hover:bg-white shadow-lg" />
+              <CarouselNext className="right-0 z-20 bg-white/90 backdrop-blur-sm border-2 border-gray-200 hover:bg-white shadow-lg" />
+            </Carousel>
           </div>
         </section>
       </div>

@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Users, Euro, Image as ImageIcon, Target, MessageCircle } from "lucide-react";
+import { Calendar, MapPin, Users, Euro, Image as ImageIcon, Target, MessageCircle, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import type { EventWithCategory } from "@/lib/api";
 import { ensureAbsoluteUrl } from "@/lib/utils";
@@ -87,10 +87,13 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
     }
   };
 
+  const eventPath = buildFriendlyEventPath(event.slug);
+  const organizerDisplayName = event.organizer_name || null;
+
   return (
-  <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200 bg-white/90 backdrop-blur-sm border-0 shadow-md h-[400px] md:h-[440px] flex flex-col">
+  <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200 bg-white/90 backdrop-blur-sm border-0 shadow-md h-auto min-h-[400px] md:min-h-[440px] flex flex-col">
       {showImage && (
-        <div className="relative overflow-hidden flex-shrink-0 aspect-[16/9]">
+        <Link to={eventPath} className="relative overflow-hidden flex-shrink-0 aspect-[16/9] block">
           <img
             src={imageUrl}
             alt={event.title}
@@ -99,7 +102,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
             onLoad={handleImageLoad}
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
           {/* Bottone chat per contattare organizzatore */}
           <button
             type="button"
@@ -111,11 +114,11 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
             <MessageCircle className="h-4 w-4" />
             <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
           </button>
-        </div>
+        </Link>
       )}
       
       {!showImage && (
-        <div className="relative aspect-[16/9] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0">
+        <Link to={eventPath} className="relative aspect-[16/9] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0 block">
           <ImageIcon className="h-12 w-12 text-gray-400" />
           {/* Bottone chat anche quando non c'è immagine */}
           <button
@@ -128,7 +131,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
             <MessageCircle className="h-4 w-4" />
             <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
           </button>
-        </div>
+        </Link>
       )}
 
       <CardHeader className="pb-2 flex-shrink-0">
@@ -138,13 +141,21 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
         {localizeCategoryName(event.categories.name, t)}
             </Badge>
           )}
-          <CardTitle className="text-base font-semibold text-gray-900 leading-tight line-clamp-2">
-            {event.title}
-          </CardTitle>
+          <Link to={eventPath}>
+            <CardTitle className="text-base font-semibold text-gray-900 leading-tight line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer">
+              {event.title}
+            </CardTitle>
+          </Link>
+          {organizerDisplayName && (
+            <div className="flex items-center gap-1.5 text-xs text-gray-500">
+              <User className="h-3.5 w-3.5" />
+              <span>{organizerDisplayName}</span>
+            </div>
+          )}
         </div>
       </CardHeader>
 
-  <CardContent className="pt-0 pb-4 space-y-2 flex-1 flex flex-col overflow-hidden">
+  <CardContent className="pt-0 pb-4 space-y-2 flex-1 flex flex-col">
         {event.description && variant === "full" && (
           <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
             {event.description}

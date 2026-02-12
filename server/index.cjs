@@ -810,6 +810,62 @@ async function sendEmail({ to, subject, html }) {
     return { ok: false, error: String(e?.message || e) };
   }
 }
+
+// Helper: Send chat notification email (max 1 per day per sender->recipient)
+async function maybeSendChatNotificationEmail(senderId, recipientId, senderName, messagePreview) {
+  try {
+    // Get recipient email
+    const { rows: recipientRows } = await pool.query(
+      `SELECT email, full_name FROM profiles WHERE id = $1`,
+      [recipientId]
+    );
+    if (recipientRows.length === 0 || !recipientRows[0].email) return;
+    const recipientEmail = recipientRows[0].email;
+    const recipientName = recipientRows[0].full_name || 'Utente';
+
+    // Check if we already sent a notification in the last 24 hours
+    const { rows: notifRows } = await pool.query(
+      `SELECT last_notified_at FROM chat_email_notifications 
+       WHERE recipient_id = $1 AND sender_id = $2 
+       AND last_notified_at > NOW() - INTERVAL '24 hours'`,
+      [recipientId, senderId]
+    );
+    if (notifRows.length > 0) {
+      // Already notified in last 24h, skip
+      return;
+    }
+
+    // Truncate message preview
+    const preview = messagePreview.length > 100 ? messagePreview.substring(0, 100) + '...' : messagePreview;
+
+    // Send email notification
+    const subject = `Nuovo messaggio da ${senderName} su WeApnea`;
+    const html = BASE_EMAIL_TEMPLATE(
+      'Hai un nuovo messaggio',
+      `<p>Ciao ${recipientName.split(' ')[0]},</p>
+       <p><strong>${senderName}</strong> ti ha inviato un messaggio su WeApnea:</p>
+       <p style="background: #f3f4f6; padding: 12px; border-radius: 8px; font-style: italic;">"${preview}"</p>
+       <p><a href="https://www.weapnea.com/inbox" style="background: linear-gradient(90deg, #2563eb, #7c3aed); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; display: inline-block;">Leggi il messaggio</a></p>
+       <p style="color: #6b7280; font-size: 0.875rem;">Riceverai al massimo una notifica al giorno per i nuovi messaggi.</p>`
+    );
+
+    await sendEmail({ to: recipientEmail, subject, html });
+
+    // Upsert notification tracking record
+    await pool.query(
+      `INSERT INTO chat_email_notifications (recipient_id, sender_id, last_notified_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (recipient_id, sender_id) DO UPDATE SET last_notified_at = NOW()`,
+      [recipientId, senderId]
+    );
+
+    console.log(`[chat] Sent email notification to ${recipientEmail} from ${senderName}`);
+  } catch (e) {
+    // Don't fail the message send if notification fails
+    console.error('[chat] Email notification error:', e?.message || e);
+  }
+}
+
 function requireAuth(req, res, next) {
   const auth = req.headers['authorization'] || '';
   if (!auth.startsWith('Bearer ')) {
@@ -3459,6 +3515,14 @@ app.post('/api/conversations/:conversationId/messages', requireAuth, async (req,
 
     // Update conversation last_message_at
     await pool.query(`UPDATE conversations SET last_message_at = NOW(), updated_at = NOW() WHERE id = $1`, [conversationId]);
+
+    // Send email notification (async, don't wait)
+    pool.query(`SELECT full_name, company_name FROM profiles WHERE id = $1`, [req.user.id])
+      .then(({ rows: senderRows }) => {
+        const senderName = senderRows[0]?.company_name || senderRows[0]?.full_name || 'Utente';
+        maybeSendChatNotificationEmail(req.user.id, otherUserId, senderName, content.trim());
+      })
+      .catch(() => {});
 
     res.status(201).json(rows[0]);
   } catch (e) {
