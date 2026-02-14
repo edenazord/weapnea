@@ -56,6 +56,26 @@ export function RichTextEditor({
             class: 'border-l-4 border-gray-300 pl-4 italic text-gray-600',
           },
         },
+        horizontalRule: {
+          HTMLAttributes: {
+            class: 'my-4 border-t-2 border-gray-300',
+          },
+        },
+        bulletList: {
+          HTMLAttributes: {
+            class: 'list-disc pl-6 my-2',
+          },
+        },
+        orderedList: {
+          HTMLAttributes: {
+            class: 'list-decimal pl-6 my-2',
+          },
+        },
+        listItem: {
+          HTMLAttributes: {
+            class: 'my-1',
+          },
+        },
       }),
       Heading.configure({
         levels: [2, 3],
