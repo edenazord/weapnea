@@ -2,8 +2,32 @@ import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect } from 'react';
-import { Bold, Italic, List, ListOrdered, Link as LinkIcon, Undo, Redo } from 'lucide-react';
+import Underline from '@tiptap/extension-underline';
+import TextAlign from '@tiptap/extension-text-align';
+import { TextStyle } from '@tiptap/extension-text-style';
+import Color from '@tiptap/extension-color';
+import Heading from '@tiptap/extension-heading';
+import { useEffect, useState } from 'react';
+import { 
+  Bold, 
+  Italic, 
+  Underline as UnderlineIcon,
+  Strikethrough,
+  List, 
+  ListOrdered, 
+  Link as LinkIcon, 
+  Undo, 
+  Redo,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Quote,
+  Minus,
+  Heading2,
+  Heading3,
+  Palette,
+  ChevronDown
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface RichTextEditorProps {
@@ -21,10 +45,20 @@ export function RichTextEditor({
   className,
   minHeight = '150px',
 }: RichTextEditorProps) {
+  const [showColorPicker, setShowColorPicker] = useState(false);
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
-        heading: false, // Disabilitiamo heading per semplicità
+        heading: false,
+        blockquote: {
+          HTMLAttributes: {
+            class: 'border-l-4 border-gray-300 pl-4 italic text-gray-600',
+          },
+        },
+      }),
+      Heading.configure({
+        levels: [2, 3],
       }),
       Link.configure({
         openOnClick: false,
@@ -34,6 +68,12 @@ export function RichTextEditor({
       }),
       Placeholder.configure({
         placeholder,
+      }),
+      Underline,
+      TextStyle,
+      Color,
+      TextAlign.configure({
+        types: ['heading', 'paragraph'],
       }),
     ],
     content: value,
@@ -103,10 +143,39 @@ export function RichTextEditor({
     </button>
   );
 
+  const colors = [
+    { name: 'Nero', value: '#000000' },
+    { name: 'Blu', value: '#2563eb' },
+    { name: 'Rosso', value: '#dc2626' },
+    { name: 'Verde', value: '#16a34a' },
+    { name: 'Arancione', value: '#ea580c' },
+    { name: 'Viola', value: '#9333ea' },
+  ];
+
   return (
     <div className={cn('border rounded-md bg-white overflow-hidden', className)}>
       {/* Toolbar */}
-      <div className="flex items-center gap-1 p-2 border-b bg-gray-50 flex-wrap">
+      <div className="flex items-center gap-0.5 p-2 border-b bg-gray-50 flex-wrap">
+        {/* Headings */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+          isActive={editor.isActive('heading', { level: 2 })}
+          title="Titolo grande (H2)"
+        >
+          <Heading2 className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
+          isActive={editor.isActive('heading', { level: 3 })}
+          title="Titolo piccolo (H3)"
+        >
+          <Heading3 className="h-4 w-4" />
+        </ToolbarButton>
+
+        <div className="w-px h-5 bg-gray-300 mx-1" />
+
+        {/* Basic formatting */}
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBold().run()}
           isActive={editor.isActive('bold')}
@@ -123,8 +192,93 @@ export function RichTextEditor({
           <Italic className="h-4 w-4" />
         </ToolbarButton>
 
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+          isActive={editor.isActive('underline')}
+          title="Sottolineato (Ctrl+U)"
+        >
+          <UnderlineIcon className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          isActive={editor.isActive('strike')}
+          title="Barrato"
+        >
+          <Strikethrough className="h-4 w-4" />
+        </ToolbarButton>
+
         <div className="w-px h-5 bg-gray-300 mx-1" />
 
+        {/* Color picker */}
+        <div className="relative">
+          <ToolbarButton
+            onClick={() => setShowColorPicker(!showColorPicker)}
+            title="Colore testo"
+          >
+            <Palette className="h-4 w-4" />
+            <ChevronDown className="h-3 w-3 ml-0.5" />
+          </ToolbarButton>
+          {showColorPicker && (
+            <div className="absolute top-full left-0 mt-1 bg-white border rounded-md shadow-lg p-2 z-50 flex gap-1">
+              {colors.map((color) => (
+                <button
+                  key={color.value}
+                  type="button"
+                  onClick={() => {
+                    editor.chain().focus().setColor(color.value).run();
+                    setShowColorPicker(false);
+                  }}
+                  title={color.name}
+                  className="w-6 h-6 rounded border border-gray-200 hover:scale-110 transition-transform"
+                  style={{ backgroundColor: color.value }}
+                />
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().unsetColor().run();
+                  setShowColorPicker(false);
+                }}
+                title="Rimuovi colore"
+                className="w-6 h-6 rounded border border-gray-200 hover:bg-gray-100 flex items-center justify-center text-xs"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="w-px h-5 bg-gray-300 mx-1" />
+
+        {/* Alignment */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign('left').run()}
+          isActive={editor.isActive({ textAlign: 'left' })}
+          title="Allinea a sinistra"
+        >
+          <AlignLeft className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign('center').run()}
+          isActive={editor.isActive({ textAlign: 'center' })}
+          title="Centra"
+        >
+          <AlignCenter className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setTextAlign('right').run()}
+          isActive={editor.isActive({ textAlign: 'right' })}
+          title="Allinea a destra"
+        >
+          <AlignRight className="h-4 w-4" />
+        </ToolbarButton>
+
+        <div className="w-px h-5 bg-gray-300 mx-1" />
+
+        {/* Lists */}
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           isActive={editor.isActive('bulletList')}
@@ -143,6 +297,25 @@ export function RichTextEditor({
 
         <div className="w-px h-5 bg-gray-300 mx-1" />
 
+        {/* Blockquote and HR */}
+        <ToolbarButton
+          onClick={() => editor.chain().focus().toggleBlockquote().run()}
+          isActive={editor.isActive('blockquote')}
+          title="Citazione"
+        >
+          <Quote className="h-4 w-4" />
+        </ToolbarButton>
+
+        <ToolbarButton
+          onClick={() => editor.chain().focus().setHorizontalRule().run()}
+          title="Linea orizzontale"
+        >
+          <Minus className="h-4 w-4" />
+        </ToolbarButton>
+
+        <div className="w-px h-5 bg-gray-300 mx-1" />
+
+        {/* Link */}
         <ToolbarButton
           onClick={setLink}
           isActive={editor.isActive('link')}
@@ -153,6 +326,7 @@ export function RichTextEditor({
 
         <div className="w-px h-5 bg-gray-300 mx-1" />
 
+        {/* Undo/Redo */}
         <ToolbarButton
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
@@ -173,7 +347,7 @@ export function RichTextEditor({
       {/* Editor */}
       <EditorContent editor={editor} />
 
-      {/* Stili per placeholder */}
+      {/* Stili per placeholder e headings */}
       <style>{`
         .tiptap p.is-editor-empty:first-child::before {
           color: #adb5bd;
@@ -181,6 +355,30 @@ export function RichTextEditor({
           float: left;
           height: 0;
           pointer-events: none;
+        }
+        .tiptap h2 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          margin-top: 1rem;
+          margin-bottom: 0.5rem;
+        }
+        .tiptap h3 {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin-top: 0.75rem;
+          margin-bottom: 0.5rem;
+        }
+        .tiptap blockquote {
+          border-left: 4px solid #d1d5db;
+          padding-left: 1rem;
+          font-style: italic;
+          color: #6b7280;
+          margin: 0.5rem 0;
+        }
+        .tiptap hr {
+          border: none;
+          border-top: 2px solid #e5e7eb;
+          margin: 1rem 0;
         }
       `}</style>
     </div>
