@@ -5,12 +5,14 @@ type PageHeaderProps = {
   title: ReactNode;
   subtitle?: ReactNode;
   actions?: ReactNode;
+  align?: 'center' | 'left';
 };
 
-export default function PageHeader({ icon, title, subtitle, actions }: PageHeaderProps) {
+export default function PageHeader({ icon, title, subtitle, actions, align = 'center' }: PageHeaderProps) {
+  const isLeft = align === 'left';
   return (
-    <div className="text-center mb-12 relative">
-      <div className="flex items-center justify-center gap-3 mb-4">
+    <div className={`${isLeft ? 'text-left' : 'text-center'} mb-12 relative`}>
+      <div className={`flex items-center ${isLeft ? 'justify-start' : 'justify-center'} gap-3 mb-4`}>
         {icon && (
           <div className="p-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg">
             {icon}
@@ -21,12 +23,12 @@ export default function PageHeader({ icon, title, subtitle, actions }: PageHeade
         {title}
       </h1>
       {subtitle && (
-        <p className="text-base md:text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed whitespace-pre-line">
+        <p className={`text-base md:text-xl text-gray-600 ${isLeft ? 'max-w-3xl' : 'max-w-4xl mx-auto'} leading-relaxed whitespace-pre-line`}>
           {subtitle}
         </p>
       )}
       {actions && (
-        <div className="mt-6 flex items-center justify-center gap-3 flex-wrap">
+        <div className={`mt-6 flex items-center ${isLeft ? 'justify-start' : 'justify-center'} gap-3 flex-wrap`}>
           {actions}
         </div>
       )}

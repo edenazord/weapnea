@@ -38,6 +38,7 @@ const ChiSiamo = () => {
           <PageHeader
             title={t('about_page.title', 'Chi Siamo')}
             subtitle={t("about_page.subtitle", "WeApnea è la prima piattaforma internazionale dedicata all'apnea, nata dalla passione di un gruppo di apneisti che ha voluto creare uno spazio di condivisione e crescita per tutta la community.")}
+            align="left"
           />
         </div>
       </div>
