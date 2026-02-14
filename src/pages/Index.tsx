@@ -389,13 +389,13 @@ const Index = () => {
                           }}
                           className="w-full"
                         >
-                          <CarouselContent className="-ml-1 md:-ml-2 w-full items-stretch">
+                          <CarouselContent className="-ml-2 md:-ml-2 w-full items-stretch">
                             {category.events.map((event) => (
                             <CarouselItem 
                               key={event.id} 
-                              className={`pl-1 md:pl-2 h-full ${
+                              className={`pl-2 md:pl-2 h-full ${
                                 isMobile 
-                                  ? "basis-full" 
+                                  ? "basis-[85%]" 
                                   : "basis-1/4"
                               }`}
                               >
