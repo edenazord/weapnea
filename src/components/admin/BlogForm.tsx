@@ -14,8 +14,8 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { apiSend } from '@/lib/apiClient';
@@ -219,7 +219,12 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
             <FormItem>
               <FormLabel>Contenuto</FormLabel>
               <FormControl>
-                <Textarea placeholder="Contenuto dell'articolo" {...field} className="min-h-[100px]" />
+                <RichTextEditor
+                  value={field.value}
+                  onChange={field.onChange}
+                  placeholder="Contenuto dell'articolo"
+                  minHeight="200px"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

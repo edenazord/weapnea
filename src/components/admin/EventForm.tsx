@@ -10,6 +10,7 @@ import type { Event, Category } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
 import { getCategories } from "@/lib/api";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
 import { generateEventSlug } from "@/lib/seo-utils";
@@ -340,9 +341,11 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
             <FormItem>
               <FormLabel>Descrizione</FormLabel>
               <FormControl>
-                <Textarea
+                <RichTextEditor
+                  value={field.value || ''}
+                  onChange={field.onChange}
                   placeholder="Aggiungi una descrizione dell'evento..."
-                  {...field}
+                  minHeight="120px"
                 />
               </FormControl>
               <FormMessage />
@@ -371,9 +374,11 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
             <FormItem>
               <FormLabel>Chi Siamo</FormLabel>
               <FormControl>
-                <Textarea
+                <RichTextEditor
+                  value={field.value || ''}
+                  onChange={field.onChange}
                   placeholder="Informazioni sull'organizzatore..."
-                  {...field}
+                  minHeight="100px"
                 />
               </FormControl>
               <FormMessage />
@@ -388,9 +393,11 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
             <FormItem>
               <FormLabel>Obiettivi</FormLabel>
               <FormControl>
-                <Textarea
+                <RichTextEditor
+                  value={field.value || ''}
+                  onChange={field.onChange}
                   placeholder="Obiettivi dell'evento..."
-                  {...field}
+                  minHeight="100px"
                 />
               </FormControl>
               <FormMessage />
@@ -405,9 +412,11 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
             <FormItem>
               <FormLabel>Cosa è Incluso nell'Attività</FormLabel>
               <FormControl>
-                <Textarea
+                <RichTextEditor
+                  value={field.value || ''}
+                  onChange={field.onChange}
                   placeholder="Cosa è incluso nell'attività..."
-                  {...field}
+                  minHeight="100px"
                 />
               </FormControl>
               <FormMessage />
@@ -422,9 +431,11 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
             <FormItem>
               <FormLabel>Cosa NON è Incluso nell'Attività</FormLabel>
               <FormControl>
-                <Textarea
+                <RichTextEditor
+                  value={field.value || ''}
+                  onChange={field.onChange}
                   placeholder="Cosa non è incluso nell'attività..."
-                  {...field}
+                  minHeight="100px"
                 />
               </FormControl>
               <FormMessage />
@@ -439,9 +450,11 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
             <FormItem>
               <FormLabel>Note e Avvertenze</FormLabel>
               <FormControl>
-                <Textarea
+                <RichTextEditor
+                  value={field.value || ''}
+                  onChange={field.onChange}
                   placeholder="es. Non adatto a donne in gravidanza, portare documento e brevetto..."
-                  {...field}
+                  minHeight="100px"
                 />
               </FormControl>
               <FormMessage />
@@ -456,9 +469,11 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
             <FormItem>
               <FormLabel>Orari e Logistica</FormLabel>
               <FormControl>
-                <Textarea
+                <RichTextEditor
+                  value={field.value || ''}
+                  onChange={field.onChange}
                   placeholder="Orari dell'evento e informazioni logistiche..."
-                  {...field}
+                  minHeight="100px"
                 />
               </FormControl>
               <FormMessage />
