@@ -410,8 +410,8 @@ const Index = () => {
                           </CarouselContent>
                           {category.events.length > (isMobile ? 1 : 4) && (
                             <>
-                              <CarouselPrevious className={`left-2 z-20 bg-white/90 backdrop-blur-sm border-2 border-gray-200 hover:bg-white shadow-lg ${isMobile ? 'flex top-16' : 'hidden md:flex top-20'}`} />
-                              <CarouselNext className={`right-2 z-20 bg-white/90 backdrop-blur-sm border-2 border-gray-200 hover:bg-white shadow-lg ${isMobile ? 'flex top-16' : 'hidden md:flex top-20'}`} />
+                              <CarouselPrevious className={`left-2 z-20 shadow-lg ${isMobile ? 'flex top-16 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0' : 'hidden md:flex top-20 bg-white/90 backdrop-blur-sm border-2 border-gray-200 hover:bg-white'}`} />
+                              <CarouselNext className={`right-2 z-20 shadow-lg ${isMobile ? 'flex top-16 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0' : 'hidden md:flex top-20 bg-white/90 backdrop-blur-sm border-2 border-gray-200 hover:bg-white'}`} />
                             </>
                           )}
                         </Carousel>
