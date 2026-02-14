@@ -380,6 +380,26 @@ export function RichTextEditor({
           border-top: 2px solid #e5e7eb;
           margin: 1rem 0;
         }
+        .tiptap ul {
+          list-style-type: disc;
+          padding-left: 1.5rem;
+          margin: 0.5rem 0;
+        }
+        .tiptap ol {
+          list-style-type: decimal;
+          padding-left: 1.5rem;
+          margin: 0.5rem 0;
+        }
+        .tiptap ul li,
+        .tiptap ol li {
+          margin: 0.25rem 0;
+        }
+        .tiptap ul ul {
+          list-style-type: circle;
+        }
+        .tiptap ul ul ul {
+          list-style-type: square;
+        }
       `}</style>
     </div>
   );
