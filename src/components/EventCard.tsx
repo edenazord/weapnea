@@ -209,11 +209,11 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
                 <Users className="h-4 w-4 text-purple-500 flex-shrink-0" />
                 {typeof event.participants === 'number' && event.participants > 0 && typeof event.participants_paid_count === 'number' ? (
                   <span>
-                    {t('events.enrolled_label', 'Iscritti')} {Math.max(0, event.participants_paid_count)} / {event.participants}
+                    {t('events.remaining_spots', 'Posti rimanenti')}: {Math.max(0, event.participants - event.participants_paid_count)}
                   </span>
                 ) : typeof event.participants === 'number' && event.participants > 0 ? (
                   <span>
-                    {event.participants} {t('events.participants', 'partecipanti')}
+                    {t('events.remaining_spots', 'Posti rimanenti')}: {event.participants}
                   </span>
                 ) : (
                   <span>
