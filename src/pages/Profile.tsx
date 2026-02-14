@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { apiSend, apiGet } from "@/lib/apiClient";
 import { backendConfig } from "@/lib/backendConfig";
 import { getPublicConfig } from "@/lib/publicConfig";
+import { removeEventParticipant } from "@/lib/payments-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -1101,19 +1102,40 @@ const Profile = () => {
                                 {p.paid_at ? format(parseISO(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: itLocale }) : '-'}
                               </TableCell>
                               <TableCell>
-                                {user?.id !== p.user_id && (
+                                <div className="flex items-center gap-1">
+                                  {user?.id !== p.user_id && (
+                                    <button
+                                      type="button"
+                                      className="p-2 rounded hover:bg-blue-50 text-blue-600"
+                                      title="Chatta con questo partecipante"
+                                      onClick={() => {
+                                        openChat(p.user_id, participantsEventId);
+                                        setParticipantsOpen(false);
+                                      }}
+                                    >
+                                      <MessageCircle className="h-4 w-4" />
+                                    </button>
+                                  )}
                                   <button
                                     type="button"
-                                    className="p-2 rounded hover:bg-blue-50 text-blue-600"
-                                    title="Chatta con questo partecipante"
-                                    onClick={() => {
-                                      openChat(p.user_id, participantsEventId);
-                                      setParticipantsOpen(false);
+                                    className="p-2 rounded hover:bg-red-50 text-red-600"
+                                    title="Rimuovi partecipante"
+                                    onClick={async () => {
+                                      const confirmed = window.confirm(`Rimuovere ${p.full_name || 'questo partecipante'}?`);
+                                      if (!confirmed) return;
+                                      try {
+                                        await removeEventParticipant(participantsEventId, p.user_id);
+                                        toast({ title: "Partecipante rimosso", description: "L'utente è stato rimosso dall'evento." });
+                                        // Aggiorna la lista
+                                        setParticipants(prev => prev.filter(part => part.user_id !== p.user_id));
+                                      } catch (e) {
+                                        toast({ title: "Errore", description: "Impossibile rimuovere il partecipante", variant: "destructive" });
+                                      }
                                     }}
                                   >
-                                    <MessageCircle className="h-4 w-4" />
+                                    <Trash2 className="h-4 w-4" />
                                   </button>
-                                )}
+                                </div>
                               </TableCell>
                             </TableRow>
                           ))}
