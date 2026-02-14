@@ -608,7 +608,7 @@ async function renderEmailWithTemplate(type, vars, fallbackSubject, fallbackHtml
         break;
       case 'event_registration_organizer':
         ctaText = 'Apri Dashboard';
-        ctaUrl = (vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com') + '/profilo';
+        ctaUrl = (vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com') + '/dashboard';
         break;
     }
     
