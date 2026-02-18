@@ -94,6 +94,7 @@ const Profile = () => {
     company_name: "",
     vat_number: "",
     company_address: "",
+    club_team: "",
     public_profile_enabled: false,
     public_slug: "",
   public_show_bio: true,
@@ -370,6 +371,7 @@ const Profile = () => {
         company_name: user.company_name || "",
         vat_number: user.vat_number || "",
         company_address: user.company_address || "",
+        club_team: (user as any).club_team || "",
         public_profile_enabled: (user as any).public_profile_enabled ?? false,
         public_slug: (user as any).public_slug || "",
   public_show_bio: (user as any).public_show_bio ?? true,
@@ -508,6 +510,16 @@ const Profile = () => {
     setBestEntries(prev => prev.filter((_, i) => i !== idx));
   };
 
+  const moveBest = (idx: number, direction: 'up' | 'down') => {
+    setBestEntries(prev => {
+      const arr = [...prev];
+      const target = direction === 'up' ? idx - 1 : idx + 1;
+      if (target < 0 || target >= arr.length) return arr;
+      [arr[idx], arr[target]] = [arr[target], arr[idx]];
+      return arr;
+    });
+  };
+
   const isValidBest = (e: BestEntry) => {
     if (!e?.value) return true; // empty allowed
     if (e.discipline === 'STA') {
@@ -542,22 +554,8 @@ const Profile = () => {
     e.preventDefault();
     if (!user) return;
 
-    // Validazioni extra: le dichiarazioni possono essere salvate solo se i campi richiesti sono presenti.
-    // Assicurazione: richiede assicurazione, numero_assicurazione e scadenza_assicurazione futura
-    if (formData.dichiarazione_assicurazione_valida) {
-      const hasAssicurazione = !!formData.assicurazione?.trim();
-      const hasNumeroAssicurazione = !!(formData.numero_assicurazione && String(formData.numero_assicurazione).trim());
-      const expiryAss = formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : null;
-      const futureAss = expiryAss ? expiryAss >= new Date(new Date().setHours(0,0,0,0)) : false;
-      if (!hasAssicurazione || !hasNumeroAssicurazione || !futureAss) {
-        toast({
-          title: 'Dati Assicurazione incompleti',
-          description: 'Compila assicurazione, numero e una scadenza valida futura prima di confermare la dichiarazione.',
-          variant: 'destructive'
-        });
-        return;
-      }
-    }
+    // Validazioni extra: la dichiarazione di assicurazione può essere salvata anche senza i dati assicurativi dettagliati.
+    // I campi assicurativi (nome, numero, scadenza) restano facoltativi.
     // Brevetto: richiede brevetto, numero_brevetto e scadenza_brevetto futura
     if (formData.dichiarazione_brevetto_valido) {
       const hasBrevetto = !!formData.brevetto?.trim();
@@ -623,6 +621,7 @@ const Profile = () => {
         instagram_contact: formData.instagram_contact || null,
         phone: formData.phone || null,
         contact_email: formData.contact_email || null,
+        club_team: formData.club_team || null,
         company_name: formData.company_name || null,
         vat_number: formData.vat_number || null,
         company_address: formData.company_address || null,
@@ -1221,6 +1220,19 @@ const Profile = () => {
                       rows={4}
                     />
                   </div>
+
+                  <div>
+                    <Label htmlFor="club_team">{t('profile.sections.personal_info.club_team_label', 'Club / Associazione / Team')}</Label>
+                    <Input
+                      id="club_team"
+                      value={formData.club_team}
+                      onChange={(e) => handleInputChange('club_team', e.target.value)}
+                      placeholder={t('profile.sections.personal_info.club_team_placeholder', 'Es. ASD Apnea Team Italia')}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {t('profile.sections.personal_info.club_team_hint', 'Facoltativo. Sarà visibile sul profilo pubblico.')}
+                    </p>
+                  </div>
                 </CardContent>
               </Card>
 
@@ -1715,9 +1727,17 @@ const Profile = () => {
                               )}
                             </TableCell>
                             <TableCell className="text-right">
-                              <Button type="button" variant="destructive" onClick={() => removeBest(idx)}>
-                                {t('common.delete', 'Elimina')}
-                              </Button>
+                              <div className="flex items-center justify-end gap-1">
+                                <Button type="button" variant="ghost" size="sm" disabled={idx === 0} onClick={() => moveBest(idx, 'up')} title="Sposta su">
+                                  ▲
+                                </Button>
+                                <Button type="button" variant="ghost" size="sm" disabled={idx === bestEntries.length - 1} onClick={() => moveBest(idx, 'down')} title="Sposta giù">
+                                  ▼
+                                </Button>
+                                <Button type="button" variant="destructive" size="sm" onClick={() => removeBest(idx)}>
+                                  {t('common.delete', 'Elimina')}
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         );

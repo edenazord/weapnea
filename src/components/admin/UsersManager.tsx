@@ -180,6 +180,7 @@ const UsersManager = () => {
                     <SelectItem value="all">Tutti i ruoli</SelectItem>
                     <SelectItem value="admin">Amministratori</SelectItem>
                     <SelectItem value="blogger">Blogger</SelectItem>
+                    <SelectItem value="creator">Creator</SelectItem>
                     <SelectItem value="instructor">Istruttori</SelectItem>
                     <SelectItem value="company">Aziende</SelectItem>
                     <SelectItem value="final_user">Utenti Finali</SelectItem>
@@ -283,6 +284,7 @@ const UsersManager = () => {
                               <SelectItem value="instructor">Istruttore</SelectItem>
                               <SelectItem value="company">Azienda</SelectItem>
                               <SelectItem value="blogger">Blogger</SelectItem>
+                              <SelectItem value="creator">Creator</SelectItem>
                               <SelectItem value="admin">Amministratore</SelectItem>
                             </SelectContent>
                           </Select>

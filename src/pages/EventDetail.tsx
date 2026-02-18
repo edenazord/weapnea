@@ -27,6 +27,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { friendlyToCanonicalSlug } from "@/lib/seo-utils";
 import { useChatStore } from "@/hooks/useChatStore";
 import { toast } from "sonner";
+import DOMPurify from "dompurify";
 
 const EventDetailSkeleton = () => (
     <div className="min-h-screen bg-blue-50">
@@ -444,9 +445,9 @@ const EventDetail = () => {
                             
                             {/* Nota: la sezione 'Organizzato da' è ora integrata sopra al titolo con avatar */}
                             
-                            <div className={`prose max-w-none text-gray-700 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
-                                {event.description || t('events.no_description', 'Nessuna descrizione fornita per questo evento.')}
-                            </div>
+                            <div className={`prose max-w-none text-gray-700 ${isMobile ? 'text-sm' : ''}`}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.description || t('events.no_description', 'Nessuna descrizione fornita per questo evento.')) }}
+                            />
                         </div>
                     </Card>
 
@@ -459,9 +460,9 @@ const EventDetail = () => {
                     })() && (
                         <Card className="shadow-lg p-6 mt-8">
                             <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.activity_description', 'Descrizione Attività')}</h2>
-                            <div className={`text-gray-600 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
-                                {event.activity_description}
-                            </div>
+                            <div className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.activity_description || '') }}
+                            />
                         </Card>
                     )}
 
@@ -480,9 +481,9 @@ const EventDetail = () => {
                                 <Target className="h-6 w-6 mr-2 text-blue-600" />
                                 {t('events.objectives', 'Obiettivi')}
                             </h2>
-                            <div className={`text-gray-600 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
-                                {event.objectives}
-                            </div>
+                            <div className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.objectives || '') }}
+                            />
                         </Card>
                     )}
 
@@ -490,9 +491,9 @@ const EventDetail = () => {
                     {event.about_us && (
                         <Card className={`shadow-lg p-6 mt-8`}>
                             <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.about_us', 'Chi Siamo')}</h2>
-                            <div className={`text-gray-600 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
-                                {event.about_us}
-                            </div>
+                            <div className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.about_us || '') }}
+                            />
                         </Card>
                     )}
 
@@ -500,9 +501,9 @@ const EventDetail = () => {
                     {event.notes && (
                         <Card className={`shadow-lg p-6 mt-8 border-orange-200 bg-orange-50`}>
                             <h2 className={`font-bold text-orange-800 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.notes_warnings', 'Note e Avvertenze')}</h2>
-                            <div className={`text-orange-700 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
-                                {event.notes}
-                            </div>
+                            <div className={`text-orange-700 ${isMobile ? 'text-sm' : ''}`}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.notes || '') }}
+                            />
                         </Card>
                     )}
 
@@ -513,9 +514,9 @@ const EventDetail = () => {
                                 <Clock className="h-6 w-6 mr-2 text-blue-600" />
                                 {t('events.schedule_logistics', 'Orari e Logistica')}
                             </h2>
-                            <div className={`text-gray-600 whitespace-pre-wrap ${isMobile ? 'text-sm' : ''}`}>
-                                {event.schedule_logistics}
-                            </div>
+                            <div className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.schedule_logistics || '') }}
+                            />
                         </Card>
                     )}
                 </div>
@@ -546,11 +547,11 @@ const EventDetail = () => {
                                 <div className="flex items-start">
                                     <Users className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                     <div>
-                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.enrolled_count', 'Iscritti')}</p>
+                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.remaining_spots', 'Posti rimanenti')}</p>
                                         <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>
                                             {typeof event.participants === 'number' && event.participants > 0
-                                                ? `${Math.max(0, Number((event as any).participants_paid_count || 0))} / ${event.participants}`
-                                                : `${Math.max(0, Number((event as any).participants_paid_count || 0))}`}
+                                                ? `${Math.max(0, event.participants - Number((event as any).participants_paid_count || 0))} / ${event.participants}`
+                                                : `${Math.max(0, Number((event as any).participants_paid_count || 0))} ${t('events.enrolled', 'iscritti')}`}
                                         </p>
                                     </div>
                                 </div>
@@ -674,9 +675,9 @@ const EventDetail = () => {
                                         <Check className="h-5 w-5 mr-2 text-green-600" />
                                         <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.included_label', 'Incluso')}</p>
                                     </div>
-                                    <div className={`text-gray-600 whitespace-pre-wrap ml-7 ${isMobile ? 'text-sm' : ''}`}>
-                                        {event.included_in_activity}
-                                    </div>
+                                    <div className={`text-gray-600 ml-7 ${isMobile ? 'text-sm' : ''}`}
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.included_in_activity || '') }}
+                                    />
                                 </div>
                             )}
                             {event.not_included_in_activity && (
@@ -685,11 +686,27 @@ const EventDetail = () => {
                                         <X className="h-5 w-5 mr-2 text-red-600" />
                                         <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.not_included_label', 'Non Incluso')}</p>
                                     </div>
-                                    <div className={`text-gray-600 whitespace-pre-wrap ml-7 ${isMobile ? 'text-sm' : ''}`}>
-                                        {event.not_included_in_activity}
-                                    </div>
+                                    <div className={`text-gray-600 ml-7 ${isMobile ? 'text-sm' : ''}`}
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.not_included_in_activity || '') }}
+                                    />
                                 </div>
                             )}
+                        </Card>
+                    )}
+
+                    {/* PDF allegato */}
+                    {(event as any).pdf_url && (
+                        <Card className={`shadow-lg p-6 mt-6`}>
+                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.attachment_label', 'Allegato')}</h2>
+                            <a
+                                href={(event as any).pdf_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 transition-colors"
+                            >
+                                <FileText className="h-6 w-6 text-red-600 flex-shrink-0" />
+                                <span className="text-blue-600 hover:underline text-sm">{t('events.download_pdf', 'Scarica PDF')}</span>
+                            </a>
                         </Card>
                     )}
 

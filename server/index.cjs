@@ -1220,7 +1220,7 @@ app.put('/api/profile', requireAuth, async (req, res) => {
     const allowed = [
       'full_name','avatar_url','bio','brevetto','scadenza_brevetto','scadenza_certificato_medico','certificato_medico_tipo',
       'assicurazione','scadenza_assicurazione','instagram_contact',
-      'company_name','vat_number','company_address','phone','contact_email',
+      'company_name','vat_number','company_address','phone','contact_email','club_team',
       'didattica_brevetto','numero_brevetto','foto_brevetto_url','numero_assicurazione',
       'dichiarazione_brevetto_valido','dichiarazione_assicurazione_valida'
     ];
@@ -1711,7 +1711,7 @@ function eventsSelect() {
     e.activity_details, e.who_we_are, e.fixed_appointment, e.instructors,
     e.instructor_certificates, e.max_participants_per_instructor, e.schedule_meeting_point,
     e.responsibility_waiver_accepted, e.privacy_accepted,
-    e.fixed_appointment_text,
+    e.fixed_appointment_text, e.pdf_url,
     -- Paid participants count for x / y indicator in listings
     COALESCE((SELECT COUNT(*) FROM event_payments ep WHERE ep.event_id = e.id AND ep.status = 'paid'), 0)::int AS participants_paid_count,
     -- Organizer public fields (for UI)
@@ -1914,12 +1914,13 @@ app.post('/api/blog', requireAuth, requireBloggerOrAdmin, async (req, res) => {
   await ensureBlogLanguageColumn();
   const b = req.body || {};
   try {
-    const cols = ['language','title','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published','author_id'];
+    const cols = ['language','title','subtitle','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published','author_id'];
     // Force author_id to current user if not admin
     const authorId = (req.user?.role === 'admin' && b.author_id) ? b.author_id : (req.user?.id || b.author_id);
     const vals = [
       b.language || 'it',
       b.title,
+      b.subtitle || null,
       b.slug || String(b.title || '').toLowerCase().replace(/\s+/g,'-'),
       b.excerpt || null,
       b.content,
@@ -1946,7 +1947,7 @@ app.put('/api/blog/:id', requireAuth, requireBloggerOrAdmin, async (req, res) =>
   await ensureBlogLanguageColumn();
   const b = req.body || {};
   try {
-    const allowed = ['language','title','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published'];
+    const allowed = ['language','title','subtitle','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published'];
     const fields = Object.keys(b).filter(k => allowed.includes(k));
     if (fields.length === 0) return res.status(400).json({ error: 'no valid fields to update' });
     const sets = fields.map((k,i)=> `${k} = $${i+1}`).join(', ');
@@ -2013,7 +2014,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
           `SELECT 
             id, full_name, company_name, bio, avatar_url, instagram_contact, role,
             brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
-            scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number, personal_best${ocCol},
+            scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number, personal_best, club_team${ocCol},
             public_profile_enabled, public_slug, public_show_bio, public_show_instagram, public_show_company_info, public_show_certifications, public_show_events, public_show_records, public_show_personal
            FROM profiles
            WHERE lower(public_slug) = lower($1)
@@ -2035,7 +2036,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
     const { rows: baseRows } = await pool.query(
       `SELECT id, full_name, company_name, bio, avatar_url, instagram_contact, role,
               brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
-              scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number, personal_best,
+              scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number, personal_best, club_team,
               COALESCE(is_active, true) AS is_active${ocColFallback}
          FROM profiles WHERE id = $1 LIMIT 1`,
       [ownerId]
@@ -2065,6 +2066,7 @@ app.get('/api/instructors/slug/:slug', async (req, res) => {
       vat_number: base.vat_number,
       personal_best: base.personal_best || null,
       other_certifications: base.other_certifications || [],
+      club_team: base.club_team || null,
       public_profile_enabled: true,
   public_slug: pp.slug || slug,
       public_show_bio: pp.show_bio !== false,
@@ -2270,7 +2272,7 @@ app.post('/api/events', requireAuth, async (req, res) => {
     }
   }
   const cols = [
-    'title','slug','description','date','end_date','location','participants','image_url','category_id','cost','nation','discipline','created_by','level','activity_description','language','about_us','objectives','included_in_activity','not_included_in_activity','notes','schedule_logistics','gallery_images','event_type','activity_details','who_we_are','fixed_appointment','fixed_appointment_text','instructors','instructor_certificates','max_participants_per_instructor','schedule_meeting_point','responsibility_waiver_accepted','privacy_accepted'
+    'title','slug','description','date','end_date','location','participants','image_url','category_id','cost','nation','discipline','created_by','level','activity_description','language','about_us','objectives','included_in_activity','not_included_in_activity','notes','schedule_logistics','gallery_images','pdf_url','event_type','activity_details','who_we_are','fixed_appointment','fixed_appointment_text','instructors','instructor_certificates','max_participants_per_instructor','schedule_meeting_point','responsibility_waiver_accepted','privacy_accepted'
   ];
   // Columns that are JSON/JSONB in DB; ensure we serialize JS objects/arrays to JSON strings
   const jsonCols = new Set([
@@ -3216,7 +3218,7 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
     }
     try {
       const { rows: profRows } = await pool.query(
-        `SELECT phone, assicurazione, scadenza_assicurazione, scadenza_certificato_medico
+        `SELECT phone, assicurazione, scadenza_assicurazione, scadenza_certificato_medico, dichiarazione_assicurazione_valida
          FROM profiles WHERE id = $1 LIMIT 1`,
         [req.user.id]
       );
@@ -3228,10 +3230,14 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
       const toleranceDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
       const isEmpty = (v) => !v || String(v).trim() === '';
       if (isEmpty(prof.phone)) missing.push('phone');
-      if (isEmpty(prof.assicurazione)) missing.push('assicurazione');
+      // Assicurazione: basta la dichiarazione OPPURE i dati assicurativi completi
+      const hasInsuranceDeclaration = Boolean(prof.dichiarazione_assicurazione_valida);
+      const hasInsuranceData = !isEmpty(prof.assicurazione);
       const sa = prof.scadenza_assicurazione ? new Date(prof.scadenza_assicurazione) : null;
+      const insuranceDateOk = sa && (sa instanceof Date) && !isNaN(sa.getTime()) && sa >= toleranceDate;
+      if (!hasInsuranceDeclaration && !hasInsuranceData) missing.push('assicurazione');
+      if (!hasInsuranceDeclaration && (!sa || !insuranceDateOk)) missing.push('scadenza_assicurazione');
       const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
-      if (!sa || !(sa instanceof Date) || isNaN(sa.getTime()) || sa < toleranceDate) missing.push('scadenza_assicurazione');
       if (!sc || !(sc instanceof Date) || isNaN(sc.getTime()) || sc < toleranceDate) missing.push('scadenza_certificato_medico');
       if (missing.length) {
         return res.status(400).json({ error: 'profile_incomplete', missing });

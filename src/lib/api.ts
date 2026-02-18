@@ -28,7 +28,7 @@ export interface Event {
   not_included_in_activity?: string | null;
   notes?: string | null;
   schedule_logistics?: string | null;
-  gallery_images?: string[] | null;
+  gallery_images?: string[] | null;\n  pdf_url?: string | null;
   event_type?: string | null;
   // Nuovi campi per allenamenti condivisi
   activity_details?: string | null;

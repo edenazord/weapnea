@@ -20,7 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Plus, Search, Edit, Trash2, Eye, Loader2, RefreshCw } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, Loader2, RefreshCw, Maximize2, Minimize2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -33,6 +33,7 @@ const BlogManager = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingArticle, setEditingArticle] = useState<any>(null);
   const [deleteDialog, setDeleteDialog] = useState<string | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -86,6 +87,7 @@ const BlogManager = () => {
     console.log("Blog form success, invalidating queries");
     setShowForm(false);
     setEditingArticle(null);
+    setIsFullscreen(false);
     queryClient.invalidateQueries({ queryKey: ['admin-blog-articles'] });
   };
 
@@ -253,16 +255,24 @@ const BlogManager = () => {
         if (!open) {
           setShowForm(false);
           setEditingArticle(null);
+          setIsFullscreen(false);
         }
       }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className={isFullscreen ? "max-w-[98vw] w-[98vw] h-[98vh] max-h-[98vh] overflow-y-auto" : "max-w-5xl max-h-[90vh] overflow-y-auto"}>
           <DialogHeader>
-            <DialogTitle>
-              {editingArticle ? "Modifica Articolo" : "Nuovo Articolo"}
-            </DialogTitle>
-            <DialogDescription>
-              {editingArticle ? "Modifica i dettagli dell'articolo." : "Crea un nuovo articolo per il blog."}
-            </DialogDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <DialogTitle>
+                  {editingArticle ? "Modifica Articolo" : "Nuovo Articolo"}
+                </DialogTitle>
+                <DialogDescription>
+                  {editingArticle ? "Modifica i dettagli dell'articolo." : "Crea un nuovo articolo per il blog."}
+                </DialogDescription>
+              </div>
+              <Button type="button" variant="ghost" size="sm" onClick={() => setIsFullscreen(!isFullscreen)} title={isFullscreen ? "Esci da schermo intero" : "Schermo intero"}>
+                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+            </div>
           </DialogHeader>
           <BlogForm
             article={editingArticle}
@@ -270,6 +280,7 @@ const BlogManager = () => {
             onCancel={() => {
               setShowForm(false);
               setEditingArticle(null);
+              setIsFullscreen(false);
             }}
           />
         </DialogContent>

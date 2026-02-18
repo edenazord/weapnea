@@ -115,18 +115,19 @@ export const EventParticipantsModal = ({
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <h4 className="font-medium text-gray-900 truncate">
-                        {participant.full_name}
-                      </h4>
                       {participant.public_profile_enabled && participant.public_slug ? (
                         <Link 
                           to={`/profile/${participant.public_slug}`}
-                          className="text-blue-600 hover:text-blue-800"
+                          className="font-medium text-blue-700 hover:text-blue-900 hover:underline truncate"
                           title={t('profile.view_public_profile', 'Vedi profilo pubblico')}
                         >
-                          <ExternalLink className="h-3 w-3" />
+                          {participant.full_name}
                         </Link>
-                      ) : null}
+                      ) : (
+                        <h4 className="font-medium text-gray-900 truncate">
+                          {participant.full_name}
+                        </h4>
+                      )}
                     </div>
                     
                     {participant.company_name && (

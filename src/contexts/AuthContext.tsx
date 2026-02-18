@@ -6,7 +6,7 @@ interface CustomUser {
   id: string;
   email: string;
   full_name: string | null;
-  role: 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger';
+  role: 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger' | 'creator';
   avatar_url: string | null;
   is_active: boolean;
   bio?: string | null;
@@ -28,6 +28,7 @@ interface CustomUser {
   company_name?: string | null;
   vat_number?: string | null;
   company_address?: string | null;
+  club_team?: string | null;
   phone?: string | null;
   // Public profile fields (optional, ensured at runtime by API)
   public_profile_enabled?: boolean;
@@ -56,7 +57,7 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const ApiAuthProvider = ({ children }: { children: ReactNode }) => {
-  type RoleType = 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger';
+  type RoleType = 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger' | 'creator';
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<CustomUser | null>(() => {
     const raw = localStorage.getItem('auth_user');

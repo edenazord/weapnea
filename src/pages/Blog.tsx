@@ -79,7 +79,10 @@ const Blog = () => {
         </div>
       </div>
 
-      {/* Articles Grid */}
+      {/* Articles Grid with Sidebar Banners */}
+      <div className="flex gap-8">
+        {/* Main content */}
+        <div className="flex-1 min-w-0">
   {isLoading || (usingEnglishFallback && isLoadingEn) ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[...Array(6)].map((_, i) => (
@@ -121,6 +124,12 @@ const Blog = () => {
                     {article.title}
                   </Link>
                 </h3>
+
+                {article.subtitle && (
+                  <p className="text-purple-600 font-semibold text-sm mb-3 line-clamp-2">
+                    {article.subtitle}
+                  </p>
+                )}
                 
                 {article.excerpt && (
                   <p className="text-gray-600 mb-6 line-clamp-3 leading-relaxed">
@@ -166,6 +175,31 @@ const Blog = () => {
           </div>
         </div>
   )}
+        </div>
+        {/* Sidebar banners - visible only on desktop */}
+        <aside className="hidden xl:block w-64 flex-shrink-0 space-y-6">
+          <div className="sticky top-24 space-y-6">
+            {/* Banner 1 */}
+            <div className="rounded-2xl border border-white/20 modern-blur shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-b from-blue-50 to-purple-50 p-6 text-center">
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Sponsor</p>
+                <div className="h-48 flex items-center justify-center text-gray-300 border-2 border-dashed border-gray-200 rounded-lg">
+                  <span className="text-sm">Banner 300×250</span>
+                </div>
+              </div>
+            </div>
+            {/* Banner 2 */}
+            <div className="rounded-2xl border border-white/20 modern-blur shadow-lg overflow-hidden">
+              <div className="bg-gradient-to-b from-purple-50 to-blue-50 p-6 text-center">
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-2">Sponsor</p>
+                <div className="h-48 flex items-center justify-center text-gray-300 border-2 border-dashed border-gray-200 rounded-lg">
+                  <span className="text-sm">Banner 300×250</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </div>
   </div>
     </div>
   );

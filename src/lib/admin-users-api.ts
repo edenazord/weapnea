@@ -9,7 +9,7 @@ export type AdminUser = {
   last_sign_in_at: string | null;
   profile?: {
     full_name: string | null;
-    role: 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger';
+    role: 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger' | 'creator';
     is_active: boolean | null;
     avatar_url: string | null;
     company_name: string | null;
@@ -18,7 +18,7 @@ export type AdminUser = {
   };
 };
 
-export type UserRole = 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger';
+export type UserRole = 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger' | 'creator';
 
 // Ottieni tutti gli utenti con le loro email reali utilizzando la Edge Function
 export const getAllUsers = async (): Promise<AdminUser[]> => {

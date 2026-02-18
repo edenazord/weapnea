@@ -7,6 +7,7 @@ import TextAlign from '@tiptap/extension-text-align';
 import { TextStyle } from '@tiptap/extension-text-style';
 import Color from '@tiptap/extension-color';
 import Heading from '@tiptap/extension-heading';
+import Image from '@tiptap/extension-image';
 import { useEffect, useState } from 'react';
 import { 
   Bold, 
@@ -26,7 +27,8 @@ import {
   Heading2,
   Heading3,
   Palette,
-  ChevronDown
+  ChevronDown,
+  ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -95,6 +97,13 @@ export function RichTextEditor({
       TextAlign.configure({
         types: ['heading', 'paragraph'],
       }),
+      Image.configure({
+        inline: false,
+        allowBase64: false,
+        HTMLAttributes: {
+          class: 'max-w-full h-auto rounded-lg my-4',
+        },
+      }),
     ],
     content: value,
     onUpdate: ({ editor }) => {
@@ -133,6 +142,35 @@ export function RichTextEditor({
     }
 
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+  };
+
+  const insertImage = () => {
+    // Upload tramite /api/upload e poi inserisce nell'editor
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (!res.ok) throw new Error('Upload fallito');
+        const data = await res.json();
+        const url = data.url || data.publicUrl;
+        if (url) {
+          editor.chain().focus().setImage({ src: url, alt: file.name }).run();
+        }
+      } catch (e) {
+        // Fallback: chiedi URL manuale
+        const url = window.prompt('Inserisci URL immagine');
+        if (url) {
+          editor.chain().focus().setImage({ src: url }).run();
+        }
+      }
+    };
+    input.click();
   };
 
   const ToolbarButton = ({
@@ -175,7 +213,7 @@ export function RichTextEditor({
   return (
     <div className={cn('border rounded-md bg-white overflow-hidden', className)}>
       {/* Toolbar */}
-      <div className="flex items-center gap-0.5 p-2 border-b bg-gray-50 flex-wrap">
+      <div className="flex items-center gap-0.5 p-2 border-b bg-gray-50 flex-wrap sticky top-0 z-10">
         {/* Headings */}
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
@@ -344,6 +382,14 @@ export function RichTextEditor({
           <LinkIcon className="h-4 w-4" />
         </ToolbarButton>
 
+        {/* Image */}
+        <ToolbarButton
+          onClick={insertImage}
+          title="Inserisci immagine"
+        >
+          <ImageIcon className="h-4 w-4" />
+        </ToolbarButton>
+
         <div className="w-px h-5 bg-gray-300 mx-1" />
 
         {/* Undo/Redo */}
@@ -419,6 +465,12 @@ export function RichTextEditor({
         }
         .tiptap ul ul ul {
           list-style-type: square;
+        }
+        .tiptap img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 0.5rem;
+          margin: 1rem 0;
         }
       `}</style>
     </div>

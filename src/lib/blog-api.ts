@@ -6,6 +6,7 @@ export type BlogArticle = {
   id: string;
   language?: 'it' | 'en' | 'es' | 'fr' | 'pl' | 'ru';
   title: string;
+  subtitle: string | null;
   slug: string;
   excerpt: string | null;
   content: string;

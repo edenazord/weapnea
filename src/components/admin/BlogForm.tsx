@@ -26,6 +26,8 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 const formSchema = z.object({
   language: z.string().min(2, { message: 'Lingua richiesta' }),
   title: z.string().min(2, { message: "Il titolo deve essere di almeno 2 caratteri." }),
+  slug: z.string().min(2, { message: "Lo slug deve essere di almeno 2 caratteri." }),
+  subtitle: z.string().optional(),
   content: z.string().min(10, { message: "Il contenuto deve essere di almeno 10 caratteri." }),
   image_url: z.string().url().optional(),
   published: z.boolean().default(false),
@@ -36,6 +38,7 @@ interface BlogFormProps {
     id: string;
     language?: 'it' | 'en';
     title: string;
+    subtitle?: string | null;
     content: string;
     cover_image_url?: string | null; // campo reale restituito dall'API
     category?: string;
@@ -50,6 +53,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
 
   // Fallback immediato: mostriamo subito tutte le lingue previste
   const fallbackLangs: { code: string; native_name: string; name?: string }[] = [
@@ -92,11 +96,15 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
     load();
   }, [article?.language]);
 
+  const generateSlug = (title: string) => title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       language: article?.language || "it",
       title: article?.title || "",
+      slug: article?.slug || "",
+      subtitle: article?.subtitle || "",
       content: article?.content || "",
       // mappiamo cover_image_url nel campo di form image_url
       image_url: article?.cover_image_url || "",
@@ -110,18 +118,24 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
       form.reset({
         language: article.language || 'it',
         title: article.title || '',
+        slug: article.slug || '',
+        subtitle: article.subtitle || '',
         content: article.content || '',
         image_url: article.cover_image_url || '',
         published: article.published ?? false,
       });
+      setSlugManuallyEdited(true); // in edit, consideriamo lo slug come "manuale"
     } else {
       form.reset({
         language: 'it',
         title: '',
+        slug: '',
+        subtitle: '',
         content: '',
         image_url: '',
         published: false,
       });
+      setSlugManuallyEdited(false);
     }
   }, [article, form]);
 
@@ -138,15 +152,14 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
     setIsSubmitting(true);
     
     try {
-      const generatedSlug = values.title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
       const articleData = {
         language: values.language,
         title: values.title,
+        subtitle: values.subtitle || null,
         content: values.content,
         cover_image_url: values.image_url || null,
         author_id: user.id,
-        // Se siamo in edit manteniamo lo slug esistente (evita 404 su link già pubblicati)
-        slug: article?.slug || generatedSlug,
+        slug: values.slug || generateSlug(values.title),
         published: values.published,
       };
 
@@ -206,7 +219,54 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
             <FormItem>
               <FormLabel>Titolo</FormLabel>
               <FormControl>
-                <Input placeholder="Titolo dell'articolo" {...field} />
+                <Input placeholder="Titolo dell'articolo" {...field} onChange={(e) => {
+                  field.onChange(e);
+                  // Auto-genera slug dal titolo se non modificato manualmente
+                  if (!slugManuallyEdited) {
+                    form.setValue('slug', generateSlug(e.target.value), { shouldDirty: true });
+                  }
+                }} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="slug"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Slug (URL)</FormLabel>
+              <FormControl>
+                <div className="flex gap-2">
+                  <Input placeholder="slug-articolo" {...field} onChange={(e) => {
+                    field.onChange(e);
+                    setSlugManuallyEdited(true);
+                  }} className="font-mono text-sm" />
+                  <Button type="button" variant="outline" size="sm" onClick={() => {
+                    const title = form.getValues('title');
+                    if (title) {
+                      form.setValue('slug', generateSlug(title), { shouldDirty: true });
+                      setSlugManuallyEdited(false);
+                    }
+                  }}>
+                    Rigenera
+                  </Button>
+                </div>
+              </FormControl>
+              <FormDescription>Lo slug viene usato nell'URL: /blog/slug</FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="subtitle"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Sottotitolo</FormLabel>
+              <FormControl>
+                <Input placeholder="Sottotitolo dell'articolo (opzionale)" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>

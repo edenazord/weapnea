@@ -130,9 +130,18 @@ const BlogDetail = () => {
           )}
 
           {/* Title */}
-          <h1 className="text-4xl md:text-6xl font-bold mb-8 bg-gradient-to-r from-blue-900 via-purple-700 to-blue-900 bg-clip-text text-transparent leading-normal pb-3">
+          <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-blue-900 via-purple-700 to-blue-900 bg-clip-text text-transparent leading-normal pb-3">
             {article.title}
           </h1>
+
+          {/* Subtitle */}
+          {article.subtitle && (
+            <div className="mb-8">
+              <p className="text-2xl md:text-3xl font-semibold text-purple-600 leading-snug">
+                {article.subtitle}
+              </p>
+            </div>
+          )}
 
           {/* Excerpt */}
           {article.excerpt && (

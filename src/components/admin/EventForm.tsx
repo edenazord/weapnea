@@ -20,6 +20,8 @@ import { MultipleImageUpload } from "./MultipleImageUpload";
 import { DISCIPLINE_OPTIONS, LEVEL_OPTIONS } from './event-constants';
 import { useEffect, useState } from 'react';
 import { getPublicConfig } from '@/lib/publicConfig';
+import { FileText, X } from 'lucide-react';
+import { toast } from 'sonner';
 
 // Opzioni per il livello
 // Opzioni spostate in event-constants.ts
@@ -50,6 +52,7 @@ const eventFormShape = z.object({
   notes: z.string().optional(),
   schedule_logistics: z.string().optional(),
   gallery_images: z.array(z.string()).optional(),
+  pdf_url: z.string().optional(),
   // Appuntamento fisso (strategia B)
   fixed_appointment: z.boolean().optional(),
   fixed_appointment_text: z.string().optional(),
@@ -154,6 +157,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
       gallery_images: (defaultValues?.gallery_images && defaultValues.gallery_images.length > 0)
         ? defaultValues.gallery_images
         : (defaultValues?.image_url ? [defaultValues.image_url] : []),
+      pdf_url: (defaultValues as any)?.pdf_url || "",
       fixed_appointment: defaultValues?.fixed_appointment || false,
       fixed_appointment_text: (defaultValues as any)?.fixed_appointment_text || "",
       validity_start: (defaultValues?.date || "").toString().slice(0, 10),
@@ -200,6 +204,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
       notes: values.notes && values.notes.trim() !== '' ? values.notes : null,
       schedule_logistics: values.schedule_logistics && values.schedule_logistics.trim() !== '' ? values.schedule_logistics : null,
       gallery_images: gallery,
+      pdf_url: values.pdf_url && values.pdf_url.trim() !== '' ? values.pdf_url.trim() : null,
       // La prima della galleria diventa l'immagine principale (copertina)
       image_url: gallery && gallery.length > 0 ? gallery[0] : null,
     };
@@ -236,7 +241,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Titolo</FormLabel>
+              <FormLabel>Titolo <span className="text-red-500">*</span></FormLabel>
               <FormControl><Input {...field} /></FormControl>
               <FormMessage />
             </FormItem>
@@ -262,7 +267,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           name="category_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Categoria</FormLabel>
+              <FormLabel>Categoria <span className="text-red-500">*</span></FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
@@ -542,7 +547,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
               name="date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data di Inizio</FormLabel>
+                  <FormLabel>Data di Inizio <span className="text-red-500">*</span></FormLabel>
                   <FormControl><Input type="date" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -585,7 +590,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
               name="validity_start"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Validità dal</FormLabel>
+                  <FormLabel>Validità dal <span className="text-red-500">*</span></FormLabel>
                   <FormControl><Input type="date" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -672,6 +677,57 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           />
         </div>
 
+        {/* Upload PDF allegato */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Allegato PDF</h3>
+          <p className="text-sm text-muted-foreground">Carica un PDF (programma, brochure, regolamento...).</p>
+          {form.watch('pdf_url') ? (
+            <div className="flex items-center gap-3 p-3 border rounded-md bg-gray-50">
+              <FileText className="h-5 w-5 text-red-600 flex-shrink-0" />
+              <a href={form.watch('pdf_url') || ''} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-600 hover:underline truncate flex-1">
+                {form.watch('pdf_url')?.split('/').pop()}
+              </a>
+              <Button type="button" variant="ghost" size="sm" onClick={() => form.setValue('pdf_url', '')}>
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div>
+              <Input
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 10 * 1024 * 1024) {
+                    toast.error('Il PDF è troppo grande. Massimo 10MB.');
+                    return;
+                  }
+                  try {
+                    const fd = new FormData();
+                    fd.append('file', file);
+                    const token = localStorage.getItem('api_token') || import.meta.env.VITE_API_TOKEN;
+                    const { apiBaseUrl } = await import('@/lib/backendConfig').then(m => m.backendConfig);
+                    const res = await fetch(`${apiBaseUrl || ''}/api/upload`, {
+                      method: 'POST',
+                      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                      body: fd,
+                    });
+                    if (!res.ok) throw new Error(`Upload failed ${res.status}`);
+                    const data = await res.json();
+                    const { ensureAbsoluteUrl } = await import('@/lib/utils');
+                    const abs = ensureAbsoluteUrl(data.url, apiBaseUrl) || data.url;
+                    form.setValue('pdf_url', abs);
+                    toast.success('PDF caricato con successo!');
+                  } catch (err) {
+                    toast.error('Errore durante il caricamento del PDF.');
+                  }
+                }}
+              />
+            </div>
+          )}
+        </div>
+
         {/* Liberatorie obbligatorie - solo in creazione */}
         {!isEditing && (
         <div className="space-y-4 border-t pt-4">
@@ -734,6 +790,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
         >
           {isEditing ? "Salva Modifiche" : "Crea Evento"}
         </Button>
+        <p className="text-xs text-muted-foreground text-center"><span className="text-red-500">*</span> Campi obbligatori</p>
       </form>
     </Form>
   );

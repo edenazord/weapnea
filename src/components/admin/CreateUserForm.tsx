@@ -141,6 +141,7 @@ export const CreateUserForm = () => {
                     <SelectItem value="instructor">Istruttore</SelectItem>
                     <SelectItem value="admin">Admin</SelectItem>
                     <SelectItem value="blogger">Blogger</SelectItem>
+                    <SelectItem value="creator">Creator</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -159,6 +159,7 @@ const UserDetailsModal = ({ user, open, onClose, onSave }: UserDetailsModalProps
                       <SelectItem value="instructor">Istruttore</SelectItem>
                       <SelectItem value="company">Azienda</SelectItem>
                       <SelectItem value="blogger">Blogger</SelectItem>
+                      <SelectItem value="creator">Creator</SelectItem>
                       <SelectItem value="admin">Amministratore</SelectItem>
                     </SelectContent>
                   </Select>

@@ -47,6 +47,7 @@ type PublicInstructor = {
   public_show_personal?: boolean;
   personal_best?: Record<string, string> | null;
   other_certifications?: OtherCertification[] | null;
+  club_team?: string | null;
 };
 
 export default function InstructorPublicProfile() {
@@ -133,6 +134,7 @@ export default function InstructorPublicProfile() {
                 <AvatarFallback className="text-2xl">{data.full_name ? data.full_name.charAt(0).toUpperCase() : <User className="w-12 h-12"/>}</AvatarFallback>
               </Avatar>
               <h1 className="text-2xl font-bold text-gray-900 mb-2">{data.full_name || 'Nome non specificato'}</h1>
+              {data.club_team && <p className="text-sm text-gray-600 mb-1">{data.club_team}</p>}
               {data.company_name && <p className="text-lg text-blue-600 mb-2">{data.company_name}</p>}
               {data.public_show_personal !== false && data.instagram_contact && (
                 <div className="mt-3">
