@@ -92,6 +92,7 @@ const UserDetailsModal = ({ user, open, onClose, onSave }: UserDetailsModalProps
                 <Badge variant="outline">
                   {user.profile?.role === 'admin' ? 'Amministratore' :
                    user.profile?.role === 'blogger' ? 'Blogger' :
+                   user.profile?.role === 'creator' ? 'Creator' :
                    user.profile?.role === 'instructor' ? 'Istruttore' :
                    user.profile?.role === 'company' ? 'Azienda' : 'Utente Finale'}
                 </Badge>
@@ -167,6 +168,7 @@ const UserDetailsModal = ({ user, open, onClose, onSave }: UserDetailsModalProps
                   <p className="text-sm p-2 bg-gray-50 rounded">
                     {user.profile?.role === 'admin' ? 'Amministratore' :
                      user.profile?.role === 'blogger' ? 'Blogger' :
+                     user.profile?.role === 'creator' ? 'Creator' :
                      user.profile?.role === 'instructor' ? 'Istruttore' :
                      user.profile?.role === 'company' ? 'Azienda' : 'Utente Finale'}
                   </p>

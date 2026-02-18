@@ -4,7 +4,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { ReactNode } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type ProfileRole = 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger';
+type ProfileRole = 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger' | 'creator';
 
 type ProtectedRouteProps = {
   children: ReactNode;

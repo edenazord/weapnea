@@ -112,7 +112,7 @@ const Dashboard = () => {
     const hasActiveOrganizerPackage = userPackages?.some(pkg => 
         pkg.package_type === 'organizer' && pkg.status === 'active'
     );
-    const canCreateEvents = (eventsFree === true) || hasActiveOrganizerPackage || profile?.role === 'admin';
+    const canCreateEvents = (eventsFree === true) || hasActiveOrganizerPackage || profile?.role === 'admin' || profile?.role === 'creator';
 
     const allenamentiCategory = categories?.find(cat => 
         cat.name.toLowerCase().includes('allenamenti')

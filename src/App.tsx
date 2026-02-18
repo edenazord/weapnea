@@ -113,22 +113,22 @@ const App = () => {
                   <Route path="/sponsor-packages" element={<SponsorPackages />} />
                   
                   <Route path="/profile" element={
-                    <ProtectedRoute allowedRoles={['final_user', 'admin', 'company', 'instructor']}>
+                    <ProtectedRoute allowedRoles={['final_user', 'admin', 'company', 'instructor', 'blogger', 'creator']}>
                       <Profile />
                     </ProtectedRoute>
                   } />
                   <Route path="/dashboard" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'creator']}>
                       <Dashboard />
                     </ProtectedRoute>
                   } />
                   <Route path="/admin" element={
-                    <ProtectedRoute allowedRoles={['admin']}>
+                    <ProtectedRoute allowedRoles={['admin', 'creator']}>
                       <AdminDashboard />
                     </ProtectedRoute>
                   } />
                   <Route path="/my-events" element={
-                    <ProtectedRoute allowedRoles={['company', 'instructor', 'final_user', 'admin']}>
+                    <ProtectedRoute allowedRoles={['company', 'instructor', 'final_user', 'admin', 'creator']}>
                       <MyEvents />
                     </ProtectedRoute>
                   } />

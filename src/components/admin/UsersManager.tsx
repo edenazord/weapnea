@@ -132,6 +132,7 @@ const UsersManager = () => {
     switch (role) {
       case 'admin': return 'Amministratore';
       case 'blogger': return 'Blogger';
+      case 'creator': return 'Creator';
       case 'instructor': return 'Istruttore';
       case 'company': return 'Azienda';
       case 'final_user': return 'Utente Finale';

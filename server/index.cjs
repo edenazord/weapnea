@@ -926,7 +926,7 @@ function requireAdmin(req, res, next) {
 function requireBloggerOrAdmin(req, res, next) {
   const auth = req.headers['authorization'] || '';
   const token = auth.startsWith('Bearer ') ? auth.slice('Bearer '.length) : '';
-  if (req.user?.role === 'admin' || req.user?.role === 'blogger') return next();
+  if (req.user?.role === 'admin' || req.user?.role === 'blogger' || req.user?.role === 'creator') return next();
   if (API_TOKEN && token === API_TOKEN) return next();
   return res.status(403).json({ error: 'Forbidden' });
 }
@@ -1978,7 +1978,7 @@ app.get('/api/instructors/:id', async (req, res) => {
         brevetto, scadenza_brevetto, assicurazione, scadenza_assicurazione,
         scadenza_certificato_medico, certificato_medico_tipo, company_address, vat_number
        FROM profiles
-       WHERE id = $1 AND role IN ('instructor','company') AND COALESCE(is_active, true) = true
+       WHERE id = $1 AND role IN ('instructor','company','creator') AND COALESCE(is_active, true) = true
        LIMIT 1`,
       [req.params.id]
     );
@@ -2919,7 +2919,7 @@ app.put('/api/admin/users/:id/role', requireAuth, requireAdmin, async (req, res)
   if (!role) return res.status(400).json({ error: 'role is required' });
   try {
     // If upgrading to organizer roles, auto-enable public profile and generate slug
-    const isOrganizer = role === 'instructor' || role === 'company';
+    const isOrganizer = role === 'instructor' || role === 'company' || role === 'creator';
     if (isOrganizer) {
       if (!HAS_PUBLIC_PROFILE_FIELDS) { try { await ensurePublicProfileColumnsAtRuntime(); await detectSchema(); } catch (_) {} }
       if (!HAS_ORGANIZER_REQUEST) { try { await ensureOrganizerRequestColumnsAtRuntime(); await detectSchema(); } catch (_) {} }

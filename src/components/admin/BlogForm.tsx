@@ -26,7 +26,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 const formSchema = z.object({
   language: z.string().min(2, { message: 'Lingua richiesta' }),
   title: z.string().min(2, { message: "Il titolo deve essere di almeno 2 caratteri." }),
-  slug: z.string().min(2, { message: "Lo slug deve essere di almeno 2 caratteri." }),
+  slug: z.string().optional(),
   subtitle: z.string().optional(),
   content: z.string().min(10, { message: "Il contenuto deve essere di almeno 10 caratteri." }),
   image_url: z.string().url().optional(),
