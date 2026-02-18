@@ -158,7 +158,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
   <CardContent className="pt-0 pb-4 space-y-2 flex-1 flex flex-col">
         {event.description && variant === "full" && (
           <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-            {event.description}
+            {event.description.replace(/<[^>]*>/g, '')}
           </p>
         )}
 
