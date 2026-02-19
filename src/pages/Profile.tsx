@@ -153,13 +153,12 @@ const Profile = () => {
   const medicalOk = formData.scadenza_certificato_medico ? (new Date(formData.scadenza_certificato_medico) >= toleranceDate) : false;
   const publicEnabled = !!formData.public_profile_enabled;
   const hasSlug = !!(formData.public_slug && formData.public_slug.trim());
-  const organizerEligible = publicEnabled && hasSlug && hasPhone && hasInsurance && insuranceOk && medicalOk;
+  const organizerEligible = publicEnabled && hasSlug && hasInsurance && insuranceOk && medicalOk;
 
   // Lista requisiti mancanti per organizzare
   const missingRequirements: string[] = [];
   if (!publicEnabled) missingRequirements.push(t('profile.requirements.public_profile', 'Profilo pubblico attivo'));
   if (!hasSlug) missingRequirements.push(t('profile.requirements.public_slug', 'Slug profilo pubblico'));
-  if (!hasPhone) missingRequirements.push(t('profile.requirements.phone', 'Numero di telefono'));
   if (!hasInsurance) missingRequirements.push(t('profile.requirements.insurance', 'Assicurazione'));
   if (hasInsurance && !insuranceOk) missingRequirements.push(t('profile.requirements.insurance_valid', 'Assicurazione in corso di validità'));
   if (!medicalOk) missingRequirements.push(t('profile.requirements.medical', 'Certificato medico in corso di validità'));
@@ -183,7 +182,7 @@ const Profile = () => {
   const [showMissingFieldsModal, setShowMissingFieldsModal] = useState(false);
   // Snapshot dei campi mancanti al momento dell'apertura del modal (non cambia durante la compilazione)
   const [missingSnapshot, setMissingSnapshot] = useState<{
-    publicEnabled: boolean; hasSlug: boolean; hasPhone: boolean;
+    publicEnabled: boolean; hasSlug: boolean;
     hasInsurance: boolean; insuranceOk: boolean; medicalOk: boolean;
   } | null>(null);
 
@@ -813,7 +812,6 @@ const Profile = () => {
                             setMissingSnapshot({
                               publicEnabled: !!formData.public_profile_enabled,
                               hasSlug: !!(formData.public_slug && formData.public_slug.trim()),
-                              hasPhone: !!(formData.phone && formData.phone.trim()),
                               hasInsurance: !!(formData.assicurazione && formData.assicurazione.trim()),
                               insuranceOk: formData.scadenza_assicurazione ? (new Date(formData.scadenza_assicurazione) >= toleranceDate) : false,
                               medicalOk: formData.scadenza_certificato_medico ? (new Date(formData.scadenza_certificato_medico) >= toleranceDate) : false,
@@ -1820,17 +1818,7 @@ const Profile = () => {
                     </div>
                   )}
                   {/* Telefono */}
-                  {missingSnapshot && !missingSnapshot.hasPhone && (
-                    <div className="space-y-2">
-                      <Label htmlFor="modal_phone">{t('profile.requirements.phone', 'Numero di telefono')}</Label>
-                      <Input
-                        id="modal_phone"
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange('phone', e.target.value)}
-                        placeholder={t('profile.sections.personal.phone_placeholder', '+39 333 1234567')}
-                      />
-                    </div>
-                  )}
+
                   {/* Assicurazione */}
                   {missingSnapshot && (!missingSnapshot.hasInsurance || !missingSnapshot.insuranceOk) && (
                     <div className="space-y-3">
@@ -1889,11 +1877,10 @@ const Profile = () => {
                       // (i valori di formData vengono già aggiornati in tempo reale)
                       const nowPublic = formData.public_profile_enabled;
                       const nowSlug = !!(formData.public_slug && formData.public_slug.trim());
-                      const nowPhone = !!(formData.phone && formData.phone.trim());
                       const nowInsurance = !!(formData.assicurazione && formData.assicurazione.trim());
                       const nowInsuranceOk = formData.scadenza_assicurazione ? (new Date(formData.scadenza_assicurazione) >= toleranceDate) : false;
                       const nowMedicalOk = formData.scadenza_certificato_medico ? (new Date(formData.scadenza_certificato_medico) >= toleranceDate) : false;
-                      if (nowPublic && nowSlug && nowPhone && nowInsurance && nowInsuranceOk && nowMedicalOk) {
+                      if (nowPublic && nowSlug && nowInsurance && nowInsuranceOk && nowMedicalOk) {
                         setShowMissingFieldsModal(false);
                         setMissingSnapshot(null);
                         setShowOrganizer(true);
