@@ -761,32 +761,31 @@ const Profile = () => {
             {/* Sidebar menu (desktop) / horizontal tabs (mobile) */}
             <TabsList className={`
               w-full overflow-x-auto flex gap-1 p-1 md:p-0
-              md:w-56 md:min-w-[14rem] md:flex-col md:items-stretch md:gap-1 md:overflow-x-visible
-              md:bg-white md:dark:bg-neutral-900 md:rounded-xl md:border md:border-gray-200 md:dark:border-neutral-700 md:shadow-sm md:p-3 md:sticky md:top-24 md:self-start
-              ${canManageBlog ? '' : ''}
+              md:h-auto md:w-48 md:min-w-[12rem] md:flex-col md:items-stretch md:gap-0.5 md:overflow-x-visible
+              md:bg-white md:dark:bg-neutral-900 md:rounded-xl md:border md:border-gray-200 md:dark:border-neutral-700 md:shadow-sm md:p-2 md:sticky md:top-24 md:self-start
             `}>
-              <TabsTrigger value="events" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2.5 md:rounded-lg">
+              <TabsTrigger value="events" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
                 <Calendar className="h-4 w-4 mr-2" />
                 {t('profile.tabs.events', 'Eventi')}
               </TabsTrigger>
-              <TabsTrigger value="personal" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2.5 md:rounded-lg">
+              <TabsTrigger value="personal" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
                 <UserCircle className="h-4 w-4 mr-2" />
                 {t('profile.tabs.personal', 'Personali')}
               </TabsTrigger>
-              <TabsTrigger value="certs" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2.5 md:rounded-lg">
+              <TabsTrigger value="certs" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
                 <Shield className="h-4 w-4 mr-2" />
                 {t('profile.tabs.certs', 'Certificazioni')}
               </TabsTrigger>
-              <TabsTrigger value="bests" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2.5 md:rounded-lg">
+              <TabsTrigger value="bests" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
                 <FileText className="h-4 w-4 mr-2" />
                 {t('profile.tabs.bests', 'Record')}
               </TabsTrigger>
-              <TabsTrigger value="visibility" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2.5 md:rounded-lg">
+              <TabsTrigger value="visibility" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
                 <Eye className="h-4 w-4 mr-2" />
                 {t('profile.tabs.visibility', 'Visibilità')}
               </TabsTrigger>
               {canManageBlog && (
-                <TabsTrigger value="blog" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2.5 md:rounded-lg">
+                <TabsTrigger value="blog" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
                   <Pencil className="h-4 w-4 mr-2" />
                   {t('profile.tabs.blog', 'Blog')}
                 </TabsTrigger>
