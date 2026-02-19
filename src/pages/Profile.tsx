@@ -756,48 +756,73 @@ const Profile = () => {
         {/* Ruolo rimosso su richiesta */}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-0">
-          {/* Mobile: tabs orizzontali; Desktop: sidebar + contenuto */}
-          <div className="flex flex-col md:flex-row md:gap-5">
-            {/* Wrapper sidebar: si estende per tutta l'altezza del contenuto a dx */}
-            <div className="md:w-44 md:min-w-[11rem] md:shrink-0 md:mt-2">
-              <TabsList className={`
-                w-full overflow-x-auto flex gap-1 p-1 md:p-0
-                md:h-auto md:w-full md:flex-col md:items-stretch md:gap-0.5 md:overflow-x-visible
-                md:bg-white md:dark:bg-neutral-900 md:rounded-xl md:border md:border-gray-200 md:dark:border-neutral-700 md:shadow-sm md:p-2 md:sticky md:top-20
-              `}>
-              <TabsTrigger value="events" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
+          {/* Mobile: tabs orizzontali sopra */}
+          <div className="md:hidden">
+            <TabsList className="w-full overflow-x-auto flex gap-1 p-1">
+              <TabsTrigger value="events" className="whitespace-nowrap text-sm">
                 <Calendar className="h-4 w-4 mr-2" />
                 {t('profile.tabs.events', 'Eventi')}
               </TabsTrigger>
-              <TabsTrigger value="personal" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
+              <TabsTrigger value="personal" className="whitespace-nowrap text-sm">
                 <UserCircle className="h-4 w-4 mr-2" />
                 {t('profile.tabs.personal', 'Personali')}
               </TabsTrigger>
-              <TabsTrigger value="certs" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
+              <TabsTrigger value="certs" className="whitespace-nowrap text-sm">
                 <Shield className="h-4 w-4 mr-2" />
                 {t('profile.tabs.certs', 'Certificazioni')}
               </TabsTrigger>
-              <TabsTrigger value="bests" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
+              <TabsTrigger value="bests" className="whitespace-nowrap text-sm">
                 <FileText className="h-4 w-4 mr-2" />
                 {t('profile.tabs.bests', 'Record')}
               </TabsTrigger>
-              <TabsTrigger value="visibility" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
+              <TabsTrigger value="visibility" className="whitespace-nowrap text-sm">
                 <Eye className="h-4 w-4 mr-2" />
                 {t('profile.tabs.visibility', 'Visibilità')}
               </TabsTrigger>
               {canManageBlog && (
-                <TabsTrigger value="blog" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
+                <TabsTrigger value="blog" className="whitespace-nowrap text-sm">
                   <Pencil className="h-4 w-4 mr-2" />
                   {t('profile.tabs.blog', 'Blog')}
                 </TabsTrigger>
               )}
             </TabsList>
-            </div>
+          </div>
 
-            {/* Contenuto principale */}
-            <div className="flex-1 min-w-0 mt-4 md:mt-0">
-              <div className="bg-gray-50/50 dark:bg-neutral-900/30 rounded-xl p-4 md:p-6">
-                <form onSubmit={handleSubmit}>
+          {/* Container unico – su desktop ha border/bg, su mobile è trasparente */}
+          <div className="md:flex md:rounded-xl md:border md:border-gray-200 md:dark:border-neutral-700 md:bg-white md:dark:bg-neutral-900 md:shadow-sm md:overflow-hidden">
+            {/* Sidebar – solo desktop */}
+            <TabsList className="hidden md:flex h-auto w-48 min-w-[12rem] flex-col items-stretch gap-0.5 bg-transparent p-3 border-r border-gray-200 dark:border-neutral-700 sticky top-20 self-start rounded-none">
+              <TabsTrigger value="events" className="justify-start w-full px-3 py-2 rounded-lg text-sm">
+                <Calendar className="h-4 w-4 mr-2" />
+                {t('profile.tabs.events', 'Eventi')}
+              </TabsTrigger>
+              <TabsTrigger value="personal" className="justify-start w-full px-3 py-2 rounded-lg text-sm">
+                <UserCircle className="h-4 w-4 mr-2" />
+                {t('profile.tabs.personal', 'Personali')}
+              </TabsTrigger>
+              <TabsTrigger value="certs" className="justify-start w-full px-3 py-2 rounded-lg text-sm">
+                <Shield className="h-4 w-4 mr-2" />
+                {t('profile.tabs.certs', 'Certificazioni')}
+              </TabsTrigger>
+              <TabsTrigger value="bests" className="justify-start w-full px-3 py-2 rounded-lg text-sm">
+                <FileText className="h-4 w-4 mr-2" />
+                {t('profile.tabs.bests', 'Record')}
+              </TabsTrigger>
+              <TabsTrigger value="visibility" className="justify-start w-full px-3 py-2 rounded-lg text-sm">
+                <Eye className="h-4 w-4 mr-2" />
+                {t('profile.tabs.visibility', 'Visibilità')}
+              </TabsTrigger>
+              {canManageBlog && (
+                <TabsTrigger value="blog" className="justify-start w-full px-3 py-2 rounded-lg text-sm">
+                  <Pencil className="h-4 w-4 mr-2" />
+                  {t('profile.tabs.blog', 'Blog')}
+                </TabsTrigger>
+              )}
+            </TabsList>
+
+            {/* Contenuto */}
+            <div className="flex-1 min-w-0 md:p-5 md:bg-gray-50/40 md:dark:bg-neutral-950/20">
+              <form onSubmit={handleSubmit}>
             <TabsContent value="events">
               <Card>
                 <CardHeader>
@@ -1932,7 +1957,6 @@ const Profile = () => {
               </Button>
             </div>
           </form>
-              </div>
             </div>
           </div>
         </Tabs>
