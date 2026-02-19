@@ -26,6 +26,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
+import BlogManager from "@/components/admin/BlogManager";
 // import ProfileMobileNav from "@/components/ProfileMobileNav";
 import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
@@ -68,6 +69,7 @@ const Profile = () => {
   const { t } = useLanguage();
   const { openChat } = useChatStore();
   const [loading, setLoading] = useState(false);
+  const canManageBlog = user?.role === 'admin' || user?.role === 'creator' || user?.role === 'blogger';
   const [activeTab, setActiveTab] = useState("events");
   const [eventsFreeMode, setEventsFreeMode] = useState(true); // default true per sicurezza
   // Stato locale per mostrare vista organizzazione dentro la tab Eventi
@@ -738,7 +740,7 @@ const Profile = () => {
         {/* Ruolo rimosso su richiesta */}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="w-full overflow-x-auto flex gap-2 md:grid md:grid-cols-6">
+          <TabsList className={`w-full overflow-x-auto flex gap-2 ${canManageBlog ? 'md:grid md:grid-cols-7' : 'md:grid md:grid-cols-6'}`}>
             <TabsTrigger value="events" className="whitespace-nowrap">
               <Calendar className="h-4 w-4 mr-2" />
               {t('profile.tabs.events', 'Eventi')}
@@ -758,7 +760,12 @@ const Profile = () => {
             <TabsTrigger value="visibility" className="whitespace-nowrap">
               {t('profile.tabs.visibility', 'Visibilità')}
             </TabsTrigger>
-            {/* Rimuovo tab separato Organizza: incorporato in Eventi con sottomenu */}
+            {canManageBlog && (
+              <TabsTrigger value="blog" className="whitespace-nowrap">
+                <Pencil className="h-4 w-4 mr-2" />
+                {t('profile.tabs.blog', 'Blog')}
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <form onSubmit={handleSubmit}>
@@ -1751,6 +1758,22 @@ const Profile = () => {
 
             {/* Organizzazione eventi: visibile come tab; disabilitata se non si soddisfano i requisiti (eccetto admin) */}
             {/* Tab organizer rimossa: funzionalità spostata in events */}
+
+            {canManageBlog && (
+              <TabsContent value="blog">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('profile.sections.blog.title', 'Gestione Articoli Blog')}</CardTitle>
+                    <CardDescription>
+                      {t('profile.sections.blog.description', 'Crea, modifica e gestisci i tuoi articoli del blog')}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <BlogManager />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
 
             {/* Company-specific extra content can be added here if needed */}
 
