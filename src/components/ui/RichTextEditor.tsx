@@ -211,9 +211,9 @@ export function RichTextEditor({
   ];
 
   return (
-    <div className={cn('border rounded-md bg-white overflow-hidden', className)}>
+    <div className={cn('border rounded-md bg-white', className)}>
       {/* Toolbar */}
-      <div className="flex items-center gap-0.5 p-2 border-b bg-gray-50 flex-wrap sticky top-0 z-10">
+      <div className="flex items-center gap-0.5 p-2 border-b bg-gray-50 flex-wrap sticky top-0 z-20 rounded-t-md">
         {/* Headings */}
         <ToolbarButton
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
