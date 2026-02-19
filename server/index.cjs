@@ -839,15 +839,16 @@ async function maybeSendChatNotificationEmail(senderId, recipientId, senderName,
     const preview = messagePreview.length > 100 ? messagePreview.substring(0, 100) + '...' : messagePreview;
 
     // Send email notification
-    const subject = `Nuovo messaggio da ${senderName} su WeApnea`;
-    const html = BASE_EMAIL_TEMPLATE(
+    const subject = `Nuovo messaggio da ${senderName} su ${APP_NAME}`;
+    const rawHtml = BASE_EMAIL_TEMPLATE(
       'Hai un nuovo messaggio',
       `<p>Ciao ${recipientName.split(' ')[0]},</p>
-       <p><strong>${senderName}</strong> ti ha inviato un messaggio su WeApnea:</p>
+       <p><strong>${senderName}</strong> ti ha inviato un messaggio su ${APP_NAME}:</p>
        <p style="background: #f3f4f6; padding: 12px; border-radius: 8px; font-style: italic;">"${preview}"</p>
        <p><a href="https://www.weapnea.com/inbox" style="background: linear-gradient(90deg, #2563eb, #7c3aed); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; display: inline-block;">Leggi il messaggio</a></p>
        <p style="color: #6b7280; font-size: 0.875rem;">Riceverai al massimo una notifica al giorno per i nuovi messaggi.</p>`
     );
+    const html = simpleRender(rawHtml, { app_name: APP_NAME, public_base: PRODUCTION_BASE_URL });
 
     await sendEmail({ to: recipientEmail, subject, html });
 
@@ -921,6 +922,19 @@ function requireAdmin(req, res, next) {
   if (req.user?.role === 'admin') return next();
   if (API_TOKEN && token === API_TOKEN) return next();
   return res.status(403).json({ error: 'Forbidden' });
+}
+
+// Optional auth: tries to authenticate but doesn't fail if not authenticated
+function optionalAuth(req, res, next) {
+  const auth = req.headers['authorization'] || '';
+  if (!auth.startsWith('Bearer ')) return next();
+  const token = auth.slice('Bearer '.length);
+  if (API_TOKEN && token === API_TOKEN) return next();
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    req.user = payload;
+  } catch (_) { /* ignore invalid token */ }
+  return next();
 }
 
 function requireBloggerOrAdmin(req, res, next) {
@@ -1839,13 +1853,18 @@ app.get('/api/events/:id/organizer-contact', requireAuth, async (req, res) => {
 // -----------------------------
 // Blog endpoints
 // -----------------------------
-app.get('/api/blog', async (req, res) => {
+app.get('/api/blog', optionalAuth, async (req, res) => {
   // Ensure column exists to avoid runtime errors on fresh DBs
   await ensureBlogLanguageColumn();
-  const { searchTerm, published = 'true', sortColumn = 'created_at', sortDirection = 'desc', language } = req.query;
+  const { searchTerm, published = 'true', sortColumn = 'created_at', sortDirection = 'desc', language, onlyMine } = req.query;
   const params = [];
   const clauses = [];
   if (String(published) === 'true') clauses.push('b.published = true');
+  // Creator: solo i propri articoli (quando richiesto o quando non è admin/blogger)
+  if (String(onlyMine) === 'true' && req.user?.id) {
+    params.push(req.user.id);
+    clauses.push(`b.author_id = $${params.length}`);
+  }
   if (searchTerm && String(searchTerm).trim()) {
     params.push(`%${String(searchTerm).trim()}%`);
     clauses.push(`b.title ILIKE $${params.length}`);
@@ -1945,6 +1964,12 @@ app.post('/api/blog', requireAuth, requireBloggerOrAdmin, async (req, res) => {
 
 app.put('/api/blog/:id', requireAuth, requireBloggerOrAdmin, async (req, res) => {
   await ensureBlogLanguageColumn();
+  // Creator can only edit own articles
+  if (req.user?.role === 'creator') {
+    const { rows: check } = await pool.query('SELECT author_id FROM blog_articles WHERE id = $1', [req.params.id]);
+    if (!check[0]) return res.status(404).json({ error: 'Not found' });
+    if (check[0].author_id !== req.user.id) return res.status(403).json({ error: 'Forbidden: puoi modificare solo i tuoi articoli' });
+  }
   const b = req.body || {};
   try {
     const allowed = ['language','title','subtitle','slug','excerpt','content','cover_image_url','gallery_images','seo_title','seo_description','seo_keywords','hashtags','published'];
@@ -1962,6 +1987,12 @@ app.put('/api/blog/:id', requireAuth, requireBloggerOrAdmin, async (req, res) =>
 
 app.delete('/api/blog/:id', requireAuth, requireBloggerOrAdmin, async (req, res) => {
   try {
+    // Creator can only delete own articles
+    if (req.user?.role === 'creator') {
+      const { rows: check } = await pool.query('SELECT author_id FROM blog_articles WHERE id = $1', [req.params.id]);
+      if (!check[0]) return res.status(404).json({ error: 'Not found' });
+      if (check[0].author_id !== req.user.id) return res.status(403).json({ error: 'Forbidden: puoi eliminare solo i tuoi articoli' });
+    }
     const { rowCount } = await pool.query('DELETE FROM blog_articles WHERE id = $1', [req.params.id]);
     if (!rowCount) return res.status(404).json({ error: 'Not found' });
     res.status(204).end();

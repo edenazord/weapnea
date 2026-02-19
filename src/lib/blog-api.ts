@@ -32,7 +32,8 @@ export const getBlogArticles = async (
   publishedOnly: boolean = true,
   searchTerm?: string,
   sort: { column: string; direction: string } = { column: 'created_at', direction: 'desc' },
-  language?: 'it' | 'en' | 'es' | 'fr' | 'pl' | 'ru'
+  language?: 'it' | 'en' | 'es' | 'fr' | 'pl' | 'ru',
+  onlyMine?: boolean
 ): Promise<BlogArticleWithAuthor[]> => {
   const params = new URLSearchParams();
   // Invia esplicitamente il filtro published
@@ -41,6 +42,7 @@ export const getBlogArticles = async (
   if (sort?.column) params.set('sortColumn', sort.column);
   if (sort?.direction) params.set('sortDirection', sort.direction);
   if (language) params.set('language', language);
+  if (onlyMine) params.set('onlyMine', 'true');
   const res = await apiGet(`/api/blog?${params.toString()}`);
   return res as BlogArticleWithAuthor[];
 };

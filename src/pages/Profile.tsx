@@ -38,6 +38,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createEvent, Event, getEvents, EventWithCategory, updateEvent, deleteEvent } from "@/lib/api";
 import { Sheet, SheetContent, SheetTitle, SheetClose } from "@/components/ui/sheet";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { EventForm } from "@/components/admin/EventForm";
 import { CenteredNotice } from "@/components/CenteredNotice";
 import { useChatStore } from "@/hooks/useChatStore";
@@ -178,6 +179,8 @@ const Profile = () => {
   // Stato per modifica evento
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventWithCategory | null>(null);
+  // Stato per modale requisiti mancanti organizzazione evento
+  const [showMissingFieldsModal, setShowMissingFieldsModal] = useState(false);
 
   // Query eventi organizzati (solo quando vista organizer attiva)
   const { data: organizedEvents, isLoading: isLoadingOrganized, refetch: refetchOrganized } = useQuery<EventWithCategory[]>({
@@ -797,30 +800,18 @@ const Profile = () => {
                         {t('profile.sections.my_events.my_registrations_label', 'Elenco Iscrizioni')}
                       </button>
                       {(!organizerEligible && user?.role !== 'admin') ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <button
-                              type="button"
-                              role="tab"
-                              aria-selected={showOrganizer}
-                              disabled
-                              className={
-                                `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
-                                bg-transparent text-purple-700 opacity-50 cursor-not-allowed dark:text-purple-300`
-                              }
-                            >
-                              {t('profile.sections.my_events.organize_event_label', 'Organizza Evento')}
-                            </button>
-                          </TooltipTrigger>
-                          <TooltipContent side="bottom" className="max-w-xs">
-                            <p className="font-semibold mb-1">{t('profile.sections.my_events.missing_requirements', 'Requisiti mancanti:')}</p>
-                            <ul className="list-disc list-inside text-sm space-y-0.5">
-                              {missingRequirements.map((req, i) => (
-                                <li key={i}>{req}</li>
-                              ))}
-                            </ul>
-                          </TooltipContent>
-                        </Tooltip>
+                        <button
+                          type="button"
+                          role="tab"
+                          aria-selected={showOrganizer}
+                          onClick={() => setShowMissingFieldsModal(true)}
+                          className={
+                            `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
+                            bg-transparent text-purple-700 hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-800/30`
+                          }
+                        >
+                          {t('profile.sections.my_events.organize_event_label', 'Organizza Evento')}
+                        </button>
                       ) : (
                         <button
                           type="button"
@@ -1776,6 +1767,128 @@ const Profile = () => {
             )}
 
             {/* Company-specific extra content can be added here if needed */}
+
+            {/* Modale requisiti mancanti per organizzare evento */}
+            <Dialog open={showMissingFieldsModal} onOpenChange={setShowMissingFieldsModal}>
+              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>{t('profile.missing_modal.title', 'Completa i dati per organizzare')}</DialogTitle>
+                  <DialogDescription>
+                    {t('profile.missing_modal.description', 'Per poter organizzare un evento devi compilare i seguenti campi obbligatori. Compila e salva per continuare.')}
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-5 py-2">
+                  {/* Profilo pubblico */}
+                  {!publicEnabled && (
+                    <div className="space-y-2">
+                      <Label className="font-semibold">{t('profile.requirements.public_profile', 'Profilo pubblico attivo')}</Label>
+                      <div className="flex items-center gap-3">
+                        <Switch
+                          checked={formData.public_profile_enabled}
+                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_profile_enabled: Boolean(v) }))}
+                        />
+                        <span className="text-sm text-muted-foreground">{formData.public_profile_enabled ? t('common.active', 'Attivo') : t('common.inactive', 'Non attivo')}</span>
+                      </div>
+                    </div>
+                  )}
+                  {/* Slug profilo pubblico */}
+                  {!hasSlug && (
+                    <div className="space-y-2">
+                      <Label htmlFor="modal_public_slug">{t('profile.requirements.public_slug', 'Slug profilo pubblico')}</Label>
+                      <Input
+                        id="modal_public_slug"
+                        value={formData.public_slug}
+                        onChange={(e) => handleInputChange('public_slug', e.target.value)}
+                        placeholder={t('profile.sections.visibility.slug_placeholder', 'es. mario-rossi')}
+                      />
+                      <p className="text-xs text-muted-foreground">{t('profile.missing_modal.slug_hint', 'L\'indirizzo pubblico del tuo profilo (es. weapnea.com/profile/mario-rossi)')}</p>
+                    </div>
+                  )}
+                  {/* Telefono */}
+                  {!hasPhone && (
+                    <div className="space-y-2">
+                      <Label htmlFor="modal_phone">{t('profile.requirements.phone', 'Numero di telefono')}</Label>
+                      <Input
+                        id="modal_phone"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        placeholder={t('profile.sections.personal.phone_placeholder', '+39 333 1234567')}
+                      />
+                    </div>
+                  )}
+                  {/* Assicurazione */}
+                  {(!hasInsurance || (hasInsurance && !insuranceOk)) && (
+                    <div className="space-y-3">
+                      <Label className="font-semibold">{t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</Label>
+                      {!hasInsurance && (
+                        <div className="space-y-1">
+                          <Label htmlFor="modal_assicurazione">{t('profile.sections.certifications.insurance_label', 'Nome Assicurazione')}</Label>
+                          <Input
+                            id="modal_assicurazione"
+                            value={formData.assicurazione}
+                            onChange={(e) => handleInputChange('assicurazione', e.target.value)}
+                            placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')}
+                          />
+                        </div>
+                      )}
+                      {(!insuranceOk) && (
+                        <div className="space-y-1">
+                          <Label htmlFor="modal_scadenza_assicurazione">{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
+                          <DatePicker
+                            date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined}
+                            onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))}
+                          />
+                          {formData.scadenza_assicurazione && new Date(formData.scadenza_assicurazione) < toleranceDate && (
+                            <p className="text-xs text-destructive">{t('profile.missing_modal.insurance_expired', 'La scadenza inserita non è valida o è già trascorsa.')}</p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {/* Certificato medico */}
+                  {!medicalOk && (
+                    <div className="space-y-2">
+                      <Label htmlFor="modal_scadenza_certificato_medico" className="font-semibold">{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
+                      <DatePicker
+                        date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined}
+                        onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))}
+                      />
+                      {formData.scadenza_certificato_medico && new Date(formData.scadenza_certificato_medico) < toleranceDate && (
+                        <p className="text-xs text-destructive">{t('profile.missing_modal.medical_expired', 'La scadenza inserita non è valida o è già trascorsa.')}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <DialogFooter className="flex-col sm:flex-row gap-2">
+                  <Button type="button" variant="outline" onClick={() => setShowMissingFieldsModal(false)}>
+                    {t('common.cancel', 'Annulla')}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="brand"
+                    disabled={loading}
+                    onClick={async (e) => {
+                      // Salva il profilo con i campi compilati nel modale
+                      await handleSubmit(e as any);
+                      // Dopo il salvataggio, chiudi se ora i requisiti sono ok
+                      // (i valori di formData vengono già aggiornati in tempo reale)
+                      const nowPublic = formData.public_profile_enabled;
+                      const nowSlug = !!(formData.public_slug && formData.public_slug.trim());
+                      const nowPhone = !!(formData.phone && formData.phone.trim());
+                      const nowInsurance = !!(formData.assicurazione && formData.assicurazione.trim());
+                      const nowInsuranceOk = formData.scadenza_assicurazione ? (new Date(formData.scadenza_assicurazione) >= toleranceDate) : false;
+                      const nowMedicalOk = formData.scadenza_certificato_medico ? (new Date(formData.scadenza_certificato_medico) >= toleranceDate) : false;
+                      if (nowPublic && nowSlug && nowPhone && nowInsurance && nowInsuranceOk && nowMedicalOk) {
+                        setShowMissingFieldsModal(false);
+                        setShowOrganizer(true);
+                      }
+                    }}
+                  >
+                    {loading ? t('profile.buttons.saving', 'Salvando...') : t('profile.missing_modal.save_and_continue', 'Salva e continua')}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
 
             <div className="flex justify-end mt-6">
               <Button

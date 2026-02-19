@@ -26,8 +26,11 @@ import { format } from "date-fns";
 import { it } from "date-fns/locale";
 import BlogForm from "./BlogForm";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useAuth } from "@/contexts/AuthContext";
 
 const BlogManager = () => {
+  const { user } = useAuth();
+  const isCreatorOnly = user?.role === 'creator';
   const [searchTerm, setSearchTerm] = useState('');
   const [language, setLanguage] = useState<'it'|'en'|'all'>('all');
   const [showForm, setShowForm] = useState(false);
@@ -38,14 +41,15 @@ const BlogManager = () => {
   const queryClient = useQueryClient();
 
   const { data: articles = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['admin-blog-articles', searchTerm, language],
+    queryKey: ['admin-blog-articles', searchTerm, language, isCreatorOnly],
     queryFn: () => {
       console.log("Fetching blog articles with search term:", searchTerm);
       return getBlogArticles(
         false,
         searchTerm,
         { column: 'created_at', direction: 'desc' },
-        language === 'all' ? undefined : language
+        language === 'all' ? undefined : language,
+        isCreatorOnly
       );
     },
     staleTime: 30 * 1000,
