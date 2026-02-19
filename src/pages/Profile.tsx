@@ -757,12 +757,12 @@ const Profile = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-0">
           {/* Mobile: tabs orizzontali; Desktop: sidebar + contenuto */}
-          <div className="flex flex-col md:flex-row md:gap-6">
+          <div className="flex flex-col md:flex-row md:gap-6 md:items-stretch">
             {/* Sidebar menu (desktop) / horizontal tabs (mobile) */}
             <TabsList className={`
               w-full overflow-x-auto flex gap-1 p-1 md:p-0
               md:h-auto md:w-48 md:min-w-[12rem] md:flex-col md:items-stretch md:gap-0.5 md:overflow-x-visible
-              md:bg-white md:dark:bg-neutral-900 md:rounded-xl md:border md:border-gray-200 md:dark:border-neutral-700 md:shadow-sm md:p-2 md:sticky md:top-24 md:self-start
+              md:bg-white md:dark:bg-neutral-900 md:rounded-xl md:border md:border-gray-200 md:dark:border-neutral-700 md:shadow-sm md:p-2 md:sticky md:top-24
             `}>
               <TabsTrigger value="events" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
                 <Calendar className="h-4 w-4 mr-2" />
