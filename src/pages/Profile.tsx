@@ -757,13 +757,14 @@ const Profile = () => {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-0">
           {/* Mobile: tabs orizzontali; Desktop: sidebar + contenuto */}
-          <div className="flex flex-col md:flex-row md:gap-5 md:items-start">
-            {/* Sidebar menu (desktop) / horizontal tabs (mobile) */}
-            <TabsList className={`
-              w-full overflow-x-auto flex gap-1 p-1 md:p-0
-              md:h-auto md:w-44 md:min-w-[11rem] md:flex-col md:items-start md:justify-start md:gap-0.5 md:overflow-x-visible
-              md:bg-white md:dark:bg-neutral-900 md:rounded-xl md:border md:border-gray-200 md:dark:border-neutral-700 md:shadow-sm md:p-2 md:sticky md:top-20
-            `}>
+          <div className="flex flex-col md:flex-row md:gap-5">
+            {/* Wrapper sidebar: si estende per tutta l'altezza del contenuto a dx */}
+            <div className="md:w-44 md:min-w-[11rem] md:shrink-0">
+              <TabsList className={`
+                w-full overflow-x-auto flex gap-1 p-1 md:p-0
+                md:h-auto md:w-full md:flex-col md:items-stretch md:gap-0.5 md:overflow-x-visible
+                md:bg-white md:dark:bg-neutral-900 md:rounded-xl md:border md:border-gray-200 md:dark:border-neutral-700 md:shadow-sm md:p-2 md:sticky md:top-20
+              `}>
               <TabsTrigger value="events" className="whitespace-nowrap md:justify-start md:w-full md:px-3 md:py-2 md:rounded-lg text-sm">
                 <Calendar className="h-4 w-4 mr-2" />
                 {t('profile.tabs.events', 'Eventi')}
@@ -791,6 +792,7 @@ const Profile = () => {
                 </TabsTrigger>
               )}
             </TabsList>
+            </div>
 
             {/* Contenuto principale */}
             <div className="flex-1 min-w-0 mt-4 md:mt-0">
