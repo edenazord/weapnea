@@ -759,7 +759,7 @@ const Profile = () => {
           {/* Mobile: tabs orizzontali; Desktop: sidebar + contenuto */}
           <div className="flex flex-col md:flex-row md:gap-5">
             {/* Wrapper sidebar: si estende per tutta l'altezza del contenuto a dx */}
-            <div className="md:w-44 md:min-w-[11rem] md:shrink-0">
+            <div className="md:w-44 md:min-w-[11rem] md:shrink-0 md:mt-2">
               <TabsList className={`
                 w-full overflow-x-auto flex gap-1 p-1 md:p-0
                 md:h-auto md:w-full md:flex-col md:items-stretch md:gap-0.5 md:overflow-x-visible
