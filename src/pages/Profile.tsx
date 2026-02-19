@@ -737,7 +737,7 @@ const Profile = () => {
   };
 
   const profileContent = (
-    <div className="px-4 py-3 profile-theme">
+    <div className="px-4 py-1 profile-theme">
       <div className="max-w-5xl mx-auto">
         <CenteredNotice
           open={noticeOpen}
@@ -746,7 +746,7 @@ const Profile = () => {
           message={noticeMsg}
         />
         {!isMobile && (
-          <div className="mb-3">
+          <div className="mb-1">
             <BackButton fallbackPath="/" label={t('not_found.back_home', 'Torna alla Home')} />
           </div>
         )}
