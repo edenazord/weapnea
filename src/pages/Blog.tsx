@@ -4,6 +4,7 @@ import MobileLayout from "@/components/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Search, Calendar, User, Eye, Sparkles, ArrowLeft } from "lucide-react";
 import { useState } from "react";
@@ -98,65 +99,85 @@ const Blog = () => {
           ))}
         </div>
   ) : displayArticles.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {displayArticles.map((article, index) => (
-            <Card key={article.id} className="group overflow-hidden modern-blur border border-white/20 shadow-xl hover:shadow-2xl transition-all duration-500 card-hover-lift fade-in-animation" style={{ animationDelay: `${index * 100}ms` }}>
-              <div className="relative overflow-hidden">
-                <img 
-                  src={article.cover_image_url || '/placeholder.svg'} 
-                  alt={article.title}
-                  className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    <Tabs defaultValue={displayArticles[0]?.id?.toString() || ""} orientation="vertical" className="flex flex-col md:flex-row gap-8 w-full max-w-6xl mx-auto">
+      <TabsList className="flex flex-col w-full md:w-80 gap-2 bg-transparent p-0">
+        {displayArticles.map((article) => (
+          <TabsTrigger key={article.id} value={article.id.toString()} className="flex items-center gap-4 px-4 py-3 rounded-lg border border-white/20 bg-white/70 hover:bg-white/90 transition-all text-left shadow-sm">
+            <img src={article.cover_image_url || '/placeholder.svg'} alt={article.title} className="w-16 h-16 object-cover rounded-md flex-shrink-0" />
+            <div className="flex-1">
+              <div className="flex flex-wrap gap-1 mb-1">
+                {article.hashtags?.slice(0, 3).map((tag, i) => (
+                  <Badge key={i} variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-purple-700 border-0 text-xs px-2 py-0.5">
+                    #{tag}
+                  </Badge>
+                ))}
               </div>
-              
-              <CardContent className="p-6 relative">
-                <div className="flex flex-wrap gap-2 mb-4">
-                  {article.hashtags?.slice(0, 3).map((tag, index) => (
-                    <Badge key={index} variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-purple-700 border-0 hover:from-purple-100 hover:to-blue-100 transition-all duration-300">
-                      #{tag}
-                    </Badge>
-                  ))}
+              <div className="font-bold text-base text-gray-900 line-clamp-1">{article.title}</div>
+              {article.subtitle && <div className="text-purple-600 text-xs line-clamp-1">{article.subtitle}</div>}
+            </div>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      <div className="flex-1">
+        {displayArticles.map((article) => (
+          <TabsContent key={article.id} value={article.id.toString()} className="w-full">
+            <Card className="overflow-hidden modern-blur border border-white/20 shadow-xl w-full">
+              <div className="flex flex-col md:flex-row">
+                <div className="relative md:w-96 flex-shrink-0 overflow-hidden">
+                  <img 
+                    src={article.cover_image_url || '/placeholder.svg'} 
+                    alt={article.title}
+                    className="w-full h-56 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
                 </div>
-                
-                <h3 className="font-bold text-xl text-gray-900 mb-3 line-clamp-2 group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-purple-600 group-hover:bg-clip-text transition-all duration-300">
-                  <Link to={buildFriendlyBlogPath(article.slug, article.created_at)}>
-                    {article.title}
-                  </Link>
-                </h3>
-
-                {article.subtitle && (
-                  <p className="text-purple-600 font-semibold text-sm mb-3 line-clamp-2">
-                    {article.subtitle}
-                  </p>
-                )}
-                
-                {article.excerpt && (
-                  <p className="text-gray-600 mb-6 line-clamp-3 leading-relaxed">
-                    {article.excerpt}
-                  </p>
-                )}
-                
-                <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-                      <User className="h-4 w-4 text-white" />
+                <CardContent className="flex-1 p-8 flex flex-col justify-between">
+                  <div>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {article.hashtags?.slice(0, 3).map((tag, index) => (
+                        <Badge key={index} variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-purple-700 border-0">
+                          #{tag}
+                        </Badge>
+                      ))}
                     </div>
-                    <span className="font-medium">{article.profiles?.full_name || t('blog_page.author_fallback', 'Autore')}</span>
+                    <h3 className="font-bold text-3xl text-gray-900 mb-3">
+                      {article.title}
+                    </h3>
+                    {article.subtitle && (
+                      <p className="text-purple-600 font-semibold text-lg mb-3">
+                        {article.subtitle}
+                      </p>
+                    )}
+                    {article.excerpt && (
+                      <p className="text-gray-600 mb-6 leading-relaxed">
+                        {article.excerpt}
+                      </p>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1 text-gray-400">
-                    <Calendar className="h-4 w-4" />
-                    <span>{formatDate(article.created_at)}</span>
+                  <div>
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                          <User className="h-4 w-4 text-white" />
+                        </div>
+                        <span className="font-medium">{article.profiles?.full_name || t('blog_page.author_fallback', 'Autore')}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-gray-400">
+                        <Calendar className="h-4 w-4" />
+                        <span>{formatDate(article.created_at)}</span>
+                      </div>
+                    </div>
+                    <Button asChild className="w-full rounded-full" variant="brand">
+                      <Link to={buildFriendlyBlogPath(article.slug, article.created_at)}>{t('blog_page.read_more', 'Leggi di più')}</Link>
+                    </Button>
                   </div>
-                </div>
-                
-                <Button asChild className="w-full rounded-full" variant="brand">
-                  <Link to={buildFriendlyBlogPath(article.slug, article.created_at)}>{t('blog_page.read_more', 'Leggi di più')}</Link>
-                </Button>
-              </CardContent>
+                </CardContent>
+              </div>
             </Card>
-          ))}
-        </div>
+          </TabsContent>
+        ))}
+      </div>
+    </Tabs>
       ) : (
         <div className="text-center py-16">
           <div className="relative">
