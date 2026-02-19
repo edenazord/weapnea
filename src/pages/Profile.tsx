@@ -181,6 +181,11 @@ const Profile = () => {
   const [editingEvent, setEditingEvent] = useState<EventWithCategory | null>(null);
   // Stato per modale requisiti mancanti organizzazione evento
   const [showMissingFieldsModal, setShowMissingFieldsModal] = useState(false);
+  // Snapshot dei campi mancanti al momento dell'apertura del modal (non cambia durante la compilazione)
+  const [missingSnapshot, setMissingSnapshot] = useState<{
+    publicEnabled: boolean; hasSlug: boolean; hasPhone: boolean;
+    hasInsurance: boolean; insuranceOk: boolean; medicalOk: boolean;
+  } | null>(null);
 
   // Query eventi organizzati (solo quando vista organizer attiva)
   const { data: organizedEvents, isLoading: isLoadingOrganized, refetch: refetchOrganized } = useQuery<EventWithCategory[]>({
@@ -804,7 +809,17 @@ const Profile = () => {
                           type="button"
                           role="tab"
                           aria-selected={showOrganizer}
-                          onClick={() => setShowMissingFieldsModal(true)}
+                          onClick={() => {
+                            setMissingSnapshot({
+                              publicEnabled: !!formData.public_profile_enabled,
+                              hasSlug: !!(formData.public_slug && formData.public_slug.trim()),
+                              hasPhone: !!(formData.phone && formData.phone.trim()),
+                              hasInsurance: !!(formData.assicurazione && formData.assicurazione.trim()),
+                              insuranceOk: formData.scadenza_assicurazione ? (new Date(formData.scadenza_assicurazione) >= toleranceDate) : false,
+                              medicalOk: formData.scadenza_certificato_medico ? (new Date(formData.scadenza_certificato_medico) >= toleranceDate) : false,
+                            });
+                            setShowMissingFieldsModal(true);
+                          }}
                           className={
                             `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
                             bg-transparent text-purple-700 hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-800/30`
@@ -1769,7 +1784,7 @@ const Profile = () => {
             {/* Company-specific extra content can be added here if needed */}
 
             {/* Modale requisiti mancanti per organizzare evento */}
-            <Dialog open={showMissingFieldsModal} onOpenChange={setShowMissingFieldsModal}>
+            <Dialog open={showMissingFieldsModal} onOpenChange={(open) => { setShowMissingFieldsModal(open); if (!open) setMissingSnapshot(null); }}>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{t('profile.missing_modal.title', 'Completa i dati per organizzare')}</DialogTitle>
@@ -1779,7 +1794,7 @@ const Profile = () => {
                 </DialogHeader>
                 <div className="space-y-5 py-2">
                   {/* Profilo pubblico */}
-                  {!publicEnabled && (
+                  {missingSnapshot && !missingSnapshot.publicEnabled && (
                     <div className="space-y-2">
                       <Label className="font-semibold">{t('profile.requirements.public_profile', 'Profilo pubblico attivo')}</Label>
                       <div className="flex items-center gap-3">
@@ -1792,7 +1807,7 @@ const Profile = () => {
                     </div>
                   )}
                   {/* Slug profilo pubblico */}
-                  {!hasSlug && (
+                  {missingSnapshot && !missingSnapshot.hasSlug && (
                     <div className="space-y-2">
                       <Label htmlFor="modal_public_slug">{t('profile.requirements.public_slug', 'Slug profilo pubblico')}</Label>
                       <Input
@@ -1805,7 +1820,7 @@ const Profile = () => {
                     </div>
                   )}
                   {/* Telefono */}
-                  {!hasPhone && (
+                  {missingSnapshot && !missingSnapshot.hasPhone && (
                     <div className="space-y-2">
                       <Label htmlFor="modal_phone">{t('profile.requirements.phone', 'Numero di telefono')}</Label>
                       <Input
@@ -1817,10 +1832,10 @@ const Profile = () => {
                     </div>
                   )}
                   {/* Assicurazione */}
-                  {(!hasInsurance || (hasInsurance && !insuranceOk)) && (
+                  {missingSnapshot && (!missingSnapshot.hasInsurance || !missingSnapshot.insuranceOk) && (
                     <div className="space-y-3">
                       <Label className="font-semibold">{t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</Label>
-                      {!hasInsurance && (
+                      {!missingSnapshot.hasInsurance && (
                         <div className="space-y-1">
                           <Label htmlFor="modal_assicurazione">{t('profile.sections.certifications.insurance_label', 'Nome Assicurazione')}</Label>
                           <Input
@@ -1831,7 +1846,7 @@ const Profile = () => {
                           />
                         </div>
                       )}
-                      {(!insuranceOk) && (
+                      {!missingSnapshot.insuranceOk && (
                         <div className="space-y-1">
                           <Label htmlFor="modal_scadenza_assicurazione">{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
                           <DatePicker
@@ -1846,7 +1861,7 @@ const Profile = () => {
                     </div>
                   )}
                   {/* Certificato medico */}
-                  {!medicalOk && (
+                  {missingSnapshot && !missingSnapshot.medicalOk && (
                     <div className="space-y-2">
                       <Label htmlFor="modal_scadenza_certificato_medico" className="font-semibold">{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
                       <DatePicker
@@ -1860,7 +1875,7 @@ const Profile = () => {
                   )}
                 </div>
                 <DialogFooter className="flex-col sm:flex-row gap-2">
-                  <Button type="button" variant="outline" onClick={() => setShowMissingFieldsModal(false)}>
+                  <Button type="button" variant="outline" onClick={() => { setShowMissingFieldsModal(false); setMissingSnapshot(null); }}>
                     {t('common.cancel', 'Annulla')}
                   </Button>
                   <Button
@@ -1880,6 +1895,7 @@ const Profile = () => {
                       const nowMedicalOk = formData.scadenza_certificato_medico ? (new Date(formData.scadenza_certificato_medico) >= toleranceDate) : false;
                       if (nowPublic && nowSlug && nowPhone && nowInsurance && nowInsuranceOk && nowMedicalOk) {
                         setShowMissingFieldsModal(false);
+                        setMissingSnapshot(null);
                         setShowOrganizer(true);
                       }
                     }}
