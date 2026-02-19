@@ -4,9 +4,8 @@ import MobileLayout from "@/components/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Search, Calendar, User, Eye, Sparkles, ArrowLeft } from "lucide-react";
+import { Search, Calendar, User, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getBlogArticles } from "@/lib/blog-api";
@@ -97,83 +96,76 @@ const Blog = () => {
           ))}
         </div>
   ) : displayArticles.length > 0 ? (
-    <Tabs defaultValue={displayArticles[0]?.id?.toString() || ""} className="w-full">
-      {/* Tab list: una riga per articolo */}
-      <TabsList className="flex flex-col w-full gap-2 bg-transparent p-0 h-auto mb-8">
-        {displayArticles.map((article) => (
-          <TabsTrigger
-            key={article.id}
-            value={article.id.toString()}
-            className="w-full flex items-center gap-4 px-5 py-4 rounded-xl border border-white/20 bg-white/60 hover:bg-white/90 shadow-sm data-[state=active]:bg-white data-[state=active]:shadow-lg data-[state=active]:border-purple-300 transition-all text-left justify-start h-auto whitespace-normal"
-          >
-            <img src={article.cover_image_url || '/placeholder.svg'} alt={article.title} className="w-16 h-16 object-cover rounded-lg flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <div className="font-bold text-base text-gray-900 line-clamp-1">{article.title}</div>
-              {article.subtitle && <div className="text-purple-600 text-xs line-clamp-1 mt-0.5">{article.subtitle}</div>}
-              <div className="flex items-center gap-2 mt-1 text-xs text-gray-400">
-                <Calendar className="h-3 w-3" />
-                <span>{formatDate(article.created_at)}</span>
-                <span className="mx-1">·</span>
-                <span>{article.profiles?.full_name || t('blog_page.author_fallback', 'Autore')}</span>
+    <div className="flex flex-col gap-6">
+      {displayArticles.map((article, index) => (
+        <Link
+          key={article.id}
+          to={buildFriendlyBlogPath(article.slug, article.created_at)}
+          className="block group fade-in-animation"
+          style={{ animationDelay: `${index * 80}ms` }}
+        >
+          <Card className="overflow-hidden border border-gray-200/60 bg-white shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5">
+            <div className="flex flex-col md:flex-row">
+              {/* Immagine */}
+              <div className="relative md:w-72 lg:w-80 flex-shrink-0 overflow-hidden">
+                <img
+                  src={article.cover_image_url || '/placeholder.svg'}
+                  alt={article.title}
+                  className="w-full h-52 md:h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                />
               </div>
-            </div>
-          </TabsTrigger>
-        ))}
-      </TabsList>
-
-      {/* Contenuto articolo selezionato */}
-      {displayArticles.map((article) => (
-        <TabsContent key={article.id} value={article.id.toString()} className="mt-0">
-          <Card className="overflow-hidden modern-blur border border-white/20 shadow-xl w-full">
-            <div className="relative w-full h-64 md:h-80 overflow-hidden">
-              <img 
-                src={article.cover_image_url || '/placeholder.svg'} 
-                alt={article.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-            </div>
-            <CardContent className="p-6 md:p-8">
-              <div className="flex flex-wrap gap-2 mb-4">
-                {article.hashtags?.slice(0, 3).map((tag, index) => (
-                  <Badge key={index} variant="secondary" className="bg-gradient-to-r from-blue-100 to-purple-100 text-purple-700 border-0">
-                    #{tag}
-                  </Badge>
-                ))}
-              </div>
-              <h3 className="font-bold text-2xl md:text-3xl text-gray-900 mb-3">
-                {article.title}
-              </h3>
-              {article.subtitle && (
-                <p className="text-purple-600 font-semibold text-lg mb-3">
-                  {article.subtitle}
-                </p>
-              )}
-              {article.excerpt && (
-                <p className="text-gray-600 mb-6 leading-relaxed text-base">
-                  {article.excerpt}
-                </p>
-              )}
-              <div className="flex items-center justify-between text-sm text-gray-500 mb-6">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
-                    <User className="h-4 w-4 text-white" />
+              {/* Contenuto */}
+              <CardContent className="flex-1 p-5 md:p-7 flex flex-col justify-between">
+                <div>
+                  {/* Hashtag */}
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {article.hashtags?.slice(0, 3).map((tag, i) => (
+                      <Badge key={i} variant="secondary" className="bg-purple-50 text-purple-600 border-0 text-xs font-medium px-2.5 py-0.5">
+                        #{tag}
+                      </Badge>
+                    ))}
                   </div>
-                  <span className="font-medium">{article.profiles?.full_name || t('blog_page.author_fallback', 'Autore')}</span>
+                  {/* Titolo */}
+                  <h3 className="font-bold text-xl lg:text-2xl text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-700 transition-colors duration-200">
+                    {article.title}
+                  </h3>
+                  {/* Sottotitolo */}
+                  {article.subtitle && (
+                    <p className="text-purple-600/80 font-medium text-sm mb-2 line-clamp-1">
+                      {article.subtitle}
+                    </p>
+                  )}
+                  {/* Estratto */}
+                  {article.excerpt && (
+                    <p className="text-gray-500 text-sm mb-4 line-clamp-2 leading-relaxed">
+                      {article.excerpt}
+                    </p>
+                  )}
                 </div>
-                <div className="flex items-center gap-1 text-gray-400">
-                  <Calendar className="h-4 w-4" />
-                  <span>{formatDate(article.created_at)}</span>
+                {/* Footer: autore + data + CTA */}
+                <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-100">
+                  <div className="flex items-center gap-4 text-xs text-gray-400">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                        <User className="h-3 w-3 text-white" />
+                      </div>
+                      <span className="font-medium text-gray-600">{article.profiles?.full_name || t('blog_page.author_fallback', 'Autore')}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5" />
+                      <span>{formatDate(article.created_at)}</span>
+                    </div>
+                  </div>
+                  <span className="text-purple-600 text-sm font-semibold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                    {t('blog_page.read_more', 'Leggi di più')} <ArrowRight className="h-4 w-4" />
+                  </span>
                 </div>
-              </div>
-              <Button asChild className="w-full rounded-full" variant="brand">
-                <Link to={buildFriendlyBlogPath(article.slug, article.created_at)}>{t('blog_page.read_more', 'Leggi di più')}</Link>
-              </Button>
-            </CardContent>
+              </CardContent>
+            </div>
           </Card>
-        </TabsContent>
+        </Link>
       ))}
-    </Tabs>
+    </div>
       ) : (
         <div className="text-center py-16">
           <div className="relative">
