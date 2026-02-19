@@ -1107,7 +1107,7 @@ app.get('/api/auth/me', requireAuth, async (req, res) => {
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico, certificato_medico_tipo,
     assicurazione, scadenza_assicurazione, instagram_contact${pb}${oc},
-    company_name, vat_number, company_address, phone${pub}
+    company_name, vat_number, company_address, phone, club_team${pub}
      FROM profiles WHERE id = $1 LIMIT 1`;
   const { rows } = await pool.query(sql, [req.user.id]);
     const user = rows[0];
@@ -1193,7 +1193,7 @@ app.get('/api/profile', requireAuth, async (req, res) => {
     id, email, full_name, role, is_active, avatar_url,
     bio, brevetto, scadenza_brevetto, scadenza_certificato_medico, certificato_medico_tipo,
     assicurazione, scadenza_assicurazione, instagram_contact${pb}${oc},
-    company_name, vat_number, company_address, phone, contact_email${pub}, organizer_upgrade_requested_at
+    company_name, vat_number, company_address, phone, contact_email, club_team${pub}, organizer_upgrade_requested_at
     , didattica_brevetto, numero_brevetto, foto_brevetto_url, numero_assicurazione
     , COALESCE(dichiarazione_brevetto_valido,false) AS dichiarazione_brevetto_valido
     , COALESCE(dichiarazione_assicurazione_valida,false) AS dichiarazione_assicurazione_valida

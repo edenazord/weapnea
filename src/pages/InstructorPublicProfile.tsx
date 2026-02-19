@@ -45,7 +45,7 @@ type PublicInstructor = {
   public_show_events?: boolean;
   public_show_records?: boolean;
   public_show_personal?: boolean;
-  personal_best?: Record<string, string> | null;
+  personal_best?: Record<string, string> | Array<{ discipline: string; value: string }> | null;
   other_certifications?: OtherCertification[] | null;
   club_team?: string | null;
 };
@@ -133,8 +133,8 @@ export default function InstructorPublicProfile() {
                 <AvatarImage src={data.avatar_url || ''} alt={data.full_name || 'Profilo'} />
                 <AvatarFallback className="text-2xl">{data.full_name ? data.full_name.charAt(0).toUpperCase() : <User className="w-12 h-12"/>}</AvatarFallback>
               </Avatar>
+              {data.club_team && <p className="text-sm font-medium text-purple-600 mb-1">{data.club_team}</p>}
               <h1 className="text-2xl font-bold text-gray-900 mb-2">{data.full_name || 'Nome non specificato'}</h1>
-              {data.club_team && <p className="text-sm text-gray-600 mb-1">{data.club_team}</p>}
               {data.company_name && <p className="text-lg text-blue-600 mb-2">{data.company_name}</p>}
               {data.public_show_personal !== false && data.instagram_contact && (
                 <div className="mt-3">
@@ -244,11 +244,16 @@ export default function InstructorPublicProfile() {
             <Card>
               <CardHeader><CardTitle className="text-xl flex items-center"><Target className="w-5 h-5 mr-2"/>Record</CardTitle></CardHeader>
               <CardContent>
-                {data.personal_best && Object.keys(data.personal_best).length > 0 ? (
+                {data.personal_best && (Array.isArray(data.personal_best) ? data.personal_best.length > 0 : Object.keys(data.personal_best).length > 0) ? (
                   <ul className="list-disc pl-5 space-y-1 text-gray-700">
-                    {Object.entries(data.personal_best).map(([disc, val]) => (
-                      <li key={disc}><span className="font-semibold mr-1">{disc.toUpperCase()}:</span> {String(val)}</li>
-                    ))}
+                    {Array.isArray(data.personal_best)
+                      ? data.personal_best.map((entry: any, idx: number) => (
+                          <li key={entry.discipline || idx}><span className="font-semibold mr-1">{String(entry.discipline || '').toUpperCase()}:</span> {String(entry.value || '')}</li>
+                        ))
+                      : Object.entries(data.personal_best).map(([disc, val]) => (
+                          <li key={disc}><span className="font-semibold mr-1">{disc.toUpperCase()}:</span> {String(val)}</li>
+                        ))
+                    }
                   </ul>
                 ) : (
                   <div className="text-gray-500">Nessun record disponibile</div>

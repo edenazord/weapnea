@@ -570,6 +570,15 @@ const Profile = () => {
 
     // Validazioni extra: la dichiarazione di assicurazione può essere salvata anche senza i dati assicurativi dettagliati.
     // I campi assicurativi (nome, numero, scadenza) restano facoltativi.
+    // Se però l'utente ha compilato l'assicurazione, la dichiarazione è obbligatoria
+    if (formData.assicurazione?.trim() && !formData.dichiarazione_assicurazione_valida) {
+      toast({
+        title: t('profile.sections.certifications.insurance_declaration_required_title', 'Dichiarazione assicurazione richiesta'),
+        description: t('profile.sections.certifications.insurance_declaration_required_desc', 'Per salvare i dati assicurativi devi spuntare la dichiarazione di copertura assicurativa in corso di validità.'),
+        variant: 'destructive'
+      });
+      return;
+    }
     // Brevetto: richiede brevetto, numero_brevetto e scadenza_brevetto futura
     if (formData.dichiarazione_brevetto_valido) {
       const hasBrevetto = !!formData.brevetto?.trim();
