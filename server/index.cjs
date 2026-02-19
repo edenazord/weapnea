@@ -929,11 +929,10 @@ function optionalAuth(req, res, next) {
   const auth = req.headers['authorization'] || '';
   if (!auth.startsWith('Bearer ')) return next();
   const token = auth.slice('Bearer '.length);
-  if (API_TOKEN && token === API_TOKEN) return next();
   try {
     const payload = jwt.verify(token, JWT_SECRET);
     req.user = payload;
-  } catch (_) { /* ignore invalid token */ }
+  } catch (_) { /* not a valid JWT, ignore */ }
   return next();
 }
 
@@ -1861,7 +1860,11 @@ app.get('/api/blog', optionalAuth, async (req, res) => {
   const clauses = [];
   if (String(published) === 'true') clauses.push('b.published = true');
   // Creator: solo i propri articoli (quando richiesto o quando non è admin/blogger)
-  if (String(onlyMine) === 'true' && req.user?.id) {
+  if (String(onlyMine) === 'true') {
+    if (!req.user?.id) {
+      // Se onlyMine ma nessun utente autenticato, restituisci lista vuota
+      return res.json([]);
+    }
     params.push(req.user.id);
     clauses.push(`b.author_id = $${params.length}`);
   }
