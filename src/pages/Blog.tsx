@@ -131,7 +131,7 @@ const Blog = () => {
                   </h3>
                   {/* Sottotitolo */}
                   {article.subtitle && (
-                    <p className="text-purple-600/80 font-medium text-sm mb-2 line-clamp-1">
+                    <p className="text-purple-600/80 font-medium text-sm mb-2">
                       {article.subtitle}
                     </p>
                   )}
