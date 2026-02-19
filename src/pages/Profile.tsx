@@ -796,7 +796,7 @@ const Profile = () => {
 
             {/* Contenuto principale */}
             <div className="flex-1 min-w-0 mt-4 md:mt-0">
-              <div className="bg-gray-50 dark:bg-neutral-900/50 rounded-xl p-4 md:p-6 border border-gray-100 dark:border-neutral-800">
+              <div className="bg-gray-50/50 dark:bg-neutral-900/30 rounded-xl p-4 md:p-6">
                 <form onSubmit={handleSubmit}>
             <TabsContent value="events">
               <Card>
