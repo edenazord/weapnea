@@ -67,7 +67,7 @@ export function DatePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-auto p-0 bg-white/95 backdrop-blur-md border-purple-200 shadow-xl rounded-xl z-[70]" 
+          className="w-auto p-0 bg-white/95 backdrop-blur-md border-purple-200 shadow-xl rounded-xl z-[10001]" 
           align="start"
           onInteractOutside={(e) => {
             // Previeni la propagazione dell'evento al SearchWithDropdown
