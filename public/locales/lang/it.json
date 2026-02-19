@@ -459,7 +459,7 @@
 				"accordion_brevetto": "Brevetto (se in possesso)",
 				"insurance_number_label": "Numero assicurazione",
 				"insurance_number_placeholder": "Inserire numero assicurazione",
-				"insurance_declaration": "Dichiaro di essere istruttore brevettato e di avere una copertura assicurativa in corso di validità",
+				"insurance_declaration": "Dichiaro di avere una copertura assicurativa in corso di validità",
 				"medical_select_placeholder": "Seleziona mese e anno",
 				"medical_change_hint": "Clicca sul mese per modificarlo. Usa il selettore per scegliere una nuova scadenza (solo mesi futuri).",
 				"medical_type_label": "Tipo certificato medico",

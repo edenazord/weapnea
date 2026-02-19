@@ -386,9 +386,12 @@ const Profile = () => {
       if (user.personal_best) {
         const pb = user.personal_best as any;
         let entries: BestEntry[] = [];
+        let isLegacy = false;
         if (Array.isArray(pb)) {
+          // Formato nuovo: array di { discipline, value } – mantieni l'ordine dell'utente
           entries = pb.filter((e: any) => e?.discipline && e?.value).map((e: any) => ({ discipline: e.discipline as BestDiscipline, value: String(e.value) }));
         } else if (pb && typeof pb === 'object') {
+          isLegacy = true;
           // Map legacy keys if present
           const mapLegacy: Record<string, BestDiscipline> = {
             static_apnea: 'STA',
@@ -407,9 +410,11 @@ const Profile = () => {
             }
           }
         }
-        // Ensure stable order by DISCIPLINE_CODES
-        const order: Record<string, number> = Object.fromEntries(DISCIPLINE_CODES.map((d, i) => [d.code, i]));
-        entries.sort((a, b) => (order[a.discipline] ?? 999) - (order[b.discipline] ?? 999));
+        // Ordina solo per il formato legacy (oggetto); il formato array preserva l'ordine dell'utente
+        if (isLegacy) {
+          const order: Record<string, number> = Object.fromEntries(DISCIPLINE_CODES.map((d, i) => [d.code, i]));
+          entries.sort((a, b) => (order[a.discipline] ?? 999) - (order[b.discipline] ?? 999));
+        }
         setBestEntries(entries);
       } else {
         setBestEntries([]);
@@ -625,13 +630,9 @@ const Profile = () => {
         company_name: formData.company_name || null,
         vat_number: formData.vat_number || null,
         company_address: formData.company_address || null,
-        personal_best: (() => {
-          const obj: Record<string, string> = {};
-          for (const e of bestEntries) {
-            if (e.value && e.discipline) obj[e.discipline] = e.value;
-          }
-          return obj;
-        })(),
+        personal_best: bestEntries
+          .filter(e => e.value && e.discipline)
+          .map(e => ({ discipline: e.discipline, value: e.value })),
         other_certifications: certEntries.filter(c => c.name.trim() || c.number.trim()).map(c => ({
           type: c.type,
           name: c.name.trim(),
@@ -1424,7 +1425,7 @@ const Profile = () => {
                             onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_assicurazione_valida: Boolean(v) }))}
                           />
                           <Label htmlFor="dichiarazione_assicurazione_valida" className="text-sm cursor-pointer">
-                            {t('profile.sections.certifications.insurance_declaration', 'Dichiaro di essere istruttore brevettato e di avere una copertura assicurativa in corso di validità')}
+                            {t('profile.sections.certifications.insurance_declaration', 'Dichiaro di avere una copertura assicurativa in corso di validità')}
                           </Label>
                         </div>
 
