@@ -973,73 +973,38 @@ const Profile = () => {
                         </div>
                       )}
                       <div className="mt-4">
-                        <h3 className="font-semibold mb-2">{t('profile.sections.my_events.your_organized_events', 'I tuoi eventi organizzati')}</h3>
+                        <h3 className="font-semibold mb-3">{t('profile.sections.my_events.your_organized_events', 'I tuoi eventi organizzati')}</h3>
                         {isLoadingOrganized ? (
                           <div className="py-4 text-sm text-muted-foreground">{t('profile.sections.my_events.loading_events', 'Caricamento eventi...')}</div>
                         ) : (organizedEvents && organizedEvents.length > 0 ? (
-                          <Table>
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>{t('profile.sections.my_events.table_title_category', 'Titolo / Categoria')}</TableHead>
-                                <TableHead>{t('profile.sections.my_events.table_discipline_level', 'Disciplina / Livello')}</TableHead>
-                                <TableHead>{t('profile.sections.my_events.table_date_location', 'Data / Ricorrenza & Luogo')}</TableHead>
-                                {!eventsFreeMode && <TableHead className="text-center">{t('profile.sections.my_events.table_cost', 'Costo')}</TableHead>}
-                                <TableHead className="text-center">{t('profile.sections.my_events.table_enrolled', 'Iscritti')}</TableHead>
-                                <TableHead className="text-right">{t('profile.sections.my_events.table_actions', 'Azioni')}</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {organizedEvents.map(ev => (
-                                <TableRow key={ev.id}>
-                                  <TableCell className="max-w-[260px]">
-                                    <div className="flex flex-col">
-                                      <span className="font-medium truncate" title={ev.title}>{ev.title}</span>
-                                      <span className="text-xs text-muted-foreground truncate">{ev.categories?.name || '-'}</span>
+                          <div className="grid gap-3">
+                            {organizedEvents.map(ev => (
+                              <div key={ev.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
+                                <div className="flex items-start justify-between gap-3">
+                                  <div className="flex-1 min-w-0">
+                                    <Link to={buildFriendlyEventPath(ev.slug)} className="font-semibold text-base hover:underline truncate block">{ev.title}</Link>
+                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm text-muted-foreground">
+                                      <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{formatEventWithFixed(ev)}</span>
+                                      {ev.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{ev.location}</span>}
+                                      {!eventsFreeMode && ev.cost != null && ev.cost > 0 && <span className="font-medium text-foreground">€{Number(ev.cost).toFixed(2)}</span>}
                                     </div>
-                                  </TableCell>
-                                  <TableCell className="text-sm">
-                                    <div className="flex flex-col">
-                                      <span className="truncate">{ev.discipline || '-'}</span>
-                                      <span className="text-xs text-muted-foreground truncate">{ev.level || '-'}</span>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell className="text-sm">
-                                    <div className="flex items-center gap-2 text-muted-foreground">
-                                      <Calendar className="h-4 w-4" />
-                                      <span className="truncate" title={formatEventWithFixed(ev)}>{formatEventWithFixed(ev)}</span>
-                                      {ev.location && (
-                                        <>
-                                          <span className="mx-1">•</span>
-                                          <MapPin className="h-4 w-4" />
-                                          <span className="truncate" title={ev.location}>{ev.location}</span>
-                                        </>
-                                      )}
-                                    </div>
-                                  </TableCell>
-                                  {!eventsFreeMode && <TableCell className="text-sm text-center">{(ev.cost != null && ev.cost > 0) ? `€${Number(ev.cost).toFixed(2)}` : '—'}</TableCell>}
-                                  <TableCell className="text-sm text-center">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</TableCell>
-                                  <TableCell className="text-right">
-                                    <div className="flex gap-2 justify-end">
-                                      <Button type="button" asChild size="icon" variant="ghost" title={t('profile.sections.my_events.action_open', 'Apri')} aria-label={t('profile.sections.my_events.action_open', 'Apri evento')}>
-                                        <Link to={buildFriendlyEventPath(ev.slug)}>
-                                          <Eye className="h-4 w-4" />
-                                        </Link>
-                                      </Button>
-                                      <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_enrolled', 'Iscritti')} aria-label={t('profile.sections.my_events.action_enrolled', 'Vedi iscritti')} onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
-                                        <Users className="h-4 w-4" />
-                                      </Button>
-                                      <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_edit', 'Modifica')} aria-label={t('profile.sections.my_events.action_edit', 'Modifica evento')} onClick={() => openEditEvent(ev)}>
-                                        <Pencil className="h-4 w-4" />
-                                      </Button>
-                                      <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_delete', 'Elimina')} aria-label={t('profile.sections.my_events.action_delete', 'Elimina evento')} onClick={() => handleDeleteEvent(ev.id, ev.title)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
+                                  </div>
+                                  <div className="flex items-center gap-1 flex-shrink-0">
+                                    <Button type="button" size="sm" variant="outline" className="gap-1.5" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
+                                      <Users className="h-4 w-4" />
+                                      <span className="font-semibold">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</span>
+                                    </Button>
+                                    <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_edit', 'Modifica')} onClick={() => openEditEvent(ev)}>
+                                      <Pencil className="h-4 w-4" />
+                                    </Button>
+                                    <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_delete', 'Elimina')} onClick={() => handleDeleteEvent(ev.id, ev.title)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                      <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         ) : (
                           <div className="py-6 text-sm text-muted-foreground border rounded-md text-center">
                             {t('profile.sections.my_events.no_organized_events', 'Nessun evento organizzato ancora.')}
@@ -1116,7 +1081,7 @@ const Profile = () => {
                 onOpenChange={(open) => { setParticipantsOpen(open); if (!open) { setParticipants([]); setParticipantsEventId(''); setParticipantsEventTitle(''); } }}
               >
                 <SheetContent
-                  className="overflow-y-auto p-0 [&>button]:hidden"
+                  className="overflow-y-auto p-0 [&>button]:hidden w-full sm:w-[540px] sm:max-w-[540px]"
                   onInteractOutside={(e) => { e.preventDefault(); }}
                   onEscapeKeyDown={(e) => { e.preventDefault(); }}
                 >
