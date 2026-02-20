@@ -257,6 +257,7 @@
     "included_not_included": "Included/Not Included",
     "gallery_label": "Gallery",
     "slots_full": "All spots for this event are taken.",
+    "phone_required": "Add your phone number in your profile to register",
     "event_not_free": "This event is not free.",
     "date_tbd": "Date to be defined",
     "recurring_label": "Recurring appointment",
@@ -446,10 +447,14 @@
         "instagram_placeholder": "@username",
         "phone_label": "Mobile Number",
         "phone_placeholder": "Ex. +39 333 1234567",
+        "phone_privacy_note": "Only visible to the organizer if you register for their event",
         "account_email_label": "Account Email",
         "account_email_hint": "Email used for registration (not editable)",
         "bio_label": "Biography",
-        "bio_placeholder": "A brief bio about yourself; tell us about yourself as a freediver, a participant, an organizer, an athlete..."
+        "bio_placeholder": "A brief bio about yourself; tell us about yourself as a freediver, a participant, an organizer, an athlete...",
+        "club_team_label": "Club / Association / Team",
+        "club_team_placeholder": "E.g. ASD Apnea Team Italia",
+        "club_team_hint": "Optional. Will be visible on your public profile."
       },
       "certifications": {
         "title": "Certifications and Insurance",

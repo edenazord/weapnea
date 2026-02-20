@@ -257,6 +257,7 @@
 		"included_not_included": "Incluso/Non Incluso",
 		"gallery_label": "Galleria",
 		"slots_full": "Posti esauriti per questo evento.",
+		"phone_required": "Inserisci il telefono nel profilo per iscriverti",
 		"event_not_free": "Questo evento non è gratuito.",
 		"date_tbd": "Data da definire",
 		"recurring_label": "Appuntamento ricorrente",
@@ -446,10 +447,14 @@
 				"instagram_placeholder": "@username",
 				"phone_label": "Numero Mobile",
 				"phone_placeholder": "Es. +39 333 1234567",
+				"phone_privacy_note": "Sarà visibile solo dall'organizzatore se ti iscrivi ad un suo evento",
 				"account_email_label": "Email account",
 				"account_email_hint": "Email usata per la registrazione (non modificabile)",
 				"bio_label": "Biografia",
-				"bio_placeholder": "Una breve Bio su di te, raccontati come apneista, come partecipante, come organizzatore,come atleta..."
+				"bio_placeholder": "Una breve Bio su di te, raccontati come apneista, come partecipante, come organizzatore,come atleta...",
+				"club_team_label": "Club / Associazione / Team",
+				"club_team_placeholder": "Es. ASD Apnea Team Italia",
+				"club_team_hint": "Facoltativo. Sarà visibile sul profilo pubblico."
 			},
 			"certifications": {
 				"title": "Certificazioni e Assicurazioni",
