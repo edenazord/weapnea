@@ -607,8 +607,8 @@ async function renderEmailWithTemplate(type, vars, fallbackSubject, fallbackHtml
         ctaUrl = tpl.contact_link || 'https://www.weapnea.com/contattaci';
         break;
       case 'event_registration_organizer':
-        ctaText = 'Apri Dashboard';
-        ctaUrl = (vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com') + '/dashboard';
+        ctaText = 'Apri Area Personale';
+        ctaUrl = (vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com') + '/profile';
         break;
     }
     

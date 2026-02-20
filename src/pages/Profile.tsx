@@ -18,7 +18,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle } from "lucide-react";
+import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle, Phone } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -1140,6 +1140,7 @@ const Profile = () => {
                         <TableHeader>
                           <TableRow>
                             <TableHead>Nome</TableHead>
+                            <TableHead>Telefono</TableHead>
                             <TableHead>Pagato il</TableHead>
                             <TableHead className="w-10"></TableHead>
                           </TableRow>
@@ -1155,6 +1156,13 @@ const Profile = () => {
                                 ) : (
                                   <span>{p.full_name || p.company_name || p.user_id}</span>
                                 )}
+                              </TableCell>
+                              <TableCell className="text-sm text-muted-foreground">
+                                {p.phone ? (
+                                  <a href={`tel:${p.phone}`} className="inline-flex items-center gap-1 hover:text-primary">
+                                    <Phone className="h-3.5 w-3.5" />{p.phone}
+                                  </a>
+                                ) : <span className="text-muted-foreground/50">—</span>}
                               </TableCell>
                               <TableCell className="text-sm text-muted-foreground">
                                 {p.paid_at ? format(parseISO(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: itLocale }) : '-'}
@@ -1253,6 +1261,9 @@ const Profile = () => {
                         }}
                         placeholder={t('profile.sections.personal_info.phone_placeholder', 'Es. +39 333 1234567')}
                       />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {t('profile.sections.personal_info.phone_privacy_note', 'Sarà visibile solo dall\'organizzatore se ti iscrivi ad un suo evento')}
+                      </p>
                     </div>
                     <div>
                       <Label htmlFor="account_email">{t('profile.sections.personal_info.account_email_label', 'Email account')}</Label>

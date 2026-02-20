@@ -772,7 +772,7 @@
     "event_registration_organizer": {
       "subject": "Registration Confirmed on WeApnea: contact the participant!",
       "greeting": "Dear Instructor,",
-      "body": "We are writing to inform you that there is a new confirmed registration for your event on WeApnea.\n\nYou can find all the details on your Dashboard, within the Personal Area dedicated to your events.\n\nWe encourage you to reach out and get in touch with the registered user.",
+      "body": "We are writing to inform you that there is a new confirmed registration for your event on WeApnea.\n\nYou can find all the details in your Personal Area dedicated to your events.\n\nWe encourage you to reach out and get in touch with the registered user.",
       "closing": "Best regards,",
       "signature": "The WeApnea Team"
     }

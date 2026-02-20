@@ -772,7 +772,7 @@
 		"event_registration_organizer": {
 			"subject": "Iscrizione Confermata su WeApnea: contatta il partecipante!",
 			"greeting": "Gentile Istruttore/Istruttrice,",
-			"body": "ti segnaliamo che c'è una nuova conferma di partecipazione al tuo evento su WeApnea.\nLo troverai sulla Dashboard nella tua Area Personale dedicata agli eventi.\nTi invitiamo a prendere contatto con l'utente iscritto.",
+			"body": "ti segnaliamo che c'è una nuova conferma di partecipazione al tuo evento su WeApnea.\nLo troverai nella tua Area Personale dedicata agli eventi.\nTi invitiamo a prendere contatto con l'utente iscritto.",
 			"closing": "Buon lavoro,",
 			"signature": "il Team di WeApnea"
 		}
