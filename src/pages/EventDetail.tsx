@@ -550,7 +550,7 @@ const EventDetail = () => {
                                         <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.remaining_spots', 'Posti rimanenti')}</p>
                                         <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>
                                             {typeof event.participants === 'number' && event.participants > 0
-                                                ? `${Math.max(0, event.participants - Number((event as any).participants_paid_count || 0))} / ${event.participants}`
+                                                ? `${Math.max(0, event.participants - Number((event as any).participants_paid_count || 0))}`
                                                 : `${Math.max(0, Number((event as any).participants_paid_count || 0))} ${t('events.enrolled', 'iscritti')}`}
                                         </p>
                                     </div>
