@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, CreditCard } from "lucide-react";
+import { Loader2, CreditCard, AlertCircle } from "lucide-react";
 import { startCheckout } from "@/lib/payments-api";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
@@ -70,6 +70,11 @@ export const EventPaymentButton = ({
   const isOrganizer = useMemo(() => {
     return Boolean(user?.id && organizerId && user.id === organizerId);
   }, [user?.id, organizerId]);
+
+  const missingPhone = useMemo(() => {
+    if (!user) return false;
+    return !user.phone || String(user.phone).trim() === '';
+  }, [user]);
 
   const handlePayment = async () => {
   if (!user) {
@@ -191,9 +196,10 @@ export const EventPaymentButton = ({
 
   return (
     <>
+    <div className="flex flex-col items-stretch gap-1">
     <Button 
       onClick={handlePayment}
-      disabled={disabled || isLoading || isAlreadyRegistered || justRegistered || isFull || isOrganizer}
+      disabled={disabled || isLoading || isAlreadyRegistered || justRegistered || isFull || isOrganizer || missingPhone}
       className={className}
     >
       {isLoading ? (
@@ -214,6 +220,17 @@ export const EventPaymentButton = ({
         </>
       )}
     </Button>
+    {missingPhone && user && !isAlreadyRegistered && !justRegistered && !isOrganizer && (
+      <button
+        type="button"
+        onClick={() => navigate('/profile')}
+        className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-800 hover:underline transition-colors cursor-pointer"
+      >
+        <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
+        {t('events.phone_required', 'Inserisci il telefono nel profilo per iscriverti')}
+      </button>
+    )}
+    </div>
 
     {/* Dialog di conferma iscrizione */}
     <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
