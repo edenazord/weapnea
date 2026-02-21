@@ -787,9 +787,9 @@ const Profile = () => {
         {/* Ruolo rimosso su richiesta */}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-0">
-          {/* Mobile: griglia icone compatta */}
-          <div className="md:hidden">
-            <div className="grid grid-cols-5 gap-1 p-1 bg-white/60 dark:bg-neutral-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-neutral-700/50 mb-3">
+          {/* Mobile: griglia icone compatta – sticky sotto la navbar */}
+          <div className="md:hidden sticky top-[57px] z-30 -mx-4 px-4 py-2 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-neutral-950 dark:via-neutral-900 dark:to-neutral-950">
+            <div className="grid grid-cols-5 gap-1 p-1 bg-white/60 dark:bg-neutral-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-neutral-700/50">
               {[
                 { value: 'events', icon: Calendar, label: t('profile.tabs.events_short', 'Eventi') },
                 { value: 'personal', icon: UserCircle, label: t('profile.tabs.personal_short', 'Profilo') },
