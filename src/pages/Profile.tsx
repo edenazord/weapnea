@@ -787,36 +787,45 @@ const Profile = () => {
         {/* Ruolo rimosso su richiesta */}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-0">
-          {/* Mobile: tabs orizzontali sopra */}
+          {/* Mobile: griglia icone compatta */}
           <div className="md:hidden">
-            <TabsList className="w-full overflow-x-auto flex gap-1 p-1">
-              <TabsTrigger value="events" className="whitespace-nowrap text-sm">
-                <Calendar className="h-4 w-4 mr-2" />
-                {t('profile.tabs.events', 'Miei eventi')}
-              </TabsTrigger>
-              <TabsTrigger value="personal" className="whitespace-nowrap text-sm">
-                <UserCircle className="h-4 w-4 mr-2" />
-                {t('profile.tabs.personal', 'Personali')}
-              </TabsTrigger>
-              <TabsTrigger value="certs" className="whitespace-nowrap text-sm">
-                <Shield className="h-4 w-4 mr-2" />
-                {t('profile.tabs.certs', 'Certificazioni')}
-              </TabsTrigger>
-              <TabsTrigger value="bests" className="whitespace-nowrap text-sm">
-                <FileText className="h-4 w-4 mr-2" />
-                {t('profile.tabs.bests', 'Record')}
-              </TabsTrigger>
-              <TabsTrigger value="visibility" className="whitespace-nowrap text-sm">
-                <Eye className="h-4 w-4 mr-2" />
-                {t('profile.tabs.visibility', 'Visibilità')}
-              </TabsTrigger>
+            <div className="grid grid-cols-5 gap-1 p-1 bg-white/60 dark:bg-neutral-800/60 backdrop-blur-sm rounded-xl border border-gray-200/50 dark:border-neutral-700/50 mb-3">
+              {[
+                { value: 'events', icon: Calendar, label: t('profile.tabs.events_short', 'Eventi') },
+                { value: 'personal', icon: UserCircle, label: t('profile.tabs.personal_short', 'Profilo') },
+                { value: 'certs', icon: Shield, label: t('profile.tabs.certs_short', 'Cert.') },
+                { value: 'bests', icon: FileText, label: t('profile.tabs.bests_short', 'Record') },
+                { value: 'visibility', icon: Eye, label: t('profile.tabs.visibility_short', 'Visib.') },
+              ].map((tab) => (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => setActiveTab(tab.value)}
+                  className={`flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg transition-all text-center ${
+                    activeTab === tab.value
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  <tab.icon className="h-4 w-4" />
+                  <span className="text-[10px] font-medium leading-none">{tab.label}</span>
+                </button>
+              ))}
               {canManageBlog && (
-                <TabsTrigger value="blog" className="whitespace-nowrap text-sm">
-                  <Pencil className="h-4 w-4 mr-2" />
-                  {t('profile.tabs.blog', 'Blog')}
-                </TabsTrigger>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('blog')}
+                  className={`flex flex-col items-center gap-0.5 py-2 px-1 rounded-lg transition-all text-center col-span-5 ${
+                    activeTab === 'blog'
+                      ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md'
+                      : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-neutral-700'
+                  }`}
+                >
+                  <Pencil className="h-4 w-4" />
+                  <span className="text-[10px] font-medium leading-none">{t('profile.tabs.blog', 'Blog')}</span>
+                </button>
               )}
-            </TabsList>
+            </div>
           </div>
 
           {/* Container unico – su desktop ha border/bg, su mobile è trasparente */}
