@@ -11,11 +11,15 @@ export default function DIdAgent() {
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    // Don't load on mobile
+    // Wait until the hook has resolved (undefined = not yet measured)
+    if (isMobile === undefined) return;
+
+    // Don't load on mobile – also clean up if previously injected
     if (isMobile) {
-      // Remove if it was previously injected (e.g. resize from desktop)
       document.querySelector('script[data-name="did-agent"]')?.remove();
       document.querySelector("did-agent")?.remove();
+      // Remove any leftover D-ID iframes / containers
+      document.querySelectorAll('[id^="did-"]').forEach((el) => el.remove());
       return;
     }
 
