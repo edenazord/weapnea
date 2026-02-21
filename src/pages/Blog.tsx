@@ -52,7 +52,7 @@ const Blog = () => {
 
   const BlogContent = () => (
     <div className="">
-      <PageTopBar />
+      {!isMobile && <PageTopBar />}
       <div className="max-w-6xl mx-auto px-4 md:px-6">
       
   <PageHeader

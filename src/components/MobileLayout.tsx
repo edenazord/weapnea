@@ -26,10 +26,9 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
     // Bottom nav: 5 icon-only items
     const bottomItems = [
         { icon: Calendar, label: t('nav.events', 'Eventi'), path: "/" },
-        { icon: MessageCircle, label: "Chat", path: "__chat__" },
-        { icon: BookOpen, label: t('nav.blog', 'Blog'), path: "/blog" },
         { icon: User, label: t('nav.profile', 'Profilo'), path: user ? "/profile" : "/auth" },
-        { icon: Menu, label: t('nav.menu', 'Menu'), path: "__menu__" },
+        { icon: BookOpen, label: t('nav.blog', 'Blog'), path: "/blog" },
+        { icon: MessageCircle, label: "Chat", path: "__chat__" },
     ];
 
     // Full menu items for the slide-out panel
@@ -155,14 +154,10 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
             <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-neutral-700 z-50 safe-area-inset-bottom shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
                 <div className="flex items-center justify-around h-14 px-1">
                     {bottomItems.map((item) => {
-                        const isCurrent = item.path === "__menu__" 
-                            ? menuOpen 
-                            : item.path === "__chat__" 
+                        const isCurrent = item.path === "__chat__" 
                                 ? chatOpen 
                                 : isActive(item.path);
-                        const handleClick = item.path === "__menu__" 
-                            ? (e: React.MouseEvent) => { e.preventDefault(); setMenuOpen(!menuOpen); }
-                            : item.path === "__chat__"
+                        const handleClick = item.path === "__chat__"
                                 ? (e: React.MouseEvent) => { e.preventDefault(); openChatList(); }
                                 : undefined;
                         
@@ -183,7 +178,7 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
                             </div>
                         );
 
-                        if (item.path === "__menu__" || item.path === "__chat__") {
+                        if (item.path === "__chat__") {
                             return (
                                 <button
                                     key={item.path}

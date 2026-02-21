@@ -450,7 +450,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
         <div className={cn(
           "fixed bg-background flex flex-col overflow-hidden",
           isMobile
-            ? "inset-0 z-[60]"
+            ? "inset-x-0 top-0 bottom-14 z-[55]"
             : "bottom-60 right-4 z-50 w-[360px] h-[500px] max-h-[70vh] border rounded-lg shadow-2xl"
         )}>
           {/* Header */}
@@ -542,7 +542,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
               {/* Input */}
               <div className={cn(
                 "border-t bg-muted/30 shrink-0",
-                isMobile ? "p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]" : "p-3"
+                isMobile ? "p-3" : "p-3"
               )}>
                 <div className="flex gap-2">
                   <Input
@@ -577,7 +577,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                   {t('chat.no_conversations', 'Nessuna conversazione. Contatta un organizzatore da un evento!')}
                 </div>
               ) : (
-                <div className={cn("divide-y", isMobile && "pb-[env(safe-area-inset-bottom)]")}>
+                <div className={cn("divide-y")}>
                   {conversations.map((conv) => (
                     <button
                       key={conv.id}
