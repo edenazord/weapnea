@@ -32,7 +32,7 @@ import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -792,7 +792,7 @@ const Profile = () => {
             <TabsList className="w-full overflow-x-auto flex gap-1 p-1">
               <TabsTrigger value="events" className="whitespace-nowrap text-sm">
                 <Calendar className="h-4 w-4 mr-2" />
-                {t('profile.tabs.events', 'Eventi')}
+                {t('profile.tabs.events', 'Miei eventi')}
               </TabsTrigger>
               <TabsTrigger value="personal" className="whitespace-nowrap text-sm">
                 <UserCircle className="h-4 w-4 mr-2" />
@@ -825,7 +825,7 @@ const Profile = () => {
             <TabsList className="hidden md:flex h-auto w-48 min-w-[12rem] flex-col items-stretch gap-0.5 bg-transparent p-3 border-r border-gray-200 dark:border-neutral-700 sticky top-20 self-start rounded-none">
               <TabsTrigger value="events" className="justify-start w-full px-3 py-2 rounded-lg text-sm">
                 <Calendar className="h-4 w-4 mr-2" />
-                {t('profile.tabs.events', 'Eventi')}
+                {t('profile.tabs.events', 'Miei eventi')}
               </TabsTrigger>
               <TabsTrigger value="personal" className="justify-start w-full px-3 py-2 rounded-lg text-sm">
                 <UserCircle className="h-4 w-4 mr-2" />
@@ -1479,97 +1479,119 @@ const Profile = () => {
                   <CardTitle>{t('profile.sections.certifications.title', 'Certificazioni e Assicurazioni')}</CardTitle>
                   {/* Descrizione rimossa su richiesta */}
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <Accordion type="single" collapsible>
-                    <AccordionItem value="assicurazione">
-                      <AccordionTrigger>
-                        <div className="flex items-center gap-2"><Shield className="h-4 w-4" /> {t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</div>
-                      </AccordionTrigger>
-                      <AccordionContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <Label htmlFor="assicurazione">{t('profile.sections.certifications.insurance_label', 'Assicurazione')}</Label>
-                            <Input
-                              id="assicurazione"
-                              value={formData.assicurazione}
-                              onChange={(e) => handleInputChange('assicurazione', e.target.value)}
-                              placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')}
-                            />
-                          </div>
-                          <div>
-                            <Label htmlFor="scadenza_assicurazione">{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
-                            <DatePicker
-                              date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined}
-                              onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))}
-                            />
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                          <div>
-                            <Label htmlFor="numero_assicurazione">{t('profile.sections.certifications.insurance_number_label', 'Numero assicurazione')}</Label>
-                            <Input
-                              id="numero_assicurazione"
-                              value={formData.numero_assicurazione}
-                              onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)}
-                              placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Inserire numero assicurazione')}
-                            />
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-3 p-3 border rounded-md mt-4">
-                          <Checkbox
-                            id="dichiarazione_assicurazione_valida"
-                            checked={Boolean(formData.dichiarazione_assicurazione_valida)}
-                            onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_assicurazione_valida: Boolean(v) }))}
-                          />
-                          <Label htmlFor="dichiarazione_assicurazione_valida" className="text-sm cursor-pointer">
-                            {t('profile.sections.certifications.insurance_declaration', 'Dichiaro di avere una copertura assicurativa in corso di validità')}
-                          </Label>
-                        </div>
+                <CardContent className="space-y-6">
 
-                        {/* Assicurazioni aggiuntive */}
-                        {insuranceEntries.length > 0 && (
-                          <div className="mt-4 space-y-3">
-                            <p className="text-sm font-medium">{t('profile.sections.certifications.other_insurances', 'Altre assicurazioni')}</p>
-                            {insuranceEntries.map((entry) => (
-                              <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
-                                <div className="flex justify-between items-start">
-                                  <span className="text-xs text-muted-foreground">#{insuranceEntries.indexOf(entry) + 1}</span>
-                                  <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}>
-                                    <X className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                  <Input
-                                    value={entry.name}
-                                    onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })}
-                                    placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')}
-                                  />
-                                  <Input
-                                    value={entry.number}
-                                    onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })}
-                                    placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Numero')}
-                                  />
-                                  <DatePicker
-                                    date={entry.expiry ? new Date(entry.expiry) : undefined}
-                                    onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })}
-                                  />
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => addCert('insurance')}>
-                          <PlusCircle className="h-4 w-4 mr-2" />
-                          {t('profile.sections.certifications.add_insurance', 'Aggiungi assicurazione')}
-                        </Button>
-                      </AccordionContent>
-                    </AccordionItem>
+                  {/* ── Assicurazione (sempre visibile, obbligatoria) ── */}
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Shield className="h-5 w-5 text-primary" />
+                      <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</h3>
+                      <Badge variant="outline" className="text-xs">{t('profile.sections.certifications.required_badge', 'Obbligatoria')}</Badge>
+                    </div>
 
-                    <AccordionItem value="medico">
-                      <AccordionTrigger>
-                        <div className="flex items-center gap-2"><FileText className="h-4 w-4" /> {t('profile.sections.certifications.accordion_medical', 'Certificato medico')}</div>
-                      </AccordionTrigger>
-                      <AccordionContent>
+                    <div className="flex items-start gap-3 p-3 border rounded-md border-primary/30 bg-primary/5">
+                      <Checkbox
+                        id="dichiarazione_assicurazione_valida"
+                        checked={Boolean(formData.dichiarazione_assicurazione_valida)}
+                        onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_assicurazione_valida: Boolean(v) }))}
+                      />
+                      <Label htmlFor="dichiarazione_assicurazione_valida" className="text-sm cursor-pointer">
+                        {t('profile.sections.certifications.insurance_declaration', 'Dichiaro di avere una copertura assicurativa in corso di validità')}
+                      </Label>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="assicurazione">{t('profile.sections.certifications.insurance_label', 'Assicurazione')}</Label>
+                        <Input
+                          id="assicurazione"
+                          value={formData.assicurazione}
+                          onChange={(e) => handleInputChange('assicurazione', e.target.value)}
+                          placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="scadenza_assicurazione">{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
+                        <DatePicker
+                          date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined}
+                          onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))}
+                        />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="numero_assicurazione">{t('profile.sections.certifications.insurance_number_label', 'Numero assicurazione')}</Label>
+                        <Input
+                          id="numero_assicurazione"
+                          value={formData.numero_assicurazione}
+                          onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)}
+                          placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Inserire numero assicurazione')}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Assicurazioni aggiuntive */}
+                    {insuranceEntries.length > 0 && (
+                      <div className="mt-2 space-y-3">
+                        <p className="text-sm font-medium">{t('profile.sections.certifications.other_insurances', 'Altre assicurazioni')}</p>
+                        {insuranceEntries.map((entry) => (
+                          <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
+                            <div className="flex justify-between items-start">
+                              <span className="text-xs text-muted-foreground">#{insuranceEntries.indexOf(entry) + 1}</span>
+                              <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}>
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                              <Input
+                                value={entry.name}
+                                onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })}
+                                placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')}
+                              />
+                              <Input
+                                value={entry.number}
+                                onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })}
+                                placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Numero')}
+                              />
+                              <DatePicker
+                                date={entry.expiry ? new Date(entry.expiry) : undefined}
+                                onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => addCert('insurance')}>
+                      <PlusCircle className="h-4 w-4 mr-2" />
+                      {t('profile.sections.certifications.add_insurance', 'Aggiungi assicurazione')}
+                    </Button>
+                  </div>
+
+                  <div className="h-px bg-border" />
+
+                  {/* ── Certificato medico (facoltativo, visibile dopo toggle) ── */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_medical', 'Certificato medico')}</h3>
+                        <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.optional_badge', 'Facoltativo')}</Badge>
+                      </div>
+                      <Switch
+                        checked={!!(formData.scadenza_certificato_medico || (formData as any)._showMedical)}
+                        onCheckedChange={(v) => {
+                          if (!v) {
+                            setFormData(prev => ({ ...prev, scadenza_certificato_medico: '', certificato_medico_tipo: '', _showMedical: false } as any));
+                          } else {
+                            setFormData(prev => ({ ...prev, _showMedical: true } as any));
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {(formData.scadenza_certificato_medico || (formData as any)._showMedical) && (
+                      <div className="space-y-4 pl-1">
                         <div>
                           <Label htmlFor="scadenza_certificato_medico">{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
                           <div className="mt-1 flex items-center gap-3">
@@ -1604,7 +1626,7 @@ const Profile = () => {
 
                         {/* Certificati medici aggiuntivi */}
                         {medicalEntries.length > 0 && (
-                          <div className="mt-4 space-y-3">
+                          <div className="mt-2 space-y-3">
                             <p className="text-sm font-medium">{t('profile.sections.certifications.other_medicals', 'Altri certificati medici')}</p>
                             {medicalEntries.map((entry) => (
                               <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
@@ -1634,18 +1656,38 @@ const Profile = () => {
                             ))}
                           </div>
                         )}
-                        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => addCert('medical')}>
+                        <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => addCert('medical')}>
                           <PlusCircle className="h-4 w-4 mr-2" />
                           {t('profile.sections.certifications.add_medical', 'Aggiungi certificato medico')}
                         </Button>
-                      </AccordionContent>
-                    </AccordionItem>
+                      </div>
+                    )}
+                  </div>
 
-                    <AccordionItem value="brevetto">
-                      <AccordionTrigger>
-                        <div className="flex items-center gap-2"><FileText className="h-4 w-4" /> {t('profile.sections.certifications.accordion_brevetto', 'Brevetto (opzionale)')}</div>
-                      </AccordionTrigger>
-                      <AccordionContent>
+                  <div className="h-px bg-border" />
+
+                  {/* ── Brevetto (facoltativo, visibile dopo toggle) ── */}
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_brevetto', 'Brevetto')}</h3>
+                        <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.optional_badge', 'Facoltativo')}</Badge>
+                      </div>
+                      <Switch
+                        checked={!!(formData.brevetto?.trim() || formData.dichiarazione_brevetto_valido || (formData as any)._showBrevetto)}
+                        onCheckedChange={(v) => {
+                          if (!v) {
+                            setFormData(prev => ({ ...prev, brevetto: '', didattica_brevetto: '', numero_brevetto: '', foto_brevetto_url: '', scadenza_brevetto: '', dichiarazione_brevetto_valido: false, _showBrevetto: false } as any));
+                          } else {
+                            setFormData(prev => ({ ...prev, _showBrevetto: true } as any));
+                          }
+                        }}
+                      />
+                    </div>
+
+                    {(formData.brevetto?.trim() || formData.dichiarazione_brevetto_valido || (formData as any)._showBrevetto) && (
+                      <div className="space-y-4 pl-1">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="brevetto">{t('profile.sections.certifications.brevetto_label', 'Brevetto')}</Label>
@@ -1664,7 +1706,7 @@ const Profile = () => {
                             />
                           </div>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
                             <Label htmlFor="didattica_brevetto">{t('profile.sections.certifications.brevetto_didattica_label', 'Didattica brevetto')}</Label>
                             <Input
@@ -1684,7 +1726,7 @@ const Profile = () => {
                             />
                           </div>
                         </div>
-                        <div className="space-y-2 mt-4">
+                        <div className="space-y-2">
                           <Label>{t('profile.sections.certifications.brevetto_photo_label', 'Foto brevetto')}</Label>
                           <ImageUpload
                             currentImageUrl={formData.foto_brevetto_url || undefined}
@@ -1692,7 +1734,7 @@ const Profile = () => {
                             onImageRemoved={() => handleInputChange('foto_brevetto_url', '')}
                           />
                         </div>
-                        <div className="flex items-start gap-3 p-3 border rounded-md mt-4">
+                        <div className="flex items-start gap-3 p-3 border rounded-md">
                           <Checkbox
                             id="dichiarazione_brevetto_valido"
                             checked={Boolean(formData.dichiarazione_brevetto_valido)}
@@ -1705,7 +1747,7 @@ const Profile = () => {
 
                         {/* Brevetti aggiuntivi */}
                         {certificateEntries.length > 0 && (
-                          <div className="mt-4 space-y-3">
+                          <div className="mt-2 space-y-3">
                             <p className="text-sm font-medium">{t('profile.sections.certifications.other_certificates', 'Altri brevetti / certificazioni')}</p>
                             {certificateEntries.map((entry) => (
                               <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
@@ -1735,13 +1777,14 @@ const Profile = () => {
                             ))}
                           </div>
                         )}
-                        <Button type="button" variant="outline" size="sm" className="mt-3" onClick={() => addCert('certificate')}>
+                        <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => addCert('certificate')}>
                           <PlusCircle className="h-4 w-4 mr-2" />
                           {t('profile.sections.certifications.add_certificate', 'Aggiungi brevetto')}
                         </Button>
-                      </AccordionContent>
-                    </AccordionItem>
-                  </Accordion>
+                      </div>
+                    )}
+                  </div>
+
                 </CardContent>
               </Card>
 
