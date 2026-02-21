@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useIsMobile } from '@/hooks/useIsMobile';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { it, enUS } from 'date-fns/locale';
@@ -97,6 +98,7 @@ interface ChatWidgetProps {
 export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWidgetProps) {
   const { t, currentLanguage } = useLanguage();
   const { user } = useAuth();
+  const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
@@ -412,17 +414,26 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       {!isOpen && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-60 right-4 z-50 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 hover:from-blue-600 hover:to-purple-700 flex items-center gap-2"
+          className={cn(
+            "fixed z-50 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center",
+            isMobile
+              ? "bottom-20 right-3 w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white"
+              : "bottom-60 right-4 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:from-blue-600 hover:to-purple-700 gap-2"
+          )}
           aria-label={t('chat.open', 'Apri messaggi')}
         >
-          <img 
-            src="/images/weapnea-logo.png" 
-            alt="" 
-            className="w-7 h-7 rounded-full bg-white/20 p-0.5"
-            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-          />
-          <span className="font-semibold text-sm">Community Chat</span>
-          <MessageCircle className="w-5 h-5" />
+          {!isMobile && (
+            <>
+              <img
+                src="/images/weapnea-logo.png"
+                alt=""
+                className="w-7 h-7 rounded-full bg-white/20 p-0.5"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+              <span className="font-semibold text-sm">Community Chat</span>
+            </>
+          )}
+          <MessageCircle className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
           {unreadTotal > 0 && (
             <Badge className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs">
               {unreadTotal > 99 ? '99+' : unreadTotal}
@@ -433,7 +444,12 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
 
       {/* Chat panel */}
       {isOpen && (
-        <div className="fixed bottom-60 right-4 z-50 w-[360px] h-[500px] max-h-[70vh] bg-background border rounded-lg shadow-2xl flex flex-col overflow-hidden">
+        <div className={cn(
+          "fixed z-50 bg-background border shadow-2xl flex flex-col overflow-hidden",
+          isMobile
+            ? "inset-0"
+            : "bottom-60 right-4 w-[360px] h-[500px] max-h-[70vh] rounded-lg"
+        )}>
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/50">
             {activeConversation ? (

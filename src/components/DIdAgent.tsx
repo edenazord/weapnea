@@ -1,12 +1,24 @@
 import { useEffect } from "react";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 /**
  * Loads the D-ID AI Agent widget dynamically inside the React SPA.
  * This ensures the script runs after the DOM is ready and avoids
  * issues with Vite's dev server or SPA navigation stripping the tag.
+ * The widget is hidden on mobile devices.
  */
 export default function DIdAgent() {
+  const isMobile = useIsMobile();
+
   useEffect(() => {
+    // Don't load on mobile
+    if (isMobile) {
+      // Remove if it was previously injected (e.g. resize from desktop)
+      document.querySelector('script[data-name="did-agent"]')?.remove();
+      document.querySelector("did-agent")?.remove();
+      return;
+    }
+
     // Avoid duplicates
     if (document.querySelector('script[data-name="did-agent"]')) return;
 
@@ -30,7 +42,7 @@ export default function DIdAgent() {
       // Also remove the widget element if D-ID injected one
       document.querySelector("did-agent")?.remove();
     };
-  }, []);
+  }, [isMobile]);
 
   return null;
 }

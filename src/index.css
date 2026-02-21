@@ -275,3 +275,12 @@ did-agent,
 #did-agent {
   z-index: 40 !important;
 }
+
+/* Hide D-ID agent entirely on mobile */
+@media (max-width: 767px) {
+  did-agent,
+  [data-name="did-agent"],
+  #did-agent {
+    display: none !important;
+  }
+}
