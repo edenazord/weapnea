@@ -864,24 +864,24 @@ const Profile = () => {
             <div className="flex-1 min-w-0 md:p-5 md:bg-gray-50/40 md:dark:bg-neutral-950/20">
               <form onSubmit={handleSubmit}>
             <TabsContent value="events">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('profile.sections.my_events.title', 'I Miei Eventi')}</CardTitle>
+              <Card className="border-0 md:border shadow-none md:shadow-sm">
+                <CardHeader className="px-1 md:px-6 pb-3 md:pb-6">
+                  <CardTitle className="text-lg md:text-xl">{t('profile.sections.my_events.title', 'I Miei Eventi')}</CardTitle>
                   <CardDescription>
                     {t('profile.sections.my_events.description', 'Gestisci i tuoi eventi e crea nuovi eventi')}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="px-1 md:px-6">
                   {/* Sotto-tab interne alla sezione Eventi */}
                   <div className="mb-6" role="tablist" aria-label="Sotto sezione eventi">
-                    <div className="inline-flex rounded-md shadow-sm overflow-hidden border border-purple-200 bg-white dark:bg-neutral-900">
+                    <div className="inline-flex rounded-md shadow-sm overflow-hidden border border-purple-200 bg-white dark:bg-neutral-900 w-full md:w-auto">
                       <button
                         type="button"
                         role="tab"
                         aria-selected={!showOrganizer}
                         onClick={() => setShowOrganizer(false)}
                         className={
-                          `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60
+                          `flex-1 md:flex-none px-3 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60
                           ${!showOrganizer
                             ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
                             : 'bg-transparent text-purple-700 hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-800/30'}
@@ -906,7 +906,7 @@ const Profile = () => {
                             setShowMissingFieldsModal(true);
                           }}
                           className={
-                            `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
+                            `flex-1 md:flex-none px-3 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
                             bg-transparent text-purple-700 hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-800/30`
                           }
                         >
@@ -919,7 +919,7 @@ const Profile = () => {
                           aria-selected={showOrganizer}
                           onClick={() => setShowOrganizer(true)}
                           className={
-                            `px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
+                            `flex-1 md:flex-none px-3 md:px-4 py-2 text-xs md:text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-500/60 border-l border-purple-200
                             ${showOrganizer
                               ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white'
                               : 'bg-transparent text-purple-700 hover:bg-purple-50 dark:text-purple-300 dark:hover:bg-purple-800/30'}
@@ -938,35 +938,30 @@ const Profile = () => {
                       participations.length > 0 ? (
                         <div className="grid gap-4">
                           {participations.map((p) => (
-                            <div key={p.id} className="flex items-center justify-between p-4 border rounded-lg">
-                              <div className="flex items-center gap-4">
+                            <div key={p.id} className="flex flex-col md:flex-row md:items-center justify-between gap-3 p-4 border rounded-lg">
+                              <div className="flex items-start gap-3 min-w-0">
                                 {p.events.image_url && (
-                                  <img src={p.events.image_url} alt={p.events.title} className="w-16 h-16 object-cover rounded-lg" />
+                                  <img src={p.events.image_url} alt={p.events.title} className="w-14 h-14 md:w-16 md:h-16 object-cover rounded-lg flex-shrink-0" />
                                 )}
-                                <div>
-                                  <h3 className="font-semibold">{p.events.title}</h3>
-                                  <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                                    <Calendar className="h-4 w-4" />
+                                <div className="min-w-0">
+                                  <h3 className="font-semibold text-sm md:text-base truncate">{p.events.title}</h3>
+                                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs md:text-sm text-muted-foreground mt-1">
+                                    <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />
                                     {p.events.fixed_appointment === true
                                       ? ((p.events.fixed_appointment_text && p.events.fixed_appointment_text.trim()) || t('events.recurring_label', 'Appuntamento ricorrente'))
-                                      : formatEventDate(p.events.date, p.events.end_date)}
+                                      : formatEventDate(p.events.date, p.events.end_date)}</span>
                                     {p.events.location && (
-                                      <>
-                                        <MapPin className="h-4 w-4 ml-2" />
-                                        {p.events.location}
-                                      </>
+                                      <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{p.events.location}</span>
                                     )}
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Button asChild variant="outline" size="sm">
-                                  <Link to={buildFriendlyEventPath(p.events.slug)}>
-                                    <Eye className="h-4 w-4 mr-1" />
-                                    {t('common.view', 'Visualizza')}
-                                  </Link>
-                                </Button>
-                              </div>
+                              <Button asChild variant="outline" size="sm" className="self-start md:self-center flex-shrink-0">
+                                <Link to={buildFriendlyEventPath(p.events.slug)}>
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  {t('common.view', 'Visualizza')}
+                                </Link>
+                              </Button>
                             </div>
                           ))}
                         </div>
@@ -1022,22 +1017,25 @@ const Profile = () => {
                               <div key={ev.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
                                 <div className="flex items-start justify-between gap-3">
                                   <div className="flex-1 min-w-0">
-                                    <Link to={buildFriendlyEventPath(ev.slug)} className="font-semibold text-base hover:underline truncate block">{ev.title}</Link>
-                                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5 text-sm text-muted-foreground">
+                                    <Link to={buildFriendlyEventPath(ev.slug)} className="font-semibold text-sm md:text-base hover:underline truncate block">{ev.title}</Link>
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs md:text-sm text-muted-foreground">
                                       <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{formatEventWithFixed(ev)}</span>
                                       {ev.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{ev.location}</span>}
                                       {!eventsFreeMode && ev.cost != null && ev.cost > 0 && <span className="font-medium text-foreground">€{Number(ev.cost).toFixed(2)}</span>}
                                     </div>
                                   </div>
                                   <div className="flex items-center gap-1 flex-shrink-0">
-                                    <Button type="button" size="sm" variant="outline" className="gap-1.5" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
+                                    <Button type="button" size="sm" variant="outline" className="gap-1 hidden md:inline-flex" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
                                       <Users className="h-4 w-4" />
                                       <span className="font-semibold">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</span>
                                     </Button>
-                                    <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_edit', 'Modifica')} onClick={() => openEditEvent(ev)}>
+                                    <Button type="button" size="icon" variant="outline" className="md:hidden h-8 w-8" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
+                                      <Users className="h-4 w-4" />
+                                    </Button>
+                                    <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_edit', 'Modifica')} onClick={() => openEditEvent(ev)} className="h-8 w-8">
                                       <Pencil className="h-4 w-4" />
                                     </Button>
-                                    <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_delete', 'Elimina')} onClick={() => handleDeleteEvent(ev.id, ev.title)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                    <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_delete', 'Elimina')} onClick={() => handleDeleteEvent(ev.id, ev.title)} className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8">
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </div>
@@ -1141,6 +1139,9 @@ const Profile = () => {
                     {participantsLoading ? (
                       <div className="py-8 text-center text-muted-foreground text-sm">Caricamento iscritti...</div>
                     ) : participants.length > 0 ? (
+                      <>
+                      {/* Desktop: Table */}
+                      <div className="hidden md:block">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -1197,7 +1198,6 @@ const Profile = () => {
                                       try {
                                         await removeEventParticipant(participantsEventId, p.user_id);
                                         toast({ title: "Partecipante rimosso", description: "L'utente è stato rimosso dall'evento." });
-                                        // Aggiorna la lista
                                         setParticipants(prev => prev.filter(part => part.user_id !== p.user_id));
                                       } catch (e) {
                                         toast({ title: "Errore", description: "Impossibile rimuovere il partecipante", variant: "destructive" });
@@ -1212,6 +1212,67 @@ const Profile = () => {
                           ))}
                         </TableBody>
                       </Table>
+                      </div>
+                      {/* Mobile: Card layout */}
+                      <div className="md:hidden space-y-3">
+                        {participants.map(p => (
+                          <div key={p.id} className="border rounded-lg p-3 space-y-2">
+                            <div className="flex items-center justify-between">
+                              <div className="font-semibold text-sm truncate min-w-0">
+                                {p.public_profile_enabled && p.public_slug ? (
+                                  <Link className="underline" to={`/profile/${p.public_slug}`} target="_blank" rel="noreferrer">
+                                    {p.full_name || p.company_name || p.user_id}
+                                  </Link>
+                                ) : (
+                                  <span>{p.full_name || p.company_name || p.user_id}</span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 flex-shrink-0">
+                                {user?.id !== p.user_id && (
+                                  <button
+                                    type="button"
+                                    className="p-2 rounded hover:bg-blue-50 text-blue-600"
+                                    title="Chatta"
+                                    onClick={() => {
+                                      openChat(p.user_id, participantsEventId);
+                                      setParticipantsOpen(false);
+                                    }}
+                                  >
+                                    <MessageCircle className="h-4 w-4" />
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  className="p-2 rounded hover:bg-red-50 text-red-600"
+                                  title="Rimuovi"
+                                  onClick={async () => {
+                                    const confirmed = window.confirm(`Rimuovere ${p.full_name || 'questo partecipante'}?`);
+                                    if (!confirmed) return;
+                                    try {
+                                      await removeEventParticipant(participantsEventId, p.user_id);
+                                      toast({ title: "Partecipante rimosso", description: "L'utente è stato rimosso dall'evento." });
+                                      setParticipants(prev => prev.filter(part => part.user_id !== p.user_id));
+                                    } catch (e) {
+                                      toast({ title: "Errore", description: "Impossibile rimuovere il partecipante", variant: "destructive" });
+                                    }
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </button>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                              {p.phone ? (
+                                <a href={`tel:${p.phone}`} className="inline-flex items-center gap-1 hover:text-primary">
+                                  <Phone className="h-3.5 w-3.5" />{p.phone}
+                                </a>
+                              ) : null}
+                              <span>{p.paid_at ? `Pagato: ${format(parseISO(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: itLocale })}` : 'Non pagato'}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      </>
                     ) : (
                       <div className="py-8 text-center text-muted-foreground text-sm">Nessun iscritto al momento.</div>
                     )}
@@ -1221,14 +1282,14 @@ const Profile = () => {
             </TabsContent>
 
             <TabsContent value="personal">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('profile.sections.personal_info.title', 'Informazioni Personali')}</CardTitle>
+              <Card className="border-0 md:border shadow-none md:shadow-sm">
+                <CardHeader className="px-1 md:px-6 pb-3 md:pb-6">
+                  <CardTitle className="text-lg md:text-xl">{t('profile.sections.personal_info.title', 'Informazioni Personali')}</CardTitle>
                   <CardDescription>
                     {t('profile.sections.personal_info.description', 'Aggiorna le tue informazioni personali e di contatto')}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-6 px-1 md:px-6">
                   <AvatarUpload
                     currentAvatarUrl={formData.avatar_url}
                     onAvatarUpdate={handleAvatarUpdate}
@@ -1315,14 +1376,14 @@ const Profile = () => {
 
             {/* Visibilità - nuova tab dedicata (resa disponibile per tutti i ruoli) */}
             <TabsContent value="visibility">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('profile.sections.visibility.title', 'Visibilità')}</CardTitle>
+                <Card className="border-0 md:border shadow-none md:shadow-sm">
+                  <CardHeader className="px-1 md:px-6 pb-3 md:pb-6">
+                    <CardTitle className="text-lg md:text-xl">{t('profile.sections.visibility.title', 'Visibilità')}</CardTitle>
                     <CardDescription>
                       {t('profile.sections.visibility.description', 'Rendi visibile una pagina pubblica del tuo profilo su un URL parlante. Puoi scegliere cosa mostrare.')}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-5">
+                  <CardContent className="space-y-5 px-1 md:px-6">
                     <div className="flex items-center justify-between py-2">
                       <div>
                         <Label htmlFor="public_profile_enabled">{t('profile.sections.visibility.enable_public_profile', 'Attiva profilo pubblico')}</Label>
@@ -1386,7 +1447,7 @@ const Profile = () => {
                       {isEditingSlug && (
                         <p className="text-xs text-amber-600 mt-1">{t('profile.sections.visibility.slug_change_warning', 'Attenzione: cambiare lo slug modificherà il tuo URL pubblico. Il vecchio URL sarà reindirizzato automaticamente.')}</p>
                       )}
-                      <div className="flex items-center gap-3 mt-2">
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
                         <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.public_url_prefix', 'URL: /profile/')}{formData.public_slug || '<slug>'}</p>
                         {formData.public_profile_enabled && (isEditingSlug || !user?.public_slug) && (
                           slugStatus === 'checking' ? (
@@ -1399,34 +1460,34 @@ const Profile = () => {
                             <span className="text-xs text-amber-600">{t('profile.sections.visibility.slug_error', 'Impossibile verificare ora (server non raggiungibile)')}</span>
                           ) : null
                         )}
-                        {formData.public_profile_enabled && formData.public_slug && (
-                          <>
-                            <Button asChild size="sm" variant="outline">
-                              <Link to={`/profile/${formData.public_slug}`}>{t('profile.sections.visibility.open_public_profile', 'Apri profilo pubblico')}</Link>
-                            </Button>
-                            <Button
-                              size="sm"
-                              type="button"
-                              variant="secondary"
-                              onClick={() => {
-                                const url = `${window.location.origin}/profile/${formData.public_slug}`;
-                                navigator.clipboard.writeText(url).then(() => {
-                                  toast({ title: t('profile.sections.visibility.link_copied_title', 'Link copiato'), description: t('profile.sections.visibility.link_copied_desc', 'URL del profilo pubblico copiato negli appunti.') });
-                                }).catch(() => {
-                                  toast({ title: t('profile.sections.visibility.copy_failed_title', 'Impossibile copiare'), description: 'Copia manualmente questo URL: ' + url });
-                                });
-                              }}
-                            >
-                              {t('profile.sections.visibility.copy_link', 'Copia link')}
-                            </Button>
-                          </>
-                        )}
                       </div>
+                      {formData.public_profile_enabled && formData.public_slug && (
+                        <div className="flex flex-wrap gap-2 mt-2">
+                          <Button asChild size="sm" variant="outline">
+                            <Link to={`/profile/${formData.public_slug}`}>{t('profile.sections.visibility.open_public_profile', 'Apri profilo pubblico')}</Link>
+                          </Button>
+                          <Button
+                            size="sm"
+                            type="button"
+                            variant="secondary"
+                            onClick={() => {
+                              const url = `${window.location.origin}/profile/${formData.public_slug}`;
+                              navigator.clipboard.writeText(url).then(() => {
+                                toast({ title: t('profile.sections.visibility.link_copied_title', 'Link copiato'), description: t('profile.sections.visibility.link_copied_desc', 'URL del profilo pubblico copiato negli appunti.') });
+                              }).catch(() => {
+                                toast({ title: t('profile.sections.visibility.copy_failed_title', 'Impossibile copiare'), description: 'Copia manualmente questo URL: ' + url });
+                              });
+                            }}
+                          >
+                            {t('profile.sections.visibility.copy_link', 'Copia link')}
+                          </Button>
+                        </div>
+                      )}
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="flex items-center justify-between border rounded-md p-3">
-                        <div>
+                    <div className="grid grid-cols-1 gap-3">
+                      <div className="flex items-center justify-between border rounded-md p-3 gap-3">
+                        <div className="min-w-0">
                           <Label htmlFor="public_show_events">{t('profile.sections.visibility.show_events', 'Mostra Eventi')}</Label>
                           <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_events_desc', 'Rende visibile la sezione Eventi nella pagina pubblica')}</p>
                         </div>
@@ -1438,8 +1499,8 @@ const Profile = () => {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between border rounded-md p-3">
-                        <div>
+                      <div className="flex items-center justify-between border rounded-md p-3 gap-3">
+                        <div className="min-w-0">
                           <Label htmlFor="public_show_personal">{t('profile.sections.visibility.show_personal', 'Mostra Personali')}</Label>
                           <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_personal_desc', 'Bio, Instagram e info aziendali (se presenti)')}</p>
                         </div>
@@ -1451,8 +1512,8 @@ const Profile = () => {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between border rounded-md p-3">
-                        <div>
+                      <div className="flex items-center justify-between border rounded-md p-3 gap-3">
+                        <div className="min-w-0">
                           <Label htmlFor="public_show_certifications">{t('profile.sections.visibility.show_certifications', 'Mostra Certificazioni')}</Label>
                           <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_certifications_desc', 'Brevetto e assicurazione')}</p>
                         </div>
@@ -1464,8 +1525,8 @@ const Profile = () => {
                         />
                       </div>
 
-                      <div className="flex items-center justify-between border rounded-md p-3">
-                        <div>
+                      <div className="flex items-center justify-between border rounded-md p-3 gap-3">
+                        <div className="min-w-0">
                           <Label htmlFor="public_show_records">{t('profile.sections.visibility.show_records', 'Mostra Record')}</Label>
                           <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.show_records_desc', 'Record personali dalla sezione Record')}</p>
                         </div>
@@ -1483,12 +1544,12 @@ const Profile = () => {
               </TabsContent>
 
             <TabsContent value="certs">
-              <Card>
-                  <CardHeader>
-                  <CardTitle>{t('profile.sections.certifications.title', 'Certificazioni e Assicurazioni')}</CardTitle>
+              <Card className="border-0 md:border shadow-none md:shadow-sm">
+                  <CardHeader className="px-1 md:px-6 pb-3 md:pb-6">
+                  <CardTitle className="text-lg md:text-xl">{t('profile.sections.certifications.title', 'Certificazioni e Assicurazioni')}</CardTitle>
                   {/* Descrizione rimossa su richiesta */}
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="space-y-6 px-1 md:px-6">
 
                   {/* ── Assicurazione (sempre visibile, obbligatoria) ── */}
                   <div className="space-y-4">
@@ -1800,24 +1861,27 @@ const Profile = () => {
             </TabsContent>
 
             <TabsContent value="bests">
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t('profile.sections.personal_bests.title', 'Record Personali')}</CardTitle>
+              <Card className="border-0 md:border shadow-none md:shadow-sm">
+                <CardHeader className="px-1 md:px-6 pb-3 md:pb-6">
+                  <CardTitle className="text-lg md:text-xl">{t('profile.sections.personal_bests.title', 'Record Personali')}</CardTitle>
                   <CardDescription>
                     {t('profile.sections.personal_bests.description', 'Registra i tuoi migliori risultati in apnea')}
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex justify-between items-center">
+                <CardContent className="space-y-4 px-1 md:px-6">
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2">
                     <p className="text-sm text-muted-foreground">
                       {t('profile.sections.personal_bests.helper', 'Inserisci i tuoi migliori risultati: tempo in mm:ss per STA, metri per le altre discipline.')}
                     </p>
                     {bestEntries.length < DISCIPLINE_CODES.length && (
-                      <Button type="button" variant="outline" onClick={addBest}>
+                      <Button type="button" variant="outline" size="sm" onClick={addBest} className="flex-shrink-0">
                         {t('profile.sections.personal_bests.add', 'Aggiungi record')}
                       </Button>
                     )}
                   </div>
+
+                  {/* Desktop: Table */}
+                  <div className="hidden md:block">
                   <Table>
                     {bestEntries.length === 0 && (
                       <TableCaption>{t('profile.sections.personal_bests.empty', 'Nessun record inserito. Aggiungi il primo!')}</TableCaption>
@@ -1894,6 +1958,52 @@ const Profile = () => {
                       })}
                     </TableBody>
                   </Table>
+                  </div>
+
+                  {/* Mobile: Card layout */}
+                  <div className="md:hidden space-y-3">
+                    {bestEntries.length === 0 && (
+                      <p className="text-sm text-muted-foreground text-center py-4">{t('profile.sections.personal_bests.empty', 'Nessun record inserito. Aggiungi il primo!')}</p>
+                    )}
+                    {bestEntries.map((entry, idx) => {
+                      const used = new Set(bestEntries.map((b, i) => i === idx ? undefined : b.discipline));
+                      const invalid = !isValidBest(entry);
+                      const placeholder = (() => {
+                        const d = DISCIPLINE_CODES.find(d => d.code === entry.discipline);
+                        return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_placeholder', 'es. 4:30') : t('profile.sections.personal_bests.meters_placeholder', 'es. 75');
+                      })();
+                      return (
+                        <div key={idx} className="border rounded-lg p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs text-muted-foreground font-medium">#{idx + 1}</span>
+                            <div className="flex items-center gap-1">
+                              <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={idx === 0} onClick={() => moveBest(idx, 'up')}>▲</Button>
+                              <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={idx === bestEntries.length - 1} onClick={() => moveBest(idx, 'down')}>▼</Button>
+                              <Button type="button" variant="destructive" size="sm" className="h-7 px-2 text-xs" onClick={() => removeBest(idx)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                            </div>
+                          </div>
+                          <Select value={entry.discipline} onValueChange={(v) => handleBestChange(idx, { discipline: v as BestDiscipline })}>
+                            <SelectTrigger className="select-trigger">
+                              <SelectValue placeholder={t('profile.sections.personal_bests.discipline_placeholder', 'Seleziona disciplina')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {DISCIPLINE_CODES.map(d => (
+                                <SelectItem key={d.code} value={d.code} disabled={used.has(d.code)}>
+                                  {t(`profile.sections.personal_bests.disciplines.${d.labelKey}`, d.labelKey)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Input
+                            value={entry.value}
+                            onChange={(e) => handleBestChange(idx, { value: e.target.value })}
+                            placeholder={placeholder}
+                            className={invalid && entry.value ? 'border-destructive' : ''}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
@@ -1903,14 +2013,14 @@ const Profile = () => {
 
             {canManageBlog && (
               <TabsContent value="blog">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>{t('profile.sections.blog.title', 'Gestione Articoli Blog')}</CardTitle>
+                <Card className="border-0 md:border shadow-none md:shadow-sm">
+                  <CardHeader className="px-1 md:px-6 pb-3 md:pb-6">
+                    <CardTitle className="text-lg md:text-xl">{t('profile.sections.blog.title', 'Gestione Articoli Blog')}</CardTitle>
                     <CardDescription>
                       {t('profile.sections.blog.description', 'Crea, modifica e gestisci i tuoi articoli del blog')}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-1 md:px-6">
                     <BlogManager />
                   </CardContent>
                 </Card>
