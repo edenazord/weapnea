@@ -1296,26 +1296,21 @@ app.put('/api/profile', requireAuth, async (req, res) => {
           // Load previous slug (if any)
           const { rows: cur } = await pool.query('SELECT public_slug FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
           const prevSlug = (cur[0]?.public_slug || '').toLowerCase() || null;
-          // Immutabilità: se esiste già un prevSlug, ignora silenziosamente modifiche allo slug (non bloccare l'update)
-          if (prevSlug) {
-            // Rimuovi public_slug dai campi da aggiornare, mantieni quello esistente
-            const slugIdx = fields.indexOf('public_slug');
-            if (slugIdx !== -1) {
-              fields.splice(slugIdx, 1);
-              values.splice(slugIdx, 1);
-            }
-            // Ricostruisci la query senza lo slug
-            if (fields.length === 0) {
-              // Nessun altro campo da aggiornare, restituisci il profilo attuale
-              const { rows } = await pool.query('SELECT * FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
-              return rows;
-            }
-            const newSets = fields.map((k,i)=> {
-              if (k === 'personal_best' || k === 'other_certifications') return `${k} = $${i+1}::jsonb`;
-              return `${k} = $${i+1}`;
-            }).join(', ');
-            const newSql = `UPDATE profiles SET ${newSets}, updated_at = now() WHERE id = $${fields.length+1} RETURNING *`;
-            const { rows } = await pool.query(newSql, [...values, req.user.id]);
+          // Se lo slug non è cambiato, nessuna azione speciale
+          if (prevSlug && newSlug && prevSlug === newSlug) {
+            // Slug invariato, procedi normalmente
+            const { rows } = await pool.query(sql, [...values, req.user.id]);
+            return rows;
+          }
+          // Cambio slug: claim atomico del nuovo + alias di redirect dal vecchio
+          if (prevSlug && newSlug && prevSlug !== newSlug) {
+            const r = await claimSlugAtomic(req.user.id, newSlug);
+            if (!r.ok && r.conflict) return res.status(409).json({ error: 'public_slug conflict' });
+            // Registra alias di redirect dal vecchio slug al nuovo
+            try { await setSlugAlias(prevSlug, newSlug); } catch (e) { console.warn('[slug] alias set failed:', e?.message || e); }
+            // Rilascia il vecchio slug claim
+            try { await pool.query(`DELETE FROM public.app_settings WHERE key = $1`, [PP_SLUG_KEY(prevSlug)]); } catch {}
+            const { rows } = await pool.query(sql, [...values, req.user.id]);
             return rows;
           }
           // Prima assegnazione: claim atomico

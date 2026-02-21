@@ -20,7 +20,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle, Phone } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -69,9 +69,16 @@ const Profile = () => {
   const isMobile = useIsMobile();
   const { t } = useLanguage();
   const { openChat } = useChatStore();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const canManageBlog = user?.role === 'admin' || user?.role === 'creator' || user?.role === 'blogger';
-  const [activeTab, setActiveTab] = useState("events");
+  const VALID_TABS = ['events', 'personal', 'certs', 'bests', 'visibility', 'blog'];
+  const initialTab = (() => {
+    const hash = location.hash?.replace('#', '');
+    return hash && VALID_TABS.includes(hash) ? hash : 'events';
+  })();
+  const [activeTab, setActiveTab] = useState(initialTab);
   const [eventsFreeMode, setEventsFreeMode] = useState(true); // default true per sicurezza
   // Stato locale per mostrare vista organizzazione dentro la tab Eventi
   const [showOrganizer, setShowOrganizer] = useState(false);
@@ -112,7 +119,29 @@ const Profile = () => {
   const [bestEntries, setBestEntries] = useState<BestEntry[]>([]);
   const [certEntries, setCertEntries] = useState<CertEntry[]>([]);
   const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken" | "error">("idle");
+  const [isEditingSlug, setIsEditingSlug] = useState(false);
   const debouncedPublicSlug = useDebounce(formData.public_slug, 400);
+
+  // Sync activeTab -> URL hash
+  useEffect(() => {
+    const hash = activeTab && activeTab !== 'events' ? `#${activeTab}` : '';
+    const currentHash = location.hash || '';
+    if (hash !== currentHash) {
+      navigate({ hash }, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  // Sync URL hash -> activeTab (browser back/forward)
+  useEffect(() => {
+    const hash = location.hash?.replace('#', '');
+    if (hash && VALID_TABS.includes(hash) && hash !== activeTab) {
+      setActiveTab(hash);
+    } else if (!hash && activeTab !== 'events') {
+      setActiveTab('events');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.hash]);
 
   type EventItem = {
     id: string;
@@ -460,7 +489,6 @@ const Profile = () => {
     let cancelled = false;
     async function check() {
       if (!formData.public_profile_enabled) { setSlugStatus('idle'); return; }
-      if (user?.public_slug) { setSlugStatus('available'); return; }
       const slug = debouncedPublicSlug?.trim();
       if (!slug) { setSlugStatus('idle'); return; }
       // Se lo slug corrente coincide con quello già assegnato all'utente, non verifichiamo
@@ -468,6 +496,8 @@ const Profile = () => {
         setSlugStatus('available');
         return;
       }
+      // Se ha già uno slug ma non sta editando, mostra available
+      if (user?.public_slug && !isEditingSlug) { setSlugStatus('available'); return; }
       setSlugStatus('checking');
       try {
         // Usa endpoint dedicato di availability
@@ -488,7 +518,7 @@ const Profile = () => {
     }
     check();
     return () => { cancelled = true; };
-  }, [debouncedPublicSlug, formData.public_profile_enabled, user?.id, user?.public_slug]);
+  }, [debouncedPublicSlug, formData.public_profile_enabled, user?.id, user?.public_slug, isEditingSlug]);
 
   useEffect(() => {
     const loadParticipations = async () => {
@@ -611,8 +641,8 @@ const Profile = () => {
     try {
       // Autogenera slug se visibilità attiva e slug mancante
       let computedSlug = formData.public_slug?.trim() ? slugify(formData.public_slug) : "";
-      // Se lo slug è già stato assegnato, usa quello esistente (il server ignorerà modifiche)
-      if (user?.public_slug) {
+      // Se lo slug è già stato assegnato e non lo stiamo editando, usa quello esistente
+      if (user?.public_slug && !isEditingSlug) {
         computedSlug = String(user.public_slug);
       }
       if (formData.public_profile_enabled && !computedSlug) {
@@ -622,7 +652,7 @@ const Profile = () => {
           throw new Error('Slug mancante');
         }
       }
-      if (formData.public_profile_enabled && slugStatus === 'taken' && !user?.public_slug) {
+      if (formData.public_profile_enabled && slugStatus === 'taken') {
         throw new Error('Slug non disponibile');
       }
       const dataToUpdate: any = {
@@ -679,6 +709,7 @@ const Profile = () => {
         description: t('profile.toasts.update_success_desc', 'Profilo aggiornato con successo!'),
       });
 
+      setIsEditingSlug(false);
       await refreshProfile();
     } catch (error) {
       console.error("Errore nell'aggiornamento del profilo:", error);
@@ -1307,16 +1338,48 @@ const Profile = () => {
 
                     <div>
                       <Label htmlFor="public_slug">{t('profile.sections.visibility.public_slug_label', 'Slug pubblico')}</Label>
-                      <Input
-                        id="public_slug"
-                        value={formData.public_slug}
-                        onChange={(e) => setFormData(prev => ({ ...prev, public_slug: slugify(e.target.value) }))}
-                        placeholder={t('profile.sections.visibility.public_slug_placeholder', 'es. nome-cognome')}
-                        disabled={!formData.public_profile_enabled || Boolean(user?.public_slug)}
-                      />
+                      <div className="flex items-center gap-2">
+                        <Input
+                          id="public_slug"
+                          value={formData.public_slug}
+                          onChange={(e) => setFormData(prev => ({ ...prev, public_slug: slugify(e.target.value) }))}
+                          placeholder={t('profile.sections.visibility.public_slug_placeholder', 'es. nome-cognome')}
+                          disabled={!formData.public_profile_enabled || (Boolean(user?.public_slug) && !isEditingSlug)}
+                          className="flex-1"
+                        />
+                        {formData.public_profile_enabled && user?.public_slug && !isEditingSlug && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setIsEditingSlug(true)}
+                          >
+                            <Pencil className="h-3 w-3 mr-1" />
+                            {t('profile.sections.visibility.edit_slug', 'Modifica')}
+                          </Button>
+                        )}
+                        {isEditingSlug && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setIsEditingSlug(false);
+                              setFormData(prev => ({ ...prev, public_slug: user?.public_slug || '' }));
+                              setSlugStatus('available');
+                            }}
+                          >
+                            <X className="h-3 w-3 mr-1" />
+                            {t('profile.sections.visibility.cancel_edit_slug', 'Annulla')}
+                          </Button>
+                        )}
+                      </div>
+                      {isEditingSlug && (
+                        <p className="text-xs text-amber-600 mt-1">{t('profile.sections.visibility.slug_change_warning', 'Attenzione: cambiare lo slug modificherà il tuo URL pubblico. Il vecchio URL sarà reindirizzato automaticamente.')}</p>
+                      )}
                       <div className="flex items-center gap-3 mt-2">
                         <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.public_url_prefix', 'URL: /profile/')}{formData.public_slug || '<slug>'}</p>
-                        {formData.public_profile_enabled && !user?.public_slug && (
+                        {formData.public_profile_enabled && (isEditingSlug || !user?.public_slug) && (
                           slugStatus === 'checking' ? (
                             <span className="text-xs text-blue-600">{t('profile.sections.visibility.slug_checking', 'Verifica disponibilità...')}</span>
                           ) : slugStatus === 'available' ? (
