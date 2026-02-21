@@ -1,30 +1,32 @@
 
 import { ReactNode, useState } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
-import { UserNav } from "@/components/UserNav";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Home, User, FileText, Menu, X, Calendar, Users, Mail, Shield, BookOpen, MessageSquare } from "lucide-react";
+import { Home, User, FileText, Menu, X, Calendar, Users, Mail, Shield, BookOpen, MessageSquare, MessageCircle, LogOut } from "lucide-react";
+import { useChatStore } from "@/hooks/useChatStore";
 import { Button } from "@/components/ui/button";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Footer from "@/components/Footer";
 import Logo from "@/components/Logo";
 
 const MobileLayout = ({ children }: { children: ReactNode }) => {
-    const { user, loading } = useAuth();
+    const { user, loading, logout } = useAuth();
     const { t } = useLanguage();
     const location = useLocation();
+    const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
+    const { isOpen: chatOpen, openList: openChatList } = useChatStore();
     
     // Auto scroll to top on route change
     useScrollToTop();
 
     // Bottom nav: 5 icon-only items
     const bottomItems = [
-        { icon: Home, label: t('nav.home', 'Home'), path: "/" },
-        { icon: Calendar, label: t('nav.events', 'Eventi'), path: "/eventi-imminenti" },
+        { icon: Calendar, label: t('nav.events', 'Eventi'), path: "/" },
+        { icon: MessageCircle, label: "Chat", path: "__chat__" },
         { icon: BookOpen, label: t('nav.blog', 'Blog'), path: "/blog" },
         { icon: User, label: t('nav.profile', 'Profilo'), path: user ? "/profile" : "/auth" },
         { icon: Menu, label: t('nav.menu', 'Menu'), path: "__menu__" },
@@ -55,20 +57,13 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
                     <Logo imgClassName="h-7 origin-left scale-110" />
                     <div className="flex items-center space-x-2">
                         <LanguageSwitcher />
-                        {loading ? (
-                            <Skeleton className="h-8 w-8 rounded-full" />
-                        ) : user ? (
-                            <UserNav />
-                        ) : (
-                            <Button 
-                                variant="outline" 
-                                size="sm" 
-                                asChild
-                                className="rounded-full border-purple-200 hover:border-purple-400"
-                            >
-                                <Link to="/auth">{t('common.login', 'Accedi')}</Link>
-                            </Button>
-                        )}
+                        <button
+                            onClick={() => setMenuOpen(!menuOpen)}
+                            className="p-2 rounded-full hover:bg-white/20 active:bg-white/30 transition-colors"
+                            aria-label={t('nav.menu', 'Menu')}
+                        >
+                            <Menu className="h-5 w-5 text-gray-700 dark:text-gray-200" />
+                        </button>
                     </div>
                 </div>
             </header>
@@ -126,7 +121,17 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
                         </nav>
 
                         {/* Auth section at bottom */}
-                        {!user && !loading && (
+                        {user ? (
+                            <div className="p-4 border-t border-gray-100 dark:border-neutral-800">
+                                <button
+                                    onClick={async () => { setMenuOpen(false); await logout(); navigate('/'); }}
+                                    className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                                >
+                                    <LogOut className="h-5 w-5 flex-shrink-0" />
+                                    <span className="text-sm font-medium">Logout</span>
+                                </button>
+                            </div>
+                        ) : !loading && (
                             <div className="p-4 border-t border-gray-100 dark:border-neutral-800 space-y-2">
                                 <Button asChild className="w-full rounded-full bg-gradient-to-r from-blue-600 to-purple-600">
                                     <Link to="/auth" onClick={() => setMenuOpen(false)}>{t('common.login', 'Accedi')}</Link>
@@ -150,10 +155,16 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
             <nav className="fixed bottom-0 left-0 right-0 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-lg border-t border-gray-200 dark:border-neutral-700 z-50 safe-area-inset-bottom shadow-[0_-2px_10px_rgba(0,0,0,0.06)]">
                 <div className="flex items-center justify-around h-14 px-1">
                     {bottomItems.map((item) => {
-                        const isCurrent = item.path === "__menu__" ? menuOpen : isActive(item.path);
+                        const isCurrent = item.path === "__menu__" 
+                            ? menuOpen 
+                            : item.path === "__chat__" 
+                                ? chatOpen 
+                                : isActive(item.path);
                         const handleClick = item.path === "__menu__" 
                             ? (e: React.MouseEvent) => { e.preventDefault(); setMenuOpen(!menuOpen); }
-                            : undefined;
+                            : item.path === "__chat__"
+                                ? (e: React.MouseEvent) => { e.preventDefault(); openChatList(); }
+                                : undefined;
                         
                         const content = (
                             <div className="flex flex-col items-center justify-center gap-0.5 w-full">
@@ -172,10 +183,10 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
                             </div>
                         );
 
-                        if (item.path === "__menu__") {
+                        if (item.path === "__menu__" || item.path === "__chat__") {
                             return (
                                 <button
-                                    key="menu"
+                                    key={item.path}
                                     onClick={handleClick}
                                     className="flex-1 flex items-center justify-center py-1"
                                 >

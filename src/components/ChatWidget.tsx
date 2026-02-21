@@ -8,6 +8,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useIsMobile } from '@/hooks/useIsMobile';
+import { useChatStore } from '@/hooks/useChatStore';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { it, enUS } from 'date-fns/locale';
@@ -99,6 +100,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   const { t, currentLanguage } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const { isOpen: storeIsOpen, closeChat: storeCloseChat } = useChatStore();
   const [isOpen, setIsOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
@@ -112,6 +114,15 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const dateLocale = currentLanguage === 'it' ? it : enUS;
+
+  // Sync store isOpen → local isOpen (for mobile bottom-nav trigger)
+  useEffect(() => {
+    if (storeIsOpen && !isOpen && user) {
+      setIsOpen(true);
+      fetchConversations();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeIsOpen]);
 
   // Fetch conversations
   const fetchConversations = useCallback(async () => {
@@ -384,6 +395,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
     setIsOpen(false);
     setActiveConversation(null);
     lastProcessedRef.current = null; // Reset so next external open works
+    storeCloseChat(); // Reset store state so bottom-nav highlight updates
     onClose?.();
   };
 
@@ -410,30 +422,21 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
 
   return (
     <>
-      {/* Floating button */}
-      {!isOpen && (
+      {/* Floating button – hidden on mobile (bottom nav has Chat tab) */}
+      {!isOpen && !isMobile && (
         <button
           onClick={handleOpen}
-          className={cn(
-            "fixed z-50 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center",
-            isMobile
-              ? "bottom-20 right-3 w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 text-white"
-              : "bottom-60 right-4 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:from-blue-600 hover:to-purple-700 gap-2"
-          )}
+          className="fixed z-50 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center bottom-60 right-4 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:from-blue-600 hover:to-purple-700 gap-2"
           aria-label={t('chat.open', 'Apri messaggi')}
         >
-          {!isMobile && (
-            <>
-              <img
-                src="/images/weapnea-logo.png"
-                alt=""
-                className="w-7 h-7 rounded-full bg-white/20 p-0.5"
-                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-              />
-              <span className="font-semibold text-sm">Community Chat</span>
-            </>
-          )}
-          <MessageCircle className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
+          <img
+            src="/images/weapnea-logo.png"
+            alt=""
+            className="w-7 h-7 rounded-full bg-white/20 p-0.5"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          />
+          <span className="font-semibold text-sm">Community Chat</span>
+          <MessageCircle className="w-5 h-5" />
           {unreadTotal > 0 && (
             <Badge className="absolute -top-1 -right-1 min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs">
               {unreadTotal > 99 ? '99+' : unreadTotal}
