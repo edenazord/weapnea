@@ -269,10 +269,10 @@
   background-clip: padding-box;
 }
 
-/* D-ID AI Agent widget – ensure visibility above all other layers */
+/* D-ID AI Agent widget – keep at very bottom-right, below chat FAB */
 did-agent,
 [data-name="did-agent"],
 #did-agent {
-  z-index: 99999 !important;
+  z-index: 45 !important;
   position: relative;
 }

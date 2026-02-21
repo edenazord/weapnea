@@ -412,7 +412,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       {!isOpen && (
         <button
           onClick={handleOpen}
-          className="fixed bottom-4 right-4 z-50 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 hover:from-blue-600 hover:to-purple-700 flex items-center gap-2"
+          className="fixed bottom-20 right-4 z-50 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-105 hover:from-blue-600 hover:to-purple-700 flex items-center gap-2"
           aria-label={t('chat.open', 'Apri messaggi')}
         >
           <img 
@@ -433,7 +433,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
 
       {/* Chat panel */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 z-50 w-[360px] h-[500px] max-h-[80vh] bg-background border rounded-lg shadow-2xl flex flex-col overflow-hidden">
+        <div className="fixed bottom-20 right-4 z-50 w-[360px] h-[500px] max-h-[70vh] bg-background border rounded-lg shadow-2xl flex flex-col overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/50">
             {activeConversation ? (
