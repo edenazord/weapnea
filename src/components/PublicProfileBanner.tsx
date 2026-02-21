@@ -37,10 +37,10 @@ export default function PublicProfileBanner() {
         {/* Close button */}
         <button
           onClick={(e) => { e.stopPropagation(); setDismissed(true); }}
-          className="absolute -top-2 -right-2 z-10 rounded-full bg-white dark:bg-neutral-800 shadow-md p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 transition-colors"
+          className="absolute -top-2 -right-2 z-10 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 shadow-md p-1 hover:opacity-80 transition-opacity"
           aria-label={t('common.close', 'Chiudi')}
         >
-          <X className="h-3.5 w-3.5 text-gray-600 dark:text-gray-300" />
+          <X className="h-3.5 w-3.5 text-black" />
         </button>
         <button
           onClick={handleCta}
