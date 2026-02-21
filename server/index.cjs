@@ -404,7 +404,7 @@ const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 // Global toggle: make all events free (bypass checkout)
 const EVENTS_FREE_MODE = String(process.env.EVENTS_FREE_MODE || '').toLowerCase() === 'true';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'WeApnea <noreply@weapnea.com>';
+const RESEND_FROM_EMAIL = process.env.RESEND_FROM_EMAIL || 'WeApnea <noreply@send.weapnea.com>';
 const resend = RESEND_API_KEY ? new Resend(RESEND_API_KEY) : null;
 const APP_NAME = process.env.APP_NAME || 'WeApnea';
 // In-memory log for email attempts (last 50)
@@ -784,7 +784,7 @@ async function getSlugAliasTarget(slugLower) {
 
 function formatFromEmail(fromEnv) {
   const from = String(fromEnv || '').trim();
-  if (!from) return `${APP_NAME} <noreply@weapnea.com>`;
+  if (!from) return `${APP_NAME} <noreply@send.weapnea.com>`;
   // Se già contiene display name, lasciamo invariato
   if (from.includes('<') && from.includes('>')) return from;
   // Se è solo un indirizzo, aggiungiamo il display name
@@ -800,7 +800,25 @@ async function sendEmail({ to, subject, html }) {
   }
   try {
     const from = formatFromEmail(RESEND_FROM_EMAIL);
-    const { data, error } = await resend.emails.send({ from, to, subject, html });
+    // Generate plain-text fallback from HTML (improves deliverability / anti-spam score)
+    const text = html
+      ? String(html)
+          .replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<\/p>/gi, '\n\n')
+          .replace(/<\/div>/gi, '\n')
+          .replace(/<\/h[1-6]>/gi, '\n\n')
+          .replace(/<a[^>]+href="([^"]*)"[^>]*>([^<]*)<\/a>/gi, '$2 ($1)')
+          .replace(/<[^>]+>/g, '')
+          .replace(/&nbsp;/gi, ' ')
+          .replace(/&amp;/gi, '&')
+          .replace(/&lt;/gi, '<')
+          .replace(/&gt;/gi, '>')
+          .replace(/&#39;/gi, "'")
+          .replace(/&quot;/gi, '"')
+          .replace(/\n{3,}/g, '\n\n')
+          .trim()
+      : subject;
+    const { data, error } = await resend.emails.send({ from, to, subject, html, text });
     if (error) throw error;
     const entry = { ts: new Date().toISOString(), to, subject, ok: true, id: data?.id };
     emailLog.push(entry); if (emailLog.length > EMAIL_LOG_MAX) emailLog.shift();
