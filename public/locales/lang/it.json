@@ -44,6 +44,12 @@
 			"learn_more": "Scopri di più"
 		}
 	},
+	"public_profile_banner": {
+		"title": "Rendi visibile il tuo profilo!",
+		"message": "Attiva il profilo pubblico per farti trovare dalla community di apneisti.",
+		"cta": "Attiva ora",
+		"dismiss": "Non ora"
+	},
 	"categories": {
 		"trainings": "Allenamenti",
 		"trips": "Viaggi",

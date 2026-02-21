@@ -35,6 +35,7 @@ import Contattaci from "./pages/Contattaci";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
+import PublicProfileBanner from "./components/PublicProfileBanner";
 import ChatWidget from "./components/ChatWidget";
 import { useChatStore } from "./hooks/useChatStore";
 
@@ -84,6 +85,7 @@ const App = () => {
                 <Toaster />
                 <Sonner />
                 <ChatWidgetWrapper />
+                <PublicProfileBanner />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/chi-siamo" element={<ChiSiamo />} />

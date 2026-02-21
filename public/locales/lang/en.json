@@ -44,6 +44,12 @@
       "learn_more": "Learn more"
     }
   },
+  "public_profile_banner": {
+    "title": "Make your profile visible!",
+    "message": "Enable your public profile so the freediving community can find you.",
+    "cta": "Enable now",
+    "dismiss": "Not now"
+  },
   "categories": {
     "trainings": "Trainings",
     "trips": "Trips",
