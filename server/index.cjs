@@ -1296,25 +1296,31 @@ app.put('/api/profile', requireAuth, async (req, res) => {
           // Load previous slug (if any)
           const { rows: cur } = await pool.query('SELECT public_slug FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
           const prevSlug = (cur[0]?.public_slug || '').toLowerCase() || null;
+          console.log('[slug-update] userId:', req.user.id, 'prevSlug:', prevSlug, 'newSlug:', newSlug);
           // Se lo slug non è cambiato, nessuna azione speciale
           if (prevSlug && newSlug && prevSlug === newSlug) {
+            console.log('[slug-update] slug invariato, update normale');
             // Slug invariato, procedi normalmente
             const { rows } = await pool.query(sql, [...values, req.user.id]);
             return rows;
           }
           // Cambio slug: claim atomico del nuovo + alias di redirect dal vecchio
           if (prevSlug && newSlug && prevSlug !== newSlug) {
+            console.log('[slug-update] cambio slug:', prevSlug, '->', newSlug);
             const r = await claimSlugAtomic(req.user.id, newSlug);
+            console.log('[slug-update] claimSlugAtomic result:', JSON.stringify(r));
             if (!r.ok && r.conflict) return res.status(409).json({ error: 'public_slug conflict' });
             // Registra alias di redirect dal vecchio slug al nuovo
             try { await setSlugAlias(prevSlug, newSlug); } catch (e) { console.warn('[slug] alias set failed:', e?.message || e); }
             // Rilascia il vecchio slug claim
             try { await pool.query(`DELETE FROM public.app_settings WHERE key = $1`, [PP_SLUG_KEY(prevSlug)]); } catch {}
             const { rows } = await pool.query(sql, [...values, req.user.id]);
+            console.log('[slug-update] UPDATE result slug:', rows[0]?.public_slug);
             return rows;
           }
           // Prima assegnazione: claim atomico
           if (!prevSlug && newSlug) {
+            console.log('[slug-update] prima assegnazione:', newSlug);
             const r = await claimSlugAtomic(req.user.id, newSlug);
             if (!r.ok && r.conflict) return res.status(409).json({ error: 'public_slug conflict' });
           }
