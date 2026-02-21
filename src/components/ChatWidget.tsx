@@ -445,16 +445,19 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       {/* Chat panel */}
       {isOpen && (
         <div className={cn(
-          "fixed z-50 bg-background border shadow-2xl flex flex-col overflow-hidden",
+          "fixed bg-background flex flex-col overflow-hidden",
           isMobile
-            ? "inset-0"
-            : "bottom-60 right-4 w-[360px] h-[500px] max-h-[70vh] rounded-lg"
+            ? "inset-0 z-[60]"
+            : "bottom-60 right-4 z-50 w-[360px] h-[500px] max-h-[70vh] border rounded-lg shadow-2xl"
         )}>
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/50">
+          <div className={cn(
+            "flex items-center justify-between px-4 border-b bg-muted/50 shrink-0",
+            isMobile ? "py-3 pt-[max(0.75rem,env(safe-area-inset-top))]" : "py-3"
+          )}>
             {activeConversation ? (
               <>
-                <button onClick={handleBack} className="p-1 hover:bg-muted rounded">
+                <button onClick={handleBack} className="p-2 -ml-1 hover:bg-muted rounded-lg active:bg-muted">
                   <ChevronLeft className="w-5 h-5" />
                 </button>
                 {activeConversation.other_user_slug ? (
@@ -483,10 +486,16 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                 )}
               </>
             ) : (
-              <h3 className="font-semibold">{t('chat.title', 'Messaggi')}</h3>
+              <h3 className="font-semibold text-base">{t('chat.title', 'Messaggi')}</h3>
             )}
-            <button onClick={handleClose} className="p-1 hover:bg-muted rounded">
-              <X className="w-5 h-5" />
+            <button
+              onClick={handleClose}
+              className={cn(
+                "hover:bg-muted rounded-lg transition-colors",
+                isMobile ? "p-2 -mr-1 active:bg-muted" : "p-1"
+              )}
+            >
+              <X className={isMobile ? "w-6 h-6" : "w-5 h-5"} />
             </button>
           </div>
 
@@ -528,7 +537,10 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
               </ScrollArea>
 
               {/* Input */}
-              <div className="p-3 border-t bg-muted/30">
+              <div className={cn(
+                "border-t bg-muted/30 shrink-0",
+                isMobile ? "p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]" : "p-3"
+              )}>
                 <div className="flex gap-2">
                   <Input
                     ref={inputRef}
@@ -537,12 +549,13 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                     onKeyDown={handleKeyDown}
                     placeholder={t('chat.type_message', 'Scrivi un messaggio...')}
                     disabled={sending}
-                    className="flex-1"
+                    className={cn("flex-1", isMobile && "text-base h-11")}
                   />
                   <Button
                     onClick={sendMessage}
                     disabled={!newMessage.trim() || sending}
                     size="icon"
+                    className={isMobile ? "h-11 w-11" : undefined}
                   >
                     {sending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                   </Button>
@@ -561,20 +574,23 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                   {t('chat.no_conversations', 'Nessuna conversazione. Contatta un organizzatore da un evento!')}
                 </div>
               ) : (
-                <div className="divide-y">
+                <div className={cn("divide-y", isMobile && "pb-[env(safe-area-inset-bottom)]")}>
                   {conversations.map((conv) => (
                     <button
                       key={conv.id}
                       onClick={() => handleSelectConversation(conv)}
-                      className="w-full px-4 py-3 hover:bg-muted/50 flex items-start gap-3 text-left transition-colors"
+                      className={cn(
+                        "w-full px-4 hover:bg-muted/50 flex items-start gap-3 text-left transition-colors active:bg-muted/70",
+                        isMobile ? "py-4" : "py-3"
+                      )}
                     >
-                      <Avatar className="w-10 h-10 shrink-0">
+                      <Avatar className={cn("shrink-0", isMobile ? "w-12 h-12" : "w-10 h-10")}>
                         <AvatarImage src={conv.other_user_avatar || undefined} />
                         <AvatarFallback>{conv.other_user_name?.charAt(0) || '?'}</AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <p className="font-medium text-sm truncate">{conv.other_user_name || t('chat.unknown_user', 'Utente')}</p>
+                          <p className={cn("font-medium truncate", isMobile ? "text-base" : "text-sm")}>{conv.other_user_name || t('chat.unknown_user', 'Utente')}</p>
                           <span className="text-[10px] text-muted-foreground shrink-0">
                             {formatDistanceToNow(new Date(conv.last_message_at), { addSuffix: true, locale: dateLocale })}
                           </span>
