@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import { Sparkles, X } from "lucide-react";
 
 /**
@@ -14,6 +15,7 @@ export default function PublicProfileBanner() {
   const { t } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
+  const isMobile = useIsMobile();
   const [dismissed, setDismissed] = useState(false);
 
   // Don't render while auth is loading
@@ -32,7 +34,13 @@ export default function PublicProfileBanner() {
   };
 
   return (
-    <div className="fixed bottom-4 left-4 z-40 max-w-[280px] w-full animate-in slide-in-from-bottom-4 fade-in duration-500">
+    <div
+      className={
+        isMobile
+          ? "fixed bottom-16 inset-x-0 z-40 px-3 animate-in slide-in-from-bottom-4 fade-in duration-500"
+          : "fixed bottom-4 left-4 z-40 max-w-[280px] w-full animate-in slide-in-from-bottom-4 fade-in duration-500"
+      }
+    >
       <div className="relative rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 p-[1px] shadow-lg shadow-purple-500/20">
         {/* Close button */}
         <button
@@ -51,14 +59,19 @@ export default function PublicProfileBanner() {
               <div className="flex-shrink-0 rounded-full bg-white/20 p-2 group-hover:bg-white/30 transition-colors">
                 <Sparkles className="h-4 w-4 text-white" />
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-white leading-tight truncate">
+              <div className="min-w-0 flex-1">
+                <p className={isMobile
+                  ? "text-sm font-semibold text-white leading-tight"
+                  : "text-sm font-semibold text-white leading-tight truncate"
+                }>
                   {t("public_profile_banner.title", "Rendi visibile il tuo profilo!")}
                 </p>
-                <p className="text-[11px] text-blue-100/80 leading-snug mt-0.5">
-                  {t("public_profile_banner.message", "Attiva il profilo pubblico per farti trovare dalla community di apneisti.")}
-                </p>
-                <span className="inline-block mt-1.5 text-xs font-medium text-white/90 underline underline-offset-2 decoration-white/40 group-hover:decoration-white/80 transition-colors">
+                {!isMobile && (
+                  <p className="text-[11px] text-blue-100/80 leading-snug mt-0.5">
+                    {t("public_profile_banner.message", "Attiva il profilo pubblico per farti trovare dalla community di apneisti.")}
+                  </p>
+                )}
+                <span className="inline-block mt-1 text-xs font-medium text-white/90 underline underline-offset-2 decoration-white/40 group-hover:decoration-white/80 transition-colors">
                   {t("public_profile_banner.cta", "Attiva ora")} →
                 </span>
               </div>
