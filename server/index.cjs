@@ -682,9 +682,11 @@ const DEFAULT_TEMPLATES = {
     html: BASE_EMAIL_TEMPLATE(
       'Iscrizione confermata',
       `<p>Ciao {{full_name}},</p>
-       <p>la tua iscrizione all'evento <strong>{{event_title}}</strong> è stata registrata correttamente.</p>
-       {{#if event_dates}}<p><strong>Date:</strong> {{event_dates}}</p>{{/if}}`,
-      'Dettagli evento', '{{event_url}}'
+       <p>Ti confermiamo l'iscrizione all'evento <strong>{{event_title}}</strong> che hai scelto su {{app_name}}.</p>
+       {{#if event_dates}}<p><strong>Date:</strong> {{event_dates}}</p>{{/if}}
+       <p>Resta in contatto con l'organizzatore utilizzando i contatti che compaiono sul suo profilo (<a href="{{organizer_profile_url}}">CLICCA QUI</a>).</p>
+       <p>Per ogni tipo di segnalazione puoi contattare il Team {{app_name}}.</p>`,
+      'Contattaci', '{{contact_url}}'
     )
   },
   event_registration_organizer: {
@@ -3312,11 +3314,27 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
         };
         const dateText = ev?.date ? (ev?.end_date && ev.end_date !== ev.date ? `${fmt(ev.date)} - ${fmt(ev.end_date)}` : fmt(ev.date)) : '';
         const locationText = ev?.location ? `<p><strong>Luogo:</strong> ${ev.location}</p>` : '';
+        // Load organizer public profile URL
+        let organizerProfileUrl = safeBase + '/contattaci';
+        if (ev.created_by) {
+          try {
+            const { rows: orgSlugRows } = await pool.query(
+              'SELECT public_slug, public_profile_enabled FROM profiles WHERE id = $1 LIMIT 1',
+              [ev.created_by]
+            );
+            const orgSlug = orgSlugRows[0];
+            if (orgSlug?.public_profile_enabled && orgSlug?.public_slug) {
+              organizerProfileUrl = `${safeBase}/profile/${encodeURIComponent(orgSlug.public_slug)}`;
+            }
+          } catch (e) {
+            console.warn('[email] Failed to load organizer slug:', e?.message || e);
+          }
+        }
         // Email to participant (templated)
         if (participant?.email) {
           const tpl = await renderEmailWithTemplate(
             'event_registration_user',
-            { full_name: participant.full_name || '', participant_email: participant.email, app_name: APP_NAME, event_title: ev.title, event_url: eventUrl, event_dates: dateText },
+            { full_name: participant.full_name || '', participant_email: participant.email, app_name: APP_NAME, event_title: ev.title, event_url: eventUrl, event_dates: dateText, organizer_profile_url: organizerProfileUrl, public_base: safeBase },
             `Iscrizione confermata: ${ev.title}`,
             `
               <p>Ciao {{full_name}},</p>

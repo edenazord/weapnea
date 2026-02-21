@@ -767,9 +767,9 @@
 			"signature": "Il Team di WeApnea"
 		},
 		"event_registration_user": {
-			"subject": "Iscrizione Confermata su WeApnea: è tutto pronto per il tuo evento!",
-			"greeting": "Ciao,",
-			"body": "ti confermiamo l'iscrizione all'evento che hai scelto su WeApnea.\nResta in contatto con l'organizzatore utilizzando i contatti che compaiono sul suo profilo.\nPer ogni esigenza puoi contattarci da qui:",
+			"subject": "Iscrizione Confermata su WeApnea: {{event_title}}",
+			"greeting": "Ciao {{full_name}},",
+			"body": "Ti confermiamo l'iscrizione all'evento che hai scelto su WeApnea.\n\n<strong>{{event_title}}</strong>\n\nResta in contatto con l'organizzatore utilizzando i contatti che compaiono sul suo profilo (<a href=\"{{organizer_profile_url}}\">CLICCA QUI</a>).\n\nPer ogni tipo di segnalazione puoi invece contattare il Team WeApnea da qui:",
 			"contact_link": "https://www.weapnea.com/contattaci",
 			"closing": "Buon divertimento!",
 			"signature": "Il Team di WeApnea"

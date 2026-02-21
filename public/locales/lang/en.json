@@ -767,9 +767,9 @@
       "signature": "The WeApnea Team"
     },
     "event_registration_user": {
-      "subject": "Booking Confirmation on WeApnea: you're all set for your event!",
-      "greeting": "Hi,",
-      "body": "This email confirms your registration for the event you selected on WeApnea.\n\nYou can stay in touch with the organizer using the contact details provided on their profile.\n\nIf you need any assistance, feel free to contact us here:",
+      "subject": "Booking Confirmed on WeApnea: {{event_title}}",
+      "greeting": "Hi {{full_name}},",
+      "body": "We confirm your registration for the event you selected on WeApnea.\n\n<strong>{{event_title}}</strong>\n\nYou can stay in touch with the organizer using the contact details on their profile (<a href=\"{{organizer_profile_url}}\">CLICK HERE</a>).\n\nFor any issues, you can contact the WeApnea Team here:",
       "contact_link": "https://www.weapnea.com/contattaci",
       "closing": "Have fun!",
       "signature": "The WeApnea Team"
