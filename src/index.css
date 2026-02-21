@@ -269,10 +269,17 @@
   background-clip: padding-box;
 }
 
-/* D-ID AI Agent widget – keep at very bottom-right, below chat FAB */
+/* D-ID AI Agent widget – position above the chat FAB on the right */
 did-agent,
 [data-name="did-agent"],
 #did-agent {
-  z-index: 45 !important;
-  position: relative;
+  z-index: 40 !important;
+}
+
+/* Push the D-ID agent bubble up so it doesn't overlap the chat button */
+did-agent .agent-container,
+did-agent [class*="agent"],
+[data-name="did-agent"] ~ div[style*="position: fixed"],
+[data-name="did-agent"] ~ div[style*="position:fixed"] {
+  bottom: 70px !important;
 }
