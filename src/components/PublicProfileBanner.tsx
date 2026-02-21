@@ -28,7 +28,7 @@ export default function PublicProfileBanner() {
   };
 
   return (
-    <div className="fixed bottom-20 right-4 z-40 max-w-[280px] w-full animate-in slide-in-from-bottom-4 fade-in duration-500">
+    <div className="fixed bottom-36 right-4 z-40 max-w-[280px] w-full animate-in slide-in-from-bottom-4 fade-in duration-500">
       <button
         onClick={handleCta}
         className="group relative w-full text-left rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 p-[1px] shadow-lg shadow-purple-500/20 hover:shadow-xl hover:shadow-purple-500/30 transition-all duration-300 hover:scale-[1.02]"
