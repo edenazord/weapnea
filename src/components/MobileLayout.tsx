@@ -53,7 +53,7 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
             {/* Header compatto */}
             <header className="sticky top-0 z-50 modern-blur border-b border-white/20 px-4 py-3 shadow-lg">
                 <div className="flex items-center justify-between">
-                    <Logo imgClassName="h-7 origin-left scale-110" />
+                    <Logo imgClassName="h-7 origin-left scale-110" showText textClassName="text-base" />
                     <div className="flex items-center space-x-2">
                         <LanguageSwitcher />
                         <button

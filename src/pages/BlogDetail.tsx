@@ -1,5 +1,6 @@
 
 import Layout from "@/components/Layout";
+import MobileLayout from "@/components/MobileLayout";
 import PageTopBar from "@/components/PageTopBar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,11 +14,13 @@ import { it } from "date-fns/locale";
 import { useToast } from "@/hooks/use-toast";
 import DOMPurify from 'dompurify';
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useIsMobile } from "@/hooks/useIsMobile";
 
 const BlogDetail = () => {
   const { slug } = useParams<{ slug: string }>();
   const { toast } = useToast();
   const { t } = useLanguage();
+  const isMobile = useIsMobile();
 
   // Supporta slug SEO-friendly "/blog/DD-mese-YYYY-titolo" estraendo solo lo slug del titolo
   const effectiveSlug = slug ? (parseFriendlyBlogSlug(slug)?.titleSlug ?? slug) : undefined;
@@ -54,10 +57,12 @@ const BlogDetail = () => {
     }
   };
 
+  const Wrapper = isMobile ? MobileLayout : Layout;
+
   if (isLoading) {
     return (
-      <Layout>
-        <PageTopBar />
+      <Wrapper>
+        {!isMobile && <PageTopBar />}
         <div className="max-w-6xl mx-auto px-4 md:px-6">
           <div className="animate-pulse">
             <div className="h-64 bg-gradient-to-r from-gray-200 to-gray-300 rounded-lg mb-8"></div>
@@ -70,14 +75,14 @@ const BlogDetail = () => {
             </div>
           </div>
         </div>
-      </Layout>
+      </Wrapper>
     );
   }
 
   if (error || !article) {
     return (
-      <Layout>
-        <PageTopBar />
+      <Wrapper>
+        {!isMobile && <PageTopBar />}
         <div className="max-w-6xl mx-auto px-4 md:px-6 text-center py-16">
           <div className="relative">
             <div className="absolute inset-0 flex items-center justify-center">
@@ -95,13 +100,13 @@ const BlogDetail = () => {
             </div>
           </div>
         </div>
-      </Layout>
+      </Wrapper>
     );
   }
 
   return (
-    <Layout>
-  <PageTopBar fallbackPath="/blog" label={t('blog_page.back_to_blog', 'Torna al Blog')} />
+    <Wrapper>
+  {!isMobile && <PageTopBar fallbackPath="/blog" label={t('blog_page.back_to_blog', 'Torna al Blog')} />}
       <div className="max-w-6xl mx-auto px-4 md:px-6">
 
         {/* Cover Image */}
@@ -238,7 +243,7 @@ const BlogDetail = () => {
           </Button>
         </div>
       </div>
-    </Layout>
+    </Wrapper>
   );
 };
 
