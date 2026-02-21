@@ -268,3 +268,11 @@
   background: linear-gradient(to bottom right, #5a67d8, #6b46c1);
   background-clip: padding-box;
 }
+
+/* D-ID AI Agent widget – ensure visibility above all other layers */
+did-agent,
+[data-name="did-agent"],
+#did-agent {
+  z-index: 99999 !important;
+  position: relative;
+}

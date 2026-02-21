@@ -37,6 +37,7 @@ import CookiePolicy from "./pages/CookiePolicy";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicProfileBanner from "./components/PublicProfileBanner";
 import ChatWidget from "./components/ChatWidget";
+import DIdAgent from "./components/DIdAgent";
 import { useChatStore } from "./hooks/useChatStore";
 
 const queryClient = new QueryClient({
@@ -86,6 +87,7 @@ const App = () => {
                 <Sonner />
                 <ChatWidgetWrapper />
                 <PublicProfileBanner />
+                <DIdAgent />
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/chi-siamo" element={<ChiSiamo />} />
