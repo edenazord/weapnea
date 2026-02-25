@@ -263,7 +263,7 @@ const BlogManager = () => {
         }
       }}>
         <DialogContent
-          className={isFullscreen ? "max-w-[98vw] w-[98vw] h-[98vh] max-h-[98vh] overflow-y-auto" : "max-w-5xl max-h-[90vh] overflow-y-auto"}
+          className={isFullscreen ? "max-w-[98vw] w-[98vw] h-[98vh] max-h-[98vh]" : "max-w-5xl max-h-[90vh]"}
           onPointerDownOutside={(e) => e.preventDefault()}
           onInteractOutside={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => e.preventDefault()}
