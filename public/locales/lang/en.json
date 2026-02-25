@@ -786,6 +786,13 @@
       "body": "We are writing to inform you that there is a new confirmed registration for your event on WeApnea.\n\nYou can find all the details in your Personal Area dedicated to your events.\n\nWe encourage you to reach out and get in touch with the registered user.",
       "closing": "Best regards,",
       "signature": "The WeApnea Team"
+    },
+    "event_invite": {
+      "subject": "You have been invited to: {{event_title}}",
+      "greeting": "Hi {{full_name}},",
+      "body": "You have been invited to the event <strong>{{event_title}}</strong> on WeApnea!\n\n{{#if event_dates}}<strong>Dates:</strong> {{event_dates}}{{/if}}\n{{#if event_location}}<strong>Location:</strong> {{event_location}}{{/if}}\n\nDon't miss this opportunity, spots are limited.\nClick the button below to view the event and confirm your participation.",
+      "closing": "See you there!",
+      "signature": "The WeApnea Team"
     }
   },
   "chat": {

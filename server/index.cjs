@@ -675,6 +675,14 @@ async function renderEmailWithTemplate(type, vars, fallbackSubject, fallbackHtml
         ctaText = 'Apri Area Personale';
         ctaUrl = (vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com') + '/profile';
         break;
+      case 'event_invite':
+        ctaText = tpl.link_label || 'Vai all\'evento';
+        ctaUrl = vars.event_url || (vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com');
+        break;
+      case 'event_invite_external':
+        ctaText = tpl.link_label || 'Vai all\'evento';
+        ctaUrl = vars.event_url || (vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com');
+        break;
     }
     
     const html = buildBrandedEmail(tpl, vars, ctaText, ctaUrl);
@@ -2771,7 +2779,7 @@ app.get('/api/i18n/translations/by-keys', async (req, res) => {
 // -----------------------------
 const LOCALES_DIR = path.join(__dirname, '..', 'public', 'locales', 'lang');
 const SUPPORTED_LANGUAGES = ['it', 'en', 'es', 'fr', 'pl'];
-const EMAIL_TEMPLATE_TYPES = ['welcome', 'password_reset', 'event_registration_user', 'event_registration_organizer'];
+const EMAIL_TEMPLATE_TYPES = ['welcome', 'password_reset', 'event_registration_user', 'event_registration_organizer', 'event_invite'];
 
 // Helper: read locale JSON file
 async function readLocaleFile(lang) {
@@ -3423,6 +3431,83 @@ app.get('/api/payments/organizer-stats', requireAuth, async (req, res) => {
       totalRevenue,
       paymentsByEvent: Array.from(byEvent.values())
     });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SEND EVENT INVITE EMAIL (organizer → selected users or all participants)
+// ─────────────────────────────────────────────────────────────────────────────
+app.post('/api/events/:id/invite', requireAuth, async (req, res) => {
+  const eventId = req.params.id;
+  try {
+    // Load event
+    const { rows: evRows } = await pool.query(
+      'SELECT id, title, slug, date, end_date, location, created_by FROM events WHERE id = $1 LIMIT 1',
+      [eventId]
+    );
+    const ev = evRows[0];
+    if (!ev) return res.status(404).json({ error: 'Event not found' });
+    // Only owner / admin / creator
+    if (ev.created_by !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'creator') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const { emails } = req.body || {};
+    if (!emails || !Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({ error: 'emails array required' });
+    }
+
+    const base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
+    const safeBase = base.replace(/\/$/, '');
+    const eventUrl = ev.slug ? `${safeBase}/events/${encodeURIComponent(ev.slug)}` : `${safeBase}/events/${ev.id}`;
+
+    // Date text
+    const fmt = (s) => { try { return new Date(s).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }); } catch { return s; } };
+    const dateText = ev.date ? (ev.end_date && ev.end_date !== ev.date ? `${fmt(ev.date)} – ${fmt(ev.end_date)}` : fmt(ev.date)) : '';
+
+    let sent = 0;
+    let failed = 0;
+    for (const email of emails) {
+      if (!email || typeof email !== 'string') { failed++; continue; }
+      // Try to find user by email to personalise
+      const { rows: userRows } = await pool.query('SELECT full_name FROM profiles WHERE LOWER(email) = LOWER($1) LIMIT 1', [email.trim()]);
+      const fullName = userRows[0]?.full_name || '';
+
+      try {
+        const { subject, html } = await renderEmailWithTemplate(
+          'event_invite',
+          {
+            full_name: fullName || email.split('@')[0],
+            event_title: ev.title,
+            event_url: eventUrl,
+            event_dates: dateText,
+            event_location: ev.location || '',
+            app_name: APP_NAME,
+            public_base: safeBase,
+          },
+          `Sei stato invitato a: ${ev.title}`,
+          BASE_EMAIL_TEMPLATE(
+            'Invito evento',
+            `<p>Ciao ${fullName || ''},</p>
+             <p>Sei stato invitato all'evento <strong>${ev.title}</strong> su ${APP_NAME}.</p>
+             ${dateText ? `<p><strong>Date:</strong> ${dateText}</p>` : ''}
+             ${ev.location ? `<p><strong>Luogo:</strong> ${ev.location}</p>` : ''}
+             <p>Non perdere l'occasione!</p>`,
+            'Vai all\'evento', eventUrl
+          )
+        );
+        const result = await sendEmail({ to: email.trim(), subject, html });
+        if (result.ok) sent++;
+        else failed++;
+      } catch (e) {
+        console.warn('[event-invite] send failed to', email, e?.message || e);
+        failed++;
+      }
+    }
+
+    res.json({ ok: true, sent, failed, total: emails.length });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }

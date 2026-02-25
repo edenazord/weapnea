@@ -32,6 +32,7 @@ import { backendConfig } from '@/lib/backendConfig';
 import Comments from "@/components/Comments";
 import EventMediaGallery from "@/components/EventMediaGallery";
 import ExternalParticipants from "@/components/ExternalParticipants";
+import EventInvite from "@/components/EventInvite";
 import PageHead from "@/components/PageHead";
 
 const EventDetailSkeleton = () => (
@@ -765,7 +766,12 @@ const EventDetail = () => {
                     {/* External participants management (organizer only) */}
                     {user && user.id === event.created_by && event.id && (
                       <Card className="shadow-lg p-6 mt-6">
-                        <ExternalParticipants eventId={event.id} />
+                        <div className="flex items-center justify-between mb-4">
+                          <ExternalParticipants eventId={event.id} />
+                        </div>
+                        <div className="pt-3 border-t">
+                          <EventInvite eventId={event.id} eventTitle={event.title || ''} />
+                        </div>
                       </Card>
                     )}
 

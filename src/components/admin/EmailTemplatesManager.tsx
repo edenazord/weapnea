@@ -30,7 +30,7 @@ type AllLanguagesTemplates = {
   [lang: string]: EmailTemplates;
 };
 
-const TEMPLATE_TYPES = ['welcome', 'password_reset', 'event_registration_user', 'event_registration_organizer'];
+const TEMPLATE_TYPES = ['welcome', 'password_reset', 'event_registration_user', 'event_registration_organizer', 'event_invite'];
 const LANGUAGES = [
   { code: 'it', name: 'Italiano', flag: '🇮🇹' },
   { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -107,6 +107,8 @@ const EmailTemplatesManager = () => {
         return 'Iscrizione Evento (Utente)';
       case 'event_registration_organizer':
         return 'Iscrizione Evento (Organizzatore)';
+      case 'event_invite':
+        return 'Invito Evento';
       default:
         return type;
     }
@@ -124,6 +126,8 @@ const EmailTemplatesManager = () => {
       case 'event_registration_user':
         return [...baseFields, 'contact_link', 'closing'];
       case 'event_registration_organizer':
+        return [...baseFields, 'closing'];
+      case 'event_invite':
         return [...baseFields, 'closing'];
       default:
         return baseFields;
@@ -188,7 +192,7 @@ const EmailTemplatesManager = () => {
       </Card>
 
       <Tabs defaultValue="welcome" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-5">
           {TEMPLATE_TYPES.map((type) => (
             <TabsTrigger key={type} value={type}>
               {getTemplateTitle(type).split(' / ')[0]}
