@@ -541,8 +541,8 @@ const EventDetail = () => {
                         </Card>
                     )}
 
-                    {/* Commenti – sotto Orari e Logistica come nel blog */}
-                    {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
+                    {/* Commenti – visibili a tutti, possono scrivere solo partecipanti/organizzatore/admin */}
+                    {event.id && (
                       <div className="mt-8">
                         <Comments eventId={event.id} canComment={isParticipant || user?.id === event.created_by || user?.role === 'admin'} />
                       </div>
