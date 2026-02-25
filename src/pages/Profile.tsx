@@ -18,7 +18,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle, Phone } from "lucide-react";
+import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle, Phone, Bell } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -26,6 +26,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
+import PageHead from "@/components/PageHead";
 import BlogManager from "@/components/admin/BlogManager";
 // import ProfileMobileNav from "@/components/ProfileMobileNav";
 import { format, parseISO, isValid } from "date-fns";
@@ -114,6 +115,7 @@ const Profile = () => {
   public_show_events: true,
   public_show_records: true,
   public_show_personal: true,
+  newsletter_new_events: false,
   });
 
   const [bestEntries, setBestEntries] = useState<BestEntry[]>([]);
@@ -419,6 +421,7 @@ const Profile = () => {
   public_show_events: (user as any).public_show_events ?? true,
   public_show_records: (user as any).public_show_records ?? true,
   public_show_personal: (user as any).public_show_personal ?? true,
+  newsletter_new_events: (user as any).newsletter_new_events ?? false,
       });
 
       if (user.personal_best) {
@@ -769,6 +772,7 @@ const Profile = () => {
 
   const profileContent = (
     <div className="px-4 py-1 profile-theme">
+      <PageHead title="Il Mio Profilo" description="Gestisci il tuo profilo WeApnea, certificazioni e preferenze." />
       <div className="max-w-5xl mx-auto">
         <CenteredNotice
           open={noticeOpen}
@@ -1013,11 +1017,18 @@ const Profile = () => {
                           <div className="py-4 text-sm text-muted-foreground">{t('profile.sections.my_events.loading_events', 'Caricamento eventi...')}</div>
                         ) : (organizedEvents && organizedEvents.length > 0 ? (
                           <div className="grid gap-3">
-                            {organizedEvents.map(ev => (
+                            {organizedEvents.map(ev => {
+                              const isSoldOut = typeof ev.participants === 'number' && ev.participants > 0 && typeof ev.participants_paid_count === 'number' && ev.participants_paid_count >= ev.participants;
+                              return (
                               <div key={ev.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
                                 <div className="flex items-start justify-between gap-3">
                                   <div className="flex-1 min-w-0">
-                                    <Link to={buildFriendlyEventPath(ev.slug)} className="font-semibold text-sm md:text-base hover:underline truncate block">{ev.title}</Link>
+                                    <div className="flex items-center gap-2 flex-wrap">
+                                      <Link to={buildFriendlyEventPath(ev.slug)} className="font-semibold text-sm md:text-base hover:underline truncate block">{ev.title}</Link>
+                                      {isSoldOut && (
+                                        <Badge className="bg-red-500 text-white text-[10px] px-2 py-0.5 flex-shrink-0">Sold Out</Badge>
+                                      )}
+                                    </div>
                                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5 text-xs md:text-sm text-muted-foreground">
                                       <span className="inline-flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{formatEventWithFixed(ev)}</span>
                                       {ev.location && <span className="inline-flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{ev.location}</span>}
@@ -1029,8 +1040,9 @@ const Profile = () => {
                                       <Users className="h-4 w-4" />
                                       <span className="font-semibold">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</span>
                                     </Button>
-                                    <Button type="button" size="icon" variant="outline" className="md:hidden h-8 w-8" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
+                                    <Button type="button" size="sm" variant="outline" className="md:hidden gap-1 h-8 px-2" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
                                       <Users className="h-4 w-4" />
+                                      <span className="text-xs font-semibold">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</span>
                                     </Button>
                                     <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_edit', 'Modifica')} onClick={() => openEditEvent(ev)} className="h-8 w-8">
                                       <Pencil className="h-4 w-4" />
@@ -1041,7 +1053,8 @@ const Profile = () => {
                                   </div>
                                 </div>
                               </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="py-6 text-sm text-muted-foreground border rounded-md text-center">
@@ -1539,6 +1552,25 @@ const Profile = () => {
                       </div>
 
                     </div>
+
+                    {/* Newsletter preferences */}
+                    <div className="border-t pt-5 mt-5">
+                      <h3 className="text-base font-semibold mb-3 flex items-center gap-2">
+                        <Bell className="h-4 w-4 text-blue-600" />
+                        {t('profile.sections.visibility.newsletter_title', 'Notifiche & Newsletter')}
+                      </h3>
+                      <div className="flex items-center justify-between border rounded-md p-3 gap-3">
+                        <div className="min-w-0">
+                          <Label htmlFor="newsletter_new_events">{t('profile.sections.visibility.newsletter_events', 'Nuovi eventi')}</Label>
+                          <p className="text-xs text-muted-foreground">{t('profile.sections.visibility.newsletter_events_desc', 'Ricevi un\'email quando viene pubblicato un nuovo evento')}</p>
+                        </div>
+                        <Switch
+                          id="newsletter_new_events"
+                          checked={formData.newsletter_new_events || false}
+                          onCheckedChange={(v) => setFormData(prev => ({ ...prev, newsletter_new_events: Boolean(v) }))}
+                        />
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               </TabsContent>
@@ -1551,12 +1583,12 @@ const Profile = () => {
                 </CardHeader>
                 <CardContent className="space-y-6 px-1 md:px-6">
 
-                  {/* ── Assicurazione (sempre visibile, obbligatoria) ── */}
+                  {/* ── Assicurazione (obbligatoria per organizzatori) ── */}
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <Shield className="h-5 w-5 text-primary" />
                       <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</h3>
-                      <Badge variant="outline" className="text-xs">{t('profile.sections.certifications.required_badge', 'Obbligatoria')}</Badge>
+                      <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.organizer_only_badge', 'Per organizzatori')}</Badge>
                     </div>
 
                     <div className="flex items-start gap-3 p-3 border rounded-md border-primary/30 bg-primary/5">
@@ -1640,27 +1672,15 @@ const Profile = () => {
 
                   <div className="h-px bg-border" />
 
-                  {/* ── Certificato medico (facoltativo, visibile dopo toggle) ── */}
+                  {/* ── Certificato medico (OBBLIGATORIO per tutti) ── */}
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_medical', 'Certificato medico')}</h3>
-                        <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.optional_badge', 'Facoltativo')}</Badge>
-                      </div>
-                      <Switch
-                        checked={!!(formData.scadenza_certificato_medico || (formData as any)._showMedical)}
-                        onCheckedChange={(v) => {
-                          if (!v) {
-                            setFormData(prev => ({ ...prev, scadenza_certificato_medico: '', certificato_medico_tipo: '', _showMedical: false } as any));
-                          } else {
-                            setFormData(prev => ({ ...prev, _showMedical: true } as any));
-                          }
-                        }}
-                      />
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-5 w-5 text-primary" />
+                      <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_medical', 'Certificato medico')}</h3>
+                      <Badge variant="outline" className="text-xs">{t('profile.sections.certifications.required_badge', 'Obbligatoria')}</Badge>
                     </div>
 
-                    {(formData.scadenza_certificato_medico || (formData as any)._showMedical) && (
+                    {(true) && (
                       <div className="space-y-4 pl-1">
                         <div>
                           <Label htmlFor="scadenza_certificato_medico">{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
@@ -1736,13 +1756,13 @@ const Profile = () => {
 
                   <div className="h-px bg-border" />
 
-                  {/* ── Brevetto (facoltativo, visibile dopo toggle) ── */}
+                  {/* ── Brevetto (obbligatorio solo per organizzatori) ── */}
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
                         <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_brevetto', 'Brevetto')}</h3>
-                        <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.optional_badge', 'Facoltativo')}</Badge>
+                        <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.organizer_only_badge', 'Per organizzatori')}</Badge>
                       </div>
                       <Switch
                         checked={!!(formData.brevetto?.trim() || formData.dichiarazione_brevetto_valido || (formData as any)._showBrevetto)}

@@ -5,6 +5,7 @@ import { Users, Target, Heart, Globe, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import PageHeader from "@/components/PageHeader";
 import PageTopBar from "@/components/PageTopBar";
+import PageHead from "@/components/PageHead";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
 
 const ChiSiamo = () => {
@@ -30,6 +31,7 @@ const ChiSiamo = () => {
   
   const content = (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-purple-50">
+      <PageHead title="Chi Siamo" description="Scopri il team WeApnea e la nostra missione per la community dell'apnea." />
       {/* Decorative hero */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 pointer-events-none" />

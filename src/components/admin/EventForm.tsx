@@ -670,7 +670,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
 
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Galleria Immagini</h3>
-          <p className="text-sm text-muted-foreground">La prima immagine diventa automaticamente la copertina.</p>
+          <p className="text-sm text-muted-foreground">La prima immagine diventa automaticamente la copertina. Dimensioni raccomandate: 1200×630 px.</p>
           <MultipleImageUpload
             onImagesChanged={handleGalleryImagesChanged}
             currentImages={form.watch('gallery_images') || []}

@@ -1,19 +1,13 @@
 
-export const generateEventSlug = (title: string, date: string): string => {
-  // Rimuove caratteri speciali e spazi dal titolo
-  const cleanTitle = title
+export const generateEventSlug = (title: string, _date?: string): string => {
+  // Genera slug solo dal titolo (senza data)
+  return title
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s-]/g, '') // Rimuove caratteri speciali tranne spazi e trattini
-    .replace(/\s+/g, '-') // Sostituisce spazi con trattini
-    .replace(/-+/g, '-') // Rimuove trattini multipli
-    .replace(/^-|-$/g, ''); // Rimuove trattini all'inizio e alla fine
-
-  // Formatta la data come YYYY-MM-DD
-  const formattedDate = date ? date.split('T')[0] : '';
-  
-  // Combina data e titolo
-  return formattedDate ? `${formattedDate}-${cleanTitle}` : cleanTitle;
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
 };
 
 export const parseEventSlug = (slug: string): { date?: string; titleSlug?: string } => {
@@ -65,31 +59,16 @@ export const friendlyToCanonicalSlug = (friendly: string): string | null => {
 // Costruisce un path SEO-friendly senza "/events", con data italiana
 // Input: canonical slug "YYYY-MM-DD-resto" -> Output: "/DD-mese-YYYY-resto"
 export const buildFriendlyEventPath = (canonicalSlug: string): string => {
+  // Slug diretti senza prefisso data: /slug
+  // Retrocompatibilità: se lo slug inizia con YYYY-MM-DD, estrai solo il titleSlug
   const parsed = parseEventSlug(canonicalSlug);
-  if (!parsed.date) return `/${canonicalSlug}`;
-  try {
-    const [y, m, d] = parsed.date.split('-').map((s) => parseInt(s, 10));
-    const monthNames = Object.keys(IT_MONTHS);
-    const monthName = monthNames.find((name) => IT_MONTHS[name] === m) || String(m);
-    const friendlyDate = `${d}-${monthName}-${y}`.toLowerCase();
-    return `/${friendlyDate}-${parsed.titleSlug}`;
-  } catch {
-    return `/${canonicalSlug}`;
-  }
+  if (parsed.date && parsed.titleSlug) return `/${parsed.titleSlug}`;
+  return `/${canonicalSlug}`;
 };
 
-// Blog: friendly path builder /blog/DD-mese-YYYY-title
-export const buildFriendlyBlogPath = (titleSlug: string, dateIso?: string): string => {
-  if (!dateIso) return `/blog/${titleSlug}`;
-  try {
-    const [y, m, d] = dateIso.slice(0, 10).split('-').map((s) => parseInt(s, 10));
-    const monthNames = Object.keys(IT_MONTHS);
-    const monthName = monthNames.find((name) => IT_MONTHS[name] === m) || String(m);
-    const friendlyDate = `${d}-${monthName}-${y}`.toLowerCase();
-    return `/blog/${friendlyDate}-${titleSlug}`;
-  } catch {
-    return `/blog/${titleSlug}`;
-  }
+// Blog: friendly path builder /blog/title-slug (senza date)
+export const buildFriendlyBlogPath = (titleSlug: string, _dateIso?: string): string => {
+  return `/blog/${titleSlug}`;
 };
 
 // Blog: parse friendly slug to extract the original title slug

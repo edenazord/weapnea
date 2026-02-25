@@ -11,6 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { format, parseISO, isValid } from "date-fns";
 import { it } from "date-fns/locale";
 import { BackButton } from "@/components/BackButton";
+import PageHead from "@/components/PageHead";
 
 const UpcomingEvents = () => {
   const isMobile = useIsMobile();
@@ -55,6 +56,7 @@ const UpcomingEvents = () => {
 
   const content = (
     <div className={isMobile ? "px-4 py-6" : ""}>
+      <PageHead title="Eventi Imminenti" description="Scopri i prossimi eventi di apnea e freediving nella community WeApnea." />
       {/* Back Button */}
       <div className="mb-6">
         <BackButton fallbackPath="/" label={t('not_found.back_home', 'Torna alla Home')} />

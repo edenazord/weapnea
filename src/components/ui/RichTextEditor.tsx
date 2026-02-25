@@ -31,6 +31,7 @@ import {
   ImageIcon
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { backendConfig } from '@/lib/backendConfig';
 
 interface RichTextEditorProps {
   value?: string;
@@ -145,7 +146,7 @@ export function RichTextEditor({
   };
 
   const insertImage = () => {
-    // Upload tramite /api/upload e poi inserisce nell'editor
+    // Upload tramite /api/upload con l'URL corretto del backend e auth token
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
@@ -155,7 +156,14 @@ export function RichTextEditor({
       const formData = new FormData();
       formData.append('file', file);
       try {
-        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        const token = localStorage.getItem('api_token') || (import.meta as any).env?.VITE_API_TOKEN;
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await fetch(`${backendConfig.apiBaseUrl}/api/upload`, {
+          method: 'POST',
+          body: formData,
+          headers,
+        });
         if (!res.ok) throw new Error('Upload fallito');
         const data = await res.json();
         const url = data.url || data.publicUrl;

@@ -198,6 +198,9 @@ export function MultipleImageUpload({ onImagesChanged, currentImages }: Multiple
           <p className="text-xs text-gray-500">
             Carica file o inserisci URL per aggiungere immagini
           </p>
+          <p className="text-xs text-gray-400">
+            Dimensioni raccomandate: 1200×630 px (copertina), 800×600 px (galleria)
+          </p>
         </div>
       )}
     </div>

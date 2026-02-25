@@ -17,6 +17,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import PageTopBar from "@/components/PageTopBar";
 import PageHeader from "@/components/PageHeader";
+import PageHead from "@/components/PageHead";
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -52,6 +53,7 @@ const Blog = () => {
 
   const BlogContent = () => (
     <div className="">
+      <PageHead title="Blog" description="Articoli, guide e approfondimenti sul mondo dell'apnea e del freediving." />
       {!isMobile && <PageTopBar />}
       <div className="max-w-6xl mx-auto px-4 md:px-6">
       

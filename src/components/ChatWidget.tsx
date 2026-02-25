@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { it, enUS } from 'date-fns/locale';
 import { backendConfig } from '@/lib/backendConfig';
+import { useLocation } from 'react-router-dom';
 
 const API_BASE = backendConfig.apiBaseUrl;
 
@@ -100,6 +101,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   const { t, currentLanguage } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
+  const location = useLocation();
   const { isOpen: storeIsOpen, closeChat: storeCloseChat } = useChatStore();
   const [isOpen, setIsOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -114,6 +116,19 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const dateLocale = currentLanguage === 'it' ? it : enUS;
+
+  // Close chat panel when user navigates to a different page (fixes mobile bug)
+  const prevPathRef = useRef(location.pathname);
+  useEffect(() => {
+    if (prevPathRef.current !== location.pathname && isOpen && isMobile) {
+      setIsOpen(false);
+      setActiveConversation(null);
+      lastProcessedRef.current = null;
+      storeCloseChat();
+      onClose?.();
+    }
+    prevPathRef.current = location.pathname;
+  }, [location.pathname]);
 
   // Sync store isOpen → local isOpen (for mobile bottom-nav trigger)
   useEffect(() => {

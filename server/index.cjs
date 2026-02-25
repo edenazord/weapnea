@@ -708,6 +708,36 @@ const DEFAULT_TEMPLATES = {
        <p>Puoi gestire il ruolo dalla dashboard amministratore.</p>`,
       'Apri gestione utenti', '{{admin_url}}'
     )
+  },
+  event_feedback: {
+    subject: 'Com\'è andato "{{event_title}}"?',
+    html: BASE_EMAIL_TEMPLATE(
+      'Racconta la tua esperienza',
+      `<p>Ciao {{full_name}},</p>
+       <p>Speriamo che tu abbia apprezzato l'evento <strong>{{event_title}}</strong>!</p>
+       <p>Ti va di condividere la tua esperienza? Il tuo feedback aiuta la community e gli organizzatori a migliorare.</p>`,
+      'Lascia un commento', '{{event_url}}'
+    )
+  },
+  event_invite_external: {
+    subject: 'Sei stato invitato all\'evento: {{event_title}}',
+    html: BASE_EMAIL_TEMPLATE(
+      'Invito evento',
+      `<p>Ciao {{full_name}},</p>
+       <p>Sei stato invitato all'evento <strong>{{event_title}}</strong> su {{app_name}}.</p>
+       <p>Registrati sulla piattaforma per partecipare!</p>`,
+      'Vai all\'evento', '{{event_url}}'
+    )
+  },
+  newsletter_new_event: {
+    subject: 'Nuovo evento su {{app_name}}: {{event_title}}',
+    html: BASE_EMAIL_TEMPLATE(
+      'Nuovo evento disponibile',
+      `<p>Ciao {{full_name}},</p>
+       <p>È stato appena pubblicato un nuovo evento: <strong>{{event_title}}</strong>.</p>
+       <p>Non perdertelo, i posti sono limitati!</p>`,
+      'Scopri l\'evento', '{{event_url}}'
+    )
   }
 };
 
@@ -1151,9 +1181,29 @@ app.get('/api/health', async (_, res) => {
 // Email health/status (admin only)
 app.get('/api/email/health', requireAuth, requireAdmin, async (_req, res) => {
   try {
+    // DNS verification for email deliverability
+    const dns = require('dns').promises;
+    const fromDomain = (RESEND_FROM_EMAIL || '').split('@').pop()?.replace('>', '') || '';
+    let dnsCheck = { domain: fromDomain, spf: null, dkim: null, mx: null };
+    if (fromDomain) {
+      try {
+        const txtRecords = await dns.resolveTxt(fromDomain);
+        dnsCheck.spf = txtRecords.flat().find(r => r.startsWith('v=spf1')) || 'NOT FOUND - may cause spam issues';
+      } catch (e) { dnsCheck.spf = 'DNS lookup failed: ' + (e?.code || e?.message); }
+      try {
+        // Check for Resend DKIM records
+        const dkimRecords = await dns.resolveCname(`resend._domainkey.${fromDomain}`).catch(() => null);
+        dnsCheck.dkim = dkimRecords ? 'OK - CNAME found' : 'NOT FOUND - check Resend dashboard';
+      } catch (e) { dnsCheck.dkim = 'Not configured'; }
+      try {
+        const mxRecords = await dns.resolveMx(fromDomain);
+        dnsCheck.mx = mxRecords.map(r => `${r.priority} ${r.exchange}`);
+      } catch (e) { dnsCheck.mx = 'No MX records'; }
+    }
     res.json({
       configured: !!resend,
       from: RESEND_FROM_EMAIL,
+      dns: dnsCheck,
       last: emailLog.slice(-10),
     });
   } catch (e) {
@@ -1259,6 +1309,7 @@ app.put('/api/profile', requireAuth, async (req, res) => {
     ];
     // Accetta sempre i flag pubblici; se le colonne mancassero, effettueremo un ensure e un retry sotto
   allowed.push('public_profile_enabled','public_slug','public_show_bio','public_show_instagram','public_show_company_info','public_show_certifications','public_show_events','public_show_records','public_show_personal');
+    allowed.push('newsletter_new_events');
     if (HAS_PERSONAL_BEST) allowed.push('personal_best');
     if (HAS_OTHER_CERTIFICATIONS) allowed.push('other_certifications');
     const p = req.body || {};
@@ -2352,7 +2403,37 @@ app.post('/api/events', requireAuth, async (req, res) => {
   const sql = `INSERT INTO events(${cols.join(',')}) VALUES(${placeholders}) RETURNING *`;
   try {
     const { rows } = await pool.query(sql, values);
-    res.status(201).json(rows[0]);
+    const newEvent = rows[0];
+    res.status(201).json(newEvent);
+
+    // Async: notify newsletter subscribers about new event
+    (async () => {
+      try {
+        const { rows: subscribers } = await pool.query(
+          "SELECT email, full_name FROM profiles WHERE newsletter_new_events = true AND is_active = true AND id != $1",
+          [req.user.id]
+        );
+        if (!subscribers.length) return;
+        const eventUrl = `${PRODUCTION_BASE_URL}/${newEvent.slug || newEvent.id}`;
+        for (const sub of subscribers) {
+          const { subject: subj, html: htmlTpl } = await renderEmailWithTemplate(
+            'newsletter_new_event', {
+              full_name: sub.full_name || 'Apneista',
+              event_title: newEvent.title,
+              event_url: eventUrl,
+              app_name: APP_NAME,
+              public_base: PRODUCTION_BASE_URL,
+            },
+            `Nuovo evento su ${APP_NAME}: ${newEvent.title}`,
+            DEFAULT_TEMPLATES.newsletter_new_event.html
+          );
+          await sendEmail({ to: sub.email, subject: subj, html: htmlTpl });
+        }
+        console.log('[newsletter] Notified', subscribers.length, 'subscribers about new event:', newEvent.title);
+      } catch (e) {
+        console.warn('[newsletter] Error notifying subscribers:', e?.message || e);
+      }
+    })();
   } catch (err) {
     res.status(500).json({ error: String(err?.message || err) });
   }
@@ -2928,24 +3009,38 @@ app.post('/api/forum/topics/:id/views', async (req, res) => {
 // -----------------------------
 // Admin: Users management
 // -----------------------------
-app.get('/api/admin/users', requireAuth, requireAdmin, async (_req, res) => {
+app.get('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
   try {
     if (!HAS_ORGANIZER_REQUEST) { try { await ensureOrganizerRequestColumnsAtRuntime(); await detectSchema(); } catch (_) {} }
+    const { search, page = 1, limit = 50, role: filterRole } = req.query;
+    const pageNum = Math.max(1, parseInt(page) || 1);
+    const limitNum = Math.min(200, Math.max(1, parseInt(limit) || 50));
+    const offset = (pageNum - 1) * limitNum;
+
+    let where = 'WHERE 1=1';
+    const params = [];
+    if (search) {
+      params.push(`%${search}%`);
+      where += ` AND (full_name ILIKE $${params.length} OR email ILIKE $${params.length} OR company_name ILIKE $${params.length})`;
+    }
+    if (filterRole) {
+      params.push(filterRole);
+      where += ` AND role = $${params.length}`;
+    }
+
+    const countQuery = `SELECT COUNT(*)::int AS total FROM profiles ${where}`;
+    const { rows: countRows } = await pool.query(countQuery, params);
+    const total = countRows[0]?.total || 0;
+
+    const dataParams = [...params, limitNum, offset];
     const { rows } = await pool.query(`
-      SELECT id,
-        email,
-        created_at,
-        organizer_upgrade_requested_at,
-        full_name,
-        role,
-        is_active,
-        avatar_url,
-        company_name,
-        vat_number,
-        company_address
+      SELECT id, email, created_at, organizer_upgrade_requested_at,
+        full_name, role, is_active, avatar_url, company_name, vat_number, company_address
       FROM profiles
+      ${where}
       ORDER BY full_name ASC NULLS LAST, email ASC
-    `);
+      LIMIT $${dataParams.length - 1} OFFSET $${dataParams.length}
+    `, dataParams);
     const out = rows.map(r => ({
       id: r.id,
       email: r.email,
@@ -2963,7 +3058,7 @@ app.get('/api/admin/users', requireAuth, requireAdmin, async (_req, res) => {
         company_address: r.company_address,
       }
     }));
-    res.json(out);
+    res.json({ data: out, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
@@ -3634,4 +3729,383 @@ app.post('/api/conversations/:conversationId/read', requireAuth, async (req, res
 app.listen(PORT, () => {
   const base = process.env.API_PUBLIC_BASE_URL || `http://0.0.0.0:${PORT}`;
   console.log(`API listening on ${base}`);
+});
+
+// =============================================
+// COMMENTS SYSTEM (Blog + Events)
+// =============================================
+
+// GET /api/comments?blog_id=xxx OR ?event_id=xxx
+app.get('/api/comments', async (req, res) => {
+  try {
+    const { blog_id, event_id } = req.query;
+    if (!blog_id && !event_id) return res.status(400).json({ error: 'blog_id or event_id required' });
+    const col = blog_id ? 'blog_id' : 'event_id';
+    const val = blog_id || event_id;
+    const { rows } = await pool.query(`
+      SELECT c.id, c.blog_id, c.event_id, c.author_id, c.parent_id, c.body,
+             c.created_at, c.updated_at,
+             p.full_name AS author_name, p.avatar_url AS author_avatar
+      FROM public.comments c
+      LEFT JOIN public.profiles p ON p.id = c.author_id
+      WHERE c.${col} = $1
+      ORDER BY c.created_at ASC
+    `, [val]);
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// POST /api/comments
+app.post('/api/comments', requireAuth, async (req, res) => {
+  try {
+    const { blog_id, event_id, parent_id, body } = req.body;
+    if (!body || (!blog_id && !event_id)) return res.status(400).json({ error: 'body and blog_id or event_id required' });
+    const { rows } = await pool.query(`
+      INSERT INTO public.comments (blog_id, event_id, author_id, parent_id, body)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `, [blog_id || null, event_id || null, req.user.id, parent_id || null, body.trim()]);
+    // Join author info
+    const comment = rows[0];
+    const { rows: pRows } = await pool.query('SELECT full_name, avatar_url FROM profiles WHERE id = $1', [req.user.id]);
+    comment.author_name = pRows[0]?.full_name;
+    comment.author_avatar = pRows[0]?.avatar_url;
+    res.status(201).json(comment);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// DELETE /api/comments/:id (author or admin)
+app.delete('/api/comments/:id', requireAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { rows } = await pool.query('SELECT author_id FROM public.comments WHERE id = $1', [id]);
+    if (!rows[0]) return res.status(404).json({ error: 'Comment not found' });
+    if (rows[0].author_id !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'creator') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    await pool.query('DELETE FROM public.comments WHERE id = $1', [id]);
+    res.status(204).end();
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// =============================================
+// EVENT MEDIA (Photos/Videos by participants)
+// =============================================
+
+// GET /api/events/:id/media
+app.get('/api/events/:id/media', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT m.id, m.url, m.media_type, m.caption, m.created_at,
+             m.uploader_id, p.full_name AS uploader_name, p.avatar_url AS uploader_avatar
+      FROM public.event_media m
+      LEFT JOIN public.profiles p ON p.id = m.uploader_id
+      WHERE m.event_id = $1
+      ORDER BY m.created_at DESC
+    `, [req.params.id]);
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// POST /api/events/:id/media (auth required - participant uploads)
+app.post('/api/events/:id/media', requireAuth, upload.single('file'), async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const { caption, media_type } = req.body;
+    if (!req.file) return res.status(400).json({ error: 'File required' });
+
+    // Upload file using same logic as /api/upload (local storage)
+    const ext = req.file.originalname ? path.extname(req.file.originalname) : '';
+    const fname = `event-media/${eventId}/${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+    const dest = path.join(UPLOADS_DIR, fname);
+    await fsp.mkdir(path.dirname(dest), { recursive: true });
+    await fsp.writeFile(dest, req.file.buffer);
+    const fileUrl = `/public/uploads/${fname}`;
+
+    const { rows } = await pool.query(`
+      INSERT INTO public.event_media (event_id, uploader_id, url, media_type, caption)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *
+    `, [eventId, req.user.id, fileUrl, media_type || 'image', caption || null]);
+    res.status(201).json(rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// DELETE /api/events/:id/media/:mediaId
+app.delete('/api/events/:id/media/:mediaId', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT uploader_id FROM public.event_media WHERE id = $1 AND event_id = $2', [req.params.mediaId, req.params.id]);
+    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+    // Only uploader, event owner or admin can delete
+    const isOwner = rows[0].uploader_id === req.user.id;
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'creator';
+    if (!isOwner && !isAdmin) {
+      const { rows: ev } = await pool.query('SELECT created_by FROM events WHERE id = $1', [req.params.id]);
+      if (!ev[0] || ev[0].created_by !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
+    }
+    await pool.query('DELETE FROM public.event_media WHERE id = $1', [req.params.mediaId]);
+    res.status(204).end();
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// =============================================
+// EXTERNAL PARTICIPANTS (added by organizer)
+// =============================================
+
+// GET /api/events/:id/external-participants
+app.get('/api/events/:id/external-participants', requireAuth, async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    // Only event owner or admin
+    const { rows: ev } = await pool.query('SELECT created_by FROM events WHERE id = $1', [eventId]);
+    if (!ev[0]) return res.status(404).json({ error: 'Event not found' });
+    if (ev[0].created_by !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'creator') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const { rows } = await pool.query(
+      'SELECT * FROM public.external_participants WHERE event_id = $1 ORDER BY created_at ASC',
+      [eventId]
+    );
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// POST /api/events/:id/external-participants
+app.post('/api/events/:id/external-participants', requireAuth, async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const { full_name, email, phone, notes } = req.body;
+    if (!full_name) return res.status(400).json({ error: 'full_name required' });
+    // Only event owner or admin
+    const { rows: ev } = await pool.query('SELECT created_by, title, slug FROM events WHERE id = $1', [eventId]);
+    if (!ev[0]) return res.status(404).json({ error: 'Event not found' });
+    if (ev[0].created_by !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'creator') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const { rows } = await pool.query(`
+      INSERT INTO public.external_participants (event_id, added_by, full_name, email, phone, notes, invited_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *
+    `, [eventId, req.user.id, full_name, email || null, phone || null, notes || null, email ? new Date() : null]);
+
+    // If email provided, send invite email
+    if (email) {
+      const eventUrl = `${PRODUCTION_BASE_URL}/${ev[0].slug || eventId}`;
+      const { subject: subj, html: htmlTpl } = await renderEmailWithTemplate(
+        'event_invite_external', {
+          full_name,
+          event_title: ev[0].title,
+          event_url: eventUrl,
+          app_name: APP_NAME,
+          public_base: PRODUCTION_BASE_URL,
+        },
+        `Sei stato invitato all'evento: ${ev[0].title}`,
+        BASE_EMAIL_TEMPLATE(
+          'Invito evento',
+          `<p>Ciao ${full_name},</p>
+           <p>Sei stato invitato all'evento <strong>${ev[0].title}</strong> su ${APP_NAME}.</p>
+           <p>Registrati sulla piattaforma per partecipare!</p>`,
+          'Vai all\'evento', eventUrl
+        )
+      );
+      sendEmail({ to: email, subject: subj, html: htmlTpl }).catch(() => {});
+    }
+
+    res.status(201).json(rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// DELETE /api/events/:id/external-participants/:extId
+app.delete('/api/events/:id/external-participants/:extId', requireAuth, async (req, res) => {
+  try {
+    const { rows: ev } = await pool.query('SELECT created_by FROM events WHERE id = $1', [req.params.id]);
+    if (!ev[0]) return res.status(404).json({ error: 'Event not found' });
+    if (ev[0].created_by !== req.user.id && req.user.role !== 'admin' && req.user.role !== 'creator') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    await pool.query('DELETE FROM public.external_participants WHERE id = $1 AND event_id = $2', [req.params.extId, req.params.id]);
+    res.status(204).end();
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// =============================================
+// NEWSLETTER TOGGLE (profile preference)
+// =============================================
+
+// GET /api/profile/newsletter
+app.get('/api/profile/newsletter', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT newsletter_new_events FROM profiles WHERE id = $1', [req.user.id]);
+    res.json({ newsletter_new_events: rows[0]?.newsletter_new_events ?? false });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// PUT /api/profile/newsletter
+app.put('/api/profile/newsletter', requireAuth, async (req, res) => {
+  try {
+    const { newsletter_new_events } = req.body;
+    await pool.query('UPDATE profiles SET newsletter_new_events = $1 WHERE id = $2', [!!newsletter_new_events, req.user.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// POST /api/newsletter/send (admin only - send newsletter to subscribers)
+app.post('/api/newsletter/send', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { subject, html, target_role } = req.body;
+    if (!subject || !html) return res.status(400).json({ error: 'subject and html required' });
+    let query = 'SELECT email, full_name FROM profiles WHERE newsletter_new_events = true AND is_active = true';
+    const params = [];
+    if (target_role) {
+      query += ' AND role = $1';
+      params.push(target_role);
+    }
+    const { rows: subscribers } = await pool.query(query, params);
+    let sent = 0, failed = 0;
+    for (const sub of subscribers) {
+      const personalizedHtml = html.replace(/\{\{full_name\}\}/g, sub.full_name || 'Utente');
+      const result = await sendEmail({ to: sub.email, subject, html: personalizedHtml });
+      if (result.ok || result.skipped) sent++; else failed++;
+    }
+    res.json({ sent, failed, total: subscribers.length });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// =============================================
+// AUTO FEEDBACK EMAIL (cron-like, runs every hour)
+// =============================================
+async function checkAndSendFeedbackEmails() {
+  try {
+    // Find events that ended between 24h and 72h ago and haven't been sent feedback yet
+    const { rows: events } = await pool.query(`
+      SELECT e.id, e.title, e.slug, e.end_date, e.date
+      FROM events e
+      WHERE COALESCE(e.end_date, e.date) < NOW() - INTERVAL '24 hours'
+        AND COALESCE(e.end_date, e.date) > NOW() - INTERVAL '72 hours'
+        AND e.id NOT IN (SELECT DISTINCT event_id FROM event_feedback_emails)
+    `);
+    if (!events.length) return;
+    console.log('[feedback] Found', events.length, 'events needing feedback emails');
+
+    for (const ev of events) {
+      // Get paid participants
+      const { rows: participants } = await pool.query(`
+        SELECT ep.user_id, p.email, p.full_name
+        FROM event_payments ep
+        JOIN profiles p ON p.id = ep.user_id
+        WHERE ep.event_id = $1 AND ep.status = 'paid'
+      `, [ev.id]);
+
+      for (const part of participants) {
+        // Check if already sent
+        const { rows: existing } = await pool.query(
+          'SELECT id FROM event_feedback_emails WHERE event_id = $1 AND user_id = $2',
+          [ev.id, part.user_id]
+        );
+        if (existing.length > 0) continue;
+
+        const eventUrl = `${PRODUCTION_BASE_URL}/${ev.slug || ev.id}`;
+        const { subject: subj, html: htmlTpl } = await renderEmailWithTemplate(
+          'event_feedback', {
+            full_name: part.full_name || 'Apneista',
+            event_title: ev.title,
+            event_url: eventUrl,
+            app_name: APP_NAME,
+            public_base: PRODUCTION_BASE_URL,
+          },
+          `Com'è andato "${ev.title}"?`,
+          BASE_EMAIL_TEMPLATE(
+            'Racconta la tua esperienza',
+            `<p>Ciao ${part.full_name || 'Apneista'},</p>
+             <p>Speriamo che tu abbia apprezzato l'evento <strong>${ev.title}</strong>!</p>
+             <p>Ti va di condividere la tua esperienza? Il tuo feedback aiuta la community e gli organizzatori a migliorare.</p>`,
+            'Lascia un commento', eventUrl
+          )
+        );
+        const result = await sendEmail({ to: part.email, subject: subj, html: htmlTpl });
+        if (result.ok || result.skipped) {
+          await pool.query(
+            'INSERT INTO event_feedback_emails (event_id, user_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
+            [ev.id, part.user_id]
+          );
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('[feedback] Error checking feedback emails:', e?.message || e);
+  }
+}
+
+// Run feedback check every hour
+setInterval(checkAndSendFeedbackEmails, 60 * 60 * 1000);
+// Also run once 30s after startup
+setTimeout(checkAndSendFeedbackEmails, 30000);
+
+// =============================================
+// DYNAMIC SITEMAP
+// =============================================
+app.get('/sitemap.xml', async (_req, res) => {
+  try {
+    const base = PRODUCTION_BASE_URL;
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+    // Static pages
+    const staticPages = ['/', '/eventi-imminenti', '/chi-siamo', '/contattaci', '/blog', '/forum', '/privacy-policy', '/cookie-policy'];
+    for (const p of staticPages) {
+      xml += `  <url><loc>${base}${p}</loc><changefreq>weekly</changefreq><priority>${p === '/' ? '1.0' : '0.7'}</priority></url>\n`;
+    }
+
+    // Events
+    const { rows: events } = await pool.query("SELECT slug, date FROM events ORDER BY date DESC LIMIT 500");
+    for (const ev of events) {
+      if (ev.slug) {
+        xml += `  <url><loc>${base}/${ev.slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
+      }
+    }
+
+    // Blog posts
+    const { rows: posts } = await pool.query("SELECT slug, created_at FROM blog_posts WHERE published = true ORDER BY created_at DESC LIMIT 500");
+    for (const p of posts) {
+      if (p.slug) {
+        xml += `  <url><loc>${base}/blog/${p.slug}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n`;
+      }
+    }
+
+    // Public profiles
+    const { rows: profiles } = await pool.query("SELECT public_slug FROM profiles WHERE public_profile_enabled = true AND public_slug IS NOT NULL AND public_slug != ''");
+    for (const p of profiles) {
+      xml += `  <url><loc>${base}/profile/${p.public_slug}</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
+    }
+
+    xml += '</urlset>';
+    res.set('Content-Type', 'application/xml');
+    res.send(xml);
+  } catch (e) {
+    res.status(500).send('Error generating sitemap');
+  }
 });

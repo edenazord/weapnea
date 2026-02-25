@@ -15,6 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import DOMPurify from 'dompurify';
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/useIsMobile";
+import Comments from "@/components/Comments";
+import PageHead from "@/components/PageHead";
 
 const BlogDetail = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -106,6 +108,7 @@ const BlogDetail = () => {
 
   return (
     <Wrapper>
+      <PageHead title={article?.seo_title || article?.title || 'Articolo'} description={article?.seo_description || article?.excerpt || ''} />
   {!isMobile && <PageTopBar fallbackPath="/blog" label={t('blog_page.back_to_blog', 'Torna al Blog')} />}
       <div className="max-w-6xl mx-auto px-4 md:px-6">
 
@@ -242,6 +245,9 @@ const BlogDetail = () => {
             <Link to="/blog">{t('blog_page.back_to_blog', 'Torna al Blog')}</Link>
           </Button>
         </div>
+
+        {/* Comments */}
+        {article.id && <Comments blogId={article.id} />}
       </div>
     </Wrapper>
   );

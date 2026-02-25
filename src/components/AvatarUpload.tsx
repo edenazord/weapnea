@@ -127,6 +127,9 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: AvatarUploadP
       <p className="text-xs text-gray-500 text-center">
         Formati supportati: JPG, PNG. Dimensione massima: 2MB
       </p>
+      <p className="text-xs text-gray-400 text-center">
+        Dimensioni raccomandate: 400×400 px (quadrata)
+      </p>
     </div>
   );
 }

@@ -5,8 +5,9 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Home, User, FileText, Menu, X, Calendar, Users, Mail, Shield, BookOpen, MessageSquare, MessageCircle, LogOut } from "lucide-react";
+import { Home, User, FileText, Menu, X, Calendar, Users, Mail, Shield, BookOpen, MessageSquare, MessageCircle, LogOut, Bot } from "lucide-react";
 import { useChatStore } from "@/hooks/useChatStore";
+import { useAIAgentStore } from "@/hooks/useAIAgentStore";
 import { Button } from "@/components/ui/button";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import Footer from "@/components/Footer";
@@ -19,6 +20,7 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
     const navigate = useNavigate();
     const [menuOpen, setMenuOpen] = useState(false);
     const { isOpen: chatOpen, openList: openChatList } = useChatStore();
+    const { visible: aiVisible, toggle: toggleAI } = useAIAgentStore();
     
     // Auto scroll to top on route change
     useScrollToTop();
@@ -29,6 +31,7 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
         { icon: User, label: t('nav.profile', 'Profilo'), path: user ? "/profile" : "/auth" },
         { icon: BookOpen, label: t('nav.blog', 'Blog'), path: "/blog" },
         { icon: MessageCircle, label: "Chat", path: "__chat__" },
+        { icon: Bot, label: "AI", path: "__ai__" },
     ];
 
     // Full menu items for the slide-out panel
@@ -156,9 +159,13 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
                     {bottomItems.map((item) => {
                         const isCurrent = item.path === "__chat__" 
                                 ? chatOpen 
+                                : item.path === "__ai__"
+                                ? aiVisible
                                 : isActive(item.path);
                         const handleClick = item.path === "__chat__"
                                 ? (e: React.MouseEvent) => { e.preventDefault(); openChatList(); }
+                                : item.path === "__ai__"
+                                ? (e: React.MouseEvent) => { e.preventDefault(); toggleAI(); }
                                 : undefined;
                         
                         const content = (
@@ -178,7 +185,7 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
                             </div>
                         );
 
-                        if (item.path === "__chat__") {
+                        if (item.path === "__chat__" || item.path === "__ai__") {
                             return (
                                 <button
                                     key={item.path}

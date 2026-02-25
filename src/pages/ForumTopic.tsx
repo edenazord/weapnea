@@ -30,6 +30,7 @@ import EditTopicDialog from "@/components/forum/EditTopicDialog";
 import EditReplyDialog from "@/components/forum/EditReplyDialog";
 import PageTopBar from "@/components/PageTopBar";
 import { useLanguage } from "@/contexts/LanguageContext";
+import PageHead from "@/components/PageHead";
 
 const ForumTopic = () => {
   const isMobile = useIsMobile();
@@ -154,6 +155,7 @@ const ForumTopic = () => {
 
   const content = (
     <div className={`space-y-6`}>
+      <PageHead title={topic?.title || 'Topic'} description={topic?.content?.slice(0, 160) || ''} />
   <PageTopBar fallbackPath="/forum" label={t('forum.back_to_forum', 'Torna al Forum')} />
       <div className="max-w-6xl mx-auto px-4 md:px-6">
       

@@ -28,6 +28,10 @@ import { friendlyToCanonicalSlug } from "@/lib/seo-utils";
 import { useChatStore } from "@/hooks/useChatStore";
 import { toast } from "sonner";
 import DOMPurify from "dompurify";
+import Comments from "@/components/Comments";
+import EventMediaGallery from "@/components/EventMediaGallery";
+import ExternalParticipants from "@/components/ExternalParticipants";
+import PageHead from "@/components/PageHead";
 
 const EventDetailSkeleton = () => (
     <div className="min-h-screen bg-blue-50">
@@ -365,6 +369,7 @@ const EventDetail = () => {
 
     const content = (
         <div className={`${isMobile ? 'p-4' : 'container mx-auto px-4 py-8 md:py-12'}`}>
+            <PageHead title={event?.title || 'Evento'} description={event?.description?.slice(0, 160) || ''} />
             <Button variant="ghost" asChild className={`mb-6 ${isMobile ? '' : '-ml-4'}`}>
                 <Link to="/"><ArrowLeft className="mr-2 h-4 w-4" /> {t('events.back_to_all', 'Torna a tutti gli eventi')}</Link>
             </Button>
@@ -727,6 +732,31 @@ const EventDetail = () => {
                                 ))}
                             </div>
                         </Card>
+                    )}
+
+                    {/* Community Media Gallery (photos/videos uploaded by participants) */}
+                    {event.id && (
+                      <div className="mt-6">
+                        <EventMediaGallery
+                          eventId={event.id}
+                          isParticipant={!!user}
+                          isOwner={user?.id === event.created_by}
+                        />
+                      </div>
+                    )}
+
+                    {/* External participants management (organizer only) */}
+                    {user && user.id === event.created_by && event.id && (
+                      <Card className="shadow-lg p-6 mt-6">
+                        <ExternalParticipants eventId={event.id} />
+                      </Card>
+                    )}
+
+                    {/* Comments */}
+                    {event.id && (
+                      <div className="mt-6">
+                        <Comments eventId={event.id} />
+                      </div>
                     )}
 
                     {/* Lightbox Dialog */}

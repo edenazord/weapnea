@@ -31,6 +31,8 @@ const formSchema = z.object({
   content: z.string().min(10, { message: "Il contenuto deve essere di almeno 10 caratteri." }),
   image_url: z.string().url().optional(),
   published: z.boolean().default(false),
+  seo_title: z.string().optional(),
+  seo_description: z.string().optional(),
 });
 
 interface BlogFormProps {
@@ -109,6 +111,8 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
       // mappiamo cover_image_url nel campo di form image_url
       image_url: article?.cover_image_url || "",
       published: article?.published ?? false,
+      seo_title: (article as any)?.seo_title || "",
+      seo_description: (article as any)?.seo_description || "",
     },
   });
 
@@ -123,6 +127,8 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
         content: article.content || '',
         image_url: article.cover_image_url || '',
         published: article.published ?? false,
+        seo_title: (article as any)?.seo_title || '',
+        seo_description: (article as any)?.seo_description || '',
       });
       setSlugManuallyEdited(true); // in edit, consideriamo lo slug come "manuale"
     } else {
@@ -134,6 +140,8 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
         content: '',
         image_url: '',
         published: false,
+        seo_title: '',
+        seo_description: '',
       });
       setSlugManuallyEdited(false);
     }
@@ -161,6 +169,8 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
         author_id: user.id,
         slug: values.slug || generateSlug(values.title),
         published: values.published,
+        seo_title: values.seo_title || null,
+        seo_description: values.seo_description || null,
       };
 
       if (article) {
@@ -304,6 +314,46 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
           </FormControl>
           <FormMessage />
         </FormItem>
+        {/* SEO Fields */}
+        <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+          <h4 className="text-sm font-semibold text-gray-700">SEO (Search Engine Optimization)</h4>
+          <FormField
+            control={form.control}
+            name="seo_title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>SEO Title</FormLabel>
+                <FormControl>
+                  <Input placeholder="Titolo per i motori di ricerca (max 60 caratteri)" maxLength={70} {...field} />
+                </FormControl>
+                <FormDescription>Se vuoto, verrà usato il titolo dell'articolo.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="seo_description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Meta Description</FormLabel>
+                <FormControl>
+                  <textarea
+                    className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    placeholder="Descrizione per i motori di ricerca (max 160 caratteri)"
+                    maxLength={170}
+                    value={field.value || ''}
+                    onChange={field.onChange}
+                  />
+                </FormControl>
+                <FormDescription>
+                  {(field.value?.length || 0)}/160 caratteri. Questa descrizione appare nei risultati di Google.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <FormField
           control={form.control}
           name="published"

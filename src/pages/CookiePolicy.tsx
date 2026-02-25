@@ -2,6 +2,7 @@ import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import PageTopBar from "@/components/PageTopBar";
 import PageHeader from "@/components/PageHeader";
+import PageHead from "@/components/PageHead";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { Cookie, ListOrdered, CalendarDays } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -41,6 +42,7 @@ const CookiePolicy = () => {
 
   const Content = () => (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-purple-50">
+      <PageHead title="Cookie Policy" />
       <PageTopBar />
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-10">
         <PageHeader

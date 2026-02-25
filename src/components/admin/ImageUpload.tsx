@@ -143,6 +143,9 @@ export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved, 
                 ? `Immagini: JPEG, PNG, WebP (max ${maxImageSizeMB}MB). Video: MP4, WebM, MOV (max ${maxVideoSizeMB}MB).`
                 : `JPEG, PNG o WebP (max ${maxImageSizeMB}MB)`}
             </p>
+            <p className="text-xs text-gray-400">
+              Dimensioni raccomandate: 1200×630 px (copertina)
+            </p>
           </div>
         </div>
       )}

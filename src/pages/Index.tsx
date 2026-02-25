@@ -22,6 +22,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { getPublicConfig } from "@/lib/publicConfig";
+import PageHead from "@/components/PageHead";
 // import { useAuth } from "@/contexts/AuthContext";
 
 const Index = () => {
@@ -287,6 +288,7 @@ const Index = () => {
 
   const content = (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 overflow-x-hidden">
+      <PageHead title="WeApnea – Community Apnea & Freediving" description="La community italiana per apneisti e freediver. Scopri eventi, corsi e allenamenti di apnea." />
       <div className="space-y-8 py-8">
         {/* Search Section */}
         <section className={`${isMobile ? 'px-2' : 'px-6'}`}>

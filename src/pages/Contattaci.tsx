@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useLanguage } from "@/contexts/LanguageContext";
 import PageTopBar from "@/components/PageTopBar";
 import PageHeader from "@/components/PageHeader";
+import PageHead from "@/components/PageHead";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -58,6 +59,7 @@ const Contattaci = () => {
 
   const content = (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-purple-50">
+      <PageHead title="Contattaci" description="Contatta il team WeApnea per informazioni, collaborazioni e supporto." />
       {/* Hero con topbar e header */}
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 pointer-events-none" />

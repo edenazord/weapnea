@@ -15,6 +15,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import PageTopBar from "@/components/PageTopBar";
 import PageHeader from "@/components/PageHeader";
+import PageHead from "@/components/PageHead";
 
 const Forum = () => {
   const isMobile = useIsMobile();
@@ -52,6 +53,7 @@ const Forum = () => {
 
   const content = (
     <div className={`space-y-6`}>
+      <PageHead title="Forum" description="Il forum della community WeApnea. Discuti di apnea, freediving e allenamenti." />
       <PageTopBar />
       <div className="max-w-6xl mx-auto px-4 md:px-6">
       
