@@ -600,12 +600,21 @@ const BASE_EMAIL_STYLE = `
 `;
 
 // Build branded HTML email from JSON template data
+function processConditionals(text, vars) {
+  return String(text || '').replace(/{{#if\s+([a-zA-Z0-9_.]+)\s*}}([\s\S]*?){{\s*\/if\s*}}/g, (_m, key, inner) => {
+    const v = vars && Object.prototype.hasOwnProperty.call(vars, key) ? vars[key] : undefined;
+    if (v === undefined || v === null) return '';
+    if (typeof v === 'string' && !v.trim()) return '';
+    return inner;
+  });
+}
+
 function buildBrandedEmail(tpl, vars, ctaText = null, ctaUrl = null) {
   const publicBase = vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com';
   const appName = vars.app_name || APP_NAME;
   
-  // Convert body text with \n to HTML paragraphs
-  const bodyHtml = (tpl.body || '')
+  // Convert body text with \n to HTML paragraphs, processing conditionals first
+  const bodyHtml = processConditionals(tpl.body || '', vars)
     .split('\n')
     .filter(line => line.trim())
     .map(line => `<p>${simpleRender(line, vars)}</p>`)
@@ -3459,6 +3468,10 @@ app.post('/api/events/:id/invite', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'emails array required' });
     }
 
+    // Fetch organizer name
+    const { rows: orgRows } = await pool.query('SELECT full_name FROM profiles WHERE id = $1 LIMIT 1', [ev.created_by]);
+    const organizerName = orgRows[0]?.full_name || '';
+
     const base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
     const safeBase = base.replace(/\/$/, '');
     const eventUrl = ev.slug ? `${safeBase}/events/${encodeURIComponent(ev.slug)}` : `${safeBase}/events/${ev.id}`;
@@ -3480,6 +3493,7 @@ app.post('/api/events/:id/invite', requireAuth, async (req, res) => {
           'event_invite',
           {
             full_name: fullName || email.split('@')[0],
+            organizer_name: organizerName,
             event_title: ev.title,
             event_url: eventUrl,
             event_dates: dateText,

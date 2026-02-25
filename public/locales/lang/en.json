@@ -790,7 +790,8 @@
     "event_invite": {
       "subject": "You have been invited to: {{event_title}}",
       "greeting": "Hi {{full_name}},",
-      "body": "You have been invited to the event <strong>{{event_title}}</strong> on WeApnea!\n\n{{#if event_dates}}<strong>Dates:</strong> {{event_dates}}{{/if}}\n{{#if event_location}}<strong>Location:</strong> {{event_location}}{{/if}}\n\nDon't miss this opportunity, spots are limited.\nClick the button below to view the event and confirm your participation.",
+"body": "<strong>{{organizer_name}}</strong> has invited you to the event <strong>{{event_title}}</strong> on WeApnea!\n\n{{#if event_dates}}\ud83d\udcc5 <strong>Dates:</strong> {{event_dates}}{{/if}}\n{{#if event_location}}\ud83d\udccd <strong>Location:</strong> {{event_location}}{{/if}}\n\nDon't miss this opportunity \u2014 spots are limited!\nIf you don't have an account yet, sign up for free to confirm your participation."
+      "link_label": "View the event",
       "closing": "See you there!",
       "signature": "The WeApnea Team"
     }

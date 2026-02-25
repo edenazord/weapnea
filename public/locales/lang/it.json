@@ -790,7 +790,8 @@
 		"event_invite": {
 			"subject": "Sei stato invitato a: {{event_title}}",
 			"greeting": "Ciao {{full_name}},",
-			"body": "Sei stato invitato a partecipare all'evento <strong>{{event_title}}</strong> su WeApnea!\n\n{{#if event_dates}}<strong>Date:</strong> {{event_dates}}{{/if}}\n{{#if event_location}}<strong>Luogo:</strong> {{event_location}}{{/if}}\n\nNon perdere l'occasione, i posti sono limitati.\nClicca il pulsante qui sotto per visualizzare l'evento e confermare la tua partecipazione.",
+			"body": "<strong>{{organizer_name}}</strong> ti ha invitato a partecipare all'evento <strong>{{event_title}}</strong> su WeApnea!\n\n{{#if event_dates}}\ud83d\udcc5 <strong>Date:</strong> {{event_dates}}{{/if}}\n{{#if event_location}}\ud83d\udccd <strong>Luogo:</strong> {{event_location}}{{/if}}\n\nNon perdere questa occasione, i posti sono limitati!\nSe non hai ancora un account, registrati gratuitamente per confermare la tua partecipazione.",
+			"link_label": "Scopri l'evento",
 			"closing": "Ti aspettiamo!",
 			"signature": "Il Team di WeApnea"
 		}
