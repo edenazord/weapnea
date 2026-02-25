@@ -18,7 +18,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle, Phone, Bell, ChevronLeft, ChevronRight } from "lucide-react";
+import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle, Phone, Bell, ChevronLeft, ChevronRight, UserPlus } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -43,6 +43,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { EventForm } from "@/components/admin/EventForm";
 import { CenteredNotice } from "@/components/CenteredNotice";
 import { useChatStore } from "@/hooks/useChatStore";
+import EventInvite from "@/components/EventInvite";
 // Rimosso dropdown per sostituirlo con sotto-tab statiche interne alla sezione Eventi
 
 type BestDiscipline = 'STA' | 'DYN' | 'DYNB' | 'DNF' | 'FIM' | 'CWT' | 'CWTB' | 'CNF' | 'VWT' | 'NLT';
@@ -211,6 +212,7 @@ const Profile = () => {
   // Stato per modifica evento
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventWithCategory | null>(null);
+  const [inviteEvent, setInviteEvent] = useState<{ id: string; title: string } | null>(null);
   // Stato per modale requisiti mancanti organizzazione evento
   const [showMissingFieldsModal, setShowMissingFieldsModal] = useState(false);
   // Snapshot dei campi mancanti al momento dell'apertura del modal (non cambia durante la compilazione)
@@ -1046,6 +1048,11 @@ const Profile = () => {
                                       <Users className="h-4 w-4" />
                                       <span className="text-xs font-semibold">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</span>
                                     </Button>
+                                    {!isSoldOut && (
+                                      <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_invite', 'Invita')} onClick={() => setInviteEvent({ id: ev.id, title: ev.title })} className="h-8 w-8">
+                                        <UserPlus className="h-4 w-4" />
+                                      </Button>
+                                    )}
                                     <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_edit', 'Modifica')} onClick={() => openEditEvent(ev)} className="h-8 w-8">
                                       <Pencil className="h-4 w-4" />
                                     </Button>
@@ -1064,6 +1071,14 @@ const Profile = () => {
                           </div>
                         ))}
                       </div>
+                      {inviteEvent && (
+                        <EventInvite
+                          eventId={inviteEvent.id}
+                          eventTitle={inviteEvent.title}
+                          open={!!inviteEvent}
+                          onOpenChange={(open) => { if (!open) setInviteEvent(null); }}
+                        />
+                      )}
                       {/* Pulsante ritorno rimosso perché ridondante: si usa la sotto-tab sopra */}
                     </div>
                   )}
