@@ -43,6 +43,13 @@ export default function DIdAgent() {
     hide();
   }, [hide]);
 
+  // When visible becomes true (e.g. from mobile bottom nav toggle), ensure fresh iframe
+  useEffect(() => {
+    if (visible) {
+      setIframeKey((k) => k + 1);
+    }
+  }, [visible]);
+
   // Escape key
   useEffect(() => {
     if (!visible) return;
@@ -53,11 +60,9 @@ export default function DIdAgent() {
     return () => window.removeEventListener("keydown", onKey);
   }, [visible, handleClose]);
 
-  if (isMobile) return null; // Mobile toggle is in MobileLayout bottom nav
-
   return (
     <>
-      {/* D-ID iframe – full viewport, unmounted when closed */}
+      {/* D-ID iframe – full viewport, unmounted when closed (works on both mobile & desktop) */}
       {visible && (
         <iframe
           key={iframeKey}
@@ -70,21 +75,29 @@ export default function DIdAgent() {
         />
       )}
 
-      {/* Toggle / Close button – sits ABOVE the iframe */}
-      <button
-        onClick={visible ? handleClose : handleOpen}
-        className={`fixed z-[9999] bottom-6 right-[210px] w-48 h-12 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center rounded-full gap-2 ${
-          visible
-            ? "bg-gradient-to-r from-red-500 to-rose-600 text-white hover:from-red-600 hover:to-rose-700"
-            : "bg-gradient-to-r from-emerald-400 to-teal-500 text-white hover:from-emerald-500 hover:to-teal-600"
-        }`}
-        aria-label={visible ? "Chiudi AI Assistant" : "Apri AI Assistant"}
-      >
-        <Bot className="w-5 h-5" />
-        <span className="font-semibold text-sm">
-          {visible ? "Chiudi AI" : "AI Assistant"}
-        </span>
-      </button>
+      {/* Close button when AI is open – works on both mobile & desktop, sits ABOVE the iframe */}
+      {visible && (
+        <button
+          onClick={handleClose}
+          className="fixed z-[9999] top-4 right-4 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-full px-5 py-2.5 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2"
+          aria-label="Chiudi AI Assistant"
+        >
+          <Bot className="w-5 h-5" />
+          <span className="font-semibold text-sm">Chiudi AI</span>
+        </button>
+      )}
+
+      {/* Desktop-only FAB to open AI (on mobile, the bottom nav has the AI toggle) */}
+      {!isMobile && !visible && (
+        <button
+          onClick={handleOpen}
+          className="fixed z-[9999] bottom-6 right-[210px] w-48 h-12 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center rounded-full gap-2 bg-gradient-to-r from-emerald-400 to-teal-500 text-white hover:from-emerald-500 hover:to-teal-600"
+          aria-label="Apri AI Assistant"
+        >
+          <Bot className="w-5 h-5" />
+          <span className="font-semibold text-sm">AI Assistant</span>
+        </button>
+      )}
     </>
   );
 }
