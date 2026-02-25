@@ -1618,7 +1618,7 @@ const Profile = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <Shield className="h-5 w-5 text-primary" />
                         <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</h3>
-                        <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.organizer_only_badge', 'Per organizzatori')}</Badge>
+                        <Badge variant="outline" className="text-xs">{t('profile.sections.certifications.required_badge', 'Obbligatoria')}</Badge>
                       </div>
 
                       <div className="flex items-start gap-3 p-3 border rounded-md border-primary/30 bg-primary/5">
@@ -1680,7 +1680,7 @@ const Profile = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="h-5 w-5 text-primary" />
                         <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_medical', 'Certificato medico')}</h3>
-                        <Badge variant="outline" className="text-xs">{t('profile.sections.certifications.required_badge', 'Obbligatoria')}</Badge>
+                        <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.organizer_only_badge', 'Per organizzatori')}</Badge>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
