@@ -75,11 +75,15 @@ export default function DIdAgent() {
         />
       )}
 
-      {/* Close button when AI is open – works on both mobile & desktop, sits ABOVE the iframe */}
+      {/* Close button when AI is open – sits ABOVE the iframe */}
       {visible && (
         <button
           onClick={handleClose}
-          className="fixed z-[9999] top-4 right-4 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-full px-5 py-2.5 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2"
+          className={`fixed z-[9999] shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center gap-2 rounded-full bg-gradient-to-r from-red-500 to-rose-600 text-white hover:from-red-600 hover:to-rose-700 ${
+            isMobile
+              ? "top-4 right-4 px-5 py-2.5"
+              : "bottom-6 right-[210px] w-48 h-12 justify-center"
+          }`}
           aria-label="Chiudi AI Assistant"
         >
           <Bot className="w-5 h-5" />
