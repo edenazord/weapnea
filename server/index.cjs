@@ -3858,6 +3858,10 @@ app.get('/api/comments', async (req, res) => {
     `, [val]);
     res.json(rows);
   } catch (e) {
+    // If table doesn't exist yet, return empty array instead of 500
+    if (String(e?.message || '').includes('relation') && String(e?.message || '').includes('does not exist')) {
+      return res.json([]);
+    }
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
@@ -3921,6 +3925,10 @@ app.get('/api/events/:id/media', async (req, res) => {
     `, [req.params.id]);
     res.json(rows);
   } catch (e) {
+    // If table doesn't exist yet, return empty array instead of 500
+    if (String(e?.message || '').includes('relation') && String(e?.message || '').includes('does not exist')) {
+      return res.json([]);
+    }
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
