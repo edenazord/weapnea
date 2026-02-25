@@ -4042,13 +4042,86 @@ app.post('/api/events/:id/media', requireAuth, upload.single('file'), async (req
     const { caption, media_type } = req.body;
     if (!req.file) return res.status(400).json({ error: 'File required' });
 
-    // Upload file using same logic as /api/upload (local storage)
+    // Upload file using STORAGE_DRIVER (same logic as /api/upload)
     const ext = req.file.originalname ? path.extname(req.file.originalname) : '';
-    const fname = `event-media/${eventId}/${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
-    const dest = path.join(UPLOADS_DIR, fname);
-    await fsp.mkdir(path.dirname(dest), { recursive: true });
-    await fsp.writeFile(dest, req.file.buffer);
-    const fileUrl = `/public/uploads/${fname}`;
+    const mediaName = `event-media-${eventId}-${Date.now()}-${Math.random().toString(36).slice(2)}${ext}`;
+    const driver = STORAGE_DRIVER;
+    let fileUrl;
+
+    const sftpConfigMissing = (
+      driver === 'sftp' && (
+        !process.env.SFTP_HOST ||
+        !(process.env.SFTP_USERNAME || process.env.SFTP_USER) ||
+        !(process.env.SFTP_PASSWORD || process.env.SFTP_PASS)
+      )
+    );
+
+    if (driver === 's3') {
+      if (!S3Client || !PutObjectCommand) return res.status(500).json({ error: 'S3 client not installed.' });
+      const region = process.env.S3_REGION || 'auto';
+      const endpoint = process.env.S3_ENDPOINT || undefined;
+      const bucket = process.env.S3_BUCKET;
+      const accessKeyId = process.env.S3_ACCESS_KEY_ID;
+      const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+      const publicBase = process.env.S3_PUBLIC_BASE_URL;
+      if (!bucket || !accessKeyId || !secretAccessKey || !publicBase) return res.status(500).json({ error: 'S3 config missing' });
+      const s3 = new S3Client({ region, endpoint, forcePathStyle: !!endpoint, credentials: { accessKeyId, secretAccessKey } });
+      const key = `uploads/${mediaName}`;
+      const contentType = req.file.mimetype || 'application/octet-stream';
+      const putParams = { Bucket: bucket, Key: key, Body: req.file.buffer, ContentType: contentType };
+      if (process.env.S3_ACL) putParams.ACL = process.env.S3_ACL;
+      await s3.send(new PutObjectCommand(putParams));
+      fileUrl = `${publicBase.replace(/\/$/, '')}/${key}`;
+    } else if (driver === 'sftp' && !sftpConfigMissing) {
+      let SFTPClient;
+      try { SFTPClient = require('ssh2-sftp-client'); } catch (e) {
+        return res.status(500).json({ error: 'SFTP client not installed.' });
+      }
+      const sftpHost = process.env.SFTP_HOST;
+      const sftpPort = Number(process.env.SFTP_PORT || 22);
+      const sftpUser = process.env.SFTP_USERNAME || process.env.SFTP_USER;
+      const sftpPass = process.env.SFTP_PASSWORD || process.env.SFTP_PASS;
+      const sftpBaseDir = process.env.SFTP_BASE_DIR || '/weapnea/uploads';
+      const publicBaseEnv = process.env.SFTP_PUBLIC_BASE_URL;
+      const publicDomain = process.env.SFTP_PUBLIC_DOMAIN || sftpHost;
+      const remoteRoot = process.env.SFTP_REMOTE_ROOT || '/weapnea';
+      const remoteDir = sftpBaseDir.replace(/\/$/, '');
+      const remotePath = `${remoteDir}/${mediaName}`;
+      const sftp = new SFTPClient();
+      try {
+        await sftp.connect({ host: sftpHost, port: sftpPort, username: sftpUser, password: sftpPass });
+        const dirExists = await sftp.exists(remoteDir);
+        if (!dirExists) {
+          await sftp.mkdir(remoteDir, true);
+          if (process.env.SFTP_CHMOD_DIRS) {
+            try { await sftp.chmod(remoteDir, process.env.SFTP_CHMOD_DIRS); } catch (e) { console.warn('[sftp] chmod dir failed', e?.message); }
+          }
+        }
+        await sftp.put(req.file.buffer, remotePath);
+        if (process.env.SFTP_CHMOD_FILES) {
+          try { await sftp.chmod(remotePath, process.env.SFTP_CHMOD_FILES); } catch (e) { console.warn('[sftp] chmod file failed', e?.message); }
+        }
+      } catch (err) {
+        try { await sftp.end(); } catch {}
+        return res.status(500).json({ error: `SFTP upload failed: ${String(err?.message || err)}` });
+      }
+      try { await sftp.end(); } catch {}
+      let deducedBasePath = '/uploads';
+      if (sftpBaseDir.startsWith(remoteRoot)) {
+        deducedBasePath = sftpBaseDir.slice(remoteRoot.length);
+        if (!deducedBasePath.startsWith('/')) deducedBasePath = `/${deducedBasePath}`;
+      }
+      const computedBase = `https://${publicDomain}${deducedBasePath}`;
+      const finalBase = (publicBaseEnv || computedBase).replace(/\/$/, '');
+      fileUrl = `${finalBase}/${mediaName}`;
+    } else {
+      // LOCAL storage fallback
+      const dest = path.join(UPLOADS_DIR, mediaName);
+      await fsp.mkdir(path.dirname(dest), { recursive: true });
+      await fsp.writeFile(dest, req.file.buffer);
+      const baseUrl = getApiPublicBase(req);
+      fileUrl = `${baseUrl}/public/uploads/${mediaName}`;
+    }
 
     const { rows } = await pool.query(`
       INSERT INTO public.event_media (event_id, uploader_id, url, media_type, caption)
