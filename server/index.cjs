@@ -146,7 +146,7 @@ async function runMigrationsAtStartup() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS public.comments (
         id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-        blog_id uuid REFERENCES public.blog_posts(id) ON DELETE CASCADE,
+        blog_id uuid REFERENCES public.blog_articles(id) ON DELETE CASCADE,
         event_id uuid REFERENCES public.events(id) ON DELETE CASCADE,
         author_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
         parent_id uuid REFERENCES public.comments(id) ON DELETE CASCADE,
