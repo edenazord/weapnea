@@ -541,19 +541,7 @@ const EventDetail = () => {
                         </Card>
                     )}
 
-                    {/* Media Utenti – galleria community */}
-                    {/* Media Utenti – visibile a tutti, upload solo per partecipanti/organizzatore/admin */}
-                    {event.id && (
-                      <div className="mt-8">
-                        <EventMediaGallery
-                          eventId={event.id}
-                          isParticipant={isParticipant}
-                          isOwner={user?.id === event.created_by}
-                        />
-                      </div>
-                    )}
-
-                    {/* Commenti – sotto come nel blog */}
+                    {/* Commenti – sotto Orari e Logistica come nel blog */}
                     {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
                       <div className="mt-8">
                         <Comments eventId={event.id} canComment={isParticipant || user?.id === event.created_by || user?.role === 'admin'} />
@@ -767,6 +755,17 @@ const EventDetail = () => {
                                 ))}
                             </div>
                         </Card>
+                    )}
+
+                    {/* Foto & Video della Community – sotto Galleria */}
+                    {event.id && (
+                      <div className="mt-6">
+                        <EventMediaGallery
+                          eventId={event.id}
+                          isParticipant={isParticipant}
+                          isOwner={user?.id === event.created_by}
+                        />
+                      </div>
                     )}
 
                     {/* Lightbox Dialog */}
