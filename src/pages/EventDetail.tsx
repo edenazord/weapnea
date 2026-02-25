@@ -86,6 +86,8 @@ const EventDetail = () => {
     const isMobile = useIsMobile();
     const [lightboxOpen, setLightboxOpen] = useState(false);
     const [lightboxIndex, setLightboxIndex] = useState(0);
+    const [galleryPage, setGalleryPage] = useState(1);
+    const GALLERY_PER_PAGE = 10;
     // null = sconosciuto; evita di mostrare prezzo finché non abbiamo la config
     const [eventsFree, setEventsFree] = useState<boolean | null>(null);
 
@@ -743,17 +745,41 @@ const EventDetail = () => {
                         <Card className={`shadow-lg p-6 mt-6`}>
                             <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.gallery_label', 'Galleria')}</h2>
                             <div className="grid grid-cols-2 gap-3">
-                                {galleryAbs.map((src, index) => (
+                                {galleryAbs.slice((galleryPage - 1) * GALLERY_PER_PAGE, galleryPage * GALLERY_PER_PAGE).map((src, sliceIdx) => {
+                                    const realIndex = (galleryPage - 1) * GALLERY_PER_PAGE + sliceIdx;
+                                    return (
                                     <img
-                                        key={index}
+                                        key={realIndex}
                                         src={src || '/placeholder.svg'}
-                                        alt={`Galleria ${index + 1}`}
+                                        alt={`Galleria ${realIndex + 1}`}
                                         className="w-full h-24 object-cover rounded-lg border border-gray-200 cursor-zoom-in"
-                                        onClick={() => { setLightboxIndex(index); setLightboxOpen(true); }}
+                                        onClick={() => { setLightboxIndex(realIndex); setLightboxOpen(true); }}
                                         onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
                                     />
-                                ))}
+                                    );
+                                })}
                             </div>
+                            {galleryAbs.length > GALLERY_PER_PAGE && (
+                              <div className="flex items-center justify-center gap-1 mt-4">
+                                <Button size="icon" variant="ghost" className="h-8 w-8" disabled={galleryPage === 1} onClick={() => setGalleryPage(p => p - 1)}>
+                                  <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                {Array.from({ length: Math.ceil(galleryAbs.length / GALLERY_PER_PAGE) }, (_, i) => (
+                                  <Button
+                                    key={i + 1}
+                                    size="sm"
+                                    variant={galleryPage === i + 1 ? 'default' : 'ghost'}
+                                    className="h-8 w-8 p-0"
+                                    onClick={() => setGalleryPage(i + 1)}
+                                  >
+                                    {i + 1}
+                                  </Button>
+                                ))}
+                                <Button size="icon" variant="ghost" className="h-8 w-8" disabled={galleryPage === Math.ceil(galleryAbs.length / GALLERY_PER_PAGE)} onClick={() => setGalleryPage(p => p + 1)}>
+                                  <ChevronRight className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )}
                         </Card>
                     )}
 

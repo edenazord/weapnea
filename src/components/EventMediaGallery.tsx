@@ -5,8 +5,7 @@ import { backendConfig } from '@/lib/backendConfig';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Camera, Upload, Trash2, Loader2, ImagePlus, Video, X } from 'lucide-react';
+import { Camera, Upload, Trash2, Loader2, ImagePlus, X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ensureAbsoluteUrl } from '@/lib/utils';
@@ -39,7 +38,9 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
   const fileRef = useRef<HTMLInputElement>(null);
+  const ITEMS_PER_PAGE = 10;
 
   const canUpload = user && (isParticipant || isOwner || user.role === 'admin' || user.role === 'creator');
 
@@ -162,45 +163,68 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {media.map((item) => {
-            const url = ensureAbsoluteUrl(item.url);
-            return (
-              <div key={item.id} className="group relative overflow-hidden rounded-xl shadow-md hover:shadow-xl transition-all">
-                {item.media_type === 'video' ? (
-                  <video src={url} className="w-full h-32 md:h-40 object-cover" controls />
-                ) : (
-                  <img
-                    src={url}
-                    alt={item.caption || 'Event photo'}
-                    className="w-full h-32 md:h-40 object-cover cursor-pointer group-hover:scale-105 transition-transform duration-300"
-                    onClick={() => setLightboxUrl(url)}
-                  />
-                )}
-                {/* Overlay with uploader info + delete */}
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-1">
-                      <Avatar className="w-5 h-5">
-                        <AvatarImage src={item.uploader_avatar || undefined} />
-                        <AvatarFallback className="text-[8px]">{item.uploader_name?.charAt(0) || '?'}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-white text-[10px] truncate max-w-[80px]">{item.uploader_name}</span>
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            {media.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((item) => {
+              const url = ensureAbsoluteUrl(item.url);
+              return (
+                <div key={item.id} className="group relative overflow-hidden rounded-lg border border-gray-200">
+                  {item.media_type === 'video' ? (
+                    <video src={url} className="w-full h-24 object-cover" controls />
+                  ) : (
+                    <img
+                      src={url}
+                      alt={item.caption || 'Event photo'}
+                      className="w-full h-24 object-cover cursor-zoom-in"
+                      onClick={() => setLightboxUrl(url)}
+                    />
+                  )}
+                  {/* Overlay with uploader info + delete */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1">
+                        <Avatar className="w-5 h-5">
+                          <AvatarImage src={item.uploader_avatar || undefined} />
+                          <AvatarFallback className="text-[8px]">{item.uploader_name?.charAt(0)?.toUpperCase() || 'U'}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-white text-[10px] truncate max-w-[80px]">{item.uploader_name}</span>
+                      </div>
+                      {user && (user.id === item.uploader_id || isOwner || user.role === 'admin') && (
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-1 rounded-full bg-red-500/80 hover:bg-red-600 text-white transition-colors"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      )}
                     </div>
-                    {user && (user.id === item.uploader_id || isOwner || user.role === 'admin') && (
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="p-1 rounded-full bg-red-500/80 hover:bg-red-600 text-white transition-colors"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    )}
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+          {media.length > ITEMS_PER_PAGE && (
+            <div className="flex items-center justify-center gap-1 mt-4">
+              <Button size="icon" variant="ghost" className="h-8 w-8" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {Array.from({ length: Math.ceil(media.length / ITEMS_PER_PAGE) }, (_, i) => (
+                <Button
+                  key={i + 1}
+                  size="sm"
+                  variant={page === i + 1 ? 'default' : 'ghost'}
+                  className="h-8 w-8 p-0"
+                  onClick={() => setPage(i + 1)}
+                >
+                  {i + 1}
+                </Button>
+              ))}
+              <Button size="icon" variant="ghost" className="h-8 w-8" disabled={page === Math.ceil(media.length / ITEMS_PER_PAGE)} onClick={() => setPage(p => p + 1)}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Lightbox */}
