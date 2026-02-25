@@ -5,7 +5,7 @@ import { backendConfig } from '@/lib/backendConfig';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Camera, Upload, Trash2, Loader2, ImagePlus, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Camera, Upload, Trash2, Loader2, ImagePlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ensureAbsoluteUrl } from '@/lib/utils';
@@ -37,10 +37,31 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const [page, setPage] = useState(1);
   const fileRef = useRef<HTMLInputElement>(null);
   const ITEMS_PER_PAGE = 10;
+
+  // Lightbox navigation helpers
+  const goPrev = () => {
+    if (media.length === 0) return;
+    setLightboxIndex((i) => (i - 1 + media.length) % media.length);
+  };
+  const goNext = () => {
+    if (media.length === 0) return;
+    setLightboxIndex((i) => (i + 1) % media.length);
+  };
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight') goNext();
+      else if (e.key === 'ArrowLeft') goPrev();
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lightboxOpen, media.length]);
 
   const canUpload = user && (isParticipant || isOwner || user.role === 'admin' || user.role === 'creator');
 
@@ -57,30 +78,42 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
 
   useEffect(() => { fetchMedia(); }, [eventId]);
 
-  const handleUpload = async (file: File) => {
+  const handleUpload = async (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    if (fileArray.length === 0) return;
     setUploading(true);
-    try {
-      const fd = new FormData();
-      fd.append('file', file);
-      fd.append('media_type', file.type.startsWith('video/') ? 'video' : 'image');
-      const res = await fetch(`${API}/api/events/${eventId}/media`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${getToken()}` },
-        body: fd,
-      });
-      if (res.ok) {
-        const item = await res.json();
-        setMedia((prev) => [item, ...prev]);
-        toast.success(t('media.uploaded', 'File caricato!'));
-      } else {
-        const err = await res.json();
-        toast.error(err.error || 'Errore upload');
+    let successCount = 0;
+    let failCount = 0;
+    for (const file of fileArray) {
+      try {
+        const fd = new FormData();
+        fd.append('file', file);
+        fd.append('media_type', file.type.startsWith('video/') ? 'video' : 'image');
+        const res = await fetch(`${API}/api/events/${eventId}/media`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${getToken()}` },
+          body: fd,
+        });
+        if (res.ok) {
+          const item = await res.json();
+          setMedia((prev) => [item, ...prev]);
+          successCount++;
+        } else {
+          const err = await res.json();
+          toast.error(err.error || `Errore upload: ${file.name}`);
+          failCount++;
+        }
+      } catch (e) {
+        toast.error(`Errore di rete: ${file.name}`);
+        failCount++;
       }
-    } catch (e) {
-      toast.error('Errore di rete');
-    } finally {
-      setUploading(false);
     }
+    if (successCount > 0) {
+      toast.success(successCount === 1
+        ? t('media.uploaded', 'File caricato!')
+        : t('media.uploaded_multi', `${successCount} file caricati!`));
+    }
+    setUploading(false);
   };
 
   const handleDelete = async (mediaId: string) => {
@@ -134,10 +167,11 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
               ref={fileRef}
               type="file"
               accept="image/*,video/*"
+              multiple
               className="hidden"
               onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) handleUpload(file);
+                const files = e.target.files;
+                if (files && files.length > 0) handleUpload(files);
                 e.target.value = '';
               }}
             />
@@ -165,18 +199,23 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
       ) : (
         <>
           <div className="grid grid-cols-2 gap-3">
-            {media.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((item) => {
+            {media.slice((page - 1) * ITEMS_PER_PAGE, page * ITEMS_PER_PAGE).map((item, idx) => {
               const url = ensureAbsoluteUrl(item.url);
+              const realIndex = (page - 1) * ITEMS_PER_PAGE + idx;
               return (
                 <div key={item.id} className="group relative overflow-hidden rounded-lg border border-gray-200">
                   {item.media_type === 'video' ? (
-                    <video src={url} className="w-full h-24 object-cover" controls />
+                    <video
+                      src={url}
+                      className="w-full h-24 object-cover cursor-pointer"
+                      onClick={() => { setLightboxIndex(realIndex); setLightboxOpen(true); }}
+                    />
                   ) : (
                     <img
                       src={url}
                       alt={item.caption || 'Event photo'}
                       className="w-full h-24 object-cover cursor-zoom-in"
-                      onClick={() => setLightboxUrl(url)}
+                      onClick={() => { setLightboxIndex(realIndex); setLightboxOpen(true); }}
                     />
                   )}
                   {/* Overlay with uploader info + delete */}
@@ -227,19 +266,57 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
         </>
       )}
 
-      {/* Lightbox */}
-      <Dialog open={!!lightboxUrl} onOpenChange={() => setLightboxUrl(null)}>
-        <DialogContent className="max-w-4xl bg-black/95 border-none p-2">
-          <DialogTitle className="sr-only">Foto</DialogTitle>
-          <button
-            onClick={() => setLightboxUrl(null)}
-            className="absolute top-3 right-3 text-white/70 hover:text-white z-10"
-          >
-            <X className="w-6 h-6" />
-          </button>
-          {lightboxUrl && (
-            <img src={lightboxUrl} alt="Full size" className="max-h-[85vh] max-w-full mx-auto object-contain" />
-          )}
+      {/* Lightbox with navigation */}
+      <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+        <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none">
+          <DialogTitle className="sr-only">{t('media.community_gallery', 'Foto & Video della Community')}</DialogTitle>
+          <div className="relative w-screen h-screen flex items-center justify-center">
+            {media[lightboxIndex] && (
+              media[lightboxIndex].media_type === 'video' ? (
+                <video
+                  src={ensureAbsoluteUrl(media[lightboxIndex].url)}
+                  controls
+                  autoPlay
+                  className="max-h-[90vh] max-w-[95vw] object-contain drop-shadow-2xl"
+                />
+              ) : (
+                <img
+                  src={ensureAbsoluteUrl(media[lightboxIndex].url)}
+                  alt={media[lightboxIndex].caption || `Foto ${lightboxIndex + 1}`}
+                  className="max-h-[90vh] max-w-[95vw] object-contain drop-shadow-2xl"
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                />
+              )
+            )}
+            {/* Bottom controls: prev | counter | next */}
+            {media.length > 0 && (
+              <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3 text-white">
+                {media.length > 1 && (
+                  <button
+                    type="button"
+                    aria-label="Precedente"
+                    className="p-2 rounded-full bg-black/40 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    onClick={goPrev}
+                  >
+                    <ChevronLeft className="h-5 w-5" />
+                  </button>
+                )}
+                <div className="bg-black/40 px-3 py-1 rounded-full text-sm text-white/90 tabular-nums">
+                  {lightboxIndex + 1} / {media.length}
+                </div>
+                {media.length > 1 && (
+                  <button
+                    type="button"
+                    aria-label="Successiva"
+                    className="p-2 rounded-full bg-black/40 hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                    onClick={goNext}
+                  >
+                    <ChevronRight className="h-5 w-5" />
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
     </Card>
