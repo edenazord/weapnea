@@ -466,7 +466,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
           "fixed bg-background flex flex-col overflow-hidden",
           isMobile
             ? "inset-x-0 top-0 bottom-14 z-[55]"
-            : "bottom-60 right-4 z-50 w-[360px] h-[500px] max-h-[70vh] border rounded-lg shadow-2xl"
+            : "bottom-20 right-4 z-50 w-[360px] h-[500px] max-h-[70vh] border rounded-lg shadow-2xl"
         )}>
           {/* Header */}
           <div className={cn(
