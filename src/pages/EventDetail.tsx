@@ -752,7 +752,7 @@ const EventDetail = () => {
                     )}
 
                     {/* Community Media Gallery (photos/videos uploaded by participants) */}
-                    {event.id && (
+                    {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
                       <div className="mt-6">
                         <EventMediaGallery
                           eventId={event.id}
@@ -769,8 +769,8 @@ const EventDetail = () => {
                       </Card>
                     )}
 
-                    {/* Comments */}
-                    {event.id && (
+                    {/* Comments – visible only to participants/owner/admin */}
+                    {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
                       <div className="mt-6">
                         <Comments eventId={event.id} canComment={isParticipant || user?.id === event.created_by || user?.role === 'admin'} />
                       </div>
