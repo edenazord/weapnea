@@ -181,6 +181,9 @@ export default function Comments({ blogId, eventId, canComment }: CommentsProps)
     </div>
   );
 
+  // Hide entire section if no comments and user can't comment
+  if (!loading && topLevel.length === 0 && !effectiveCanComment) return null;
+
   return (
     <div className="mt-8 md:mt-12">
       <div className="flex items-center gap-2 mb-4">
@@ -233,9 +236,11 @@ export default function Comments({ blogId, eventId, canComment }: CommentsProps)
           <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
         </div>
       ) : topLevel.length === 0 ? (
-        <p className="text-sm text-gray-400 text-center py-6">
-          {t('comments.empty', 'Nessun commento ancora. Sii il primo!')}
-        </p>
+        effectiveCanComment ? (
+          <p className="text-sm text-gray-400 text-center py-6">
+            {t('comments.empty', 'Nessun commento ancora. Sii il primo!')}
+          </p>
+        ) : null
       ) : (
         <div className="space-y-1">
           {topLevel.map((comment) => (
