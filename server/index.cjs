@@ -142,6 +142,71 @@ async function runMigrationsAtStartup() {
   await ensurePublicProfileColumnsAtRuntime();
   // Safeguard: ensure events.fixed_appointment_text exists even if migrations didn't run yet
   await ensureEventsFixedAppointmentTextColumn();
+    // Ensure new tables exist even if migration files were not found on deploy
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.comments (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        blog_id uuid REFERENCES public.blog_posts(id) ON DELETE CASCADE,
+        event_id uuid REFERENCES public.events(id) ON DELETE CASCADE,
+        author_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+        parent_id uuid REFERENCES public.comments(id) ON DELETE CASCADE,
+        body text NOT NULL,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT chk_comment_target CHECK (
+          (blog_id IS NOT NULL AND event_id IS NULL) OR
+          (blog_id IS NULL AND event_id IS NOT NULL)
+        )
+      );
+      CREATE INDEX IF NOT EXISTS idx_comments_blog_id ON public.comments(blog_id) WHERE blog_id IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS idx_comments_event_id ON public.comments(event_id) WHERE event_id IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS idx_comments_author_id ON public.comments(author_id);
+      CREATE INDEX IF NOT EXISTS idx_comments_parent_id ON public.comments(parent_id) WHERE parent_id IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS idx_comments_created_at ON public.comments(created_at DESC);
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.event_media (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        event_id uuid NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
+        uploader_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+        url text NOT NULL,
+        media_type text NOT NULL DEFAULT 'image' CHECK (media_type IN ('image', 'video')),
+        caption text,
+        created_at timestamptz NOT NULL DEFAULT now()
+      );
+      CREATE INDEX IF NOT EXISTS idx_event_media_event_id ON public.event_media(event_id);
+      CREATE INDEX IF NOT EXISTS idx_event_media_uploader_id ON public.event_media(uploader_id);
+      CREATE INDEX IF NOT EXISTS idx_event_media_created_at ON public.event_media(created_at DESC);
+    `);
+    await pool.query(`
+      ALTER TABLE IF EXISTS public.profiles
+        ADD COLUMN IF NOT EXISTS newsletter_new_events boolean NOT NULL DEFAULT false;
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.external_participants (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        event_id uuid NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
+        added_by uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+        full_name text NOT NULL,
+        email text,
+        phone text,
+        notes text,
+        invited_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT now()
+      );
+      CREATE INDEX IF NOT EXISTS idx_external_participants_event_id ON public.external_participants(event_id);
+    `);
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.event_feedback_emails (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        event_id uuid NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
+        user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
+        sent_at timestamptz NOT NULL DEFAULT now(),
+        UNIQUE(event_id, user_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_event_feedback_emails_event_id ON public.event_feedback_emails(event_id);
+    `);
+    console.log('[startup] ensured comments, event_media, external_participants, event_feedback_emails tables');
     await detectSchema();
     // Seed email templates if table is empty (idempotente)
     try {
