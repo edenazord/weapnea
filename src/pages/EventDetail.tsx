@@ -397,9 +397,7 @@ const EventDetail = () => {
                     <Tabs defaultValue="info" className="w-full">
                       <TabsList className="mb-4">
                         <TabsTrigger value="info">{t('events.tab_info', 'Info Evento')}</TabsTrigger>
-                        {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
-                          <TabsTrigger value="gallery">{t('events.tab_gallery', 'Galleria')}</TabsTrigger>
-                        )}
+                        <TabsTrigger value="gallery">{t('events.tab_gallery', 'Galleria')}</TabsTrigger>
                       </TabsList>
                       <TabsContent value="info">
                     {/* Banner immagine: carosello automatico */}
@@ -561,12 +559,18 @@ const EventDetail = () => {
 
                       {/* Tab Galleria Community */}
                       <TabsContent value="gallery">
-                        {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
+                        {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') ? (
                           <EventMediaGallery
                             eventId={event.id}
                             isParticipant={isParticipant}
                             isOwner={user?.id === event.created_by}
                           />
+                        ) : (
+                          <Card className="shadow-lg p-6">
+                            <p className="text-center text-muted-foreground text-sm">
+                              {t('events.gallery_participants_only', 'La galleria è disponibile solo per i partecipanti dell\'evento.')}
+                            </p>
+                          </Card>
                         )}
                       </TabsContent>
                     </Tabs>
