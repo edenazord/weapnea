@@ -21,9 +21,11 @@ interface EventCardProps {
   variant?: "compact" | "full";
   formatDate?: (dateString: string) => string;
   showCategoryBadge?: boolean;
+  isPast?: boolean;
 }
 
-const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = true }: EventCardProps) => {
+const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = true, isPast = false }: EventCardProps) => {
+  const isSoldOut = typeof event.participants === 'number' && event.participants > 0 && typeof event.participants_paid_count === 'number' && event.participants_paid_count >= event.participants;
   const [imageError, setImageError] = useState(false);
   // null = sconosciuto (evita lampeggio del prezzo prima di caricare la config)
   const [eventsFree, setEventsFree] = useState<boolean | null>(null);
@@ -141,11 +143,16 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
         {localizeCategoryName(event.categories.name, t)}
             </Badge>
           )}
-          <Link to={eventPath}>
-            <CardTitle className="text-base font-semibold text-gray-900 leading-tight line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer">
-              {event.title}
-            </CardTitle>
-          </Link>
+          <div className="flex items-start gap-2">
+            <Link to={eventPath} className="flex-1 min-w-0">
+              <CardTitle className="text-base font-semibold text-gray-900 leading-tight line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer">
+                {event.title}
+              </CardTitle>
+            </Link>
+            {isSoldOut && (
+              <Badge className="bg-red-500 text-white text-[10px] px-2 py-0.5 flex-shrink-0">Sold Out</Badge>
+            )}
+          </div>
           {organizerDisplayName && (
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <User className="h-3.5 w-3.5" />
@@ -203,8 +210,8 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
           )}
 
           <div className="flex items-center justify-between">
-            {/* Partecipanti: mostra x/y dove possibile */}
-            {(typeof event.participants === 'number' && event.participants > 0) || (typeof event.participants_paid_count === 'number') ? (
+            {/* Partecipanti: mostra x/y dove possibile – nasconde posti rimanenti negli eventi passati */}
+            {!isPast && ((typeof event.participants === 'number' && event.participants > 0) || (typeof event.participants_paid_count === 'number')) ? (
               <div className="flex items-center gap-2 text-xs text-gray-600">
                 <Users className="h-4 w-4 text-purple-500 flex-shrink-0" />
                 {typeof event.participants === 'number' && event.participants > 0 && typeof event.participants_paid_count === 'number' ? (

@@ -79,7 +79,8 @@ const PastEvents = () => {
               key={event.id} 
               event={event as EventWithCategory} 
               variant="full" 
-              formatDate={formatEventDate} 
+              formatDate={formatEventDate}
+              isPast
             />
           ))}
         </div>

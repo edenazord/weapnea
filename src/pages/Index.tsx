@@ -406,6 +406,7 @@ const Index = () => {
                                   variant="full" 
                                   formatDate={formatEventDate}
                                   showCategoryBadge={false}
+                                  isPast={category.id === 'past-events'}
                                 />
                               </CarouselItem>
                             ))}
