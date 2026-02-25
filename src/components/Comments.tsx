@@ -29,10 +29,14 @@ interface Comment {
 interface CommentsProps {
   blogId?: string;
   eventId?: string;
+  /** If false, the user cannot post (e.g. not a participant). Defaults to true for blog. */
+  canComment?: boolean;
 }
 
-export default function Comments({ blogId, eventId }: CommentsProps) {
+export default function Comments({ blogId, eventId, canComment }: CommentsProps) {
   const { user } = useAuth();
+  // Blog comments are open to all logged-in users; event comments require explicit permission
+  const effectiveCanComment = canComment !== undefined ? canComment : (blogId ? !!user : false);
   const { t, currentLanguage } = useLanguage();
   const dateLocale = currentLanguage === 'it' ? it : enUS;
   const [comments, setComments] = useState<Comment[]>([]);
@@ -133,7 +137,7 @@ export default function Comments({ blogId, eventId }: CommentsProps) {
           <p className="text-sm text-gray-700 dark:text-gray-300 whitespace-pre-wrap">{comment.body}</p>
         </div>
         <div className="flex items-center gap-3 mt-1 ml-1">
-          {user && !isReply && (
+          {user && effectiveCanComment && !isReply && (
             <button
               onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)}
               className="flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 transition-colors"
@@ -187,7 +191,7 @@ export default function Comments({ blogId, eventId }: CommentsProps) {
       </div>
 
       {/* New comment input */}
-      {user ? (
+      {user && effectiveCanComment ? (
         <div className="flex gap-3 mb-4">
           <Avatar className="w-8 h-8 shrink-0">
             <AvatarImage src={user.avatar_url || undefined} />
@@ -213,6 +217,10 @@ export default function Comments({ blogId, eventId }: CommentsProps) {
             </div>
           </div>
         </div>
+      ) : user && !effectiveCanComment ? (
+        <p className="text-sm text-gray-500 mb-4 italic">
+          {t('comments.participants_only', 'Solo i partecipanti iscritti possono commentare.')}
+        </p>
       ) : (
         <p className="text-sm text-gray-500 mb-4 italic">
           {t('comments.login_required', 'Accedi per lasciare un commento.')}

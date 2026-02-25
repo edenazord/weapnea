@@ -3751,6 +3751,30 @@ app.listen(PORT, () => {
 // COMMENTS SYSTEM (Blog + Events)
 // =============================================
 
+// Helper: check if user is participant (paid), organizer or admin for an event
+async function isEventParticipantOrOwner(userId, eventId, userRole) {
+  if (userRole === 'admin' || userRole === 'creator') return true;
+  // Organizer?
+  const { rows: evRows } = await pool.query('SELECT created_by FROM events WHERE id = $1 LIMIT 1', [eventId]);
+  if (evRows[0] && evRows[0].created_by === userId) return true;
+  // Paid participant?
+  const { rows } = await pool.query(
+    "SELECT id FROM event_payments WHERE event_id = $1 AND user_id = $2 AND status = 'paid' LIMIT 1",
+    [eventId, userId]
+  );
+  return !!rows[0];
+}
+
+// GET /api/events/:id/is-participant (auth required)
+app.get('/api/events/:id/is-participant', requireAuth, async (req, res) => {
+  try {
+    const ok = await isEventParticipantOrOwner(req.user.id, req.params.id, req.user.role);
+    res.json({ participant: ok });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 // GET /api/comments?blog_id=xxx OR ?event_id=xxx
 app.get('/api/comments', async (req, res) => {
   try {
@@ -3778,6 +3802,11 @@ app.post('/api/comments', requireAuth, async (req, res) => {
   try {
     const { blog_id, event_id, parent_id, body } = req.body;
     if (!body || (!blog_id && !event_id)) return res.status(400).json({ error: 'body and blog_id or event_id required' });
+    // For event comments: only participants, organizer or admin
+    if (event_id) {
+      const allowed = await isEventParticipantOrOwner(req.user.id, event_id, req.user.role);
+      if (!allowed) return res.status(403).json({ error: 'Solo i partecipanti iscritti possono commentare questo evento' });
+    }
     const { rows } = await pool.query(`
       INSERT INTO public.comments (blog_id, event_id, author_id, parent_id, body)
       VALUES ($1, $2, $3, $4, $5)
@@ -3831,10 +3860,13 @@ app.get('/api/events/:id/media', async (req, res) => {
   }
 });
 
-// POST /api/events/:id/media (auth required - participant uploads)
+// POST /api/events/:id/media (auth required - participants only)
 app.post('/api/events/:id/media', requireAuth, upload.single('file'), async (req, res) => {
   try {
     const eventId = req.params.id;
+    // Only participants, organizer or admin can upload media
+    const allowed = await isEventParticipantOrOwner(req.user.id, eventId, req.user.role);
+    if (!allowed) return res.status(403).json({ error: 'Solo i partecipanti iscritti possono caricare media' });
     const { caption, media_type } = req.body;
     if (!req.file) return res.status(400).json({ error: 'File required' });
 

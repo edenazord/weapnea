@@ -28,6 +28,7 @@ import { friendlyToCanonicalSlug } from "@/lib/seo-utils";
 import { useChatStore } from "@/hooks/useChatStore";
 import { toast } from "sonner";
 import DOMPurify from "dompurify";
+import { backendConfig } from '@/lib/backendConfig';
 import Comments from "@/components/Comments";
 import EventMediaGallery from "@/components/EventMediaGallery";
 import ExternalParticipants from "@/components/ExternalParticipants";
@@ -147,6 +148,22 @@ const EventDetail = () => {
 
         // Organizer profile query (must be declared unconditionally after the first query)
     const organizerId = event?.organizer_id || event?.organizer?.id || event?.created_by || undefined;
+
+    // Check if current user is a participant/organizer of this event
+    const { data: participationData } = useQuery<{ participant: boolean }>({
+      queryKey: ['event-participation', event?.id, user?.id],
+      queryFn: async () => {
+        const token = localStorage.getItem('api_token') || '';
+        const res = await fetch(`${backendConfig.apiBaseUrl}/api/events/${event!.id}/is-participant`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) return { participant: false };
+        return res.json();
+      },
+      enabled: !!event?.id && !!user,
+    });
+    const isParticipant = participationData?.participant === true;
+
                 const { data: organizerProfile } = useQuery<{ id: string; full_name: string | null; company_name: string | null; avatar_url: string | null; role: string }>(
             {
                 queryKey: ['organizer-profile', organizerId],
@@ -739,7 +756,7 @@ const EventDetail = () => {
                       <div className="mt-6">
                         <EventMediaGallery
                           eventId={event.id}
-                          isParticipant={!!user}
+                          isParticipant={isParticipant}
                           isOwner={user?.id === event.created_by}
                         />
                       </div>
@@ -755,7 +772,7 @@ const EventDetail = () => {
                     {/* Comments */}
                     {event.id && (
                       <div className="mt-6">
-                        <Comments eventId={event.id} />
+                        <Comments eventId={event.id} canComment={isParticipant || user?.id === event.created_by || user?.role === 'admin'} />
                       </div>
                     )}
 
