@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { backendConfig } from '@/lib/backendConfig';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Camera, Upload, Trash2, Loader2, ImagePlus, Video, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
@@ -107,14 +108,14 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
   if (media.length === 0 && !canUpload) return null;
 
   return (
-    <div className="mt-8 md:mt-12">
+    <Card className="shadow-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Camera className="w-5 h-5 text-blue-600" />
-          <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100">
+          <h2 className="text-lg font-bold text-blue-900">
             {t('media.community_gallery', 'Foto & Video della Community')}
             {media.length > 0 && <span className="text-gray-400 font-normal text-sm ml-1">({media.length})</span>}
-          </h3>
+          </h2>
         </div>
         {canUpload && (
           <>
@@ -217,6 +218,6 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </Card>
   );
 }
