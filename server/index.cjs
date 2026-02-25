@@ -1862,9 +1862,21 @@ app.get('/api/events/:id', async (req, res) => {
 });
 
 app.get('/api/events/slug/:slug', async (req, res) => {
-  const sql = `${eventsSelect()} WHERE e.slug = $1 LIMIT 1`;
   try {
-    const { rows } = await pool.query(sql, [req.params.slug]);
+    const slugParam = req.params.slug;
+    // 1) Exact match
+    let sql = `${eventsSelect()} WHERE e.slug = $1 LIMIT 1`;
+    let { rows } = await pool.query(sql, [slugParam]);
+    // 2) Fallback: slug stored with date prefix (YYYY-MM-DD-title) but URL has just title
+    if (!rows[0]) {
+      sql = `${eventsSelect()} WHERE e.slug LIKE $1 LIMIT 1`;
+      ({ rows } = await pool.query(sql, [`%-${slugParam}`]));
+    }
+    // 3) Fallback: title column match (slugified)
+    if (!rows[0]) {
+      sql = `${eventsSelect()} WHERE LOWER(REPLACE(e.title, ' ', '-')) = LOWER($1) LIMIT 1`;
+      ({ rows } = await pool.query(sql, [slugParam]));
+    }
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     const row = rows[0];
     res.json(row);
@@ -1970,15 +1982,19 @@ app.get('/api/blog', optionalAuth, async (req, res) => {
 
 app.get('/api/blog/slug/:slug', async (req, res) => {
   await ensureBlogLanguageColumn();
-  const sql = `
+  const slugParam = req.params.slug;
+  const baseSql = `
     SELECT b.*, json_build_object('full_name', p.full_name) AS profiles
     FROM blog_articles b
     LEFT JOIN profiles p ON p.id = b.author_id
-    WHERE b.slug = $1 AND b.published = true
-    LIMIT 1
   `;
   try {
-    const { rows } = await pool.query(sql, [req.params.slug]);
+    // 1) Exact match
+    let { rows } = await pool.query(`${baseSql} WHERE b.slug = $1 AND b.published = true LIMIT 1`, [slugParam]);
+    // 2) Fallback: slug stored with date prefix
+    if (!rows[0]) {
+      ({ rows } = await pool.query(`${baseSql} WHERE b.slug LIKE $1 AND b.published = true LIMIT 1`, [`%-${slugParam}`]));
+    }
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
     res.json(rows[0]);
   } catch (e) {
