@@ -763,16 +763,22 @@ const EventDetail = () => {
                       </div>
                     )}
 
-                    {/* External participants management (organizer only) */}
-                    {user && user.id === event.created_by && event.id && (
-                      <Card className="shadow-lg p-6 mt-6">
-                        <div className="flex items-center justify-between mb-4">
+                    {/* External participants + Invite (organizer/admin only) */}
+                    {user && event.id && (user.id === event.created_by || user.role === 'admin' || user.role === 'creator') && (
+                      <>
+                        <Card className="shadow-lg p-6 mt-6">
                           <ExternalParticipants eventId={event.id} />
-                        </div>
-                        <div className="pt-3 border-t">
-                          <EventInvite eventId={event.id} eventTitle={event.title || ''} />
-                        </div>
-                      </Card>
+                        </Card>
+                        <Card className="shadow-lg p-6 mt-4">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="text-base font-semibold">{t('invite.card_title', 'Invita via email')}</h3>
+                              <p className="text-sm text-muted-foreground">{t('invite.card_desc', 'Invia un invito a partecipare tramite email')}</p>
+                            </div>
+                            <EventInvite eventId={event.id} eventTitle={event.title || ''} />
+                          </div>
+                        </Card>
+                      </>
                     )}
 
                     {/* Comments – visible only to participants/owner/admin */}
