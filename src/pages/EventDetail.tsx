@@ -764,7 +764,7 @@ const EventDetail = () => {
                     )}
 
                     {/* External participants + Invite (organizer/admin only) */}
-                    {user && event.id && (user.id === event.created_by || user.role === 'admin' || user.role === 'creator') && (
+                    {user && event.id && (user.id === event.created_by || user.role === 'admin') && (
                       <>
                         <Card className="shadow-lg p-6 mt-6">
                           <ExternalParticipants eventId={event.id} />
