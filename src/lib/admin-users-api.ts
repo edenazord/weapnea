@@ -22,8 +22,11 @@ export type UserRole = 'company' | 'instructor' | 'final_user' | 'admin' | 'blog
 
 // Ottieni tutti gli utenti con le loro email reali utilizzando la Edge Function
 export const getAllUsers = async (): Promise<AdminUser[]> => {
-  const users = await apiGet('/api/admin/users');
-  return users as AdminUser[];
+  const result = await apiGet('/api/admin/users');
+  // L'endpoint restituisce { data: [...], total, page, ... } oppure direttamente un array
+  if (Array.isArray(result)) return result as AdminUser[];
+  if (result && Array.isArray(result.data)) return result.data as AdminUser[];
+  return [];
 };
 
 // Elimina un utente
