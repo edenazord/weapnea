@@ -28,6 +28,7 @@ import { friendlyToCanonicalSlug } from "@/lib/seo-utils";
 import { useChatStore } from "@/hooks/useChatStore";
 import { toast } from "sonner";
 import DOMPurify from "dompurify";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { backendConfig } from '@/lib/backendConfig';
 import Comments from "@/components/Comments";
 import EventMediaGallery from "@/components/EventMediaGallery";
@@ -392,6 +393,15 @@ const EventDetail = () => {
             <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
                 {/* Colonna sinistra - Contenuto principale */}
                 <div className={isMobile ? 'col-span-1' : 'md:col-span-2'}>
+                    {/* Tabs: Info evento + Galleria community */}
+                    <Tabs defaultValue="info" className="w-full">
+                      <TabsList className="mb-4">
+                        <TabsTrigger value="info">{t('events.tab_info', 'Info Evento')}</TabsTrigger>
+                        {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
+                          <TabsTrigger value="gallery">{t('events.tab_gallery', 'Galleria')}</TabsTrigger>
+                        )}
+                      </TabsList>
+                      <TabsContent value="info">
                     {/* Banner immagine: carosello automatico */}
                     <Card className="overflow-hidden shadow-lg">
                         <div className={`relative w-full ${isMobile ? 'h-48' : 'h-64 md:h-96'}`}>
@@ -540,6 +550,26 @@ const EventDetail = () => {
                             />
                         </Card>
                     )}
+
+                    {/* Commenti – sotto Orari e Logistica come nel blog */}
+                    {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
+                      <div className="mt-8">
+                        <Comments eventId={event.id} canComment={isParticipant || user?.id === event.created_by || user?.role === 'admin'} />
+                      </div>
+                    )}
+                      </TabsContent>
+
+                      {/* Tab Galleria Community */}
+                      <TabsContent value="gallery">
+                        {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
+                          <EventMediaGallery
+                            eventId={event.id}
+                            isParticipant={isParticipant}
+                            isOwner={user?.id === event.created_by}
+                          />
+                        )}
+                      </TabsContent>
+                    </Tabs>
                 </div>
 
                 {/* Colonna destra - Informazioni rapide e dettagli */}
@@ -748,24 +778,6 @@ const EventDetail = () => {
                                 ))}
                             </div>
                         </Card>
-                    )}
-
-                    {/* Community Media Gallery (photos/videos uploaded by participants) */}
-                    {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
-                      <div className="mt-6">
-                        <EventMediaGallery
-                          eventId={event.id}
-                          isParticipant={isParticipant}
-                          isOwner={user?.id === event.created_by}
-                        />
-                      </div>
-                    )}
-
-                    {/* Comments – visible only to participants/owner/admin */}
-                    {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
-                      <div className="mt-6">
-                        <Comments eventId={event.id} canComment={isParticipant || user?.id === event.created_by || user?.role === 'admin'} />
-                      </div>
                     )}
 
                     {/* Lightbox Dialog */}
