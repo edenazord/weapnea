@@ -18,7 +18,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle, Phone, Bell } from "lucide-react";
+import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle, Phone, Bell, ChevronLeft, ChevronRight } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -81,6 +81,8 @@ const Profile = () => {
   })();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [eventsFreeMode, setEventsFreeMode] = useState(true); // default true per sicurezza
+  // Step corrente nella sezione Certificazioni (0=Assicurazione, 1=Cert. medico, 2=Brevetto)
+  const [certStep, setCertStep] = useState(0);
   // Stato locale per mostrare vista organizzazione dentro la tab Eventi
   const [showOrganizer, setShowOrganizer] = useState(false);
   const [formData, setFormData] = useState({
@@ -1580,296 +1582,117 @@ const Profile = () => {
                   <CardHeader className="px-1 md:px-6 pb-3 md:pb-6">
                   <CardTitle className="text-lg md:text-xl">{t('profile.sections.certifications.title', 'Certificazioni')}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-6 px-1 md:px-6">
+                <CardContent className="px-1 md:px-6">
 
-                  {/* ═══════════ TABELLA RIEPILOGATIVA (solo desktop) ═══════════ */}
-                  <div className="hidden md:block overflow-x-auto">
-                    <table className="w-full text-sm border-collapse">
-                      <thead>
-                        <tr className="border-b bg-muted/40">
-                          <th className="text-left py-2 px-3 font-semibold w-[140px]">Tipo</th>
-                          <th className="text-left py-2 px-3 font-semibold">Nome / Dettaglio</th>
-                          <th className="text-left py-2 px-3 font-semibold w-[140px]">Numero</th>
-                          <th className="text-left py-2 px-3 font-semibold w-[160px]">Scadenza</th>
-                          <th className="text-left py-2 px-3 font-semibold w-[80px]">Stato</th>
-                          <th className="py-2 px-3 w-[40px]"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {/* ── Riga Assicurazione principale ── */}
-                        <tr className="border-b hover:bg-muted/20">
-                          <td className="py-2 px-3 flex items-center gap-1.5">
-                            <Shield className="h-4 w-4 text-primary shrink-0" />
-                            <span className="font-medium">{t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</span>
-                          </td>
-                          <td className="py-2 px-3">
-                            <Input
-                              value={formData.assicurazione}
-                              onChange={(e) => handleInputChange('assicurazione', e.target.value)}
-                              placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')}
-                              className="h-8 text-sm"
-                            />
-                          </td>
-                          <td className="py-2 px-3">
-                            <Input
-                              value={formData.numero_assicurazione}
-                              onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)}
-                              placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Numero')}
-                              className="h-8 text-sm"
-                            />
-                          </td>
-                          <td className="py-2 px-3">
-                            <DatePicker
-                              date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined}
-                              onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))}
-                              className="h-8 text-sm"
-                            />
-                          </td>
-                          <td className="py-2 px-3">
-                            <Checkbox
-                              checked={Boolean(formData.dichiarazione_assicurazione_valida)}
-                              onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_assicurazione_valida: Boolean(v) }))}
-                              title={t('profile.sections.certifications.insurance_declaration', 'Dichiaro valida')}
-                            />
-                          </td>
-                          <td className="py-2 px-3">
-                            <Badge variant="secondary" className="text-[10px] whitespace-nowrap">{t('profile.sections.certifications.organizer_only_badge', 'Per organizzatori')}</Badge>
-                          </td>
-                        </tr>
-                        {/* Assicurazioni aggiuntive */}
-                        {insuranceEntries.map((entry) => (
-                          <tr key={`ins-${entry.originalIdx}`} className="border-b hover:bg-muted/20">
-                            <td className="py-2 px-3 text-xs text-muted-foreground pl-8">+ Assicurazione</td>
-                            <td className="py-2 px-3">
-                              <Input value={entry.name} onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })} placeholder="Nome" className="h-8 text-sm" />
-                            </td>
-                            <td className="py-2 px-3">
-                              <Input value={entry.number} onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })} placeholder="Numero" className="h-8 text-sm" />
-                            </td>
-                            <td className="py-2 px-3">
-                              <DatePicker date={entry.expiry ? new Date(entry.expiry) : undefined} onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })} className="h-8 text-sm" />
-                            </td>
-                            <td className="py-2 px-3"></td>
-                            <td className="py-2 px-3">
-                              <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => removeCert(entry.originalIdx)}><X className="h-3.5 w-3.5" /></Button>
-                            </td>
-                          </tr>
-                        ))}
-                        <tr className="border-b">
-                          <td colSpan={6} className="py-1 px-3">
-                            <Button type="button" variant="ghost" size="sm" className="text-xs h-7" onClick={() => addCert('insurance')}>
-                              <PlusCircle className="h-3.5 w-3.5 mr-1" />{t('profile.sections.certifications.add_insurance', 'Aggiungi assicurazione')}
-                            </Button>
-                          </td>
-                        </tr>
-
-                        {/* ── Riga Certificato medico principale ── */}
-                        <tr className="border-b hover:bg-muted/20">
-                          <td className="py-2 px-3 flex items-center gap-1.5">
-                            <FileText className="h-4 w-4 text-primary shrink-0" />
-                            <span className="font-medium">{t('profile.sections.certifications.accordion_medical', 'Certificato medico')}</span>
-                          </td>
-                          <td className="py-2 px-3">
-                            <Select value={(formData as any).certificato_medico_tipo || ''} onValueChange={(v) => handleInputChange('certificato_medico_tipo', v)}>
-                              <SelectTrigger className="h-8 text-sm">
-                                <SelectValue placeholder={t('profile.sections.certifications.medical_type_placeholder', 'Tipo certificato')} />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="agonistico">{t('profile.sections.certifications.medical_type_agonistico', 'Agonistico')}</SelectItem>
-                                <SelectItem value="non_agonistico">{t('profile.sections.certifications.medical_type_non_agonistico', 'Non agonistico')}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </td>
-                          <td className="py-2 px-3 text-xs text-muted-foreground">—</td>
-                          <td className="py-2 px-3">
-                            <DatePicker
-                              date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined}
-                              onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))}
-                              className="h-8 text-sm"
-                            />
-                          </td>
-                          <td className="py-2 px-3"></td>
-                          <td className="py-2 px-3">
-                            <Badge variant="outline" className="text-[10px] whitespace-nowrap">{t('profile.sections.certifications.required_badge', 'Obbligatoria')}</Badge>
-                          </td>
-                        </tr>
-                        {/* Certificati medici aggiuntivi */}
-                        {medicalEntries.map((entry) => (
-                          <tr key={`med-${entry.originalIdx}`} className="border-b hover:bg-muted/20">
-                            <td className="py-2 px-3 text-xs text-muted-foreground pl-8">+ Cert. medico</td>
-                            <td className="py-2 px-3">
-                              <Input value={entry.name} onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })} placeholder="Tipo" className="h-8 text-sm" />
-                            </td>
-                            <td className="py-2 px-3">
-                              <Input value={entry.number} onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })} placeholder="Numero" className="h-8 text-sm" />
-                            </td>
-                            <td className="py-2 px-3">
-                              <DatePicker date={entry.expiry ? new Date(entry.expiry) : undefined} onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })} className="h-8 text-sm" />
-                            </td>
-                            <td className="py-2 px-3"></td>
-                            <td className="py-2 px-3">
-                              <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => removeCert(entry.originalIdx)}><X className="h-3.5 w-3.5" /></Button>
-                            </td>
-                          </tr>
-                        ))}
-                        <tr className="border-b">
-                          <td colSpan={6} className="py-1 px-3">
-                            <Button type="button" variant="ghost" size="sm" className="text-xs h-7" onClick={() => addCert('medical')}>
-                              <PlusCircle className="h-3.5 w-3.5 mr-1" />{t('profile.sections.certifications.add_medical', 'Aggiungi certificato medico')}
-                            </Button>
-                          </td>
-                        </tr>
-
-                        {/* ── Riga Brevetto principale ── */}
-                        <tr className="border-b hover:bg-muted/20">
-                          <td className="py-2 px-3 flex items-center gap-1.5">
-                            <FileText className="h-4 w-4 shrink-0" />
-                            <span className="font-medium">{t('profile.sections.certifications.accordion_brevetto', 'Brevetto')}</span>
-                          </td>
-                          <td className="py-2 px-3">
-                            <div className="flex gap-2">
-                              <Input
-                                value={formData.brevetto}
-                                onChange={(e) => handleInputChange('brevetto', e.target.value)}
-                                placeholder={t('profile.sections.certifications.brevetto_placeholder', 'Tipologia brevetto')}
-                                className="h-8 text-sm"
-                              />
-                              <Input
-                                value={formData.didattica_brevetto}
-                                onChange={(e) => handleInputChange('didattica_brevetto', e.target.value)}
-                                placeholder={t('profile.sections.certifications.brevetto_didattica_placeholder', 'Didattica')}
-                                className="h-8 text-sm"
-                              />
-                            </div>
-                          </td>
-                          <td className="py-2 px-3">
-                            <Input
-                              value={formData.numero_brevetto}
-                              onChange={(e) => handleInputChange('numero_brevetto', e.target.value)}
-                              placeholder={t('profile.sections.certifications.brevetto_number_placeholder', 'Numero')}
-                              className="h-8 text-sm"
-                            />
-                          </td>
-                          <td className="py-2 px-3">
-                            <DatePicker
-                              date={formData.scadenza_brevetto ? new Date(formData.scadenza_brevetto) : undefined}
-                              onDateChange={(date) => handleInputChange('scadenza_brevetto', toLocalDateString(date))}
-                              className="h-8 text-sm"
-                            />
-                          </td>
-                          <td className="py-2 px-3">
-                            <Checkbox
-                              checked={Boolean(formData.dichiarazione_brevetto_valido)}
-                              onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_brevetto_valido: Boolean(v) }))}
-                              title={t('profile.sections.certifications.brevetto_declaration', 'Dichiaro valido')}
-                            />
-                          </td>
-                          <td className="py-2 px-3">
-                            <Badge variant="secondary" className="text-[10px] whitespace-nowrap">{t('profile.sections.certifications.organizer_only_badge', 'Per organizzatori')}</Badge>
-                          </td>
-                        </tr>
-                        {/* Brevetti aggiuntivi */}
-                        {certificateEntries.map((entry) => (
-                          <tr key={`cert-${entry.originalIdx}`} className="border-b hover:bg-muted/20">
-                            <td className="py-2 px-3 text-xs text-muted-foreground pl-8">+ Brevetto</td>
-                            <td className="py-2 px-3">
-                              <Input value={entry.name} onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })} placeholder="es. PADI Open Water" className="h-8 text-sm" />
-                            </td>
-                            <td className="py-2 px-3">
-                              <Input value={entry.number} onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })} placeholder="Numero" className="h-8 text-sm" />
-                            </td>
-                            <td className="py-2 px-3">
-                              <DatePicker date={entry.expiry ? new Date(entry.expiry) : undefined} onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })} className="h-8 text-sm" />
-                            </td>
-                            <td className="py-2 px-3"></td>
-                            <td className="py-2 px-3">
-                              <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" onClick={() => removeCert(entry.originalIdx)}><X className="h-3.5 w-3.5" /></Button>
-                            </td>
-                          </tr>
-                        ))}
-                        <tr>
-                          <td colSpan={6} className="py-1 px-3">
-                            <Button type="button" variant="ghost" size="sm" className="text-xs h-7" onClick={() => addCert('certificate')}>
-                              <PlusCircle className="h-3.5 w-3.5 mr-1" />{t('profile.sections.certifications.add_certificate', 'Aggiungi brevetto')}
-                            </Button>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </table>
-
-                    {/* Foto brevetto (sotto la tabella) */}
-                    {(formData.brevetto?.trim() || formData.dichiarazione_brevetto_valido || (formData as any)._showBrevetto) && (
-                      <div className="mt-4 max-w-sm">
-                        <Label className="text-sm">{t('profile.sections.certifications.brevetto_photo_label', 'Foto brevetto')}</Label>
-                        <ImageUpload
-                          currentImageUrl={formData.foto_brevetto_url || undefined}
-                          onImageUploaded={(url) => handleInputChange('foto_brevetto_url', url)}
-                          onImageRemoved={() => handleInputChange('foto_brevetto_url', '')}
-                        />
+                  {/* ═══ Step indicator ═══ */}
+                  <div className="flex items-center justify-center gap-1 mb-6">
+                    {[
+                      { icon: Shield, label: t('profile.sections.certifications.accordion_insurance', 'Assicurazione') },
+                      { icon: FileText, label: t('profile.sections.certifications.accordion_medical', 'Cert. Medico') },
+                      { icon: FileText, label: t('profile.sections.certifications.accordion_brevetto', 'Brevetto') },
+                    ].map((step, idx) => (
+                      <div key={idx} className="flex items-center">
+                        {idx > 0 && <div className={`hidden sm:block w-8 h-0.5 mx-1 ${idx <= certStep ? 'bg-primary' : 'bg-border'}`} />}
+                        <button
+                          type="button"
+                          onClick={() => setCertStep(idx)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                            idx === certStep
+                              ? 'bg-primary text-primary-foreground shadow-sm'
+                              : idx < certStep
+                                ? 'bg-primary/10 text-primary hover:bg-primary/20'
+                                : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                          }`}
+                        >
+                          <step.icon className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{step.label}</span>
+                          <span className="sm:hidden">{idx + 1}</span>
+                        </button>
                       </div>
-                    )}
+                    ))}
                   </div>
 
-                  {/* ═══════════ LAYOUT MOBILE (card impilate, invariato) ═══════════ */}
-                  <div className="md:hidden space-y-6">
-                    {/* ── Assicurazione ── */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
+                  {/* ═══ Step 0 — Assicurazione ═══ */}
+                  {certStep === 0 && (
+                    <div className="space-y-4 animate-in fade-in-0 slide-in-from-right-4 duration-200">
+                      <div className="flex items-center gap-2 mb-2">
                         <Shield className="h-5 w-5 text-primary" />
                         <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</h3>
                         <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.organizer_only_badge', 'Per organizzatori')}</Badge>
                       </div>
+
                       <div className="flex items-start gap-3 p-3 border rounded-md border-primary/30 bg-primary/5">
                         <Checkbox
-                          id="dichiarazione_assicurazione_valida_m"
+                          id="dichiarazione_assicurazione_valida"
                           checked={Boolean(formData.dichiarazione_assicurazione_valida)}
                           onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_assicurazione_valida: Boolean(v) }))}
                         />
-                        <Label htmlFor="dichiarazione_assicurazione_valida_m" className="text-sm cursor-pointer">
+                        <Label htmlFor="dichiarazione_assicurazione_valida" className="text-sm cursor-pointer">
                           {t('profile.sections.certifications.insurance_declaration', 'Dichiaro di avere una copertura assicurativa in corso di validità')}
                         </Label>
                       </div>
-                      <div className="grid grid-cols-1 gap-4">
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label>{t('profile.sections.certifications.insurance_label', 'Assicurazione')}</Label>
                           <Input value={formData.assicurazione} onChange={(e) => handleInputChange('assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')} />
                         </div>
                         <div>
-                          <Label>{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza')}</Label>
+                          <Label>{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
                           <DatePicker date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined} onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))} />
                         </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label>{t('profile.sections.certifications.insurance_number_label', 'Numero')}</Label>
-                          <Input value={formData.numero_assicurazione} onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Numero assicurazione')} />
+                          <Label>{t('profile.sections.certifications.insurance_number_label', 'Numero assicurazione')}</Label>
+                          <Input value={formData.numero_assicurazione} onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Inserire numero assicurazione')} />
                         </div>
                       </div>
-                      {insuranceEntries.map((entry) => (
-                        <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
-                          <div className="flex justify-between"><span className="text-xs text-muted-foreground">#{insuranceEntries.indexOf(entry) + 1}</span><Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}><X className="h-4 w-4" /></Button></div>
-                          <Input value={entry.name} onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })} placeholder="Nome" />
-                          <Input value={entry.number} onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })} placeholder="Numero" />
-                          <DatePicker date={entry.expiry ? new Date(entry.expiry) : undefined} onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })} />
+
+                      {/* Assicurazioni aggiuntive */}
+                      {insuranceEntries.length > 0 && (
+                        <div className="mt-2 space-y-3">
+                          <p className="text-sm font-medium">{t('profile.sections.certifications.other_insurances', 'Altre assicurazioni')}</p>
+                          {insuranceEntries.map((entry) => (
+                            <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
+                              <div className="flex justify-between items-start">
+                                <span className="text-xs text-muted-foreground">#{insuranceEntries.indexOf(entry) + 1}</span>
+                                <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}><X className="h-4 w-4" /></Button>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <Input value={entry.name} onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })} placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')} />
+                                <Input value={entry.number} onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })} placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Numero')} />
+                                <DatePicker date={entry.expiry ? new Date(entry.expiry) : undefined} onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })} />
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                      <Button type="button" variant="outline" size="sm" onClick={() => addCert('insurance')}><PlusCircle className="h-4 w-4 mr-2" />{t('profile.sections.certifications.add_insurance', 'Aggiungi assicurazione')}</Button>
+                      )}
+                      <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => addCert('insurance')}>
+                        <PlusCircle className="h-4 w-4 mr-2" />{t('profile.sections.certifications.add_insurance', 'Aggiungi assicurazione')}
+                      </Button>
                     </div>
+                  )}
 
-                    <div className="h-px bg-border" />
-
-                    {/* ── Certificato medico ── */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
+                  {/* ═══ Step 1 — Certificato medico ═══ */}
+                  {certStep === 1 && (
+                    <div className="space-y-4 animate-in fade-in-0 slide-in-from-right-4 duration-200">
+                      <div className="flex items-center gap-2 mb-2">
                         <FileText className="h-5 w-5 text-primary" />
                         <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_medical', 'Certificato medico')}</h3>
                         <Badge variant="outline" className="text-xs">{t('profile.sections.certifications.required_badge', 'Obbligatoria')}</Badge>
                       </div>
-                      <div className="grid grid-cols-1 gap-4">
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label>{t('profile.sections.certifications.medical_expiry_label', 'Scadenza')}</Label>
-                          <DatePicker date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined} onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))} />
+                          <Label>{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
+                          <DatePicker
+                            date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined}
+                            onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))}
+                          />
                         </div>
                         <div>
-                          <Label>{t('profile.sections.certifications.medical_type_label', 'Tipo')}</Label>
+                          <Label>{t('profile.sections.certifications.medical_type_label', 'Tipo certificato medico')}</Label>
                           <Select value={(formData as any).certificato_medico_tipo || ''} onValueChange={(v) => handleInputChange('certificato_medico_tipo', v)}>
                             <SelectTrigger><SelectValue placeholder={t('profile.sections.certifications.medical_type_placeholder', 'Seleziona tipo')} /></SelectTrigger>
                             <SelectContent>
@@ -1879,22 +1702,36 @@ const Profile = () => {
                           </Select>
                         </div>
                       </div>
-                      {medicalEntries.map((entry) => (
-                        <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
-                          <div className="flex justify-between"><span className="text-xs text-muted-foreground">#{medicalEntries.indexOf(entry) + 1}</span><Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}><X className="h-4 w-4" /></Button></div>
-                          <Input value={entry.name} onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })} placeholder="Tipo" />
-                          <Input value={entry.number} onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })} placeholder="Numero" />
-                          <DatePicker date={entry.expiry ? new Date(entry.expiry) : undefined} onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })} />
+
+                      {/* Certificati medici aggiuntivi */}
+                      {medicalEntries.length > 0 && (
+                        <div className="mt-2 space-y-3">
+                          <p className="text-sm font-medium">{t('profile.sections.certifications.other_medicals', 'Altri certificati medici')}</p>
+                          {medicalEntries.map((entry) => (
+                            <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
+                              <div className="flex justify-between items-start">
+                                <span className="text-xs text-muted-foreground">#{medicalEntries.indexOf(entry) + 1}</span>
+                                <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}><X className="h-4 w-4" /></Button>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <Input value={entry.name} onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })} placeholder={t('profile.sections.certifications.medical_name_placeholder', 'Tipo certificato')} />
+                                <Input value={entry.number} onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })} placeholder={t('profile.sections.certifications.cert_number_placeholder', 'Numero')} />
+                                <DatePicker date={entry.expiry ? new Date(entry.expiry) : undefined} onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })} />
+                              </div>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                      <Button type="button" variant="outline" size="sm" onClick={() => addCert('medical')}><PlusCircle className="h-4 w-4 mr-2" />{t('profile.sections.certifications.add_medical', 'Aggiungi certificato medico')}</Button>
+                      )}
+                      <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => addCert('medical')}>
+                        <PlusCircle className="h-4 w-4 mr-2" />{t('profile.sections.certifications.add_medical', 'Aggiungi certificato medico')}
+                      </Button>
                     </div>
+                  )}
 
-                    <div className="h-px bg-border" />
-
-                    {/* ── Brevetto ── */}
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between">
+                  {/* ═══ Step 2 — Brevetto ═══ */}
+                  {certStep === 2 && (
+                    <div className="space-y-4 animate-in fade-in-0 slide-in-from-right-4 duration-200">
+                      <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
                           <FileText className="h-5 w-5" />
                           <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_brevetto', 'Brevetto')}</h3>
@@ -1911,46 +1748,100 @@ const Profile = () => {
                           }}
                         />
                       </div>
+
                       {(formData.brevetto?.trim() || formData.dichiarazione_brevetto_valido || (formData as any)._showBrevetto) && (
                         <div className="space-y-4">
-                          <div className="grid grid-cols-1 gap-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                               <Label>{t('profile.sections.certifications.brevetto_label', 'Brevetto')}</Label>
-                              <Input value={formData.brevetto} onChange={(e) => handleInputChange('brevetto', e.target.value)} placeholder={t('profile.sections.certifications.brevetto_placeholder', 'Tipologia brevetto')} />
+                              <Input value={formData.brevetto} onChange={(e) => handleInputChange('brevetto', e.target.value)} placeholder={t('profile.sections.certifications.brevetto_placeholder', 'Inserire tipologia brevetto')} />
                             </div>
                             <div>
-                              <Label>{t('profile.sections.certifications.brevetto_expiry_label', 'Scadenza')}</Label>
+                              <Label>{t('profile.sections.certifications.brevetto_expiry_label', 'Scadenza Brevetto')}</Label>
                               <DatePicker date={formData.scadenza_brevetto ? new Date(formData.scadenza_brevetto) : undefined} onDateChange={(date) => handleInputChange('scadenza_brevetto', toLocalDateString(date))} />
                             </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                              <Label>{t('profile.sections.certifications.brevetto_didattica_label', 'Didattica')}</Label>
-                              <Input value={formData.didattica_brevetto} onChange={(e) => handleInputChange('didattica_brevetto', e.target.value)} placeholder={t('profile.sections.certifications.brevetto_didattica_placeholder', 'Didattica brevetto')} />
+                              <Label>{t('profile.sections.certifications.brevetto_didattica_label', 'Didattica brevetto')}</Label>
+                              <Input value={formData.didattica_brevetto} onChange={(e) => handleInputChange('didattica_brevetto', e.target.value)} placeholder={t('profile.sections.certifications.brevetto_didattica_placeholder', 'Inserire didattica brevetto')} />
                             </div>
                             <div>
-                              <Label>{t('profile.sections.certifications.brevetto_number_label', 'Numero')}</Label>
-                              <Input value={formData.numero_brevetto} onChange={(e) => handleInputChange('numero_brevetto', e.target.value)} placeholder={t('profile.sections.certifications.brevetto_number_placeholder', 'Numero brevetto')} />
+                              <Label>{t('profile.sections.certifications.brevetto_number_label', 'Numero brevetto')}</Label>
+                              <Input value={formData.numero_brevetto} onChange={(e) => handleInputChange('numero_brevetto', e.target.value)} placeholder={t('profile.sections.certifications.brevetto_number_placeholder', 'Inserire numero brevetto')} />
                             </div>
                           </div>
-                          <div>
+                          <div className="space-y-2">
                             <Label>{t('profile.sections.certifications.brevetto_photo_label', 'Foto brevetto')}</Label>
-                            <ImageUpload currentImageUrl={formData.foto_brevetto_url || undefined} onImageUploaded={(url) => handleInputChange('foto_brevetto_url', url)} onImageRemoved={() => handleInputChange('foto_brevetto_url', '')} />
+                            <ImageUpload
+                              currentImageUrl={formData.foto_brevetto_url || undefined}
+                              onImageUploaded={(url) => handleInputChange('foto_brevetto_url', url)}
+                              onImageRemoved={() => handleInputChange('foto_brevetto_url', '')}
+                            />
                           </div>
                           <div className="flex items-start gap-3 p-3 border rounded-md">
-                            <Checkbox id="dich_brev_m" checked={Boolean(formData.dichiarazione_brevetto_valido)} onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_brevetto_valido: Boolean(v) }))} />
-                            <Label htmlFor="dich_brev_m" className="text-sm cursor-pointer">{t('profile.sections.certifications.brevetto_declaration', 'Dichiaro di essere istruttore certificato con BREVETTO in corso di validità')}</Label>
+                            <Checkbox
+                              id="dichiarazione_brevetto_valido"
+                              checked={Boolean(formData.dichiarazione_brevetto_valido)}
+                              onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_brevetto_valido: Boolean(v) }))}
+                            />
+                            <Label htmlFor="dichiarazione_brevetto_valido" className="text-sm cursor-pointer">
+                              {t('profile.sections.certifications.brevetto_declaration', 'Dichiaro di essere istruttore certificato con BREVETTO in corso di validità')}
+                            </Label>
                           </div>
-                          {certificateEntries.map((entry) => (
-                            <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
-                              <div className="flex justify-between"><span className="text-xs text-muted-foreground">#{certificateEntries.indexOf(entry) + 1}</span><Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}><X className="h-4 w-4" /></Button></div>
-                              <Input value={entry.name} onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })} placeholder="es. PADI Open Water" />
-                              <Input value={entry.number} onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })} placeholder="Numero" />
-                              <DatePicker date={entry.expiry ? new Date(entry.expiry) : undefined} onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })} />
+
+                          {/* Brevetti aggiuntivi */}
+                          {certificateEntries.length > 0 && (
+                            <div className="mt-2 space-y-3">
+                              <p className="text-sm font-medium">{t('profile.sections.certifications.other_certificates', 'Altri brevetti / certificazioni')}</p>
+                              {certificateEntries.map((entry) => (
+                                <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
+                                  <div className="flex justify-between items-start">
+                                    <span className="text-xs text-muted-foreground">#{certificateEntries.indexOf(entry) + 1}</span>
+                                    <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}><X className="h-4 w-4" /></Button>
+                                  </div>
+                                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                    <Input value={entry.name} onChange={(e) => handleCertChange(entry.originalIdx, { name: e.target.value })} placeholder={t('profile.sections.certifications.cert_name_placeholder', 'es. PADI Open Water')} />
+                                    <Input value={entry.number} onChange={(e) => handleCertChange(entry.originalIdx, { number: e.target.value })} placeholder={t('profile.sections.certifications.cert_number_placeholder', 'Numero')} />
+                                    <DatePicker date={entry.expiry ? new Date(entry.expiry) : undefined} onDateChange={(date) => handleCertChange(entry.originalIdx, { expiry: toLocalDateString(date) })} />
+                                  </div>
+                                </div>
+                              ))}
                             </div>
-                          ))}
-                          <Button type="button" variant="outline" size="sm" onClick={() => addCert('certificate')}><PlusCircle className="h-4 w-4 mr-2" />{t('profile.sections.certifications.add_certificate', 'Aggiungi brevetto')}</Button>
+                          )}
+                          <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => addCert('certificate')}>
+                            <PlusCircle className="h-4 w-4 mr-2" />{t('profile.sections.certifications.add_certificate', 'Aggiungi brevetto')}
+                          </Button>
                         </div>
                       )}
                     </div>
+                  )}
+
+                  {/* ═══ Navigazione Indietro / Avanti ═══ */}
+                  <div className="flex items-center justify-between mt-8 pt-4 border-t">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={certStep === 0}
+                      onClick={() => setCertStep(s => s - 1)}
+                      className="gap-1"
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                      {t('common.back', 'Indietro')}
+                    </Button>
+                    <span className="text-xs text-muted-foreground">{certStep + 1} / 3</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={certStep === 2}
+                      onClick={() => setCertStep(s => s + 1)}
+                      className="gap-1"
+                    >
+                      {t('common.next', 'Avanti')}
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
                   </div>
 
                 </CardContent>
