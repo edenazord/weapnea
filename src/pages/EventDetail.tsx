@@ -28,7 +28,6 @@ import { friendlyToCanonicalSlug } from "@/lib/seo-utils";
 import { useChatStore } from "@/hooks/useChatStore";
 import { toast } from "sonner";
 import DOMPurify from "dompurify";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { backendConfig } from '@/lib/backendConfig';
 import Comments from "@/components/Comments";
 import EventMediaGallery from "@/components/EventMediaGallery";
@@ -393,13 +392,6 @@ const EventDetail = () => {
             <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
                 {/* Colonna sinistra - Contenuto principale */}
                 <div className={isMobile ? 'col-span-1' : 'md:col-span-2'}>
-                    {/* Tabs: Info evento + Galleria community */}
-                    <Tabs defaultValue="info" className="w-full">
-                      <TabsList className="mb-4">
-                        <TabsTrigger value="info">{t('events.tab_info', 'Info Evento')}</TabsTrigger>
-                        <TabsTrigger value="gallery">{t('events.tab_gallery', 'Galleria')}</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="info">
                     {/* Banner immagine: carosello automatico */}
                     <Card className="overflow-hidden shadow-lg">
                         <div className={`relative w-full ${isMobile ? 'h-48' : 'h-64 md:h-96'}`}>
@@ -549,31 +541,24 @@ const EventDetail = () => {
                         </Card>
                     )}
 
-                    {/* Commenti – sotto Orari e Logistica come nel blog */}
+                    {/* Media Utenti – galleria community */}
+                    {/* Media Utenti – visibile a tutti, upload solo per partecipanti/organizzatore/admin */}
+                    {event.id && (
+                      <div className="mt-8">
+                        <EventMediaGallery
+                          eventId={event.id}
+                          isParticipant={isParticipant}
+                          isOwner={user?.id === event.created_by}
+                        />
+                      </div>
+                    )}
+
+                    {/* Commenti – sotto come nel blog */}
                     {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') && (
                       <div className="mt-8">
                         <Comments eventId={event.id} canComment={isParticipant || user?.id === event.created_by || user?.role === 'admin'} />
                       </div>
                     )}
-                      </TabsContent>
-
-                      {/* Tab Galleria Community */}
-                      <TabsContent value="gallery">
-                        {event.id && (isParticipant || user?.id === event.created_by || user?.role === 'admin') ? (
-                          <EventMediaGallery
-                            eventId={event.id}
-                            isParticipant={isParticipant}
-                            isOwner={user?.id === event.created_by}
-                          />
-                        ) : (
-                          <Card className="shadow-lg p-6">
-                            <p className="text-center text-muted-foreground text-sm">
-                              {t('events.gallery_participants_only', 'La galleria è disponibile solo per i partecipanti dell\'evento.')}
-                            </p>
-                          </Card>
-                        )}
-                      </TabsContent>
-                    </Tabs>
                 </div>
 
                 {/* Colonna destra - Informazioni rapide e dettagli */}
