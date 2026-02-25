@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useAIAgentStore } from "@/hooks/useAIAgentStore";
 import { Bot, X } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -28,14 +28,30 @@ function injectDIdScript() {
 }
 
 function removeDIdScript() {
+  // Remove script tag
   document.querySelector('script[data-name="did-agent"]')?.remove();
+  // Remove custom element
   document.querySelector("did-agent")?.remove();
+  // Remove any D-ID injected elements (iframes, overlays, containers)
   document.querySelectorAll('[id^="did-"]').forEach((el) => el.remove());
+  document.querySelectorAll('iframe[src*="d-id"]').forEach((el) => el.remove());
+  document.querySelectorAll('[class*="did-"], [class*="d-id"]').forEach((el) => el.remove());
+  // Remove any shadow-dom host elements D-ID may inject
+  document.querySelectorAll('[data-did], [data-agent]').forEach((el) => el.remove());
 }
 
 export default function DIdAgent() {
   const { visible, toggle, hide } = useAIAgentStore();
   const isMobile = useIsMobile();
+
+  const handleClose = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    hide();
+    // Force cleanup after a short delay (D-ID may re-inject)
+    setTimeout(removeDIdScript, 100);
+    setTimeout(removeDIdScript, 500);
+  }, [hide]);
 
   useEffect(() => {
     if (visible) {
@@ -53,8 +69,10 @@ export default function DIdAgent() {
     if (!visible) return null;
     return (
       <button
-        onClick={hide}
+        onClick={handleClose}
+        onPointerDown={handleClose}
         className="fixed z-[99999] top-4 right-4 bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl transition-all rounded-full p-2"
+        style={{ pointerEvents: 'all' }}
         aria-label="Chiudi AI Assistant"
       >
         <X className="w-5 h-5" />
@@ -62,14 +80,16 @@ export default function DIdAgent() {
     );
   }
 
-  // Desktop: floating toggle + close overlay when open
+  // Desktop: floating toggle next to Chat button + close overlay when open
   return (
     <>
       {/* Close button – always on top when agent is visible */}
       {visible && (
         <button
-          onClick={hide}
+          onClick={handleClose}
+          onPointerDown={handleClose}
           className="fixed z-[99999] top-4 right-4 bg-red-500 hover:bg-red-600 text-white shadow-lg hover:shadow-xl transition-all rounded-full p-2.5 flex items-center gap-1.5"
+          style={{ pointerEvents: 'all' }}
           aria-label="Chiudi AI Assistant"
         >
           <X className="w-5 h-5" />
@@ -77,10 +97,10 @@ export default function DIdAgent() {
         </button>
       )}
 
-      {/* Toggle button */}
+      {/* Toggle button – positioned to the left of the Chat FAB */}
       <button
         onClick={toggle}
-        className={`fixed z-50 bottom-44 right-4 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center px-4 py-3 rounded-full gap-2 ${
+        className={`fixed z-50 bottom-6 right-[220px] shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center px-4 py-3 rounded-full gap-2 ${
           visible
             ? "bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700"
             : "bg-gradient-to-r from-emerald-400 to-teal-500 text-white hover:from-emerald-500 hover:to-teal-600"
