@@ -247,7 +247,7 @@ const BlogDetail = () => {
         </div>
 
         {/* Comments */}
-        {article.id && <Comments blogId={article.id} />}
+        {article.id && <div className="mb-16"><Comments blogId={article.id} /></div>}
       </div>
     </Wrapper>
   );
