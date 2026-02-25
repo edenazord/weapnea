@@ -87,15 +87,18 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: AvatarUploadP
   };
 
   return (
-    <div className="flex flex-col items-center space-y-4">
-      <Avatar className="h-24 w-24">
-        <AvatarImage src={currentAvatarUrl} />
-        <AvatarFallback className="text-2xl">
-          {user?.email?.charAt(0).toUpperCase()}
-        </AvatarFallback>
-      </Avatar>
+    <div className="flex items-center gap-4">
+      <div className="relative h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border bg-muted">
+        {currentAvatarUrl ? (
+          <img src={currentAvatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-2xl font-semibold text-muted-foreground">
+            {user?.email?.charAt(0).toUpperCase()}
+          </div>
+        )}
+      </div>
       
-      <div className="flex flex-col sm:flex-row gap-2">
+      <div className="flex flex-col gap-2">
         <div className="relative">
           <Input
             id="avatar-upload"
@@ -123,13 +126,6 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: AvatarUploadP
           </Button>
         )}
       </div>
-      
-      <p className="text-xs text-gray-500 text-center">
-        Formati supportati: JPG, PNG. Dimensione massima: 2MB
-      </p>
-      <p className="text-xs text-gray-400 text-center">
-        Dimensioni raccomandate: 400×400 px (quadrata)
-      </p>
     </div>
   );
 }
