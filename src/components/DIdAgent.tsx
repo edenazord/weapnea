@@ -1,21 +1,23 @@
-import { useEffect, useCallback, useRef } from "react";
+import { useEffect, useCallback, useState } from "react";
 import { useAIAgentStore } from "@/hooks/useAIAgentStore";
 import { Bot } from "lucide-react";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
 /**
- * D-ID AI Agent controller.
+ * D-ID AI Agent – iframe isolation approach.
  *
- * DEFINITIVE APPROACH: D-ID's script, once loaded as an ES module, keeps
- * re-injecting DOM nodes and cannot be reliably killed by removing elements.
- * The only bulletproof solution is to load it inside an <iframe> we own.
- * Closing = removing the iframe. The entire D-ID runtime dies with its context.
+ * D-ID's module re-injects DOM nodes and cannot be killed reliably.
+ * We load it inside an <iframe> we control.
+ * Close = unmount the iframe → the entire D-ID runtime dies with it.
+ *
+ * We use a `key` counter to force React to create a brand-new iframe
+ * each time the user opens the agent, so D-ID always boots fresh.
  */
 
-const IFRAME_HTML = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><style>
-  html,body{margin:0;padding:0;overflow:hidden;background:transparent}
-</style></head><body>
+const SRCDOC = `<!DOCTYPE html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;padding:0;overflow:hidden;background:transparent}</style>
+</head><body>
 <script type="module"
   src="https://agent.d-id.com/v2/index.js"
   data-name="did-agent"
@@ -24,36 +26,22 @@ const IFRAME_HTML = `<!DOCTYPE html>
   data-agent-id="v2_agt_HNFyNkLh"
   data-monitor="true"
   data-orientation="horizontal"
-  data-position="right"
-></script>
+  data-position="right"><\/script>
 </body></html>`;
 
 export default function DIdAgent() {
   const { visible, toggle, hide } = useAIAgentStore();
   const isMobile = useIsMobile();
-  const blobUrlRef = useRef<string | null>(null);
+  const [iframeKey, setIframeKey] = useState(0);
+
+  const handleOpen = useCallback(() => {
+    setIframeKey((k) => k + 1); // force fresh iframe
+    toggle();
+  }, [toggle]);
 
   const handleClose = useCallback(() => {
     hide();
-    // Revoke the blob URL to free memory
-    if (blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-      blobUrlRef.current = null;
-    }
   }, [hide]);
-
-  // Create blob URL when visible
-  useEffect(() => {
-    if (visible && !blobUrlRef.current) {
-      blobUrlRef.current = URL.createObjectURL(
-        new Blob([IFRAME_HTML], { type: "text/html" })
-      );
-    }
-    if (!visible && blobUrlRef.current) {
-      URL.revokeObjectURL(blobUrlRef.current);
-      blobUrlRef.current = null;
-    }
-  }, [visible]);
 
   // Escape key
   useEffect(() => {
@@ -65,34 +53,26 @@ export default function DIdAgent() {
     return () => window.removeEventListener("keydown", onKey);
   }, [visible, handleClose]);
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (blobUrlRef.current) {
-        URL.revokeObjectURL(blobUrlRef.current);
-        blobUrlRef.current = null;
-      }
-    };
-  }, []);
-
   if (isMobile) return null; // Mobile toggle is in MobileLayout bottom nav
 
   return (
     <>
-      {/* D-ID iframe – sandboxed, full-screen when visible */}
-      {visible && blobUrlRef.current && (
+      {/* D-ID iframe – full viewport, unmounted when closed */}
+      {visible && (
         <iframe
-          src={blobUrlRef.current}
+          key={iframeKey}
+          srcDoc={SRCDOC}
           title="AI Assistant"
           allow="camera;microphone"
-          className="fixed inset-0 w-full h-full z-[9998] border-none bg-transparent"
-          style={{ pointerEvents: "all" }}
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          className="fixed inset-0 w-full h-full z-[9998] border-none"
+          style={{ background: "transparent" }}
         />
       )}
 
-      {/* Toggle / Close button – always accessible, sits ABOVE the iframe */}
+      {/* Toggle / Close button – sits ABOVE the iframe */}
       <button
-        onClick={visible ? handleClose : toggle}
+        onClick={visible ? handleClose : handleOpen}
         className={`fixed z-[9999] bottom-6 right-[210px] w-48 h-12 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center rounded-full gap-2 ${
           visible
             ? "bg-gradient-to-r from-red-500 to-rose-600 text-white hover:from-red-600 hover:to-rose-700"
