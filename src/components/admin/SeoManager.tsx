@@ -1,72 +1,65 @@
-import { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { apiGet, apiSend } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { toast } from "sonner";
 import { Save, Globe, ExternalLink } from "lucide-react";
 
+interface LangData { title: string; description: string; }
 interface SeoSetting {
   path: string;
   title: string | null;
   description: string | null;
   og_image: string | null;
+  translations: Record<string, LangData> | null;
   updated_at: string | null;
 }
 
+const SUPPORTED_LANGS: { code: string; label: string }[] = [
+  { code: "it", label: "🇮🇹 IT" },
+  { code: "en", label: "🇬🇧 EN" },
+  { code: "es", label: "🇪🇸 ES" },
+  { code: "fr", label: "🇫🇷 FR" },
+  { code: "pl", label: "🇵🇱 PL" },
+  { code: "ru", label: "🇷🇺 RU" },
+];
+
 const STATIC_PAGES: { path: string; label: string; group: string }[] = [
-  // Navbar
   { path: "/", label: "Home", group: "Navbar" },
   { path: "/chi-siamo", label: "Chi Siamo", group: "Navbar" },
   { path: "/contattaci", label: "Contattaci", group: "Navbar" },
   { path: "/blog", label: "Blog", group: "Navbar" },
-  // Footer extras
   { path: "/eventi-imminenti", label: "Eventi Imminenti", group: "Footer" },
-  { path: "/forum", label: "Forum", group: "Footer" },
   { path: "/privacy-policy", label: "Privacy Policy", group: "Footer" },
   { path: "/cookie-policy", label: "Cookie Policy", group: "Footer" },
+  { path: "/forum", label: "Forum", group: "Altro" },
 ];
 
-const DEFAULT_PLACEHOLDERS: Record<string, { title: string; description: string }> = {
-  "/": {
-    title: "WeApnea – Community Apnea & Freediving",
-    description: "La community italiana per apneisti e freediver. Scopri eventi, corsi e allenamenti di apnea.",
-  },
-  "/chi-siamo": {
-    title: "Chi Siamo | WeApnea",
-    description: "Scopri il team WeApnea e la nostra missione per la community dell'apnea e del freediving.",
-  },
-  "/contattaci": {
-    title: "Contattaci | WeApnea",
-    description: "Hai domande o vuoi collaborare con WeApnea? Scrivici!",
-  },
-  "/blog": {
-    title: "Blog | WeApnea",
-    description: "Articoli, guide e approfondimenti sull'apnea e il freediving dalla community WeApnea.",
-  },
-  "/eventi-imminenti": {
-    title: "Eventi Imminenti | WeApnea",
-    description: "Scopri i prossimi eventi di apnea e freediving nella community WeApnea.",
-  },
-  "/forum": {
-    title: "Forum | WeApnea",
-    description: "Discussioni, consigli e domande sulla comunità di apnea e freediving su WeApnea.",
-  },
-  "/privacy-policy": {
-    title: "Privacy Policy | WeApnea",
-    description: "Informativa sulla privacy di WeApnea – come trattiamo i tuoi dati personali.",
-  },
-  "/cookie-policy": {
-    title: "Cookie Policy | WeApnea",
-    description: "Cookie policy di WeApnea – tipologie di cookie utilizzati e come gestirli.",
-  },
+const DEFAULT_IT: Record<string, LangData> = {
+  "/": { title: "WeApnea – Community Apnea & Freediving", description: "La community italiana per apneisti e freediver. Scopri eventi, corsi e allenamenti di apnea." },
+  "/chi-siamo": { title: "Chi Siamo | WeApnea", description: "Scopri il team WeApnea e la nostra missione per la community dell'apnea e del freediving." },
+  "/contattaci": { title: "Contattaci | WeApnea", description: "Hai domande o vuoi collaborare con WeApnea? Scrivici!" },
+  "/blog": { title: "Blog | WeApnea", description: "Articoli, guide e approfondimenti sull'apnea e il freediving dalla community WeApnea." },
+  "/eventi-imminenti": { title: "Eventi Imminenti | WeApnea", description: "Scopri i prossimi eventi di apnea e freediving nella community WeApnea." },
+  "/forum": { title: "Forum | WeApnea", description: "Discussioni, consigli e domande sulla comunità di apnea e freediving su WeApnea." },
+  "/privacy-policy": { title: "Privacy Policy | WeApnea", description: "Informativa sulla privacy di WeApnea." },
+  "/cookie-policy": { title: "Cookie Policy | WeApnea", description: "Cookie policy di WeApnea." },
 };
 
 export default function SeoManager() {
   const [settings, setSettings] = useState<Record<string, SeoSetting>>({});
-  const [editing, setEditing] = useState<Record<string, Partial<SeoSetting>>>({});
+  const [activeLang, setActiveLang] = useState("it");
+  const [langEdits, setLangEdits] = useState<Record<string, Record<string, Partial<LangData>>>>({});
+  const [ogEdits, setOgEdits] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
 
@@ -81,163 +74,202 @@ export default function SeoManager() {
       .finally(() => setLoading(false));
   }, []);
 
-  const getEditing = (path: string): Partial<SeoSetting> =>
-    editing[path] ?? {
-      title: settings[path]?.title ?? "",
-      description: settings[path]?.description ?? "",
-      og_image: settings[path]?.og_image ?? "",
-    };
+  const getSaved = (path: string, lang: string): LangData => {
+    const s = settings[path];
+    if (!s) return DEFAULT_IT[path] ?? { title: "", description: "" };
+    if (lang === "it") return { title: s.title ?? "", description: s.description ?? "" };
+    const tr = s.translations ?? {};
+    return tr[lang] ?? { title: "", description: "" };
+  };
 
-  const setField = (path: string, field: keyof SeoSetting, value: string) => {
-    setEditing((prev) => ({
+  const getValue = (path: string, lang: string, field: keyof LangData): string => {
+    const e = langEdits[path]?.[lang] ?? {};
+    if (field in e) return e[field] ?? "";
+    return getSaved(path, lang)[field] ?? "";
+  };
+
+  const setField = (path: string, lang: string, field: keyof LangData, value: string) => {
+    setLangEdits(prev => ({
       ...prev,
-      [path]: { ...getEditing(path), [field]: value },
+      [path]: { ...(prev[path] ?? {}), [lang]: { ...((prev[path] ?? {})[lang] ?? {}), [field]: value } },
     }));
   };
 
+  const getOgImage = (path: string) => path in ogEdits ? ogEdits[path] : (settings[path]?.og_image ?? "");
+
+  const isDirty = (path: string): boolean => {
+    const s = settings[path];
+    if (path in ogEdits && (s?.og_image ?? "") !== ogEdits[path]) return true;
+    const le = langEdits[path];
+    if (!le) return false;
+    for (const lang of Object.keys(le)) {
+      const saved = getSaved(path, lang);
+      const edit = le[lang] ?? {};
+      if ("title" in edit && edit.title !== saved.title) return true;
+      if ("description" in edit && edit.description !== saved.description) return true;
+    }
+    return false;
+  };
+
   const handleSave = async (path: string) => {
-    setSaving((prev) => ({ ...prev, [path]: true }));
+    setSaving(prev => ({ ...prev, [path]: true }));
     try {
-      const data = getEditing(path);
+      const translations: Record<string, LangData> = {};
+      for (const { code } of SUPPORTED_LANGS) {
+        const saved = getSaved(path, code);
+        const edit = langEdits[path]?.[code] ?? {};
+        const merged = { title: ("title" in edit ? edit.title : saved.title) ?? "", description: ("description" in edit ? edit.description : saved.description) ?? "" };
+        if (code !== "it") translations[code] = merged;
+      }
+      const itEdit = langEdits[path]?.["it"] ?? {};
+      const itSaved = getSaved(path, "it");
       const saved = await apiSend("/api/admin/seo-settings", "PUT", {
         path,
-        title: data.title || null,
-        description: data.description || null,
-        og_image: data.og_image || null,
+        title: ("title" in itEdit ? itEdit.title : itSaved.title) || null,
+        description: ("description" in itEdit ? itEdit.description : itSaved.description) || null,
+        og_image: getOgImage(path) || null,
+        translations,
       });
-      setSettings((prev) => ({ ...prev, [path]: saved as SeoSetting }));
-      setEditing((prev) => {
-        const next = { ...prev };
-        delete next[path];
-        return next;
-      });
+      setSettings(prev => ({ ...prev, [path]: saved as SeoSetting }));
+      setLangEdits(prev => { const n = { ...prev }; delete n[path]; return n; });
+      setOgEdits(prev => { const n = { ...prev }; delete n[path]; return n; });
       toast.success(`SEO salvato per ${path}`);
     } catch (e: any) {
       toast.error(e?.message || "Errore nel salvataggio");
     } finally {
-      setSaving((prev) => ({ ...prev, [path]: false }));
+      setSaving(prev => ({ ...prev, [path]: false }));
     }
   };
 
-  const isDirty = (path: string): boolean => {
-    if (!editing[path]) return false;
-    const e = editing[path];
-    const s = settings[path];
-    return (
-      (e.title ?? "") !== (s?.title ?? "") ||
-      (e.description ?? "") !== (s?.description ?? "") ||
-      (e.og_image ?? "") !== (s?.og_image ?? "")
-    );
-  };
+  const GROUPS = [
+    { key: "Navbar", label: "Pagine Navbar" },
+    { key: "Footer", label: "Pagine Footer" },
+    { key: "Altro", label: "Altre pagine" },
+  ] as const;
 
-  const groups = Array.from(new Set(STATIC_PAGES.map((p) => p.group)));
-
-  if (loading) {
-    return <p className="text-gray-500 text-sm py-4">Caricamento impostazioni SEO…</p>;
-  }
+  if (loading) return <p className="text-gray-500 text-sm py-4">Caricamento impostazioni SEO…</p>;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center gap-2 text-sm text-gray-500 bg-blue-50 border border-blue-100 rounded-lg p-3">
-        <Globe className="h-4 w-4 text-blue-500 shrink-0" />
-        <span>
-          Le impostazioni SEO configurate qui vengono usate dai motori di ricerca (Google, Bing) e dalle anteprime sui social (WhatsApp, Telegram, Facebook). Per ogni pagina puoi impostare <strong>Titolo</strong>, <strong>Descrizione</strong> e <strong>Immagine Open Graph</strong> (URL pubblico).
-        </span>
+    <div className="space-y-6">
+      {/* Language selector */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">
+          <Globe className="h-4 w-4 text-blue-500" />
+          Lingua:
+        </div>
+        <Tabs value={activeLang} onValueChange={setActiveLang}>
+          <TabsList>
+            {SUPPORTED_LANGS.map(l => (
+              <TabsTrigger key={l.code} value={l.code} className="text-xs px-3">{l.label}</TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       </div>
 
-      {groups.map((group) => (
-        <div key={group} className="space-y-4">
-          <h3 className="text-base font-semibold text-gray-700 border-b pb-2">
-            {group === "Navbar" ? "Pagine Navbar" : "Pagine Footer"}
-          </h3>
-          <div className="grid gap-4">
-            {STATIC_PAGES.filter((p) => p.group === group).map(({ path, label }) => {
-              const e = getEditing(path);
-              const saved = settings[path];
-              const placeholder = DEFAULT_PLACEHOLDERS[path] ?? { title: "", description: "" };
-              const dirty = isDirty(path);
+      <p className="text-sm text-blue-700 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+        Stai modificando in <strong>{SUPPORTED_LANGS.find(l => l.code === activeLang)?.label}</strong>.
+        {activeLang === "it" ? " Usato come fallback per tutte le altre lingue." : " Lascia vuoto per usare il testo italiano come fallback."}
+      </p>
 
-              return (
-                <Card key={path} className={dirty ? "border-blue-300 ring-1 ring-blue-300" : ""}>
-                  <CardHeader className="py-3 px-4">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <CardTitle className="text-sm font-semibold">{label}</CardTitle>
+      {GROUPS.map(({ key: group, label }) => {
+        const pages = STATIC_PAGES.filter(p => p.group === group);
+        if (!pages.length) return null;
+        return (
+          <div key={group} className="space-y-2">
+            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide px-1">{label}</h3>
+            <Accordion type="multiple" className="space-y-1">
+              {pages.map(({ path, label: pageLabel }) => {
+                const dirty = isDirty(path);
+                const titleVal = getValue(path, activeLang, "title");
+                const descVal = getValue(path, activeLang, "description");
+                const itDefaults = DEFAULT_IT[path] ?? { title: "", description: "" };
+                const saved = settings[path];
+
+                return (
+                  <AccordionItem
+                    key={path}
+                    value={path}
+                    className={`border rounded-lg px-0 ${dirty ? "border-blue-300 ring-1 ring-blue-300" : "border-gray-200"}`}
+                  >
+                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
+                      <div className="flex items-center gap-2 flex-wrap text-left w-full mr-2">
+                        <span className="text-sm font-semibold text-gray-800">{pageLabel}</span>
                         <code className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{path}</code>
                         <a
                           href={`https://www.weapnea.com${path}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-gray-400 hover:text-blue-600"
+                          onClick={e => e.stopPropagation()}
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {saved?.updated_at && (
-                          <span className="text-xs text-gray-400">
-                            Salvato: {new Date(saved.updated_at).toLocaleDateString("it-IT")}
-                          </span>
+                        {dirty && <Badge variant="secondary" className="text-xs ml-1">Non salvato</Badge>}
+                        {saved?.updated_at && !dirty && (
+                          <span className="text-xs text-gray-400 ml-auto">{new Date(saved.updated_at).toLocaleDateString("it-IT")}</span>
                         )}
-                        {dirty && <Badge variant="secondary" className="text-xs">Non salvato</Badge>}
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="px-4 pb-4 space-y-3">
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">
+                          Titolo SEO <span className="text-gray-400 font-normal">(max 60 caratteri)</span>
+                        </label>
+                        <Input
+                          value={titleVal}
+                          placeholder={activeLang !== "it" ? (getSaved(path, "it").title || itDefaults.title) : itDefaults.title}
+                          onChange={e => setField(path, activeLang, "title", e.target.value)}
+                          maxLength={80}
+                          className="text-sm"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">{titleVal.length}/60</p>
+                      </div>
+                      <div>
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">
+                          Descrizione SEO <span className="text-gray-400 font-normal">(max 160 caratteri)</span>
+                        </label>
+                        <Textarea
+                          value={descVal}
+                          placeholder={activeLang !== "it" ? (getSaved(path, "it").description || itDefaults.description) : itDefaults.description}
+                          onChange={e => setField(path, activeLang, "description", e.target.value)}
+                          maxLength={200}
+                          rows={2}
+                          className="text-sm resize-none"
+                        />
+                        <p className="text-xs text-gray-400 mt-1">{descVal.length}/160</p>
+                      </div>
+                      {activeLang === "it" && (
+                        <div>
+                          <label className="text-xs font-medium text-gray-600 mb-1 block">
+                            Immagine Open Graph <span className="text-gray-400 font-normal">(URL – uguale per tutte le lingue)</span>
+                          </label>
+                          <Input
+                            value={getOgImage(path)}
+                            placeholder="/images/weapnea-logo.png"
+                            onChange={e => setOgEdits(prev => ({ ...prev, [path]: e.target.value }))}
+                            className="text-sm font-mono"
+                          />
+                        </div>
+                      )}
+                      <div className="flex justify-end pt-1">
                         <Button
                           size="sm"
                           disabled={!dirty || saving[path]}
                           onClick={() => handleSave(path)}
-                          className="h-7 px-3 text-xs"
+                          className="h-7 px-4 text-xs"
                         >
                           <Save className="h-3.5 w-3.5 mr-1" />
                           {saving[path] ? "Salvataggio…" : "Salva"}
                         </Button>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="py-3 px-4 space-y-3">
-                    <div>
-                      <label className="text-xs font-medium text-gray-600 mb-1 block">
-                        Titolo SEO <span className="text-gray-400 font-normal">(max 60 caratteri)</span>
-                      </label>
-                      <Input
-                        value={e.title ?? ""}
-                        placeholder={placeholder.title}
-                        onChange={(ev) => setField(path, "title", ev.target.value)}
-                        maxLength={80}
-                        className="text-sm"
-                      />
-                      <p className="text-xs text-gray-400 mt-1">{(e.title ?? "").length}/60</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-600 mb-1 block">
-                        Descrizione SEO <span className="text-gray-400 font-normal">(max 160 caratteri)</span>
-                      </label>
-                      <Textarea
-                        value={e.description ?? ""}
-                        placeholder={placeholder.description}
-                        onChange={(ev) => setField(path, "description", ev.target.value)}
-                        maxLength={200}
-                        rows={2}
-                        className="text-sm resize-none"
-                      />
-                      <p className="text-xs text-gray-400 mt-1">{(e.description ?? "").length}/160</p>
-                    </div>
-                    <div>
-                      <label className="text-xs font-medium text-gray-600 mb-1 block">
-                        Immagine Open Graph <span className="text-gray-400 font-normal">(URL pubblico, es. /images/chi-siamo.jpg)</span>
-                      </label>
-                      <Input
-                        value={e.og_image ?? ""}
-                        placeholder="/images/weapnea-logo.png"
-                        onChange={(ev) => setField(path, "og_image", ev.target.value)}
-                        className="text-sm font-mono"
-                      />
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
           </div>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

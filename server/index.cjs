@@ -216,8 +216,10 @@ async function runMigrationsAtStartup() {
         title text,
         description text,
         og_image text,
+        translations jsonb NOT NULL DEFAULT '{}'::jsonb,
         updated_at timestamptz NOT NULL DEFAULT now()
       );
+      ALTER TABLE public.seo_settings ADD COLUMN IF NOT EXISTS translations jsonb NOT NULL DEFAULT '{}'::jsonb;
     `);
     console.log('[startup] ensured comments, event_media, external_participants, event_feedback_emails, seo_settings tables');
     await detectSchema();
@@ -4686,30 +4688,56 @@ setTimeout(checkAndSendFeedbackEmails, 30000);
 // =============================================
 // SEO META (used by Vercel middleware for bot prerendering)
 // =============================================
+const SUPPORTED_LANGS = ['it', 'en', 'es', 'fr', 'pl', 'ru'];
+const DEFAULT_META_BY_LANG = {
+  it: { title: 'WeApnea – Community Apnea & Freediving', description: 'La community italiana per apneisti e freediver. Scopri eventi, corsi e allenamenti di apnea.' },
+  en: { title: 'WeApnea – Apnea & Freediving Community', description: 'The international community for freedivers. Discover events, courses and training.' },
+  es: { title: 'WeApnea – Comunidad de Apnea y Freediving', description: 'La comunidad internacional para apneístas. Descubre eventos, cursos y entrenamientos.' },
+  fr: { title: 'WeApnea – Communauté Apnée & Freediving', description: 'La communauté internationale pour les apnéistes. Découvrez événements, cours et entraînements.' },
+  pl: { title: 'WeApnea – Społeczność Apnei i Freedivingu', description: 'Międzynarodowa społeczność dla nurków bezdechu. Odkryj wydarzenia, kursy i treningi.' },
+  ru: { title: 'WeApnea – Сообщество Фридайвинга', description: 'Международное сообщество для фридайверов. Находите события, курсы и тренировки.' },
+};
+
+function resolveLang(acceptLangHeader) {
+  if (!acceptLangHeader) return 'it';
+  const langs = acceptLangHeader.split(',')
+    .map(l => l.split(';')[0].trim().toLowerCase().slice(0, 2));
+  for (const l of langs) {
+    if (SUPPORTED_LANGS.includes(l)) return l;
+  }
+  return 'it';
+}
+
 app.get('/api/seo-meta', async (req, res) => {
-  res.set('Cache-Control', 'public, max-age=300');
+  res.set('Cache-Control', 'public, max-age=120');
   const rawPath = String(req.query.path || '/');
+  const langParam = String(req.query.lang || '');
+  const lang = SUPPORTED_LANGS.includes(langParam) ? langParam : resolveLang(req.headers['accept-language']);
   const base = process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com';
+  const langDefaults = DEFAULT_META_BY_LANG[lang] || DEFAULT_META_BY_LANG['it'];
   const defaultMeta = {
-    title: 'WeApnea – Community Apnea & Freediving',
-    description: 'La community italiana per apneisti e freediver. Scopri eventi, corsi e allenamenti di apnea.',
+    title: langDefaults.title,
+    description: langDefaults.description,
     image: `${base}/images/weapnea-logo.png`,
     url: `${base}${rawPath}`,
     type: 'website',
+    lang,
   };
 
   try {
     // 1) Check custom SEO settings from DB (static pages configured in admin)
     const { rows: dbRows } = await pool.query(
-      `SELECT title, description, og_image FROM public.seo_settings WHERE path = $1 LIMIT 1`,
+      `SELECT title, description, og_image, translations FROM public.seo_settings WHERE path = $1 LIMIT 1`,
       [rawPath]
     );
     if (dbRows[0]) {
       const s = dbRows[0];
+      const tr = (s.translations && typeof s.translations === 'object') ? s.translations : {};
+      const langData = tr[lang] || {};
       return res.json({
         ...defaultMeta,
-        title: s.title || defaultMeta.title,
-        description: s.description || defaultMeta.description,
+        title: langData.title || s.title || defaultMeta.title,
+        description: langData.description || s.description || defaultMeta.description,
         image: s.og_image || defaultMeta.image,
         url: `${base}${rawPath}`,
       });
@@ -4788,14 +4816,14 @@ app.get('/api/seo-meta', async (req, res) => {
 });
 
 // =============================================
-// ADMIN SEO SETTINGS ENDPOINTS
+// PUBLIC SEO SETTINGS ENDPOINT
 // =============================================
 
-// GET /api/admin/seo-settings — list all configured pages
-app.get('/api/admin/seo-settings', requireAuth, requireAdmin, async (_req, res) => {
+// GET /api/public/seo-settings — returns all static page SEO data (no auth needed, used by frontend)
+app.get('/api/public/seo-settings', async (_req, res) => {
   try {
     const { rows } = await pool.query(
-      `SELECT path, title, description, og_image, updated_at FROM public.seo_settings ORDER BY path ASC`
+      `SELECT path, title, description, og_image, translations FROM public.seo_settings ORDER BY path ASC`
     );
     res.json(rows);
   } catch (e) {
@@ -4803,17 +4831,33 @@ app.get('/api/admin/seo-settings', requireAuth, requireAdmin, async (_req, res) 
   }
 });
 
-// PUT /api/admin/seo-settings/:path — upsert SEO settings for a page
+// =============================================
+// ADMIN SEO SETTINGS ENDPOINTS
+// =============================================
+
+// GET /api/admin/seo-settings — list all configured pages
+app.get('/api/admin/seo-settings', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT path, title, description, og_image, translations, updated_at FROM public.seo_settings ORDER BY path ASC`
+    );
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// PUT /api/admin/seo-settings — upsert SEO settings for a page
 app.put('/api/admin/seo-settings', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { path: pagePath, title, description, og_image } = req.body;
+    const { path: pagePath, title, description, og_image, translations } = req.body;
     if (!pagePath) return res.status(400).json({ error: 'path is required' });
     const { rows } = await pool.query(
-      `INSERT INTO public.seo_settings (path, title, description, og_image, updated_at)
-       VALUES ($1, $2, $3, $4, now())
-       ON CONFLICT (path) DO UPDATE SET title = $2, description = $3, og_image = $4, updated_at = now()
+      `INSERT INTO public.seo_settings (path, title, description, og_image, translations, updated_at)
+       VALUES ($1, $2, $3, $4, $5, now())
+       ON CONFLICT (path) DO UPDATE SET title = $2, description = $3, og_image = $4, translations = $5, updated_at = now()
        RETURNING *`,
-      [pagePath, title || null, description || null, og_image || null]
+      [pagePath, title || null, description || null, og_image || null, JSON.stringify(translations || {})]
     );
     res.json(rows[0]);
   } catch (e) {

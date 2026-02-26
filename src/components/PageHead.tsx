@@ -1,4 +1,7 @@
 import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useSeoSettings, resolveSeoMeta } from '@/hooks/useSeoSettings';
 
 interface PageHeadProps {
   title: string;
@@ -7,34 +10,54 @@ interface PageHeadProps {
 
 /**
  * Sets document.title and meta description for SEO.
- * Mount in any page component to set per-page SEO meta tags.
+ * Priority: DB admin settings (per language) → props fallback.
  */
-export default function PageHead({ title, description }: PageHeadProps) {
+export default function PageHead({ title: propTitle, description: propDesc }: PageHeadProps) {
+  const location = useLocation();
+  const { currentLanguage } = useLanguage();
+  const { data: seoMap } = useSeoSettings();
+
   useEffect(() => {
-    const fullTitle = title.includes('WeApnea') ? title : `${title} | WeApnea`;
+    const setting = seoMap?.[location.pathname];
+    const lang = currentLanguage || 'it';
+
+    // Resolve effective values: DB first, then props fallback
+    let effectiveTitle = propTitle;
+    let effectiveDesc = propDesc;
+
+    if (setting) {
+      const resolved = resolveSeoMeta(setting, lang);
+      if (resolved.title) effectiveTitle = resolved.title;
+      if (resolved.description) effectiveDesc = resolved.description;
+    }
+
+    const fullTitle = effectiveTitle.includes('WeApnea')
+      ? effectiveTitle
+      : `${effectiveTitle} | WeApnea`;
+
     document.title = fullTitle;
 
-    // Update meta description
-    if (description) {
-      let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    // Meta description
+    let meta = document.querySelector('meta[name="description"]') as HTMLMetaElement | null;
+    if (effectiveDesc) {
       if (!meta) {
         meta = document.createElement('meta');
         meta.name = 'description';
         document.head.appendChild(meta);
       }
-      meta.content = description;
+      meta.content = effectiveDesc;
     }
 
-    // Update OG tags
+    // OG tags
     const ogTitle = document.querySelector('meta[property="og:title"]') as HTMLMetaElement | null;
     if (ogTitle) ogTitle.content = fullTitle;
     const ogDesc = document.querySelector('meta[property="og:description"]') as HTMLMetaElement | null;
-    if (ogDesc && description) ogDesc.content = description;
+    if (ogDesc && effectiveDesc) ogDesc.content = effectiveDesc;
 
     return () => {
       document.title = 'WeApnea – Community Apnea & Freediving';
     };
-  }, [title, description]);
+  }, [propTitle, propDesc, location.pathname, currentLanguage, seoMap]);
 
   return null;
 }
