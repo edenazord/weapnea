@@ -231,6 +231,8 @@ async function runMigrationsAtStartup() {
         CONSTRAINT site_config_single_row CHECK (id = 1)
       );
       INSERT INTO public.site_config (id) VALUES (1) ON CONFLICT DO NOTHING;
+      UPDATE public.site_config SET gsc_verification = 'FWVlrMAM04NtABc9Z8NvhoN98Op3p2IkUs0RKXeVQaM'
+        WHERE id = 1 AND gsc_verification IS NULL;
     `);
     console.log('[startup] ensured comments, event_media, external_participants, event_feedback_emails, seo_settings, site_config tables');
     await detectSchema();
