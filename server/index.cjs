@@ -4675,6 +4675,94 @@ setInterval(checkAndSendFeedbackEmails, 60 * 60 * 1000);
 setTimeout(checkAndSendFeedbackEmails, 30000);
 
 // =============================================
+// SEO META (used by Vercel middleware for bot prerendering)
+// =============================================
+app.get('/api/seo-meta', async (req, res) => {
+  res.set('Cache-Control', 'public, max-age=300');
+  const rawPath = String(req.query.path || '/');
+  const base = process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com';
+  const defaultMeta = {
+    title: 'WeApnea – Community Apnea & Freediving',
+    description: 'La community italiana per apneisti e freediver. Scopri eventi, corsi e allenamenti di apnea.',
+    image: `${base}/images/weapnea-logo.png`,
+    url: `${base}${rawPath}`,
+    type: 'website',
+  };
+
+  try {
+    // /blog/:slug
+    const blogMatch = rawPath.match(/^\/blog\/([^/?#]+)/);
+    if (blogMatch) {
+      const slug = blogMatch[1];
+      const { rows } = await pool.query(
+        `SELECT title, excerpt, cover_image_url FROM blog_posts WHERE slug = $1 AND published = true LIMIT 1`,
+        [slug]
+      );
+      if (rows[0]) {
+        const p = rows[0];
+        return res.json({
+          ...defaultMeta,
+          title: `${p.title} | WeApnea`,
+          description: p.excerpt || defaultMeta.description,
+          image: p.cover_image_url || defaultMeta.image,
+          url: `${base}${rawPath}`,
+          type: 'article',
+        });
+      }
+    }
+
+    // /profile/:slug
+    const profileMatch = rawPath.match(/^\/profile\/([^/?#]+)/);
+    if (profileMatch) {
+      const slug = profileMatch[1];
+      const { rows } = await pool.query(
+        `SELECT full_name, bio, avatar_url FROM profiles WHERE public_slug = $1 AND public_profile_enabled = true LIMIT 1`,
+        [slug]
+      );
+      if (rows[0]) {
+        const p = rows[0];
+        return res.json({
+          ...defaultMeta,
+          title: `${p.full_name} | WeApnea`,
+          description: p.bio ? p.bio.slice(0, 160) : `Profilo istruttore di apnea su WeApnea.`,
+          image: p.avatar_url || defaultMeta.image,
+          url: `${base}${rawPath}`,
+          type: 'profile',
+        });
+      }
+    }
+
+    // /:slug (event)
+    const eventSlug = rawPath.replace(/^\//, '');
+    if (eventSlug && !eventSlug.includes('/')) {
+      const { rows } = await pool.query(
+        `SELECT title, description, cover_image_url, date, location FROM events WHERE slug = $1 LIMIT 1`,
+        [eventSlug]
+      );
+      if (rows[0]) {
+        const ev = rows[0];
+        const dateStr = ev.date ? new Date(ev.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
+        const desc = ev.description
+          ? ev.description.replace(/<[^>]+>/g, '').slice(0, 160)
+          : `Evento di apnea${dateStr ? ` – ${dateStr}` : ''}${ev.location ? ` a ${ev.location}` : ''} su WeApnea.`;
+        return res.json({
+          ...defaultMeta,
+          title: `${ev.title} | WeApnea`,
+          description: desc,
+          image: ev.cover_image_url || defaultMeta.image,
+          url: `${base}${rawPath}`,
+          type: 'event',
+        });
+      }
+    }
+
+    return res.json(defaultMeta);
+  } catch (e) {
+    return res.json(defaultMeta);
+  }
+});
+
+// =============================================
 // DYNAMIC SITEMAP
 // =============================================
 app.get('/sitemap.xml', async (_req, res) => {
