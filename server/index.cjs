@@ -284,7 +284,23 @@ const storage = (STORAGE_DRIVER === 's3' || STORAGE_DRIVER === 'sftp')
         cb(null, name);
       }
     });
-const upload = multer({ storage });
+const upload = multer({ storage, limits: { fileSize: 15 * 1024 * 1024 } }); // 15 MB
+
+// Multer error handling wrapper (file too large, unexpected field, etc.)
+function handleMulterErrors(uploadMiddleware) {
+  return (req, res, next) => {
+    uploadMiddleware(req, res, (err) => {
+      if (err) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+          return res.status(413).json({ error: 'File troppo grande. Massimo 15 MB.' });
+        }
+        console.error('[multer] upload error:', err?.message || err);
+        return res.status(400).json({ error: `Upload error: ${err?.message || 'unknown'}` });
+      }
+      next();
+    });
+  };
+}
 
 // Simple token-based auth for mutation endpoints
 const API_TOKEN = process.env.API_TOKEN;
@@ -1789,10 +1805,11 @@ app.post('/api/me/request-organizer', requireAuth, async (req, res) => {
   }
 });
 
-// Simple image upload endpoint (API mode). Returns public URL under /public/uploads
-app.post('/api/upload', requireAuth, upload.single('file'), async (req, res) => {
+// Simple image/file upload endpoint (API mode). Returns public URL under /public/uploads
+app.post('/api/upload', requireAuth, handleMulterErrors(upload.single('file')), async (req, res) => {
   try {
     if (!req.file) return res.status(400).json({ error: 'file is required' });
+    console.log('[upload] file received:', { name: req.file.originalname, size: req.file.size, mime: req.file.mimetype });
     const ext = req.file.originalname ? path.extname(req.file.originalname) : '';
     const name = `${Date.now()}-${Math.random().toString(36).slice(2)}${ext || ''}`;
     // Determina driver effettivo (fallback automatico se SFTP configurato male)
@@ -4330,7 +4347,7 @@ app.get('/api/events/:id/media', async (req, res) => {
 });
 
 // POST /api/events/:id/media (auth required - participants only)
-app.post('/api/events/:id/media', requireAuth, upload.single('file'), async (req, res) => {
+app.post('/api/events/:id/media', requireAuth, handleMulterErrors(upload.single('file')), async (req, res) => {
   try {
     const eventId = req.params.id;
     // Only participants, organizer or admin can upload media

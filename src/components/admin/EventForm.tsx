@@ -700,8 +700,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
                   if (!file) return;
-                  if (file.size > 10 * 1024 * 1024) {
-                    toast.error('Il PDF è troppo grande. Massimo 10MB.');
+                  if (file.size > 15 * 1024 * 1024) {
+                    toast.error('Il PDF è troppo grande. Massimo 15MB.');
                     return;
                   }
                   try {
@@ -714,14 +714,19 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
                       body: fd,
                     });
-                    if (!res.ok) throw new Error(`Upload failed ${res.status}`);
+                    if (!res.ok) {
+                      let serverMsg = `Upload failed (${res.status})`;
+                      try { const j = await res.json(); serverMsg = j.error || serverMsg; } catch {}
+                      throw new Error(serverMsg);
+                    }
                     const data = await res.json();
                     const { ensureAbsoluteUrl } = await import('@/lib/utils');
                     const abs = ensureAbsoluteUrl(data.url, apiBaseUrl) || data.url;
                     form.setValue('pdf_url', abs);
                     toast.success('PDF caricato con successo!');
-                  } catch (err) {
-                    toast.error('Errore durante il caricamento del PDF.');
+                  } catch (err: any) {
+                    console.error('[pdf-upload]', err);
+                    toast.error(err?.message || 'Errore durante il caricamento del PDF.');
                   }
                 }}
               />
