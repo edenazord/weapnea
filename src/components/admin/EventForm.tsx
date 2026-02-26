@@ -22,6 +22,8 @@ import { useEffect, useState } from 'react';
 import { getPublicConfig } from '@/lib/publicConfig';
 import { FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
+import { backendConfig } from '@/lib/backendConfig';
+import { ensureAbsoluteUrl } from '@/lib/utils';
 
 // Opzioni per il livello
 // Opzioni spostate in event-constants.ts
@@ -708,7 +710,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                     const fd = new FormData();
                     fd.append('file', file);
                     const token = localStorage.getItem('api_token') || import.meta.env.VITE_API_TOKEN;
-                    const { apiBaseUrl } = await import('@/lib/backendConfig').then(m => m.backendConfig);
+                    const { apiBaseUrl } = backendConfig;
                     const res = await fetch(`${apiBaseUrl || ''}/api/upload`, {
                       method: 'POST',
                       headers: token ? { Authorization: `Bearer ${token}` } : undefined,
@@ -720,7 +722,6 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                       throw new Error(serverMsg);
                     }
                     const data = await res.json();
-                    const { ensureAbsoluteUrl } = await import('@/lib/utils');
                     const abs = ensureAbsoluteUrl(data.url, apiBaseUrl) || data.url;
                     form.setValue('pdf_url', abs);
                     toast.success('PDF caricato con successo!');

@@ -18,7 +18,7 @@ import { ImageUpload } from "@/components/admin/ImageUpload";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle, Phone, Bell, ChevronLeft, ChevronRight, UserPlus } from "lucide-react";
+import { UserCircle, FileText, Calendar, Shield, Building, Users, MapPin, Eye, X, PlusCircle, Pencil, Trash2, MessageCircle, Phone, Bell, ChevronLeft, ChevronRight, UserPlus, Download } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -1158,11 +1158,44 @@ const Profile = () => {
                       <SheetTitle className="text-base sm:text-lg">
                         Iscritti — {participantsEventTitle || 'Evento'}
                       </SheetTitle>
-                      <SheetClose asChild>
-                        <Button type="button" variant="ghost" size="icon" aria-label="Chiudi">
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </SheetClose>
+                      <div className="flex items-center gap-1">
+                        {participants.length > 0 && (
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            aria-label="Scarica CSV"
+                            title="Scarica CSV partecipanti"
+                            onClick={() => {
+                              const headers = ['Nome', 'Email', 'Telefono', 'Azienda', 'Pagato il'];
+                              const rows = participants.map((p) => [
+                                p.full_name || '',
+                                (p as any).email || '',
+                                p.phone || '',
+                                p.company_name || '',
+                                p.paid_at ? format(parseISO(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: itLocale }) : '',
+                              ]);
+                              const csvContent = [headers, ...rows]
+                                .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+                                .join('\n');
+                              const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `partecipanti-${(participantsEventTitle || 'evento').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40)}.csv`;
+                              a.click();
+                              URL.revokeObjectURL(url);
+                            }}
+                          >
+                            <Download className="h-4 w-4" />
+                          </Button>
+                        )}
+                        <SheetClose asChild>
+                          <Button type="button" variant="ghost" size="icon" aria-label="Chiudi">
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </SheetClose>
+                      </div>
                     </div>
                   </div>
                   <div className="px-6 py-4">
