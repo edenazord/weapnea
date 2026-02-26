@@ -210,7 +210,16 @@ async function runMigrationsAtStartup() {
       );
       CREATE INDEX IF NOT EXISTS idx_event_feedback_emails_event_id ON public.event_feedback_emails(event_id);
     `);
-    console.log('[startup] ensured comments, event_media, external_participants, event_feedback_emails tables');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.seo_settings (
+        path text PRIMARY KEY,
+        title text,
+        description text,
+        og_image text,
+        updated_at timestamptz NOT NULL DEFAULT now()
+      );
+    `);
+    console.log('[startup] ensured comments, event_media, external_participants, event_feedback_emails, seo_settings tables');
     await detectSchema();
     // Seed email templates if table is empty (idempotente)
     try {
@@ -4690,7 +4699,132 @@ app.get('/api/seo-meta', async (req, res) => {
   };
 
   try {
-    // /blog/:slug
+    // 1) Check custom SEO settings from DB (static pages configured in admin)
+    const { rows: dbRows } = await pool.query(
+      `SELECT title, description, og_image FROM public.seo_settings WHERE path = $1 LIMIT 1`,
+      [rawPath]
+    );
+    if (dbRows[0]) {
+      const s = dbRows[0];
+      return res.json({
+        ...defaultMeta,
+        title: s.title || defaultMeta.title,
+        description: s.description || defaultMeta.description,
+        image: s.og_image || defaultMeta.image,
+        url: `${base}${rawPath}`,
+      });
+    }
+
+    // 2) /blog/:slug
+    const blogMatch = rawPath.match(/^\/blog\/([^/?#]+)/);
+    if (blogMatch) {
+      const slug = blogMatch[1];
+      const { rows } = await pool.query(
+        `SELECT title, excerpt, cover_image_url FROM blog_posts WHERE slug = $1 AND published = true LIMIT 1`,
+        [slug]
+      );
+      if (rows[0]) {
+        const p = rows[0];
+        return res.json({
+          ...defaultMeta,
+          title: `${p.title} | WeApnea`,
+          description: p.excerpt || defaultMeta.description,
+          image: p.cover_image_url || defaultMeta.image,
+          url: `${base}${rawPath}`,
+          type: 'article',
+        });
+      }
+    }
+
+    // 3) /profile/:slug
+    const profileMatch = rawPath.match(/^\/profile\/([^/?#]+)/);
+    if (profileMatch) {
+      const slug = profileMatch[1];
+      const { rows } = await pool.query(
+        `SELECT full_name, bio, avatar_url FROM profiles WHERE public_slug = $1 AND public_profile_enabled = true LIMIT 1`,
+        [slug]
+      );
+      if (rows[0]) {
+        const p = rows[0];
+        return res.json({
+          ...defaultMeta,
+          title: `${p.full_name} | WeApnea`,
+          description: p.bio ? p.bio.slice(0, 160) : `Profilo istruttore di apnea su WeApnea.`,
+          image: p.avatar_url || defaultMeta.image,
+          url: `${base}${rawPath}`,
+          type: 'profile',
+        });
+      }
+    }
+
+    // 4) /:slug (event)
+    const eventSlug = rawPath.replace(/^\//, '');
+    if (eventSlug && !eventSlug.includes('/')) {
+      const { rows } = await pool.query(
+        `SELECT title, description, cover_image_url, date, location FROM events WHERE slug = $1 LIMIT 1`,
+        [eventSlug]
+      );
+      if (rows[0]) {
+        const ev = rows[0];
+        const dateStr = ev.date ? new Date(ev.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
+        const desc = ev.description
+          ? ev.description.replace(/<[^>]+>/g, '').slice(0, 160)
+          : `Evento di apnea${dateStr ? ` – ${dateStr}` : ''}${ev.location ? ` a ${ev.location}` : ''} su WeApnea.`;
+        return res.json({
+          ...defaultMeta,
+          title: `${ev.title} | WeApnea`,
+          description: desc,
+          image: ev.cover_image_url || defaultMeta.image,
+          url: `${base}${rawPath}`,
+          type: 'event',
+        });
+      }
+    }
+
+    return res.json(defaultMeta);
+  } catch (e) {
+    return res.json(defaultMeta);
+  }
+});
+
+// =============================================
+// ADMIN SEO SETTINGS ENDPOINTS
+// =============================================
+
+// GET /api/admin/seo-settings — list all configured pages
+app.get('/api/admin/seo-settings', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT path, title, description, og_image, updated_at FROM public.seo_settings ORDER BY path ASC`
+    );
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// PUT /api/admin/seo-settings/:path — upsert SEO settings for a page
+app.put('/api/admin/seo-settings', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { path: pagePath, title, description, og_image } = req.body;
+    if (!pagePath) return res.status(400).json({ error: 'path is required' });
+    const { rows } = await pool.query(
+      `INSERT INTO public.seo_settings (path, title, description, og_image, updated_at)
+       VALUES ($1, $2, $3, $4, now())
+       ON CONFLICT (path) DO UPDATE SET title = $2, description = $3, og_image = $4, updated_at = now()
+       RETURNING *`,
+      [pagePath, title || null, description || null, og_image || null]
+    );
+    res.json(rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// =============================================
+// DYNAMIC SITEMAP
+// =============================================
+app.get('/sitemap.xml', async (_req, res) => {
     const blogMatch = rawPath.match(/^\/blog\/([^/?#]+)/);
     if (blogMatch) {
       const slug = blogMatch[1];

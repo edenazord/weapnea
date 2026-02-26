@@ -11,6 +11,7 @@ import BlogTagManager from "@/components/admin/BlogTagManager";
 // Forum disabilitato temporaneamente
 import UsersManager from "@/components/admin/UsersManager";
 import EmailTemplatesManager from "@/components/admin/EmailTemplatesManager";
+import SeoManager from "@/components/admin/SeoManager";
 import { BackButton } from "@/components/BackButton";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import DashboardMobileNav from "@/components/DashboardMobileNav";
@@ -87,6 +88,17 @@ const AdminDashboard = () => {
                         </CardContent>
                     </Card>
                 );
+            case "seo":
+                return (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Impostazioni SEO</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <SeoManager />
+                        </CardContent>
+                    </Card>
+                );
             default:
                 return (
                     <Card>
@@ -139,12 +151,13 @@ const AdminDashboard = () => {
             </div>
             
             <Tabs defaultValue="events">
-                <TabsList className="grid w-full grid-cols-5">
+                <TabsList className="grid w-full grid-cols-6">
                     <TabsTrigger value="events">Eventi</TabsTrigger>
                     <TabsTrigger value="categories">Categorie</TabsTrigger>
                     <TabsTrigger value="blog">Blog</TabsTrigger>
                     <TabsTrigger value="users">Utenti</TabsTrigger>
                     <TabsTrigger value="email">Email</TabsTrigger>
+                    <TabsTrigger value="seo">SEO</TabsTrigger>
                 </TabsList>
                 <TabsContent value="events">
                     <Card>
@@ -199,6 +212,16 @@ const AdminDashboard = () => {
                         </CardHeader>
                         <CardContent>
                             <EmailTemplatesManager />
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="seo">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Impostazioni SEO</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <SeoManager />
                         </CardContent>
                     </Card>
                 </TabsContent>
