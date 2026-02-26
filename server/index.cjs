@@ -142,6 +142,10 @@ async function runMigrationsAtStartup() {
   await ensurePublicProfileColumnsAtRuntime();
   // Safeguard: ensure events.fixed_appointment_text exists even if migrations didn't run yet
   await ensureEventsFixedAppointmentTextColumn();
+  // Ensure email verification column exists
+  await ensureEmailVerificationColumn();
+  // Ensure blog tags tables exist
+  await ensureBlogTagsTables();
     // Ensure new tables exist even if migration files were not found on deploy
     await pool.query(`
       CREATE TABLE IF NOT EXISTS public.comments (
@@ -366,8 +370,40 @@ async function ensurePublicProfileColumnsAtRuntime() {
 async function ensureEventsFixedAppointmentTextColumn() {
   try {
     await pool.query("ALTER TABLE IF EXISTS public.events ADD COLUMN IF NOT EXISTS fixed_appointment_text text");
+    await pool.query("ALTER TABLE IF EXISTS public.events ADD COLUMN IF NOT EXISTS pdf_url text");
+    await pool.query("ALTER TABLE IF EXISTS public.events ADD COLUMN IF NOT EXISTS whatsapp_group_url text");
   } catch (e) {
-    console.warn('[events] ensure fixed_appointment_text column failed:', e?.message || e);
+    console.warn('[events] ensure columns failed:', e?.message || e);
+  }
+}
+async function ensureEmailVerificationColumn() {
+  try {
+    await pool.query("ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS email_verification_token text");
+  } catch (e) {
+    console.warn('[profiles] ensure email_verification_token column failed:', e?.message || e);
+  }
+}
+async function ensureBlogTagsTables() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.blog_tags (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        name text NOT NULL,
+        language text NOT NULL DEFAULT 'it',
+        created_at timestamptz NOT NULL DEFAULT now(),
+        UNIQUE(name, language)
+      );
+      CREATE TABLE IF NOT EXISTS public.blog_article_tags (
+        article_id uuid NOT NULL REFERENCES public.blog_articles(id) ON DELETE CASCADE,
+        tag_id uuid NOT NULL REFERENCES public.blog_tags(id) ON DELETE CASCADE,
+        PRIMARY KEY (article_id, tag_id)
+      );
+      CREATE INDEX IF NOT EXISTS idx_blog_tags_language ON public.blog_tags(language);
+      CREATE INDEX IF NOT EXISTS idx_blog_article_tags_article ON public.blog_article_tags(article_id);
+      CREATE INDEX IF NOT EXISTS idx_blog_article_tags_tag ON public.blog_article_tags(tag_id);
+    `);
+  } catch (e) {
+    console.warn('[blog_tags] ensure tables failed:', e?.message || e);
   }
 }
 async function ensureOrganizerRequestColumnsAtRuntime() {
@@ -1084,7 +1120,7 @@ app.post('/api/auth/register', async (req, res) => {
     const hash = await bcrypt.hash(password, 10);
     const { rows } = await pool.query(
       `INSERT INTO profiles(id, email, full_name, role, is_active, password_hash)
-       VALUES (gen_random_uuid(), $1, $2, $3, true, $4)
+       VALUES (gen_random_uuid(), $1, $2, $3, false, $4)
        RETURNING id, email, full_name, role, is_active`,
       [email, full_name, role, hash]
     );
@@ -1131,12 +1167,21 @@ app.post('/api/auth/register', async (req, res) => {
       console.warn('[register] unable to preset public profile fields:', e?.message || e);
     }
     const jwtToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-    // Fire-and-forget welcome email (templated)
-    renderEmailWithTemplate('welcome', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME },
-      'Benvenuto su {{app_name}}',
-      `<p>Ciao {{full_name}},</p><p>benvenuto su {{app_name}}! Il tuo account è stato creato con successo.</p>`
-    ).then(t => sendEmail({ to: user.email, subject: t.subject, html: t.html })).catch(() => {});
-    res.status(201).json({ token: jwtToken, user });
+    // --- Email verification flow ---
+    // Generate a verification token (JWT, 24 hours validity)
+    const verificationToken = jwt.sign({ id: user.id, email: user.email, t: 'verify' }, JWT_SECRET, { expiresIn: '24h' });
+    // Store verification token in profile
+    await pool.query('UPDATE profiles SET email_verification_token = $1 WHERE id = $2', [verificationToken, user.id]);
+    // Build the verification link
+    const verifyBase = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
+    const verifyLink = `${verifyBase.replace(/\/$/, '')}/verify-email?token=${encodeURIComponent(verificationToken)}`;
+    // Send verification email instead of welcome email
+    renderEmailWithTemplate('email_verification', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME, verify_link: verifyLink },
+      'Conferma il tuo account {{app_name}}',
+      `<p>Ciao {{full_name}},</p><p>grazie per esserti registrato su {{app_name}}!</p><p>Per attivare il tuo account, clicca sul pulsante qui sotto:</p><p><a href="{{verify_link}}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;">Conferma email</a></p><p>Il link scade tra 24 ore.</p><p>Se non hai richiesto questa registrazione, ignora questa email.</p>`
+    ).then(t => sendEmail({ to: user.email, subject: t.subject, html: t.html })).catch(e => { console.error('[register] verification email failed:', e); });
+    // Return success WITHOUT token — user must verify email first
+    res.status(201).json({ needsVerification: true, message: "Controlla la tua email per confermare l'account." });
   } catch (e) {
     if (String(e.message).includes('duplicate key')) {
       return res.status(409).json({ error: 'Email già registrata' });
@@ -1157,6 +1202,8 @@ app.post('/api/auth/login', async (req, res) => {
     if (!user || !user.password_hash) return res.status(401).json({ error: 'Credenziali non valide' });
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Credenziali non valide' });
+    // Block login for unverified accounts
+    if (!user.is_active) return res.status(403).json({ error: 'Account non verificato. Controlla la tua email per il link di conferma.', needsVerification: true, email: user.email });
     const jwtToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
     delete user.password_hash;
     res.json({ token: jwtToken, user });
@@ -1218,6 +1265,61 @@ app.post('/api/auth/reset-password', async (req, res) => {
     res.json({ ok: true });
   } catch (e) {
     res.status(400).json({ error: 'invalid or expired token' });
+  }
+});
+
+// API: verify email address using token sent during registration
+app.get('/api/auth/verify-email', async (req, res) => {
+  const { token } = req.query || {};
+  if (!token) return res.status(400).json({ error: 'token is required' });
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    if (!payload?.id || payload?.t !== 'verify') return res.status(400).json({ error: 'invalid token' });
+    // Check that the token matches the one stored in the profile
+    const { rows } = await pool.query(
+      'SELECT id, email, full_name, role, is_active, email_verification_token FROM profiles WHERE id = $1 LIMIT 1',
+      [payload.id]
+    );
+    const user = rows[0];
+    if (!user) return res.status(400).json({ error: 'user not found' });
+    if (user.is_active) return res.json({ ok: true, alreadyVerified: true });
+    if (user.email_verification_token !== token) return res.status(400).json({ error: 'invalid or expired token' });
+    // Activate the user and clear the verification token
+    await pool.query('UPDATE profiles SET is_active = true, email_verification_token = NULL WHERE id = $1', [user.id]);
+    // Send welcome email now that the account is verified
+    renderEmailWithTemplate('welcome', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME },
+      'Benvenuto su {{app_name}}',
+      `<p>Ciao {{full_name}},</p><p>benvenuto su {{app_name}}! Il tuo account è stato attivato con successo.</p>`
+    ).then(t => sendEmail({ to: user.email, subject: t.subject, html: t.html })).catch(() => {});
+    res.json({ ok: true });
+  } catch (e) {
+    if (e?.name === 'TokenExpiredError') return res.status(400).json({ error: 'token expired' });
+    res.status(400).json({ error: 'invalid or expired token' });
+  }
+});
+
+// API: resend verification email
+app.post('/api/auth/resend-verification', async (req, res) => {
+  const { email } = req.body || {};
+  if (!email) return res.status(400).json({ error: 'email is required' });
+  try {
+    const { rows } = await pool.query('SELECT id, email, full_name, is_active FROM profiles WHERE email = $1 LIMIT 1', [email]);
+    const user = rows[0];
+    // Don't leak whether user exists
+    if (!user || user.is_active) return res.json({ ok: true });
+    // Generate new verification token
+    const verificationToken = jwt.sign({ id: user.id, email: user.email, t: 'verify' }, JWT_SECRET, { expiresIn: '24h' });
+    await pool.query('UPDATE profiles SET email_verification_token = $1 WHERE id = $2', [verificationToken, user.id]);
+    const verifyBase = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
+    const verifyLink = `${verifyBase.replace(/\/$/, '')}/verify-email?token=${encodeURIComponent(verificationToken)}`;
+    const rendered = await renderEmailWithTemplate('email_verification', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME, verify_link: verifyLink },
+      'Conferma il tuo account {{app_name}}',
+      `<p>Ciao {{full_name}},</p><p>grazie per esserti registrato su {{app_name}}!</p><p>Per attivare il tuo account, clicca sul pulsante qui sotto:</p><p><a href="{{verify_link}}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;">Conferma email</a></p><p>Il link scade tra 24 ore.</p>`
+    );
+    await sendEmail({ to: user.email, subject: rendered.subject, html: rendered.html });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
@@ -1878,7 +1980,7 @@ function eventsSelect() {
     e.activity_details, e.who_we_are, e.fixed_appointment, e.instructors,
     e.instructor_certificates, e.max_participants_per_instructor, e.schedule_meeting_point,
     e.responsibility_waiver_accepted, e.privacy_accepted,
-    e.fixed_appointment_text, e.pdf_url,
+    e.fixed_appointment_text, e.pdf_url, e.whatsapp_group_url,
     -- Paid participants count for x / y indicator in listings
     COALESCE((SELECT COUNT(*) FROM event_payments ep WHERE ep.event_id = e.id AND ep.status = 'paid'), 0)::int AS participants_paid_count,
     -- Organizer public fields (for UI)
@@ -2021,7 +2123,7 @@ app.get('/api/events/:id/organizer-contact', requireAuth, async (req, res) => {
 app.get('/api/blog', optionalAuth, async (req, res) => {
   // Ensure column exists to avoid runtime errors on fresh DBs
   await ensureBlogLanguageColumn();
-  const { searchTerm, published = 'true', sortColumn = 'created_at', sortDirection = 'desc', language, onlyMine } = req.query;
+  const { searchTerm, published = 'true', sortColumn = 'created_at', sortDirection = 'desc', language, onlyMine, tag } = req.query;
   const params = [];
   const clauses = [];
   if (String(published) === 'true') clauses.push('b.published = true');
@@ -2042,6 +2144,11 @@ app.get('/api/blog', optionalAuth, async (req, res) => {
     params.push(String(language).trim());
     clauses.push(`b.language = $${params.length}`);
   }
+  // Filter by tag id
+  if (tag && String(tag).trim()) {
+    params.push(String(tag).trim());
+    clauses.push(`b.id IN (SELECT article_id FROM blog_article_tags WHERE tag_id = $${params.length})`);
+  }
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
   const validCols = new Set(['created_at','title']);
   const col = validCols.has(String(sortColumn)) ? String(sortColumn) : 'created_at';
@@ -2056,6 +2163,28 @@ app.get('/api/blog', optionalAuth, async (req, res) => {
   `;
   try {
     const { rows } = await pool.query(sql, params);
+    // Attach tags to each article
+    try {
+      await ensureBlogTagsTables();
+      if (rows.length > 0) {
+        const articleIds = rows.map(r => r.id);
+        const { rows: tagRows } = await pool.query(
+          `SELECT at.article_id, t.id, t.name, t.language FROM blog_tags t
+           JOIN blog_article_tags at ON at.tag_id = t.id
+           WHERE at.article_id = ANY($1) ORDER BY t.name`,
+          [articleIds]
+        );
+        const tagMap = {};
+        for (const tr of tagRows) {
+          if (!tagMap[tr.article_id]) tagMap[tr.article_id] = [];
+          tagMap[tr.article_id].push({ id: tr.id, name: tr.name, language: tr.language });
+        }
+        for (const row of rows) { row.tags = tagMap[row.id] || []; }
+      }
+    } catch (tagErr) {
+      console.warn('[blog] tag fetch failed:', tagErr?.message || tagErr);
+      for (const row of rows) row.tags = [];
+    }
     res.json(rows);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
@@ -2078,6 +2207,15 @@ app.get('/api/blog/slug/:slug', async (req, res) => {
       ({ rows } = await pool.query(`${baseSql} WHERE b.slug LIKE $1 AND b.published = true LIMIT 1`, [`%-${slugParam}`]));
     }
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+    // Attach tags
+    try {
+      await ensureBlogTagsTables();
+      const { rows: tagRows } = await pool.query(
+        `SELECT t.id, t.name, t.language FROM blog_tags t JOIN blog_article_tags at ON at.tag_id = t.id WHERE at.article_id = $1 ORDER BY t.name`,
+        [rows[0].id]
+      );
+      rows[0].tags = tagRows;
+    } catch { rows[0].tags = []; }
     res.json(rows[0]);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
@@ -2096,6 +2234,15 @@ app.get('/api/blog/:id', async (req, res) => {
   try {
     const { rows } = await pool.query(sql, [req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+    // Attach tags
+    try {
+      await ensureBlogTagsTables();
+      const { rows: tagRows } = await pool.query(
+        `SELECT t.id, t.name, t.language FROM blog_tags t JOIN blog_article_tags at ON at.tag_id = t.id WHERE at.article_id = $1 ORDER BY t.name`,
+        [rows[0].id]
+      );
+      rows[0].tags = tagRows;
+    } catch { rows[0].tags = []; }
     res.json(rows[0]);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
@@ -2127,7 +2274,22 @@ app.post('/api/blog', requireAuth, requireBloggerOrAdmin, async (req, res) => {
     ];
     const placeholders = cols.map((_, i) => `$${i+1}`).join(',');
     const { rows } = await pool.query(`INSERT INTO blog_articles(${cols.join(',')}) VALUES(${placeholders}) RETURNING *`, vals);
-    res.status(201).json(rows[0]);
+    const article = rows[0];
+    // Save tags if provided
+    if (Array.isArray(b.tag_ids) && b.tag_ids.length > 0) {
+      try {
+        await ensureBlogTagsTables();
+        for (const tagId of b.tag_ids) {
+          await pool.query('INSERT INTO blog_article_tags(article_id, tag_id) VALUES($1, $2) ON CONFLICT DO NOTHING', [article.id, tagId]);
+        }
+        const { rows: tagRows } = await pool.query(
+          `SELECT t.id, t.name, t.language FROM blog_tags t JOIN blog_article_tags at ON at.tag_id = t.id WHERE at.article_id = $1 ORDER BY t.name`,
+          [article.id]
+        );
+        article.tags = tagRows;
+      } catch (tagErr) { article.tags = []; }
+    } else { article.tags = []; }
+    res.status(201).json(article);
   } catch (e) {
     const msg = String(e?.message || e);
     if (msg.includes('duplicate key')) return res.status(409).json({ error: 'Slug già esistente' });
@@ -2152,7 +2314,23 @@ app.put('/api/blog/:id', requireAuth, requireBloggerOrAdmin, async (req, res) =>
     const sql = `UPDATE blog_articles SET ${sets}, updated_at = now() WHERE id = $${fields.length+1} RETURNING *`;
     const { rows } = await pool.query(sql, [...fields.map(k => b[k]), req.params.id]);
     if (!rows[0]) return res.status(404).json({ error: 'Not found' });
-    res.json(rows[0]);
+    const article = rows[0];
+    // Update tags if provided
+    if (Array.isArray(b.tag_ids)) {
+      try {
+        await ensureBlogTagsTables();
+        await pool.query('DELETE FROM blog_article_tags WHERE article_id = $1', [req.params.id]);
+        for (const tagId of b.tag_ids) {
+          await pool.query('INSERT INTO blog_article_tags(article_id, tag_id) VALUES($1, $2) ON CONFLICT DO NOTHING', [req.params.id, tagId]);
+        }
+        const { rows: tagRows } = await pool.query(
+          `SELECT t.id, t.name, t.language FROM blog_tags t JOIN blog_article_tags at ON at.tag_id = t.id WHERE at.article_id = $1 ORDER BY t.name`,
+          [req.params.id]
+        );
+        article.tags = tagRows;
+      } catch (tagErr) { article.tags = []; }
+    }
+    res.json(article);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
@@ -2173,6 +2351,120 @@ app.delete('/api/blog/:id', requireAuth, requireBloggerOrAdmin, async (req, res)
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
+
+// ===========================
+// Blog Tags endpoints
+// ===========================
+
+// List all tags, optionally filtered by language
+app.get('/api/blog-tags', async (req, res) => {
+  try {
+    await ensureBlogTagsTables();
+    const { language } = req.query;
+    let sql = 'SELECT id, name, language, created_at FROM blog_tags';
+    const params = [];
+    if (language && String(language).trim()) {
+      params.push(String(language).trim());
+      sql += ` WHERE language = $1`;
+    }
+    sql += ' ORDER BY name ASC';
+    const { rows } = await pool.query(sql, params);
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Create a tag (admin/blogger only)
+app.post('/api/blog-tags', requireAuth, requireBloggerOrAdmin, async (req, res) => {
+  const { name, language = 'it' } = req.body || {};
+  if (!name || !String(name).trim()) return res.status(400).json({ error: 'name is required' });
+  try {
+    await ensureBlogTagsTables();
+    const { rows } = await pool.query(
+      'INSERT INTO blog_tags(name, language) VALUES($1, $2) ON CONFLICT(name, language) DO UPDATE SET name = EXCLUDED.name RETURNING *',
+      [String(name).trim(), language]
+    );
+    res.status(201).json(rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Update a tag (admin/blogger only)
+app.put('/api/blog-tags/:id', requireAuth, requireBloggerOrAdmin, async (req, res) => {
+  const { name, language } = req.body || {};
+  if (!name || !String(name).trim()) return res.status(400).json({ error: 'name is required' });
+  try {
+    const sets = ['name = $1'];
+    const params = [String(name).trim()];
+    if (language) { sets.push(`language = $${params.length + 1}`); params.push(language); }
+    params.push(req.params.id);
+    const sql = `UPDATE blog_tags SET ${sets.join(', ')} WHERE id = $${params.length} RETURNING *`;
+    const { rows } = await pool.query(sql, params);
+    if (!rows[0]) return res.status(404).json({ error: 'Not found' });
+    res.json(rows[0]);
+  } catch (e) {
+    if (String(e?.message || '').includes('duplicate key')) return res.status(409).json({ error: 'Tag con questo nome esiste già per la lingua selezionata' });
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Delete a tag (admin/blogger only)
+app.delete('/api/blog-tags/:id', requireAuth, requireBloggerOrAdmin, async (req, res) => {
+  try {
+    const { rowCount } = await pool.query('DELETE FROM blog_tags WHERE id = $1', [req.params.id]);
+    if (!rowCount) return res.status(404).json({ error: 'Not found' });
+    res.status(204).end();
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Get tags for a specific article
+app.get('/api/blog/:id/tags', async (req, res) => {
+  try {
+    await ensureBlogTagsTables();
+    const { rows } = await pool.query(
+      `SELECT t.id, t.name, t.language FROM blog_tags t
+       JOIN blog_article_tags at ON at.tag_id = t.id
+       WHERE at.article_id = $1 ORDER BY t.name`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Set tags for an article (replace all)
+app.put('/api/blog/:id/tags', requireAuth, requireBloggerOrAdmin, async (req, res) => {
+  const { tag_ids } = req.body || {};
+  if (!Array.isArray(tag_ids)) return res.status(400).json({ error: 'tag_ids must be an array' });
+  try {
+    await ensureBlogTagsTables();
+    // Remove all existing tags for this article
+    await pool.query('DELETE FROM blog_article_tags WHERE article_id = $1', [req.params.id]);
+    // Insert new tags
+    for (const tagId of tag_ids) {
+      await pool.query(
+        'INSERT INTO blog_article_tags(article_id, tag_id) VALUES($1, $2) ON CONFLICT DO NOTHING',
+        [req.params.id, tagId]
+      );
+    }
+    // Return the updated tags
+    const { rows } = await pool.query(
+      `SELECT t.id, t.name, t.language FROM blog_tags t
+       JOIN blog_article_tags at ON at.tag_id = t.id
+       WHERE at.article_id = $1 ORDER BY t.name`,
+      [req.params.id]
+    );
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 // Public instructor/company profile by user id
 app.get('/api/instructors/:id', async (req, res) => {
   try {
@@ -2476,7 +2768,7 @@ app.post('/api/events', requireAuth, async (req, res) => {
     }
   }
   const cols = [
-    'title','slug','description','date','end_date','location','participants','image_url','category_id','cost','nation','discipline','created_by','level','activity_description','language','about_us','objectives','included_in_activity','not_included_in_activity','notes','schedule_logistics','gallery_images','pdf_url','event_type','activity_details','who_we_are','fixed_appointment','fixed_appointment_text','instructors','instructor_certificates','max_participants_per_instructor','schedule_meeting_point','responsibility_waiver_accepted','privacy_accepted'
+    'title','slug','description','date','end_date','location','participants','image_url','category_id','cost','nation','discipline','created_by','level','activity_description','language','about_us','objectives','included_in_activity','not_included_in_activity','notes','schedule_logistics','gallery_images','pdf_url','event_type','activity_details','who_we_are','fixed_appointment','fixed_appointment_text','instructors','instructor_certificates','max_participants_per_instructor','schedule_meeting_point','responsibility_waiver_accepted','privacy_accepted','whatsapp_group_url'
   ];
   // Columns that are JSON/JSONB in DB; ensure we serialize JS objects/arrays to JSON strings
   const jsonCols = new Set([
@@ -3362,7 +3654,7 @@ app.get('/api/events/:id/participants', requireAuth, async (req, res) => {
   try {
     const sql = `
       SELECT ep.id, ep.user_id, ep.amount, ep.paid_at,
-             p.full_name, p.avatar_url, p.company_name, p.phone, p.role, p.public_profile_enabled, p.public_slug
+             p.full_name, p.avatar_url, p.company_name, p.phone, p.email, p.role, p.public_profile_enabled, p.public_slug
       FROM event_payments ep
       LEFT JOIN profiles p ON p.id = ep.user_id
       WHERE ep.event_id = $1 AND ep.status = 'paid'
@@ -3532,7 +3824,7 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
   const eventId = req.params.id;
   try {
     // Ensure event exists
-    const { rows: evRows } = await pool.query('SELECT id, title, slug, date, end_date, location, cost, created_by FROM events WHERE id = $1 LIMIT 1', [eventId]);
+    const { rows: evRows } = await pool.query('SELECT id, title, slug, date, end_date, location, cost, created_by, whatsapp_group_url FROM events WHERE id = $1 LIMIT 1', [eventId]);
     const ev = evRows[0];
     if (!ev) return res.status(404).json({ error: 'Event not found' });
 
@@ -3626,14 +3918,19 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
         }
         // Email to participant (templated)
         if (participant?.email) {
+          const whatsappUrl = ev.whatsapp_group_url || '';
+          const whatsappBlock = whatsappUrl
+            ? `<p style="margin-top:16px;"><a href="${whatsappUrl}" target="_blank" rel="noopener" style="display:inline-block;padding:10px 24px;background-color:#25D366;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">📱 Entra nel gruppo WhatsApp</a></p>`
+            : '';
           const tpl = await renderEmailWithTemplate(
             'event_registration_user',
-            { full_name: participant.full_name || '', participant_email: participant.email, app_name: APP_NAME, event_title: ev.title, event_url: eventUrl, event_dates: dateText, organizer_profile_url: organizerProfileUrl, public_base: safeBase },
+            { full_name: participant.full_name || '', participant_email: participant.email, app_name: APP_NAME, event_title: ev.title, event_url: eventUrl, event_dates: dateText, organizer_profile_url: organizerProfileUrl, public_base: safeBase, whatsapp_group_url: whatsappUrl },
             `Iscrizione confermata: ${ev.title}`,
             `
               <p>Ciao {{full_name}},</p>
               <p>la tua iscrizione all'evento <strong>{{event_title}}</strong> è stata registrata correttamente.</p>
               {{#if event_dates}}<p><strong>Date:</strong> {{event_dates}}</p>{{/if}}
+              ${whatsappBlock}
               <p>Dettagli evento: <a href="{{event_url}}">{{event_url}}</a></p>
               <p>Grazie da {{app_name}}</p>
             `
@@ -3697,7 +3994,7 @@ app.get('/api/conversations', requireAuth, async (req, res) => {
         p.avatar_url as other_user_avatar,
         CASE WHEN p.public_profile_enabled = true THEN p.public_slug ELSE NULL END as other_user_slug,
         (SELECT content FROM messages m WHERE m.conversation_id = c.id ORDER BY m.created_at DESC LIMIT 1) as last_message,
-        (SELECT COUNT(*) FROM messages m 
+        (SELECT COUNT(*)::int FROM messages m 
          JOIN conversations cc ON cc.id = m.conversation_id 
          WHERE ((cc.participant_1 = $1 AND cc.participant_2 = CASE WHEN c.participant_1 = $1 THEN c.participant_2 ELSE c.participant_1 END)
             OR (cc.participant_2 = $1 AND cc.participant_1 = CASE WHEN c.participant_1 = $1 THEN c.participant_2 ELSE c.participant_1 END))

@@ -67,6 +67,7 @@ export interface EventParticipant {
   company_name?: string;
   user_id: string;
   phone?: string | null;
+  email?: string | null;
   role?: string | null;
   public_profile_enabled?: boolean | null;
   public_slug?: string | null;

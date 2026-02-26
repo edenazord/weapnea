@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { MessageCircle, X, Send, ChevronLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -59,10 +60,14 @@ const createNotificationFavicon = (count: number): string => {
 };
 
 const setFavicon = (count: number) => {
+  const safeCount = Number.isFinite(count) && count > 0 ? count : 0;
   const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
   if (link) {
-    link.href = count > 0 ? createNotificationFavicon(count) : ORIGINAL_FAVICON;
+    link.href = safeCount > 0 ? createNotificationFavicon(safeCount) : ORIGINAL_FAVICON;
   }
+  // Aggiorna anche il titolo del tab
+  const baseTitle = document.title.replace(/^\(\d+\+?\)\s*/, '');
+  document.title = safeCount > 0 ? `(${safeCount > 99 ? '99+' : safeCount}) ${baseTitle}` : baseTitle;
 };
 
 interface Conversation {
@@ -112,7 +117,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   const [sending, setSending] = useState(false);
   const [unreadTotal, setUnreadTotal] = useState(0);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const dateLocale = currentLanguage === 'it' ? it : enUS;
@@ -150,7 +155,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       if (res.ok) {
         const data = await res.json();
         setConversations(data);
-        const count = data.reduce((sum: number, c: Conversation) => sum + (c.unread_count || 0), 0);
+        const count = data.reduce((sum: number, c: Conversation) => sum + (Number(c.unread_count) || 0), 0);
         setUnreadTotal(count);
         setFavicon(count);
       }
@@ -559,15 +564,16 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
                 "border-t bg-muted/30 shrink-0",
                 isMobile ? "p-3" : "p-3"
               )}>
-                <div className="flex gap-2">
-                  <Input
+                <div className="flex gap-2 items-end">
+                  <Textarea
                     ref={inputRef}
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyDown={handleKeyDown}
                     placeholder={t('chat.type_message', 'Scrivi un messaggio...')}
                     disabled={sending}
-                    className={cn("flex-1", isMobile && "text-base h-11")}
+                    rows={1}
+                    className={cn("flex-1 min-h-[40px] max-h-[120px] resize-none", isMobile && "text-base")}
                   />
                   <Button
                     onClick={sendMessage}

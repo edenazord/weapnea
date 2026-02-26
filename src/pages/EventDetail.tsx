@@ -534,12 +534,31 @@ const EventDetail = () => {
                     {event.schedule_logistics && (
                         <Card className={`shadow-lg p-6 mt-8`}>
                             <h2 className={`font-bold text-blue-900 mb-4 flex items-center ${isMobile ? 'text-xl' : 'text-2xl'}`}>
-                                <Clock className="h-6 w-6 mr-2 text-blue-600" />
+                                <Clock className="h-6  w-6 mr-2 text-blue-600" />
                                 {t('events.schedule_logistics', 'Orari e Logistica')}
                             </h2>
                             <div className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}
                                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.schedule_logistics || '') }}
                             />
+                        </Card>
+                    )}
+
+                    {/* Allegato PDF - sotto Orari e Logistica */}
+                    {event.pdf_url && (
+                        <Card className={`shadow-lg p-6 mt-6`}>
+                            <h2 className={`font-bold text-blue-900 mb-4 flex items-center ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+                                <FileText className="h-6 w-6 mr-2 text-red-600" />
+                                {t('events.attachment_label', 'Allegato')}
+                            </h2>
+                            <a
+                                href={event.pdf_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 transition-colors"
+                            >
+                                <FileText className="h-6 w-6 text-red-600 flex-shrink-0" />
+                                <span className="text-blue-600 hover:underline text-sm">{t('events.download_pdf', 'Scarica PDF')}</span>
+                            </a>
                         </Card>
                     )}
 
@@ -721,22 +740,6 @@ const EventDetail = () => {
                                     />
                                 </div>
                             )}
-                        </Card>
-                    )}
-
-                    {/* PDF allegato */}
-                    {(event as any).pdf_url && (
-                        <Card className={`shadow-lg p-6 mt-6`}>
-                            <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.attachment_label', 'Allegato')}</h2>
-                            <a
-                                href={(event as any).pdf_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex items-center gap-3 p-3 border rounded-md hover:bg-gray-50 transition-colors"
-                            >
-                                <FileText className="h-6 w-6 text-red-600 flex-shrink-0" />
-                                <span className="text-blue-600 hover:underline text-sm">{t('events.download_pdf', 'Scarica PDF')}</span>
-                            </a>
                         </Card>
                     )}
 

@@ -504,7 +504,7 @@
 				"brevetto_placeholder": "Inserire tipologia brevetto",
 				"brevetto_options": {
 					"none": "Nessun brevetto/Discovery/Experience",
-					"first_levelo": "Open/1° Grado/Freediver/Basic Freediver",
+					"first_level": "Open/1° Grado/Freediver/Basic Freediver",
 					"second_level": "Advanced/2° Grado/Advanced Freediver",
 					"third_level": "Deep/3° Grado/Master Freediver",
 					"assistent": "Aiuto Istruttore/Divemaster",

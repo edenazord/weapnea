@@ -49,8 +49,8 @@ type AuthContextType = {
   loading: boolean;
   logout: () => Promise<void>;
   refreshProfile: () => Promise<void>;
-  signUp: (email: string, password: string, fullName: string, role?: string, companyName?: string, vatNumber?: string, companyAddress?: string) => Promise<{ success: boolean; error?: string }>;
-  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+  signUp: (email: string, password: string, fullName: string, role?: string, companyName?: string, vatNumber?: string, companyAddress?: string) => Promise<{ success: boolean; error?: string; needsVerification?: boolean }>;
+  signIn: (email: string, password: string) => Promise<{ success: boolean; error?: string; needsVerification?: boolean; email?: string }>;
   resetPassword: (email: string) => Promise<{ success: boolean; error?: string }>;
 };
 
@@ -76,6 +76,10 @@ const ApiAuthProvider = ({ children }: { children: ReactNode }) => {
   const signUp = async (email: string, password: string, fullName: string, role: RoleType = 'final_user') => {
     try {
       const res = await apiSend('/api/auth/register', 'POST', { email, password, full_name: fullName, role });
+      // New flow: server returns { needsVerification: true } — user must verify email before login
+      if (res?.needsVerification) {
+        return { success: true, needsVerification: true };
+      }
       if (res?.token && res?.user) {
         persistToken(res.token);
         setUser(res.user);
@@ -84,6 +88,10 @@ const ApiAuthProvider = ({ children }: { children: ReactNode }) => {
         return { success: true };
       }
     } catch (e) {
+      const msg = String((e as Error)?.message || '');
+      if (msg.includes('409') || msg.includes('già registrata')) {
+        return { success: false, error: 'Email già registrata' };
+      }
       return { success: false, error: 'Registrazione fallita' };
     }
     return { success: false, error: 'Registrazione fallita' };
@@ -101,7 +109,12 @@ const ApiAuthProvider = ({ children }: { children: ReactNode }) => {
       }
       return { success: false, error: 'Credenziali non valide' };
     } catch (e) {
-      return { success: false, error: 'Errore di accesso' };
+      const msg = String((e as Error)?.message || '');
+      // Detect unverified account (403 with needsVerification in response body)
+      if (msg.includes('403') && msg.includes('needsVerification')) {
+        return { success: false, error: 'Account non verificato. Controlla la tua email per il link di conferma.', needsVerification: true, email };
+      }
+      return { success: false, error: 'Credenziali non valide' };
     }
   };
 

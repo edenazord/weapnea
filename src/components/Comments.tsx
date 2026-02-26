@@ -121,7 +121,7 @@ export default function Comments({ blogId, eventId, canComment }: CommentsProps)
   const getReplies = (parentId: string) => replies.filter((r) => r.parent_id === parentId);
 
   const CommentCard = ({ comment, isReply = false }: { comment: Comment; isReply?: boolean }) => (
-    <div className={`flex gap-3 ${isReply ? 'ml-10 mt-2' : 'mt-4'}`}>
+    <div key={comment.id} className={`flex gap-3 ${isReply ? 'ml-10 mt-2' : 'mt-4'}`}>
       <Avatar className="w-8 h-8 shrink-0">
         <AvatarImage src={comment.author_avatar || undefined} />
         <AvatarFallback>{comment.author_name?.charAt(0) || '?'}</AvatarFallback>
@@ -175,7 +175,7 @@ export default function Comments({ blogId, eventId, canComment }: CommentsProps)
         )}
         {/* Replies */}
         {getReplies(comment.id).map((reply) => (
-          <CommentCard key={reply.id} comment={reply} isReply />
+          CommentCard({ comment: reply, isReply: true })
         ))}
       </div>
     </div>
@@ -244,7 +244,7 @@ export default function Comments({ blogId, eventId, canComment }: CommentsProps)
       ) : (
         <div className="space-y-1">
           {topLevel.map((comment) => (
-            <CommentCard key={comment.id} comment={comment} />
+            CommentCard({ comment })
           ))}
         </div>
       )}

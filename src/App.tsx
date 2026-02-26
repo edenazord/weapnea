@@ -11,6 +11,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import AuthPage from "./pages/Auth";
 import AuthConfirm from "./pages/AuthConfirm";
 import PasswordResetPage from "./pages/PasswordReset";
+import VerifyEmail from "./pages/VerifyEmail";
 import EventDetail from "./pages/EventDetail";
 import { Navigate, useParams } from "react-router-dom";
 import { buildFriendlyEventPath } from "@/lib/seo-utils";
@@ -95,6 +96,7 @@ const App = () => {
                   <Route path="/auth" element={<AuthPage />} />
                   <Route path="/auth/confirm" element={<AuthConfirm />} />
                   <Route path="/password-reset" element={<PasswordResetPage />} />
+                  <Route path="/verify-email" element={<VerifyEmail />} />
                   {/* Legacy path: redirect to friendly URL */}
                   <Route path="/events/:slug" element={<LegacyEventRedirect />} />
                   {/* SEO-friendly public event route (root-level, single segment) */}

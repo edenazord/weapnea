@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EventsManager from "@/components/admin/EventsManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import BlogManager from "@/components/admin/BlogManager";
+import BlogTagManager from "@/components/admin/BlogTagManager";
 // Forum disabilitato temporaneamente
 import UsersManager from "@/components/admin/UsersManager";
 import EmailTemplatesManager from "@/components/admin/EmailTemplatesManager";
@@ -47,6 +48,7 @@ const AdminDashboard = () => {
                 );
             case "blog":
                 return (
+                    <>
                     <Card>
                         <CardHeader>
                             <CardTitle>Gestione Articoli Blog</CardTitle>
@@ -55,6 +57,12 @@ const AdminDashboard = () => {
                             <BlogManager />
                         </CardContent>
                     </Card>
+                    <Card className="mt-6">
+                        <CardContent className="pt-6">
+                            <BlogTagManager />
+                        </CardContent>
+                    </Card>
+                    </>
                 );
             // forum: sezione rimossa
             case "users":
@@ -165,6 +173,11 @@ const AdminDashboard = () => {
                         </CardHeader>
                         <CardContent>
                             <BlogManager />
+                        </CardContent>
+                    </Card>
+                    <Card className="mt-6">
+                        <CardContent className="pt-6">
+                            <BlogTagManager />
                         </CardContent>
                     </Card>
                 </TabsContent>

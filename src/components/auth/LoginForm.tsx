@@ -17,6 +17,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { apiSend } from "@/lib/apiClient";
 
 const LoginForm = () => {
   const { t } = useLanguage();
@@ -28,6 +29,8 @@ const LoginForm = () => {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [verificationNeeded, setVerificationNeeded] = useState<string | null>(null);
+  const [resending, setResending] = useState(false);
   const { signIn, user } = useAuth();
   const hasRedirected = useRef(false);
   
@@ -60,11 +63,20 @@ const LoginForm = () => {
       const result = await signIn(values.email, values.password);
 
       if (result.success) {
+        setVerificationNeeded(null);
         toast({
           title: t('auth.login.success_title', 'Accesso effettuato'),
           description: t('auth.login.success_desc', 'Bentornato su WeApnea!'),
         });
         // Redirect handled by useEffect only if ?redirect=...
+      } else if ((result as any).needsVerification) {
+        setVerificationNeeded(values.email);
+        toast({
+          title: t('auth.login.unverified_title', 'Account non verificato'),
+          description: t('auth.login.unverified_desc', "Controlla la tua email per il link di conferma. Puoi richiedere un nuovo link qui sotto."),
+          variant: "destructive",
+          duration: 10000,
+        });
       } else {
         toast({
           title: t('auth.login.error_title', 'Errore di accesso'),
@@ -123,6 +135,40 @@ const LoginForm = () => {
               {t('auth.login.form.forgot_password', 'Password dimenticata?')}
             </Link>
           </div>
+
+          {verificationNeeded && (
+            <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-center space-y-2">
+              <p className="text-sm text-amber-800">
+                {t('auth.login.unverified_hint', "Non hai ricevuto l'email di conferma?")}
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={resending}
+                onClick={async () => {
+                  setResending(true);
+                  try {
+                    await apiSend('/api/auth/resend-verification', 'POST', { email: verificationNeeded });
+                    toast({
+                      title: t('auth.login.resend_success_title', 'Email inviata'),
+                      description: t('auth.login.resend_success_desc', 'Controlla la tua casella di posta per il link di conferma.'),
+                    });
+                    setVerificationNeeded(null);
+                  } catch {
+                    toast({
+                      title: t('common.error', 'Errore'),
+                      description: t('auth.login.resend_error', "Impossibile inviare l'email. Riprova più tardi."),
+                      variant: "destructive",
+                    });
+                  }
+                  setResending(false);
+                }}
+              >
+                {resending ? t('auth.login.resending', 'Invio in corso...') : t('auth.login.resend_btn', 'Reinvia email di conferma')}
+              </Button>
+            </div>
+          )}
         </form>
       </Form>
     </div>

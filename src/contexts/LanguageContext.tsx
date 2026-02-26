@@ -8,7 +8,7 @@ interface LanguageContextType {
   setCurrentLanguage: (language: string) => void;
   languages: UILanguage[];
   translations: Record<string, string>;
-  t: (key: string, fallback?: string) => string;
+  t: (key: string, fallbackOrVars?: string | Record<string, string | number>, vars?: Record<string, string | number>) => string;
   isLoading: boolean;
 }
 
@@ -57,8 +57,23 @@ export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) 
     localStorage.setItem('language', language);
   }, [currentLanguage]);
 
-  const t = useCallback((key: string, fallback?: string): string => {
-    return translations[key] || fallback || key;
+  const t = useCallback((key: string, fallbackOrVars?: string | Record<string, string | number>, vars?: Record<string, string | number>): string => {
+    // Supporta sia t('key', 'fallback') che t('key', 'fallback', {count: 5}) che t('key', {count: 5})
+    let fallback: string | undefined;
+    let variables: Record<string, string | number> | undefined;
+    if (typeof fallbackOrVars === 'string') {
+      fallback = fallbackOrVars;
+      variables = vars;
+    } else if (typeof fallbackOrVars === 'object') {
+      variables = fallbackOrVars;
+    }
+    let result = translations[key] || fallback || key;
+    if (variables) {
+      Object.entries(variables).forEach(([k, v]) => {
+        result = result.replace(new RegExp(`\\{${k}\\}`, 'g'), String(v));
+      });
+    }
+    return result;
   }, [translations]);
 
   useEffect(() => {

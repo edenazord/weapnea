@@ -2,6 +2,13 @@
 import { apiGet, apiSend } from '@/lib/apiClient';
 
 // Tipi locali per API-only
+export type BlogTag = {
+  id: string;
+  name: string;
+  language: string;
+  created_at?: string;
+};
+
 export type BlogArticle = {
   id: string;
   language?: 'it' | 'en' | 'es' | 'fr' | 'pl' | 'ru';
@@ -16,6 +23,7 @@ export type BlogArticle = {
   seo_description: string | null;
   seo_keywords: string[] | null;
   hashtags: string[] | null;
+  tags?: BlogTag[];
   published: boolean;
   author_id: string;
   created_at: string;
@@ -33,7 +41,8 @@ export const getBlogArticles = async (
   searchTerm?: string,
   sort: { column: string; direction: string } = { column: 'created_at', direction: 'desc' },
   language?: 'it' | 'en' | 'es' | 'fr' | 'pl' | 'ru',
-  onlyMine?: boolean
+  onlyMine?: boolean,
+  tagId?: string
 ): Promise<BlogArticleWithAuthor[]> => {
   const params = new URLSearchParams();
   // Invia esplicitamente il filtro published
@@ -43,6 +52,7 @@ export const getBlogArticles = async (
   if (sort?.direction) params.set('sortDirection', sort.direction);
   if (language) params.set('language', language);
   if (onlyMine) params.set('onlyMine', 'true');
+  if (tagId) params.set('tag', tagId);
   const res = await apiGet(`/api/blog?${params.toString()}`);
   return res as BlogArticleWithAuthor[];
 };
@@ -81,4 +91,29 @@ export const generateSlug = (title: string): string => {
     .replace(/[^\w\s-]/g, '')
     .replace(/[\s_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
+};
+
+// ===========================
+// Blog Tags API
+// ===========================
+
+export const getBlogTags = async (language?: string): Promise<BlogTag[]> => {
+  const params = language ? `?language=${encodeURIComponent(language)}` : '';
+  return (await apiGet(`/api/blog-tags${params}`)) as BlogTag[];
+};
+
+export const createBlogTag = async (name: string, language: string = 'it'): Promise<BlogTag> => {
+  return (await apiSend('/api/blog-tags', 'POST', { name, language })) as BlogTag;
+};
+
+export const updateBlogTag = async (id: string, name: string, language?: string): Promise<BlogTag> => {
+  return (await apiSend(`/api/blog-tags/${id}`, 'PUT', { name, ...(language ? { language } : {}) })) as BlogTag;
+};
+
+export const deleteBlogTag = async (id: string): Promise<void> => {
+  await apiSend(`/api/blog-tags/${id}`, 'DELETE');
+};
+
+export const setArticleTags = async (articleId: string, tagIds: string[]): Promise<BlogTag[]> => {
+  return (await apiSend(`/api/blog/${articleId}/tags`, 'PUT', { tag_ids: tagIds })) as BlogTag[];
 };

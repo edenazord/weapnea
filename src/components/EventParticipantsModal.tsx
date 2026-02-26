@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Users, ExternalLink, Calendar, Euro, Phone, MessageCircle } from "lucide-react";
+import { Users, ExternalLink, Calendar, Euro, Phone, MessageCircle, Download } from "lucide-react";
 import { getEventParticipants, EventParticipant, removeEventParticipant } from "@/lib/payments-api";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -69,7 +69,7 @@ export const EventParticipantsModal = ({
           variant="ghost"
           size="sm"
           className="h-8 w-8 p-0 hover:bg-blue-50"
-          title={t('events.view_participants', `Vedi partecipanti: ${participantCount} iscritti`)}
+          title={t('events.view_participants', `Vedi partecipanti: ${participantCount} iscritti`, { count: participantCount })}
         >
           <Users className="h-4 w-4 text-blue-600" />
         </Button>
@@ -210,6 +210,39 @@ export const EventParticipantsModal = ({
                   €{participants.reduce((sum, p) => sum + Number(p.amount || 0), 0).toFixed(2)}
                 </span>
               </div>
+            )}
+            {canManage && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full mt-3"
+                onClick={() => {
+                  if (!participants) return;
+                  const headers = ['Nome', 'Email', 'Telefono', 'Azienda', 'Importo (€)', 'Stato', 'Data iscrizione'];
+                  const rows = participants.map((p) => [
+                    p.full_name || '',
+                    p.email || '',
+                    p.phone || '',
+                    p.company_name || '',
+                    p.amount ? Number(p.amount).toFixed(2) : '0.00',
+                    p.paid_at ? 'Pagato' : 'Iscritto',
+                    p.paid_at ? format(new Date(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: it }) : '',
+                  ]);
+                  const csvContent = [headers, ...rows]
+                    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+                    .join('\n');
+                  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `partecipanti-${eventTitle.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40)}.csv`;
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                <Download className="h-4 w-4 mr-2" />
+                {t('events.download_csv', 'Scarica CSV')}
+              </Button>
             )}
           </div>
         )}

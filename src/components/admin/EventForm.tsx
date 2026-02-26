@@ -53,6 +53,7 @@ const eventFormShape = z.object({
   schedule_logistics: z.string().optional(),
   gallery_images: z.array(z.string()).optional(),
   pdf_url: z.string().optional(),
+  whatsapp_group_url: z.string().optional(),
   // Appuntamento fisso (strategia B)
   fixed_appointment: z.boolean().optional(),
   fixed_appointment_text: z.string().optional(),
@@ -726,6 +727,31 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
               />
             </div>
           )}
+        </div>
+
+        {/* Link Gruppo WhatsApp (opzionale) */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Gruppo WhatsApp</h3>
+          <p className="text-sm text-muted-foreground">
+            Inserisci il link del gruppo WhatsApp. Verrà incluso nell'email di conferma iscrizione.
+          </p>
+          <FormField
+            control={form.control}
+            name="whatsapp_group_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Link gruppo WhatsApp</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="https://chat.whatsapp.com/..."
+                    {...field}
+                    value={field.value || ''}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
         {/* Liberatorie obbligatorie - solo in creazione */}

@@ -5,10 +5,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Calendar, User, ArrowRight } from "lucide-react";
+import { Search, Calendar, User, ArrowRight, Tag } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getBlogArticles } from "@/lib/blog-api";
+import { getBlogArticles, getBlogTags } from "@/lib/blog-api";
 import { Link } from "react-router-dom";
 import { buildFriendlyBlogPath } from "@/lib/seo-utils";
 import { format } from "date-fns";
@@ -21,21 +21,28 @@ import PageHead from "@/components/PageHead";
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
   const isMobile = useIsMobile();
   const { t, currentLanguage } = useLanguage();
 
   const allowedLangs = ['it','en','es','fr','pl','ru'] as const;
   const langParam = (allowedLangs as readonly string[]).includes(currentLanguage) ? (currentLanguage as typeof allowedLangs[number]) : undefined;
 
+  // Load tags for current language
+  const { data: tags = [] } = useQuery({
+    queryKey: ['blog-tags', langParam],
+    queryFn: () => getBlogTags(langParam),
+  });
+
   const { data: articles = [], isLoading } = useQuery({
-    queryKey: ['blog-articles', langParam, searchTerm],
-    queryFn: () => getBlogArticles(true, searchTerm, { column: 'created_at', direction: 'desc' }, langParam),
+    queryKey: ['blog-articles', langParam, searchTerm, selectedTag],
+    queryFn: () => getBlogArticles(true, searchTerm, { column: 'created_at', direction: 'desc' }, langParam, undefined, selectedTag),
   });
 
   // Fallback: se per la lingua selezionata non ci sono articoli, mostra quelli in inglese
   const { data: enArticles = [], isLoading: isLoadingEn } = useQuery({
-    queryKey: ['blog-articles', 'en', searchTerm],
-    queryFn: () => getBlogArticles(true, searchTerm, { column: 'created_at', direction: 'desc' }, 'en'),
+    queryKey: ['blog-articles', 'en', searchTerm, selectedTag],
+    queryFn: () => getBlogArticles(true, searchTerm, { column: 'created_at', direction: 'desc' }, 'en', undefined, selectedTag),
     enabled: langParam !== 'en',
   });
 
@@ -81,6 +88,28 @@ const Blog = () => {
         </div>
       </div>
 
+      {/* Tag filters */}
+      {tags.length > 0 && (
+        <div className="mb-8 flex flex-wrap items-center gap-2 justify-center">
+          <Tag className="h-4 w-4 text-gray-400" />
+          <button
+            onClick={() => setSelectedTag(undefined)}
+            className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${!selectedTag ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-200 text-gray-600 hover:border-purple-300 hover:text-purple-600'}`}
+          >
+            {t('blog_page.all_tags', 'Tutti')}
+          </button>
+          {tags.map(tag => (
+            <button
+              key={tag.id}
+              onClick={() => setSelectedTag(selectedTag === tag.id ? undefined : tag.id)}
+              className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${selectedTag === tag.id ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-200 text-gray-600 hover:border-purple-300 hover:text-purple-600'}`}
+            >
+              {tag.name}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Articles */}
       <div className="w-full">
   {isLoading || (usingEnglishFallback && isLoadingEn) ? (
@@ -119,10 +148,15 @@ const Blog = () => {
               {/* Contenuto */}
               <CardContent className="flex-1 p-5 md:p-7 flex flex-col justify-between">
                 <div>
-                  {/* Hashtag */}
+                  {/* Tags from tag system */}
                   <div className="flex flex-wrap gap-1.5 mb-3">
+                    {(article as any).tags?.slice(0, 4).map((tag: any) => (
+                      <Badge key={tag.id} variant="secondary" className="bg-blue-50 text-blue-600 border-0 text-xs font-medium px-2.5 py-0.5">
+                        {tag.name}
+                      </Badge>
+                    ))}
                     {article.hashtags?.slice(0, 3).map((tag, i) => (
-                      <Badge key={i} variant="secondary" className="bg-purple-50 text-purple-600 border-0 text-xs font-medium px-2.5 py-0.5">
+                      <Badge key={`h-${i}`} variant="secondary" className="bg-purple-50 text-purple-600 border-0 text-xs font-medium px-2.5 py-0.5">
                         #{tag}
                       </Badge>
                     ))}

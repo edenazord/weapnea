@@ -41,7 +41,7 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
         { icon: Users, label: t('nav.about', 'Chi Siamo'), path: "/chi-siamo" },
         { icon: Mail, label: t('nav.contact', 'Contattaci'), path: "/contattaci" },
         { icon: BookOpen, label: t('nav.blog', 'Blog'), path: "/blog" },
-        { icon: MessageSquare, label: t('nav.forum', 'Forum'), path: "/forum" },
+        // { icon: MessageSquare, label: t('nav.forum', 'Forum'), path: "/forum" }, — nascosto temporaneamente
         { icon: Shield, label: t('footer.privacy_policy', 'Privacy Policy'), path: "/privacy-policy" },
         { icon: FileText, label: t('footer.cookie_policy', 'Cookie Policy'), path: "/cookie-policy" },
     ];
@@ -125,6 +125,19 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
                         {/* Auth section at bottom */}
                         {user ? (
                             <div className="p-4 border-t border-gray-100 dark:border-neutral-800">
+                                <div className="flex items-center gap-3 px-3 py-2 mb-2">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                                        {(user.full_name || user.email || '?')[0].toUpperCase()}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-semibold text-gray-900 dark:text-gray-100 truncate">
+                                            {user.full_name || user.email}
+                                        </p>
+                                        {user.full_name && (
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{user.email}</p>
+                                        )}
+                                    </div>
+                                </div>
                                 <button
                                     onClick={async () => { setMenuOpen(false); await logout(); navigate('/'); }}
                                     className="flex items-center gap-3 w-full px-3 py-3 rounded-xl text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"

@@ -19,6 +19,10 @@ import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from '@/contexts/AuthContext';
 import { apiSend } from '@/lib/apiClient';
+import { useQuery } from '@tanstack/react-query';
+import { getBlogTags, BlogTag } from '@/lib/blog-api';
+import { Badge } from "@/components/ui/badge";
+import { X, Tag } from "lucide-react";
 // Rimuoviamo il Select custom per affidabilità nelle opzioni lingua
 import { ImageUpload } from "@/components/admin/ImageUpload";
 
@@ -42,10 +46,11 @@ interface BlogFormProps {
     title: string;
     subtitle?: string | null;
     content: string;
-    cover_image_url?: string | null; // campo reale restituito dall'API
+    cover_image_url?: string | null;
     category?: string;
-    slug?: string; // facoltativo, utile per non rigenerare slug se già esistente
+    slug?: string;
     published?: boolean;
+    tags?: BlogTag[];
   };
   onSave: () => void;
   onCancel: () => void;
@@ -56,6 +61,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
+  const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   // Fallback immediato: mostriamo subito tutte le lingue previste
   const fallbackLangs: { code: string; native_name: string; name?: string }[] = [
@@ -99,6 +105,23 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
   }, [article?.language]);
 
   const generateSlug = (title: string) => title.toLowerCase().replace(/\s+/g, '-').replace(/[^\w-]/g, '');
+
+  const [tagsLang, setTagsLang] = useState(article?.language || 'it');
+
+  // Load available tags for the current form language
+  const { data: availableTags = [] } = useQuery({
+    queryKey: ['blog-tags', tagsLang],
+    queryFn: () => getBlogTags(tagsLang),
+  });
+
+  // Initialize selected tags when editing
+  useEffect(() => {
+    if (article?.tags) {
+      setSelectedTagIds(article.tags.map(t => t.id));
+    } else {
+      setSelectedTagIds([]);
+    }
+  }, [article]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -171,6 +194,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
         published: values.published,
         seo_title: values.seo_title || null,
         seo_description: values.seo_description || null,
+        tag_ids: selectedTagIds,
       };
 
       if (article) {
@@ -211,7 +235,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
                   id="blog-language-select"
                   className="w-[220px] border rounded-md h-10 px-3 text-sm bg-background mt-1"
                   value={field.value}
-                  onChange={(e) => field.onChange(e.target.value)}
+                  onChange={(e) => { field.onChange(e.target.value); setTagsLang(e.target.value); }}
                 >
                   {languages.map(l => (
                     <option key={l.code} value={l.code}>{l.native_name || l.name || l.code}</option>
@@ -314,6 +338,46 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
           </FormControl>
           <FormMessage />
         </FormItem>
+        {/* Tag Selector */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-2">
+            <Tag className="h-4 w-4 text-gray-500" />
+            <span className="text-sm font-medium">Tag</span>
+          </div>
+          {/* Selected tags */}
+          <div className="flex flex-wrap gap-1.5 min-h-[32px]">
+            {selectedTagIds.map(tid => {
+              const t = availableTags.find(tag => tag.id === tid);
+              if (!t) return null;
+              return (
+                <Badge key={tid} variant="secondary" className="flex items-center gap-1 pr-1">
+                  {t.name}
+                  <button type="button" className="ml-1 hover:bg-gray-200 rounded-full p-0.5" onClick={() => setSelectedTagIds(prev => prev.filter(id => id !== tid))}>
+                    <X className="h-3 w-3" />
+                  </button>
+                </Badge>
+              );
+            })}
+          </div>
+          {/* Available tags to add */}
+          {availableTags.filter(t => !selectedTagIds.includes(t.id)).length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {availableTags.filter(t => !selectedTagIds.includes(t.id)).map(t => (
+                <button
+                  key={t.id}
+                  type="button"
+                  className="text-xs px-2.5 py-1 rounded-full border border-dashed border-gray-300 text-gray-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                  onClick={() => setSelectedTagIds(prev => [...prev, t.id])}
+                >
+                  + {t.name}
+                </button>
+              ))}
+            </div>
+          )}
+          {availableTags.length === 0 && (
+            <p className="text-xs text-gray-400">Nessun tag disponibile per la lingua selezionata. Crea tag nella sezione "Gestione Tag Blog".</p>
+          )}
+        </div>
         {/* SEO Fields */}
         <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
           <h4 className="text-sm font-semibold text-gray-700">SEO (Search Engine Optimization)</h4>

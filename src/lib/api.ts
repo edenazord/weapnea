@@ -42,6 +42,7 @@ export interface Event {
   schedule_meeting_point?: string | null;
   responsibility_waiver_accepted?: boolean | null;
   privacy_accepted?: boolean | null;
+  whatsapp_group_url?: string | null;
   // Organizer public fields (optional, provided by API to avoid extra fetches)
   organizer_id?: string | null;
   organizer_name?: string | null;
