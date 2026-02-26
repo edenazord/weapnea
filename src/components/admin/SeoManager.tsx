@@ -5,14 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import { toast } from "sonner";
-import { Save, Globe, ExternalLink } from "lucide-react";
+import { Save, Globe, ExternalLink, ChevronDown } from "lucide-react";
 
 interface LangData { title: string; description: string; }
 interface SeoSetting {
@@ -62,6 +56,10 @@ export default function SeoManager() {
   const [ogEdits, setOgEdits] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
+  const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+
+  const toggleItem = (path: string) =>
+    setOpenItems(prev => ({ ...prev, [path]: !prev[path] }));
 
   useEffect(() => {
     apiGet("/api/admin/seo-settings")
@@ -177,22 +175,27 @@ export default function SeoManager() {
         return (
           <div key={group} className="space-y-2">
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide px-1">{label}</h3>
-            <Accordion type="multiple" className="space-y-1">
+            <div className="space-y-1">
               {pages.map(({ path, label: pageLabel }) => {
                 const dirty = isDirty(path);
                 const titleVal = getValue(path, activeLang, "title");
                 const descVal = getValue(path, activeLang, "description");
                 const itDefaults = DEFAULT_IT[path] ?? { title: "", description: "" };
                 const saved = settings[path];
+                const isOpen = !!openItems[path];
 
                 return (
-                  <AccordionItem
+                  <div
                     key={path}
-                    value={path}
-                    className={`border rounded-lg px-0 ${dirty ? "border-blue-300 ring-1 ring-blue-300" : "border-gray-200"}`}
+                    className={`border rounded-lg overflow-hidden ${dirty ? "border-blue-300 ring-1 ring-blue-300" : "border-gray-200"}`}
                   >
-                    <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                      <div className="flex items-center gap-2 flex-wrap text-left w-full mr-2">
+                    {/* Trigger */}
+                    <button
+                      type="button"
+                      onClick={() => toggleItem(path)}
+                      className="w-full flex items-center justify-between gap-2 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-2 flex-wrap min-w-0">
                         <span className="text-sm font-semibold text-gray-800">{pageLabel}</span>
                         <code className="text-xs text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">{path}</code>
                         <a
@@ -204,69 +207,74 @@ export default function SeoManager() {
                         >
                           <ExternalLink className="h-3.5 w-3.5" />
                         </a>
-                        {dirty && <Badge variant="secondary" className="text-xs ml-1">Non salvato</Badge>}
+                        {dirty && <Badge variant="secondary" className="text-xs">Non salvato</Badge>}
                         {saved?.updated_at && !dirty && (
-                          <span className="text-xs text-gray-400 ml-auto">{new Date(saved.updated_at).toLocaleDateString("it-IT")}</span>
+                          <span className="text-xs text-gray-400">{new Date(saved.updated_at).toLocaleDateString("it-IT")}</span>
                         )}
                       </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="px-4 pb-4 space-y-3">
-                      <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1 block">
-                          Titolo SEO <span className="text-gray-400 font-normal">(max 60 caratteri)</span>
-                        </label>
-                        <Input
-                          value={titleVal}
-                          placeholder={activeLang !== "it" ? (getSaved(path, "it").title || itDefaults.title) : itDefaults.title}
-                          onChange={e => setField(path, activeLang, "title", e.target.value)}
-                          maxLength={80}
-                          className="text-sm"
-                        />
-                        <p className="text-xs text-gray-400 mt-1">{titleVal.length}/60</p>
-                      </div>
-                      <div>
-                        <label className="text-xs font-medium text-gray-600 mb-1 block">
-                          Descrizione SEO <span className="text-gray-400 font-normal">(max 160 caratteri)</span>
-                        </label>
-                        <Textarea
-                          value={descVal}
-                          placeholder={activeLang !== "it" ? (getSaved(path, "it").description || itDefaults.description) : itDefaults.description}
-                          onChange={e => setField(path, activeLang, "description", e.target.value)}
-                          maxLength={200}
-                          rows={2}
-                          className="text-sm resize-none"
-                        />
-                        <p className="text-xs text-gray-400 mt-1">{descVal.length}/160</p>
-                      </div>
-                      {activeLang === "it" && (
+                      <ChevronDown className={`h-4 w-4 text-gray-400 shrink-0 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+                    </button>
+
+                    {/* Content */}
+                    {isOpen && (
+                      <div className="px-4 pb-4 pt-1 space-y-3 border-t border-gray-100">
                         <div>
                           <label className="text-xs font-medium text-gray-600 mb-1 block">
-                            Immagine Open Graph <span className="text-gray-400 font-normal">(URL – uguale per tutte le lingue)</span>
+                            Titolo SEO <span className="text-gray-400 font-normal">(max 60 caratteri)</span>
                           </label>
                           <Input
-                            value={getOgImage(path)}
-                            placeholder="/images/weapnea-logo.png"
-                            onChange={e => setOgEdits(prev => ({ ...prev, [path]: e.target.value }))}
-                            className="text-sm font-mono"
+                            value={titleVal}
+                            placeholder={activeLang !== "it" ? (getSaved(path, "it").title || itDefaults.title) : itDefaults.title}
+                            onChange={e => setField(path, activeLang, "title", e.target.value)}
+                            maxLength={80}
+                            className="text-sm"
                           />
+                          <p className="text-xs text-gray-400 mt-1">{titleVal.length}/60</p>
                         </div>
-                      )}
-                      <div className="flex justify-end pt-1">
-                        <Button
-                          size="sm"
-                          disabled={!dirty || saving[path]}
-                          onClick={() => handleSave(path)}
-                          className="h-7 px-4 text-xs"
-                        >
-                          <Save className="h-3.5 w-3.5 mr-1" />
-                          {saving[path] ? "Salvataggio…" : "Salva"}
-                        </Button>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600 mb-1 block">
+                            Descrizione SEO <span className="text-gray-400 font-normal">(max 160 caratteri)</span>
+                          </label>
+                          <Textarea
+                            value={descVal}
+                            placeholder={activeLang !== "it" ? (getSaved(path, "it").description || itDefaults.description) : itDefaults.description}
+                            onChange={e => setField(path, activeLang, "description", e.target.value)}
+                            maxLength={200}
+                            rows={2}
+                            className="text-sm resize-none"
+                          />
+                          <p className="text-xs text-gray-400 mt-1">{descVal.length}/160</p>
+                        </div>
+                        {activeLang === "it" && (
+                          <div>
+                            <label className="text-xs font-medium text-gray-600 mb-1 block">
+                              Immagine Open Graph <span className="text-gray-400 font-normal">(URL – uguale per tutte le lingue)</span>
+                            </label>
+                            <Input
+                              value={getOgImage(path)}
+                              placeholder="/images/weapnea-logo.png"
+                              onChange={e => setOgEdits(prev => ({ ...prev, [path]: e.target.value }))}
+                              className="text-sm font-mono"
+                            />
+                          </div>
+                        )}
+                        <div className="flex justify-end pt-1">
+                          <Button
+                            size="sm"
+                            disabled={!dirty || saving[path]}
+                            onClick={() => handleSave(path)}
+                            className="h-7 px-4 text-xs"
+                          >
+                            <Save className="h-3.5 w-3.5 mr-1" />
+                            {saving[path] ? "Salvataggio…" : "Salva"}
+                          </Button>
+                        </div>
                       </div>
-                    </AccordionContent>
-                  </AccordionItem>
+                    )}
+                  </div>
                 );
               })}
-            </Accordion>
+            </div>
           </div>
         );
       })}
