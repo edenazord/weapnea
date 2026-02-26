@@ -1,0 +1,22 @@
+# Frontend source — not needed by the Express server
+src/
+public/images/
+public/locales/
+
+# Config files for frontend tooling
+vite.config.ts
+tailwind.config.ts
+postcss.config.js
+eslint.config.js
+tsconfig*.json
+components.json
+
+# Docs
+*.md
+DEPLOY.md
+
+# Local scripts (only used locally / in CI)
+scripts/
+
+# Test / misc
+.env*
