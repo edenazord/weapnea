@@ -681,6 +681,11 @@ function buildBrandedEmail(tpl, vars, ctaText = null, ctaUrl = null) {
     ? `<p style="margin:20px 0 8px 0;"><a class="btn" href="${simpleRender(ctaUrl, vars)}" target="_blank" rel="noopener noreferrer">${simpleRender(ctaText, vars)}</a></p>` 
     : '';
 
+  // WhatsApp group button (shown when whatsapp_group_url is provided)
+  const whatsappButton = vars.whatsapp_group_url
+    ? `<p style="margin-top:16px;"><a href="${vars.whatsapp_group_url}" target="_blank" rel="noopener" style="display:inline-block;padding:10px 24px;background-color:#25D366;color:#fff;border-radius:8px;text-decoration:none;font-weight:600;">📱 Entra nel gruppo WhatsApp</a></p>`
+    : '';
+
   return `<!doctype html>
 <html>
   <head>
@@ -697,6 +702,7 @@ function buildBrandedEmail(tpl, vars, ctaText = null, ctaUrl = null) {
         <div class="content">
           ${greeting}
           ${bodyHtml}
+          ${whatsappButton}
           ${ctaButton}
           ${ignoreNotice}
           <div class="divider"></div>
