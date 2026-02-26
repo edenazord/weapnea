@@ -1,6 +1,6 @@
 {
   "framework": null,
-  "buildCommand": "npm run build",
+  "buildCommand": "npx vite build --force",
   "outputDirectory": "dist",
   "routes": [
     { "handle": "filesystem" },
