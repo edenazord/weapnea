@@ -6,7 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Save, Globe, ExternalLink, ChevronDown } from "lucide-react";
+import { Save, Globe, ExternalLink, ChevronDown, BarChart2 } from "lucide-react";
+
+interface SiteConfig {
+  gtm_id: string;
+  ga4_id: string;
+  gsc_verification: string;
+}
 
 interface LangData { title: string; description: string; }
 interface SeoSetting {
@@ -57,11 +63,16 @@ export default function SeoManager() {
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
+  const [siteConfig, setSiteConfig] = useState<SiteConfig>({ gtm_id: "", ga4_id: "", gsc_verification: "" });
+  const [siteConfigSaving, setSiteConfigSaving] = useState(false);
 
   const toggleItem = (path: string) =>
     setOpenItems(prev => ({ ...prev, [path]: !prev[path] }));
 
   useEffect(() => {
+    apiGet("/api/admin/site-config")
+      .then((d: SiteConfig) => setSiteConfig({ gtm_id: d.gtm_id || "", ga4_id: d.ga4_id || "", gsc_verification: d.gsc_verification || "" }))
+      .catch(() => {});
     apiGet("/api/admin/seo-settings")
       .then((rows: SeoSetting[]) => {
         const map: Record<string, SeoSetting> = {};
@@ -145,10 +156,65 @@ export default function SeoManager() {
     { key: "Altro", label: "Altre pagine" },
   ] as const;
 
+  const handleSiteConfigSave = async () => {
+    setSiteConfigSaving(true);
+    try {
+      await apiSend("/api/admin/site-config", "PUT", siteConfig);
+      toast.success("Impostazioni tracking salvate");
+    } catch (e: any) {
+      toast.error(e?.message || "Errore nel salvataggio");
+    } finally {
+      setSiteConfigSaving(false);
+    }
+  };
+
   if (loading) return <p className="text-gray-500 text-sm py-4">Caricamento impostazioni SEO…</p>;
 
   return (
     <div className="space-y-6">
+      {/* Tracking / Analytics */}
+      <div className="border border-gray-200 rounded-lg p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+            <BarChart2 className="h-4 w-4 text-green-600" />
+            Analytics & Tracking
+          </div>
+          <Button size="sm" onClick={handleSiteConfigSave} disabled={siteConfigSaving} className="h-7 px-3 text-xs">
+            <Save className="h-3.5 w-3.5 mr-1" />
+            {siteConfigSaving ? "Salvataggio…" : "Salva"}
+          </Button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Google Tag Manager ID</label>
+            <Input
+              value={siteConfig.gtm_id}
+              placeholder="GTM-XXXXXXX"
+              className="text-sm font-mono"
+              onChange={e => setSiteConfig(p => ({ ...p, gtm_id: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Google Analytics 4 ID</label>
+            <Input
+              value={siteConfig.ga4_id}
+              placeholder="G-XXXXXXXXXX"
+              className="text-sm font-mono"
+              onChange={e => setSiteConfig(p => ({ ...p, ga4_id: e.target.value }))}
+            />
+          </div>
+          <div>
+            <label className="text-xs font-medium text-gray-600 mb-1 block">Google Search Console</label>
+            <Input
+              value={siteConfig.gsc_verification}
+              placeholder="codice verifica"
+              className="text-sm font-mono"
+              onChange={e => setSiteConfig(p => ({ ...p, gsc_verification: e.target.value }))}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Language selector */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3">
         <div className="flex items-center gap-2 text-sm text-gray-600 font-medium">

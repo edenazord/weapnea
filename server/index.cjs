@@ -221,7 +221,18 @@ async function runMigrationsAtStartup() {
       );
       ALTER TABLE public.seo_settings ADD COLUMN IF NOT EXISTS translations jsonb NOT NULL DEFAULT '{}'::jsonb;
     `);
-    console.log('[startup] ensured comments, event_media, external_participants, event_feedback_emails, seo_settings tables');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.site_config (
+        id int PRIMARY KEY DEFAULT 1,
+        gtm_id text,
+        ga4_id text,
+        gsc_verification text,
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT site_config_single_row CHECK (id = 1)
+      );
+      INSERT INTO public.site_config (id) VALUES (1) ON CONFLICT DO NOTHING;
+    `);
+    console.log('[startup] ensured comments, event_media, external_participants, event_feedback_emails, seo_settings, site_config tables');
     await detectSchema();
     // Seed email templates if table is empty (idempotente)
     try {
@@ -4812,6 +4823,41 @@ app.get('/api/seo-meta', async (req, res) => {
     return res.json(defaultMeta);
   } catch (e) {
     return res.json(defaultMeta);
+  }
+});
+
+// =============================================
+// SITE CONFIG (GTM / GA4 / GSC) — PUBLIC + ADMIN
+// =============================================
+
+app.get('/api/public/site-config', async (_req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT gtm_id, ga4_id, gsc_verification FROM public.site_config WHERE id = 1 LIMIT 1');
+    res.json(rows[0] || {});
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+app.get('/api/admin/site-config', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT gtm_id, ga4_id, gsc_verification, updated_at FROM public.site_config WHERE id = 1 LIMIT 1');
+    res.json(rows[0] || {});
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+app.put('/api/admin/site-config', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { gtm_id, ga4_id, gsc_verification } = req.body;
+    const { rows } = await pool.query(
+      `UPDATE public.site_config SET gtm_id = $1, ga4_id = $2, gsc_verification = $3, updated_at = now() WHERE id = 1 RETURNING *`,
+      [gtm_id || null, ga4_id || null, gsc_verification || null]
+    );
+    res.json(rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
   }
 });
 

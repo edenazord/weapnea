@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
 import { LanguageProvider } from "./contexts/LanguageContext";
+import TrackingScripts from "./components/TrackingScripts";
 import AuthPage from "./pages/Auth";
 import AuthConfirm from "./pages/AuthConfirm";
 import PasswordResetPage from "./pages/PasswordReset";
@@ -84,6 +85,7 @@ const App = () => {
           <AuthProvider>
             <LanguageProvider>
               <div className="min-h-screen">
+                <TrackingScripts />
                 <Toaster />
                 <Sonner />
                 <ChatWidgetWrapper />
