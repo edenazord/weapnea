@@ -221,7 +221,11 @@ const Index = () => {
         };
       })
       .filter(category => category.events.length > 0)
-      .sort((a, b) => (a.order_index || 0) - (b.order_index || 0));
+      .sort((a, b) => {
+        // La categoria con più eventi va per prima; a parità si usa order_index
+        const diff = b.events.length - a.events.length;
+        return diff !== 0 ? diff : (a.order_index || 0) - (b.order_index || 0);
+      });
     }
 
     // Inserisci il gruppo "Eventi Passati" tra le categorie (prima degli "Allenamenti")

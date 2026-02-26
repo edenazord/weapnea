@@ -31,7 +31,7 @@ const MobileLayout = ({ children }: { children: ReactNode }) => {
         { icon: User, label: t('nav.profile', 'Profilo'), path: user ? "/profile" : "/auth" },
         { icon: BookOpen, label: t('nav.blog', 'Blog'), path: "/blog" },
         { icon: MessageCircle, label: "Chat", path: "__chat__" },
-        { icon: Bot, label: "AI", path: "__ai__" },
+        // { icon: Bot, label: "AI", path: "__ai__" }, — nascosto temporaneamente
     ];
 
     // Full menu items for the slide-out panel

@@ -87,7 +87,7 @@ const App = () => {
                 <Sonner />
                 <ChatWidgetWrapper />
                 <PublicProfileBanner />
-                <DIdAgent />
+                {/* <DIdAgent /> — AI Assistant nascosto temporaneamente */}
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route path="/chi-siamo" element={<ChiSiamo />} />
