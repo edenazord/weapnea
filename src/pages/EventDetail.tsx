@@ -562,10 +562,10 @@ const EventDetail = () => {
                         </Card>
                     )}
 
-                    {/* Commenti – visibili a tutti, possono scrivere solo partecipanti/organizzatore/admin */}
+                    {/* Commenti – visibili a tutti, possono scrivere tutti gli utenti loggati */}
                     {event.id && (
                       <div className="mt-8">
-                        <Comments eventId={event.id} canComment={isParticipant || user?.id === event.created_by || user?.role === 'admin'} />
+                        <Comments eventId={event.id} canComment={!!user} />
                       </div>
                     )}
                 </div>

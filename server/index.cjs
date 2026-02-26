@@ -4290,11 +4290,7 @@ app.post('/api/comments', requireAuth, async (req, res) => {
   try {
     const { blog_id, event_id, parent_id, body } = req.body;
     if (!body || (!blog_id && !event_id)) return res.status(400).json({ error: 'body and blog_id or event_id required' });
-    // For event comments: only participants, organizer or admin
-    if (event_id) {
-      const allowed = await isEventParticipantOrOwner(req.user.id, event_id, req.user.role);
-      if (!allowed) return res.status(403).json({ error: 'Solo i partecipanti iscritti possono commentare questo evento' });
-    }
+    // For event comments: any authenticated user can comment
     const { rows } = await pool.query(`
       INSERT INTO public.comments (blog_id, event_id, author_id, parent_id, body)
       VALUES ($1, $2, $3, $4, $5)
