@@ -67,6 +67,9 @@ const eventFormShape = z.object({
 });
 // Schema base (edit) con validazioni condizionali
 const eventFormBaseSchema = eventFormShape.superRefine((vals, ctx) => {
+  if (!vals.description || vals.description.trim() === '' || vals.description.replace(/<[^>]*>/g, '').trim() === '') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['description'], message: 'La descrizione è obbligatoria.' });
+  }
   const isFixed = vals.fixed_appointment === true;
   if (isFixed) {
     if (!vals.validity_start || String(vals.validity_start).trim() === '') {
@@ -78,6 +81,9 @@ const eventFormBaseSchema = eventFormShape.superRefine((vals, ctx) => {
   } else {
     if (!vals.date || String(vals.date).trim() === '') {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['date'], message: 'Inserisci la data di inizio' });
+    }
+    if (!vals.end_date || String(vals.end_date).trim() === '') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['end_date'], message: 'Inserisci la data di fine' });
     }
     if (vals.date && vals.end_date && vals.end_date < vals.date) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['end_date'], message: 'La data di fine deve essere successiva a quella di inizio' });
@@ -90,6 +96,9 @@ const eventFormCreateSchema = eventFormShape.extend({
   responsibility_waiver_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare la liberatoria di responsabilità." }),
   privacy_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare il trattamento della privacy." }),
 }).superRefine((vals, ctx) => {
+  if (!vals.description || vals.description.trim() === '' || vals.description.replace(/<[^>]*>/g, '').trim() === '') {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['description'], message: 'La descrizione è obbligatoria.' });
+  }
   const isFixed = vals.fixed_appointment === true;
   if (isFixed) {
     if (!vals.validity_start || String(vals.validity_start).trim() === '') {
@@ -101,6 +110,9 @@ const eventFormCreateSchema = eventFormShape.extend({
   } else {
     if (!vals.date || String(vals.date).trim() === '') {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['date'], message: 'Inserisci la data di inizio' });
+    }
+    if (!vals.end_date || String(vals.end_date).trim() === '') {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['end_date'], message: 'Inserisci la data di fine' });
     }
     if (vals.date && vals.end_date && vals.end_date < vals.date) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['end_date'], message: 'La data di fine deve essere successiva a quella di inizio' });
@@ -271,7 +283,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           render={({ field }) => (
             <FormItem>
               <FormLabel>Categoria <span className="text-red-500">*</span></FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || ''}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona una categoria" />
@@ -298,7 +310,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           render={({ field }) => (
             <FormItem>
               <FormLabel>Disciplina</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || ''}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona una disciplina" />
@@ -323,7 +335,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           render={({ field }) => (
             <FormItem>
               <FormLabel>Livello</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select onValueChange={field.onChange} value={field.value || ''}>
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Seleziona un livello" />
@@ -347,7 +359,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descrizione</FormLabel>
+              <FormLabel>Descrizione <span className="text-red-500">*</span></FormLabel>
               <FormControl>
                 <RichTextEditor
                   value={field.value || ''}
@@ -561,7 +573,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
               name="end_date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data di Fine</FormLabel>
+                  <FormLabel>Data di Fine <span className="text-red-500">*</span></FormLabel>
                   <FormControl>
                     <Input
                       type="date"
@@ -778,7 +790,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="text-sm font-medium">
-                    Accetto la liberatoria di responsabilità *
+                    Accetto la liberatoria di responsabilità <span className="text-red-500">*</span>
                   </FormLabel>
                   <p className="text-xs text-muted-foreground">
                     Confermo di essere responsabile per l'attività e i partecipanti
@@ -802,7 +814,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="text-sm font-medium">
-                    Accetto il trattamento della privacy *
+                    Accetto il trattamento della privacy <span className="text-red-500">*</span>
                   </FormLabel>
                   <p className="text-xs text-muted-foreground">
                     Confermo il trattamento dei dati secondo la normativa vigente

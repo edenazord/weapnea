@@ -27,7 +27,7 @@ const allenamentiFormBaseSchema = z.object({
   nation: z.string().min(1, { message: "La nazione è obbligatoria." }),
   location: z.string().min(1, { message: "La località è obbligatoria." }),
   date: z.string().min(1, { message: "La data di inizio è obbligatoria." }),
-  end_date: z.string().optional(),
+  end_date: z.string().min(1, { message: "La data di fine è obbligatoria." }),
   fixed_appointment: z.boolean().default(false),
   fixed_appointment_text: z.string().optional(),
   // Multi-istruttore rimosso
@@ -142,8 +142,8 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
             name="discipline"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Disciplina *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormLabel>Disciplina <span className="text-red-500">*</span></FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || ''}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleziona una disciplina" />
@@ -167,8 +167,8 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
             name="level"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Livello *</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormLabel>Livello <span className="text-red-500">*</span></FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || ''}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Seleziona un livello" />
@@ -342,7 +342,7 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
               name="end_date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data di Fine</FormLabel>
+                  <FormLabel>Data di Fine <span className="text-red-500">*</span></FormLabel>
                   <FormControl>
                     <Input
                       type="date"
@@ -455,7 +455,7 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="text-sm font-medium">
-                    Accetto la liberatoria di responsabilità *
+                    Accetto la liberatoria di responsabilità <span className="text-red-500">*</span>
                   </FormLabel>
                   <p className="text-xs text-muted-foreground">
                     Confermo di essere responsabile per l'attività e i partecipanti
@@ -479,7 +479,7 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="text-sm font-medium">
-                    Accetto il trattamento della privacy *
+                    Accetto il trattamento della privacy <span className="text-red-500">*</span>
                   </FormLabel>
                   <p className="text-xs text-muted-foreground">
                     Confermo il trattamento dei dati secondo la normativa vigente
