@@ -93,19 +93,37 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit((vals) => {
-          const gallery = vals.gallery_images && vals.gallery_images.length > 0 ? vals.gallery_images : null;
-          const transformed = {
-            ...vals,
-            gallery_images: gallery,
-            image_url: gallery && gallery.length > 0 ? gallery[0] : null,
-            fixed_appointment: Boolean(vals.fixed_appointment),
-            fixed_appointment_text: vals.fixed_appointment && vals.fixed_appointment_text && vals.fixed_appointment_text.trim() !== ''
-              ? vals.fixed_appointment_text.trim()
-              : null,
-          };
-          onSubmit(transformed as any);
-        })}
+        onSubmit={(e) => {
+          // Validazione manuale date (superRefine non propaga a FormMessage)
+          let hasErrors = false;
+          const dateVal = form.getValues('date');
+          const endDateVal = form.getValues('end_date');
+          if (!dateVal || dateVal.trim() === '') {
+            form.setError('date', { type: 'manual', message: 'La data di inizio è obbligatoria.' });
+            hasErrors = true;
+          }
+          if (!endDateVal || endDateVal.trim() === '') {
+            form.setError('end_date', { type: 'manual', message: 'La data di fine è obbligatoria.' });
+            hasErrors = true;
+          }
+          if (hasErrors) {
+            e.preventDefault();
+            return;
+          }
+          form.handleSubmit((vals) => {
+            const gallery = vals.gallery_images && vals.gallery_images.length > 0 ? vals.gallery_images : null;
+            const transformed = {
+              ...vals,
+              gallery_images: gallery,
+              image_url: gallery && gallery.length > 0 ? gallery[0] : null,
+              fixed_appointment: Boolean(vals.fixed_appointment),
+              fixed_appointment_text: vals.fixed_appointment && vals.fixed_appointment_text && vals.fixed_appointment_text.trim() !== ''
+                ? vals.fixed_appointment_text.trim()
+                : null,
+            };
+            onSubmit(transformed as any);
+          })(e);
+        }}
         className="space-y-6"
       >
         {/* Mostra errori di validazione principali */}
