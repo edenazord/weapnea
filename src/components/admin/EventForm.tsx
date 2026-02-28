@@ -240,33 +240,41 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
   return (
     <Form {...form}>
       <form
-        onSubmit={(e) => {
-          // Evita che il submit del form interno propaghi e attivi il form del profilo esterno
+        onSubmit={async (e) => {
+          e.preventDefault();
           e.stopPropagation();
-          // Imposta errori manuali per date/descrizione (superRefine non propaga a FormMessage)
+          // 1. Esegui validazione zodResolver su TUTTI i campi
+          const zodValid = await form.trigger();
+          // 2. Dopo che zodResolver ha finito, aggiungi errori manuali per date/descrizione
+          let extraErrors = false;
           const isFixedNow = form.getValues('fixed_appointment') === true;
           if (!isFixedNow) {
             const dateVal = form.getValues('date');
             const endDateVal = form.getValues('end_date');
             if (!dateVal || dateVal.trim() === '') {
               form.setError('date', { type: 'manual', message: 'Inserisci la data di inizio' });
+              extraErrors = true;
             }
             if (!endDateVal || endDateVal.trim() === '') {
               form.setError('end_date', { type: 'manual', message: 'Inserisci la data di fine' });
+              extraErrors = true;
             }
           } else {
             const vsVal = form.getValues('validity_start');
             if (!vsVal || vsVal.trim() === '') {
               form.setError('validity_start', { type: 'manual', message: 'Inserisci la data di inizio validità' });
+              extraErrors = true;
             }
           }
-          // Validazione descrizione (rich text vuoto)
           const descVal = form.getValues('description');
           if (!descVal || descVal.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim() === '') {
             form.setError('description', { type: 'manual', message: 'La descrizione è obbligatoria.' });
+            extraErrors = true;
           }
-          // Lascia sempre eseguire handleSubmit per validare TUTTI i campi via zodResolver
-          form.handleSubmit(handleSubmit)(e);
+          // 3. Se tutto valido, procedi con il submit
+          if (zodValid && !extraErrors) {
+            handleSubmit(form.getValues());
+          }
         }}
         className="space-y-4"
       >

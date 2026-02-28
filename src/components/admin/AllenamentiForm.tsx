@@ -93,18 +93,25 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
   return (
     <Form {...form}>
       <form
-        onSubmit={(e) => {
-          // Imposta errori manuali per date (superRefine non propaga a FormMessage)
+        onSubmit={async (e) => {
+          e.preventDefault();
+          // 1. Esegui validazione zodResolver su TUTTI i campi
+          const zodValid = await form.trigger();
+          // 2. Dopo che zodResolver ha finito, aggiungi errori manuali per date
+          let extraErrors = false;
           const dateVal = form.getValues('date');
           const endDateVal = form.getValues('end_date');
           if (!dateVal || dateVal.trim() === '') {
             form.setError('date', { type: 'manual', message: 'La data di inizio è obbligatoria.' });
+            extraErrors = true;
           }
           if (!endDateVal || endDateVal.trim() === '') {
             form.setError('end_date', { type: 'manual', message: 'La data di fine è obbligatoria.' });
+            extraErrors = true;
           }
-          // Lascia sempre eseguire handleSubmit per validare TUTTI i campi via zodResolver
-          form.handleSubmit((vals) => {
+          // 3. Se tutto valido, procedi con il submit
+          if (zodValid && !extraErrors) {
+            const vals = form.getValues();
             const gallery = vals.gallery_images && vals.gallery_images.length > 0 ? vals.gallery_images : null;
             const transformed = {
               ...vals,
@@ -116,7 +123,7 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
                 : null,
             };
             onSubmit(transformed as any);
-          })(e);
+          }
         }}
         className="space-y-6"
       >
