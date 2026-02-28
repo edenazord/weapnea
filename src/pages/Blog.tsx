@@ -184,11 +184,11 @@ const Blog = () => {
                 />
                 {/* Tag overlay in alto a destra */}
                 {((article as any).tags?.length > 0 || article.hashtags?.length > 0) && (
-                  <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                  <div className="absolute top-2 right-2 flex flex-col items-end gap-1.5">
                     {(article as any).tags?.slice(0, 3).map((tag: any) => (
                       <span
                         key={tag.id}
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/50 text-white backdrop-blur-sm leading-tight"
+                        className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md leading-tight"
                       >
                         {tag.name}
                       </span>
@@ -196,7 +196,7 @@ const Blog = () => {
                     {!((article as any).tags?.length) && article.hashtags?.slice(0, 2).map((tag, i) => (
                       <span
                         key={`h-${i}`}
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/50 text-white backdrop-blur-sm leading-tight"
+                        className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md leading-tight"
                       >
                         #{tag}
                       </span>
