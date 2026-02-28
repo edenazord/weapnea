@@ -67,7 +67,7 @@ const eventFormShape = z.object({
 });
 // Schema base (edit) con validazioni condizionali
 const eventFormBaseSchema = eventFormShape.superRefine((vals, ctx) => {
-  if (!vals.description || vals.description.trim() === '' || vals.description.replace(/<[^>]*>/g, '').trim() === '') {
+  if (!vals.description || vals.description.trim() === '' || vals.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim() === '') {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['description'], message: 'La descrizione è obbligatoria.' });
   }
   const isFixed = vals.fixed_appointment === true;
@@ -96,7 +96,7 @@ const eventFormCreateSchema = eventFormShape.extend({
   responsibility_waiver_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare la liberatoria di responsabilità." }),
   privacy_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare il trattamento della privacy." }),
 }).superRefine((vals, ctx) => {
-  if (!vals.description || vals.description.trim() === '' || vals.description.replace(/<[^>]*>/g, '').trim() === '') {
+  if (!vals.description || vals.description.trim() === '' || vals.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim() === '') {
     ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['description'], message: 'La descrizione è obbligatoria.' });
   }
   const isFixed = vals.fixed_appointment === true;
@@ -144,6 +144,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
 
   const form = useForm<z.infer<typeof eventFormBaseSchema>>({
     resolver: zodResolver(isEditing ? eventFormBaseSchema : eventFormCreateSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
     defaultValues: {
       title: defaultValues?.title || "",
       slug: defaultValues?.slug || "",
@@ -359,11 +361,14 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Descrizione <span className="text-red-500">*</span></FormLabel>
+          <FormLabel>Descrizione <span className="text-red-500">*</span></FormLabel>
               <FormControl>
                 <RichTextEditor
                   value={field.value || ''}
-                  onChange={field.onChange}
+                  onChange={(val) => {
+                    field.onChange(val);
+                    form.trigger('description');
+                  }}
                   placeholder="Aggiungi una descrizione dell'evento..."
                   minHeight="120px"
                 />

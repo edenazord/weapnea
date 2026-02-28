@@ -54,6 +54,8 @@ type AllenamentiFormProps = {
 export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenamentiCategoryId }: AllenamentiFormProps) {
   const form = useForm<z.infer<typeof allenamentiFormBaseSchema>>({
     resolver: zodResolver(isEditing ? allenamentiFormBaseSchema : allenamentiFormCreateSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
     defaultValues: {
       title: defaultValues?.title || "",
       category_id: allenamentiCategoryId,

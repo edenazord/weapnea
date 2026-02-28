@@ -33,6 +33,12 @@ import Comments from "@/components/Comments";
 import EventMediaGallery from "@/components/EventMediaGallery";
 import PageHead from "@/components/PageHead";
 
+/** Restituisce true solo se la stringa ha testo visibile (ignora HTML vuoto come <p></p> o <p><br></p>) */
+const hasContent = (value: string | null | undefined): boolean => {
+  if (!value) return false;
+  return value.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim().length > 0;
+};
+
 const EventDetailSkeleton = () => (
     <div className="min-h-screen bg-blue-50">
         <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-blue-100">
@@ -469,17 +475,16 @@ const EventDetail = () => {
                             {/* Nota: la sezione 'Organizzato da' è ora integrata sopra al titolo con avatar */}
                             
                             <div className={`prose max-w-none text-gray-700 ${isMobile ? 'text-sm' : ''}`}
-                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(event.description || t('events.no_description', 'Nessuna descrizione fornita per questo evento.')) }}
+                                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(hasContent(event.description) ? (event.description || '') : t('events.no_description', 'Nessuna descrizione fornita per questo evento.')) }}
                             />
                         </div>
                     </Card>
 
                     {/* Descrizione Attività (mostra solo se diversa dalla descrizione principale) */}
                     {(() => {
-                        const mainDesc = (event.description || '').trim();
-                        const actDesc = (event.activity_description || '').trim();
-                        const showAct = actDesc !== '' && actDesc !== mainDesc;
-                        return showAct;
+                        const mainDesc = (event.description || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
+                        const actDesc = (event.activity_description || '').replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim();
+                        return actDesc !== '' && actDesc !== mainDesc;
                     })() && (
                         <Card className="shadow-lg p-6 mt-8">
                             <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.activity_description', 'Descrizione Attività')}</h2>
@@ -498,7 +503,7 @@ const EventDetail = () => {
                     )}
 
                     {/* Obiettivi */}
-                    {event.objectives && (
+                    {hasContent(event.objectives) && (
                         <Card className={`shadow-lg p-6 mt-8`}>
                             <h2 className={`font-bold text-blue-900 mb-4 flex items-center ${isMobile ? 'text-xl' : 'text-2xl'}`}>
                                 <Target className="h-6 w-6 mr-2 text-blue-600" />
@@ -511,7 +516,7 @@ const EventDetail = () => {
                     )}
 
                     {/* Chi siamo */}
-                    {event.about_us && (
+                    {hasContent(event.about_us) && (
                         <Card className={`shadow-lg p-6 mt-8`}>
                             <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.about_us', 'Chi Siamo')}</h2>
                             <div className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}
@@ -521,7 +526,7 @@ const EventDetail = () => {
                     )}
 
                     {/* Note e avvertenze */}
-                    {event.notes && (
+                    {hasContent(event.notes) && (
                         <Card className={`shadow-lg p-6 mt-8 border-orange-200 bg-orange-50`}>
                             <h2 className={`font-bold text-orange-800 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.notes_warnings', 'Note e Avvertenze')}</h2>
                             <div className={`text-orange-700 ${isMobile ? 'text-sm' : ''}`}
@@ -531,7 +536,7 @@ const EventDetail = () => {
                     )}
 
                     {/* Orari e Logistica - spostata qui alla fine della colonna sinistra */}
-                    {event.schedule_logistics && (
+                    {hasContent(event.schedule_logistics) && (
                         <Card className={`shadow-lg p-6 mt-8`}>
                             <h2 className={`font-bold text-blue-900 mb-4 flex items-center ${isMobile ? 'text-xl' : 'text-2xl'}`}>
                                 <Clock className="h-6  w-6 mr-2 text-blue-600" />
@@ -715,10 +720,10 @@ const EventDetail = () => {
                     )}
 
                     {/* Cosa è incluso/non incluso - rimane a destra */}
-                    {(event.included_in_activity || event.not_included_in_activity) && (
+                    {(hasContent(event.included_in_activity) || hasContent(event.not_included_in_activity)) && (
                         <Card className={`shadow-lg p-6 mt-6`}>
                             <h2 className={`font-bold text-blue-900 mb-4 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.included_not_included', 'Incluso/Non Incluso')}</h2>
-                            {event.included_in_activity && (
+                            {hasContent(event.included_in_activity) && (
                                 <div className="mb-4">
                                     <div className="flex items-center mb-2">
                                         <Check className="h-5 w-5 mr-2 text-green-600" />
@@ -729,7 +734,7 @@ const EventDetail = () => {
                                     />
                                 </div>
                             )}
-                            {event.not_included_in_activity && (
+                            {hasContent(event.not_included_in_activity) && (
                                 <div>
                                     <div className="flex items-center mb-2">
                                         <X className="h-5 w-5 mr-2 text-red-600" />
