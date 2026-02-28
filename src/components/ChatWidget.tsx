@@ -47,23 +47,49 @@ const linkifyText = (text: string): (string | JSX.Element)[] => {
 // Favicon notification helpers
 const ORIGINAL_FAVICON = '/favicon.svg';
 
-const createNotificationFavicon = (count: number): string => {
-  const displayCount = count > 99 ? '99+' : String(count);
-  const fontSize = count > 99 ? 24 : count > 9 ? 28 : 32;
-  return 'data:image/svg+xml,' + encodeURIComponent(`
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="45" fill="%231e40af"/>
-  <circle cx="72" cy="28" r="26" fill="%23ef4444"/>
-  <text x="72" y="28" text-anchor="middle" dominant-baseline="central" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="${fontSize}">${displayCount}</text>
-</svg>
-`);
+const createNotificationFavicon = (count: number): Promise<string> => {
+  return new Promise((resolve) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 32;
+    canvas.height = 32;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) { resolve(ORIGINAL_FAVICON); return; }
+
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      // Disegna la favicon originale
+      ctx.drawImage(img, 0, 0, 32, 32);
+
+      // Badge rosso in basso a destra
+      const displayCount = count > 99 ? '99+' : String(count);
+      const badgeSize = count > 9 ? 13 : 11;
+      const bx = 32 - badgeSize;
+      const by = 32 - badgeSize;
+
+      ctx.beginPath();
+      ctx.arc(bx, by, badgeSize, 0, 2 * Math.PI);
+      ctx.fillStyle = '#ef4444';
+      ctx.fill();
+
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${count > 9 ? 9 : 10}px Arial`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(displayCount, bx, by);
+
+      resolve(canvas.toDataURL('image/png'));
+    };
+    img.onerror = () => resolve(ORIGINAL_FAVICON);
+    img.src = ORIGINAL_FAVICON;
+  });
 };
 
-const setFavicon = (count: number) => {
+const setFavicon = async (count: number) => {
   const safeCount = Number.isFinite(count) && count > 0 ? count : 0;
   const link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
   if (link) {
-    link.href = safeCount > 0 ? createNotificationFavicon(safeCount) : ORIGINAL_FAVICON;
+    link.href = safeCount > 0 ? await createNotificationFavicon(safeCount) : ORIGINAL_FAVICON;
   }
   // Aggiorna anche il titolo del tab
   const baseTitle = document.title.replace(/^\(\d+\+?\)\s*/, '');
@@ -157,7 +183,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
         setConversations(data);
         const count = data.reduce((sum: number, c: Conversation) => sum + (Number(c.unread_count) || 0), 0);
         setUnreadTotal(count);
-        setFavicon(count);
+        await setFavicon(count);
       }
     } catch (e) {
       console.error('Failed to fetch conversations:', e);
@@ -176,7 +202,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
         const data = await res.json();
         const count = data.count || 0;
         setUnreadTotal(count);
-        setFavicon(count);
+        await setFavicon(count);
       }
     } catch (e) {
       // silent
