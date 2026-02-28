@@ -339,7 +339,7 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
                       {...field}
                       onBlur={() => {
                         field.onBlur();
-                        form.trigger(['date', 'end_date']);
+                        form.trigger();
                       }}
                     />
                   </FormControl>
@@ -368,11 +368,11 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
                         } else {
                           field.onChange(end);
                         }
-                        form.trigger(['date', 'end_date']);
+                        form.trigger();
                       }}
                       onBlur={() => {
                         field.onBlur();
-                        form.trigger(['date', 'end_date']);
+                        form.trigger();
                       }}
                     />
                   </FormControl>

@@ -568,7 +568,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                       {...field}
                       onBlur={() => {
                         field.onBlur();
-                        form.trigger(['date', 'end_date']);
+                        form.trigger();
                       }}
                     />
                   </FormControl>
@@ -595,11 +595,11 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                         } else {
                           field.onChange(end);
                         }
-                        form.trigger(['date', 'end_date']);
+                        form.trigger();
                       }}
                       onBlur={() => {
                         field.onBlur();
-                        form.trigger(['date', 'end_date']);
+                        form.trigger();
                       }}
                     />
                   </FormControl>
