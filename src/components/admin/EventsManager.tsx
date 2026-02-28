@@ -152,6 +152,8 @@ export default function EventsManager() {
       fixed_appointment_text: values.fixed_appointment_text && String(values.fixed_appointment_text).trim() !== ''
         ? String(values.fixed_appointment_text).trim()
         : null,
+      pdf_url: values.pdf_url && String(values.pdf_url).trim() !== '' ? String(values.pdf_url).trim() : null,
+      whatsapp_group_url: values.whatsapp_group_url && String(values.whatsapp_group_url).trim() !== '' ? String(values.whatsapp_group_url).trim() : null,
     };
 
     try {
@@ -195,6 +197,7 @@ export default function EventsManager() {
       schedule_meeting_point: values.schedule_meeting_point,
       responsibility_waiver_accepted: values.responsibility_waiver_accepted,
       privacy_accepted: values.privacy_accepted,
+      gallery_images: values.gallery_images || null,
     };
     
     if (selectedEvent) {
