@@ -3,8 +3,8 @@ import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search, Calendar, User, ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { Search, Calendar, User, ArrowRight, Filter, X, Tag } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getBlogArticles, getBlogTags } from "@/lib/blog-api";
 import { Link } from "react-router-dom";
@@ -20,8 +20,22 @@ import PageHead from "@/components/PageHead";
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTag, setSelectedTag] = useState<string | undefined>(undefined);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
   const { t, currentLanguage } = useLanguage();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedTagName = tags.find(t => t.id === selectedTag)?.name;
 
   const allowedLangs = ['it','en','es','fr','pl','ru'] as const;
   const langParam = (allowedLangs as readonly string[]).includes(currentLanguage) ? (currentLanguage as typeof allowedLangs[number]) : undefined;
@@ -67,39 +81,70 @@ const Blog = () => {
         subtitle={t('blog_page.subtitle', "Scopri le ultime novità dal mondo dell'apnea, tecniche, consigli e storie dalla nostra community")}
       />
 
-  {/* Modern Search con tag integrati */}
-  <div className="mb-12">
+  {/* Modern Search con dropdown tag stile eventi */}
+  <div className="mb-12" ref={dropdownRef}>
         <div className="relative max-w-xl mx-auto">
-          <div className="gradient-border">
+          <div className="relative gradient-border hover:scale-[1.01] transition-all duration-200">
             <div className="gradient-border-inner rounded-lg shadow-md hover:shadow-lg overflow-hidden transition-all duration-200">
-              <div className="relative">
-                <Search className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 -mt-0.5 h-5 w-5 z-10 text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 opacity-80" />
-                <Input
-                  placeholder={t('blog_page.search_placeholder', 'Cerca articoli...')}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-14 pr-6 border-0 bg-transparent text-base focus:ring-0 focus:outline-none placeholder:text-muted-foreground h-16"
-                />
-              </div>
-              {tags.length > 0 && (
-                <div className="flex items-center gap-2 px-4 pb-3 overflow-x-auto scrollbar-none">
-                  {tags.map(tag => (
-                    <button
-                      key={tag.id}
-                      onClick={() => setSelectedTag(selectedTag === tag.id ? undefined : tag.id)}
-                      className={`whitespace-nowrap text-xs px-2.5 py-1 rounded-full border transition-colors flex-shrink-0 ${
-                        selectedTag === tag.id
-                          ? 'bg-purple-600 text-white border-purple-600'
-                          : 'border-gray-200 text-gray-500 hover:border-purple-300 hover:text-purple-600'
-                      }`}
-                    >
-                      {tag.name}
-                    </button>
-                  ))}
+              <div className="flex items-center">
+                <div className="flex-1 relative">
+                  <Search className="pointer-events-none absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 z-10 text-primary/50" />
+                  <Input
+                    placeholder={t('blog_page.search_placeholder', 'Cerca articoli...')}
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onClick={() => setIsDropdownOpen(true)}
+                    className={`pl-14 pr-6 border-0 bg-transparent text-base focus:ring-0 focus:outline-none cursor-pointer placeholder:text-muted-foreground ${isMobile ? 'h-14' : 'h-16'}`}
+                  />
                 </div>
-              )}
+                {selectedTag && (
+                  <div className="px-4 flex items-center gap-2 text-purple-600">
+                    <Filter className="h-4 w-4" />
+                    <span className="text-sm font-medium max-w-[100px] truncate">{selectedTagName}</span>
+                    <button
+                      onClick={() => { setSelectedTag(undefined); setIsDropdownOpen(false); }}
+                      className="text-purple-400 hover:text-purple-700 hover:bg-purple-100 p-1 rounded-full transition-colors"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
+
+          {/* Dropdown pannello tag */}
+          {isDropdownOpen && tags.length > 0 && (
+            <Card className="absolute top-full left-0 right-0 mt-2 p-5 bg-white/95 backdrop-blur-sm shadow-xl border-0 z-50 rounded-2xl">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Tag className="h-4 w-4" />
+                  <span className="text-sm font-semibold">{t('blog_page.filter_by_tag', 'Filtra per tag')}</span>
+                </div>
+                <button
+                  onClick={() => setIsDropdownOpen(false)}
+                  className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-1 rounded-full transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {tags.map(tag => (
+                  <button
+                    key={tag.id}
+                    onClick={() => { setSelectedTag(selectedTag === tag.id ? undefined : tag.id); setIsDropdownOpen(false); }}
+                    className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${
+                      selectedTag === tag.id
+                        ? 'bg-purple-600 text-white border-purple-600'
+                        : 'border-gray-200 text-gray-600 hover:border-purple-300 hover:text-purple-600'
+                    }`}
+                  >
+                    {tag.name}
+                  </button>
+                ))}
+              </div>
+            </Card>
+          )}
         </div>
       </div>
 
