@@ -124,6 +124,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
   const [eventsFree, setEventsFree] = useState(false);
+  const [isUploadingPdf, setIsUploadingPdf] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -780,6 +781,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                     toast.error('Il PDF è troppo grande. Massimo 15MB.');
                     return;
                   }
+                  setIsUploadingPdf(true);
                   try {
                     const fd = new FormData();
                     fd.append('file', file);
@@ -802,6 +804,8 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                   } catch (err: any) {
                     console.error('[pdf-upload]', err);
                     toast.error(err?.message || 'Errore durante il caricamento del PDF.');
+                  } finally {
+                    setIsUploadingPdf(false);
                   }
                 }}
               />
@@ -893,8 +897,9 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
           type="submit" 
           className="w-full"
           variant="brand"
+          disabled={isUploadingPdf}
         >
-          {isEditing ? "Salva Modifiche" : "Crea Evento"}
+          {isUploadingPdf ? 'Caricamento PDF in corso...' : isEditing ? "Salva Modifiche" : "Crea Evento"}
         </Button>
         <p className="text-xs text-muted-foreground text-center"><span className="text-red-500">*</span> Campi obbligatori</p>
       </form>
