@@ -94,22 +94,16 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
     <Form {...form}>
       <form
         onSubmit={(e) => {
-          // Validazione manuale date (superRefine non propaga a FormMessage)
-          let hasErrors = false;
+          // Imposta errori manuali per date (superRefine non propaga a FormMessage)
           const dateVal = form.getValues('date');
           const endDateVal = form.getValues('end_date');
           if (!dateVal || dateVal.trim() === '') {
             form.setError('date', { type: 'manual', message: 'La data di inizio è obbligatoria.' });
-            hasErrors = true;
           }
           if (!endDateVal || endDateVal.trim() === '') {
             form.setError('end_date', { type: 'manual', message: 'La data di fine è obbligatoria.' });
-            hasErrors = true;
           }
-          if (hasErrors) {
-            e.preventDefault();
-            return;
-          }
+          // Lascia sempre eseguire handleSubmit per validare TUTTI i campi via zodResolver
           form.handleSubmit((vals) => {
             const gallery = vals.gallery_images && vals.gallery_images.length > 0 ? vals.gallery_images : null;
             const transformed = {

@@ -243,37 +243,29 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
         onSubmit={(e) => {
           // Evita che il submit del form interno propaghi e attivi il form del profilo esterno
           e.stopPropagation();
-          // Validazione manuale date (superRefine non propaga a FormMessage)
+          // Imposta errori manuali per date/descrizione (superRefine non propaga a FormMessage)
           const isFixedNow = form.getValues('fixed_appointment') === true;
-          let hasDateErrors = false;
           if (!isFixedNow) {
             const dateVal = form.getValues('date');
             const endDateVal = form.getValues('end_date');
             if (!dateVal || dateVal.trim() === '') {
               form.setError('date', { type: 'manual', message: 'Inserisci la data di inizio' });
-              hasDateErrors = true;
             }
             if (!endDateVal || endDateVal.trim() === '') {
               form.setError('end_date', { type: 'manual', message: 'Inserisci la data di fine' });
-              hasDateErrors = true;
             }
           } else {
             const vsVal = form.getValues('validity_start');
             if (!vsVal || vsVal.trim() === '') {
               form.setError('validity_start', { type: 'manual', message: 'Inserisci la data di inizio validità' });
-              hasDateErrors = true;
             }
           }
           // Validazione descrizione (rich text vuoto)
           const descVal = form.getValues('description');
           if (!descVal || descVal.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim() === '') {
             form.setError('description', { type: 'manual', message: 'La descrizione è obbligatoria.' });
-            hasDateErrors = true;
           }
-          if (hasDateErrors) {
-            e.preventDefault();
-            return;
-          }
+          // Lascia sempre eseguire handleSubmit per validare TUTTI i campi via zodResolver
           form.handleSubmit(handleSubmit)(e);
         }}
         className="space-y-4"
