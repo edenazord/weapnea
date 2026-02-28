@@ -445,6 +445,7 @@ export default function EventsManager() {
                     <EventParticipantsModal 
                       eventId={event.id}
                       eventTitle={event.title}
+                      participantCount={event.participants_paid_count ?? 0}
                       organizerId={(event as any).created_by || (event as any).organizer_id || null}
                     />
                     <Button variant="ghost" size="icon" onClick={() => openSheet(event)}>
