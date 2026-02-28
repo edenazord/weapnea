@@ -169,6 +169,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
         ? defaultValues.gallery_images
         : (defaultValues?.image_url ? [defaultValues.image_url] : []),
       pdf_url: (defaultValues as any)?.pdf_url || "",
+      whatsapp_group_url: (defaultValues as any)?.whatsapp_group_url || "",
       fixed_appointment: defaultValues?.fixed_appointment || false,
       fixed_appointment_text: (defaultValues as any)?.fixed_appointment_text || "",
       validity_start: (defaultValues?.date || "").toString().slice(0, 10),
@@ -216,6 +217,7 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
       schedule_logistics: values.schedule_logistics && values.schedule_logistics.trim() !== '' ? values.schedule_logistics : null,
       gallery_images: gallery,
       pdf_url: values.pdf_url && values.pdf_url.trim() !== '' ? values.pdf_url.trim() : null,
+      whatsapp_group_url: values.whatsapp_group_url && values.whatsapp_group_url.trim() !== '' ? values.whatsapp_group_url.trim() : null,
       // La prima della galleria diventa l'immagine principale (copertina)
       image_url: gallery && gallery.length > 0 ? gallery[0] : null,
     };
