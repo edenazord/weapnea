@@ -337,9 +337,19 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
                     <Input
                       type="date"
                       {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        if (e.target.value && e.target.value.trim() !== '') {
+                          form.clearErrors('date');
+                        }
+                      }}
                       onBlur={() => {
                         field.onBlur();
-                        form.trigger();
+                        if (!field.value || field.value.trim() === '') {
+                          form.setError('date', { type: 'manual', message: 'La data di inizio è obbligatoria.' });
+                        } else {
+                          form.clearErrors('date');
+                        }
                       }}
                     />
                   </FormControl>
@@ -368,11 +378,17 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
                         } else {
                           field.onChange(end);
                         }
-                        form.trigger();
+                        if (end && end.trim() !== '') {
+                          form.clearErrors('end_date');
+                        }
                       }}
                       onBlur={() => {
                         field.onBlur();
-                        form.trigger();
+                        if (!field.value || field.value.trim() === '') {
+                          form.setError('end_date', { type: 'manual', message: 'La data di fine è obbligatoria.' });
+                        } else {
+                          form.clearErrors('end_date');
+                        }
                       }}
                     />
                   </FormControl>

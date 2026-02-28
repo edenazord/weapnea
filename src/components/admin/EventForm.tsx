@@ -566,9 +566,19 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                     <Input
                       type="date"
                       {...field}
+                      onChange={(e) => {
+                        field.onChange(e);
+                        if (e.target.value && e.target.value.trim() !== '') {
+                          form.clearErrors('date');
+                        }
+                      }}
                       onBlur={() => {
                         field.onBlur();
-                        form.trigger();
+                        if (!field.value || field.value.trim() === '') {
+                          form.setError('date', { type: 'manual', message: 'Inserisci la data di inizio' });
+                        } else {
+                          form.clearErrors('date');
+                        }
                       }}
                     />
                   </FormControl>
@@ -595,11 +605,17 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                         } else {
                           field.onChange(end);
                         }
-                        form.trigger();
+                        if (end && end.trim() !== '') {
+                          form.clearErrors('end_date');
+                        }
                       }}
                       onBlur={() => {
                         field.onBlur();
-                        form.trigger();
+                        if (!field.value || field.value.trim() === '') {
+                          form.setError('end_date', { type: 'manual', message: 'Inserisci la data di fine' });
+                        } else {
+                          form.clearErrors('end_date');
+                        }
                       }}
                     />
                   </FormControl>
