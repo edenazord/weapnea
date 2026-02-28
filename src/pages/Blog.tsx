@@ -2,10 +2,8 @@
 import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Calendar, User, ArrowRight, Tag } from "lucide-react";
+import { Search, Calendar, User, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getBlogArticles, getBlogTags } from "@/lib/blog-api";
@@ -69,7 +67,7 @@ const Blog = () => {
         subtitle={t('blog_page.subtitle', "Scopri le ultime novità dal mondo dell'apnea, tecniche, consigli e storie dalla nostra community")}
       />
 
-  {/* Modern Search */}
+  {/* Modern Search con tag integrati */}
   <div className="mb-12">
         <div className="relative max-w-xl mx-auto">
           <div className="gradient-border">
@@ -83,32 +81,27 @@ const Blog = () => {
                   className="pl-14 pr-6 border-0 bg-transparent text-base focus:ring-0 focus:outline-none placeholder:text-muted-foreground h-16"
                 />
               </div>
+              {tags.length > 0 && (
+                <div className="flex items-center gap-2 px-4 pb-3 overflow-x-auto scrollbar-none">
+                  {tags.map(tag => (
+                    <button
+                      key={tag.id}
+                      onClick={() => setSelectedTag(selectedTag === tag.id ? undefined : tag.id)}
+                      className={`whitespace-nowrap text-xs px-2.5 py-1 rounded-full border transition-colors flex-shrink-0 ${
+                        selectedTag === tag.id
+                          ? 'bg-purple-600 text-white border-purple-600'
+                          : 'border-gray-200 text-gray-500 hover:border-purple-300 hover:text-purple-600'
+                      }`}
+                    >
+                      {tag.name}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-
-      {/* Tag filters */}
-      {tags.length > 0 && (
-        <div className="mb-8 flex flex-wrap items-center gap-2 justify-center">
-          <Tag className="h-4 w-4 text-gray-400" />
-          <button
-            onClick={() => setSelectedTag(undefined)}
-            className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${!selectedTag ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-200 text-gray-600 hover:border-purple-300 hover:text-purple-600'}`}
-          >
-            {t('blog_page.all_tags', 'Tutti')}
-          </button>
-          {tags.map(tag => (
-            <button
-              key={tag.id}
-              onClick={() => setSelectedTag(selectedTag === tag.id ? undefined : tag.id)}
-              className={`text-sm px-3 py-1.5 rounded-full border transition-colors ${selectedTag === tag.id ? 'bg-purple-600 text-white border-purple-600' : 'border-gray-200 text-gray-600 hover:border-purple-300 hover:text-purple-600'}`}
-            >
-              {tag.name}
-            </button>
-          ))}
-        </div>
-      )}
 
       {/* Articles */}
       <div className="w-full">
@@ -144,23 +137,31 @@ const Blog = () => {
                   alt={article.title}
                   className="w-full h-52 md:h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 />
+                {/* Tag overlay in alto a destra */}
+                {((article as any).tags?.length > 0 || article.hashtags?.length > 0) && (
+                  <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                    {(article as any).tags?.slice(0, 3).map((tag: any) => (
+                      <span
+                        key={tag.id}
+                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/50 text-white backdrop-blur-sm leading-tight"
+                      >
+                        {tag.name}
+                      </span>
+                    ))}
+                    {!((article as any).tags?.length) && article.hashtags?.slice(0, 2).map((tag, i) => (
+                      <span
+                        key={`h-${i}`}
+                        className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-black/50 text-white backdrop-blur-sm leading-tight"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
               {/* Contenuto */}
               <CardContent className="flex-1 p-5 md:p-7 flex flex-col justify-between">
                 <div>
-                  {/* Tags from tag system */}
-                  <div className="flex flex-wrap gap-1.5 mb-3">
-                    {(article as any).tags?.slice(0, 4).map((tag: any) => (
-                      <Badge key={tag.id} variant="secondary" className="bg-blue-50 text-blue-600 border-0 text-xs font-medium px-2.5 py-0.5">
-                        {tag.name}
-                      </Badge>
-                    ))}
-                    {article.hashtags?.slice(0, 3).map((tag, i) => (
-                      <Badge key={`h-${i}`} variant="secondary" className="bg-purple-50 text-purple-600 border-0 text-xs font-medium px-2.5 py-0.5">
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
                   {/* Titolo */}
                   <h3 className="font-bold text-xl lg:text-2xl text-gray-900 mb-2 line-clamp-2 group-hover:text-purple-700 transition-colors duration-200">
                     {article.title}
