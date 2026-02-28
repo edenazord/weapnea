@@ -332,8 +332,17 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
               name="date"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Data di Inizio *</FormLabel>
-                  <FormControl><Input type="date" {...field} /></FormControl>
+                  <FormLabel>Data di Inizio <span className="text-red-500">*</span></FormLabel>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      {...field}
+                      onBlur={() => {
+                        field.onBlur();
+                        form.trigger(['date', 'end_date']);
+                      }}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -355,10 +364,15 @@ export function AllenamentiForm({ onSubmit, defaultValues, isEditing, allenament
                         const end = e.target.value;
                         // Impedisci una fine precedente all'inizio
                         if (start && end && end < start) {
-                          form.setValue('end_date', start);
+                          form.setValue('end_date', start, { shouldValidate: true, shouldTouch: true });
                         } else {
                           field.onChange(end);
                         }
+                        form.trigger(['date', 'end_date']);
+                      }}
+                      onBlur={() => {
+                        field.onBlur();
+                        form.trigger(['date', 'end_date']);
                       }}
                     />
                   </FormControl>

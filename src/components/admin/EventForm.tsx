@@ -32,7 +32,7 @@ import { ensureAbsoluteUrl } from '@/lib/utils';
 const eventFormShape = z.object({
   title: z.string().min(2, { message: "Il titolo è obbligatorio." }),
   slug: z.string().optional(),
-  description: z.string().optional(),
+  description: z.string().min(1, { message: 'La descrizione è obbligatoria.' }),
   discipline: z.string().optional(),
   location: z.string().optional(),
   // Con strategia B la data è richiesta SOLO se non è appuntamento fisso
@@ -67,9 +67,6 @@ const eventFormShape = z.object({
 });
 // Schema base (edit) con validazioni condizionali
 const eventFormBaseSchema = eventFormShape.superRefine((vals, ctx) => {
-  if (!vals.description || vals.description.trim() === '' || vals.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim() === '') {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['description'], message: 'La descrizione è obbligatoria.' });
-  }
   const isFixed = vals.fixed_appointment === true;
   if (isFixed) {
     if (!vals.validity_start || String(vals.validity_start).trim() === '') {
@@ -96,9 +93,6 @@ const eventFormCreateSchema = eventFormShape.extend({
   responsibility_waiver_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare la liberatoria di responsabilità." }),
   privacy_accepted: z.boolean().refine(val => val === true, { message: "Devi accettare il trattamento della privacy." }),
 }).superRefine((vals, ctx) => {
-  if (!vals.description || vals.description.trim() === '' || vals.description.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, '').trim() === '') {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, path: ['description'], message: 'La descrizione è obbligatoria.' });
-  }
   const isFixed = vals.fixed_appointment === true;
   if (isFixed) {
     if (!vals.validity_start || String(vals.validity_start).trim() === '') {
@@ -568,7 +562,16 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Data di Inizio <span className="text-red-500">*</span></FormLabel>
-                  <FormControl><Input type="date" {...field} /></FormControl>
+                  <FormControl>
+                    <Input
+                      type="date"
+                      {...field}
+                      onBlur={() => {
+                        field.onBlur();
+                        form.trigger(['date', 'end_date']);
+                      }}
+                    />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -588,10 +591,15 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
                         const start = form.getValues('date');
                         const end = e.target.value;
                         if (start && end && end < start) {
-                          form.setValue('end_date', start);
+                          form.setValue('end_date', start, { shouldValidate: true, shouldTouch: true });
                         } else {
                           field.onChange(end);
                         }
+                        form.trigger(['date', 'end_date']);
+                      }}
+                      onBlur={() => {
+                        field.onBlur();
+                        form.trigger(['date', 'end_date']);
                       }}
                     />
                   </FormControl>
