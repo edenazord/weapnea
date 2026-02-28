@@ -70,7 +70,7 @@ const Blog = () => {
     }
   };
 
-  const BlogContent = () => (
+  const content = (
     <div className="">
       <PageHead title="Blog" description="Articoli, guide e approfondimenti sul mondo dell'apnea e del freediving." />
       {!isMobile && <PageTopBar />}
@@ -274,11 +274,11 @@ const Blog = () => {
 
   return isMobile ? (
     <MobileLayout>
-      <BlogContent />
+      {content}
     </MobileLayout>
   ) : (
     <Layout>
-      <BlogContent />
+      {content}
     </Layout>
   );
 };
