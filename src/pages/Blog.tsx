@@ -35,8 +35,6 @@ const Blog = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const selectedTagName = tags.find(t => t.id === selectedTag)?.name;
-
   const allowedLangs = ['it','en','es','fr','pl','ru'] as const;
   const langParam = (allowedLangs as readonly string[]).includes(currentLanguage) ? (currentLanguage as typeof allowedLangs[number]) : undefined;
 
@@ -60,6 +58,8 @@ const Blog = () => {
 
   const usingEnglishFallback = (langParam && langParam !== 'en' && !isLoading && articles.length === 0 && enArticles.length > 0);
   const displayArticles = usingEnglishFallback ? enArticles : articles;
+
+  const selectedTagName = tags.find(tag => tag.id === selectedTag)?.name;
 
   const formatDate = (dateString: string) => {
     try {
