@@ -3047,6 +3047,7 @@ app.get('/api/me/pending-co-organizer-invites', requireAuth, async (req, res) =>
       ORDER BY co.invited_at DESC
     `, [userEmail]);
 
+    console.log('[co-org-invites] user:', userEmail, 'found:', rows.length, 'pending invites');
     res.json(rows);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });

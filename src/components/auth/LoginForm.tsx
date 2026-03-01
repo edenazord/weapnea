@@ -44,32 +44,15 @@ const LoginForm = () => {
     },
   });
 
-  // Auto-redirect when user becomes available after login (only if redirect param exists)
+  // Auto-redirect when user becomes available (e.g. already logged in, or after login with ?redirect=)
   useEffect(() => {
     if (user && !isLoading && !hasRedirected.current) {
       hasRedirected.current = true;
-      
-      if (redirectUrl) {
-        navigate(redirectUrl, { replace: true });
-        return;
-      }
-      
-      // Check for pending co-organizer invites
-      (async () => {
-        try {
-          const invites = await apiGet('/api/me/pending-co-organizer-invites');
-          if (Array.isArray(invites) && invites.length > 0) {
-            const first = invites[0] as { invite_token?: string };
-            if (first.invite_token) {
-              navigate(`/co-organizer-invite/${first.invite_token}`, { replace: true });
-              return;
-            }
-          }
-        } catch (_) { /* ignore */ }
-        navigate('/', { replace: true });
-      })();
+      const target = redirectUrl || '/';
+      navigate(target, { replace: true });
     }
   }, [user, isLoading, redirectUrl, navigate]);
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (isLoading) return;
     
@@ -82,11 +65,34 @@ const LoginForm = () => {
 
       if (result.success) {
         setVerificationNeeded(null);
+
+        // Check for pending co-organizer invites BEFORE the useEffect redirect kicks in
+        if (!redirectUrl) {
+          try {
+            const invites = await apiGet('/api/me/pending-co-organizer-invites');
+            console.log('[LoginForm] pending co-organizer invites:', invites);
+            if (Array.isArray(invites) && invites.length > 0) {
+              const first = invites[0] as { invite_token?: string };
+              if (first.invite_token) {
+                hasRedirected.current = true; // prevent useEffect from overriding
+                toast({
+                  title: t('auth.login.success_title', 'Accesso effettuato'),
+                  description: 'Hai un invito come co-organizzatore in attesa!',
+                });
+                navigate(`/co-organizer-invite/${first.invite_token}`, { replace: true });
+                return; // exit onSubmit entirely, skip setIsLoading(false)
+              }
+            }
+          } catch (e) {
+            console.warn('[LoginForm] check pending co-organizer invites failed:', e);
+          }
+        }
+
         toast({
           title: t('auth.login.success_title', 'Accesso effettuato'),
           description: t('auth.login.success_desc', 'Bentornato su WeApnea!'),
         });
-        // Redirect handled by useEffect only if ?redirect=...
+        // Normal redirect handled by useEffect above
       } else if ((result as any).needsVerification) {
         setVerificationNeeded(values.email);
         toast({
