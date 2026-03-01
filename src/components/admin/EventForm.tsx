@@ -24,6 +24,7 @@ import { FileText, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { backendConfig } from '@/lib/backendConfig';
 import { ensureAbsoluteUrl } from '@/lib/utils';
+import { CoOrganizersManager } from './CoOrganizersManager';
 
 // Opzioni per il livello
 // Opzioni spostate in event-constants.ts
@@ -419,6 +420,11 @@ export function EventForm({ onSubmit, defaultValues, isEditing }: EventFormProps
             </FormItem>
           )}
         />
+
+        {/* Co-Organizzatori — visibile solo in modifica (dopo che l'evento è stato creato e ha un id) */}
+        {isEditing && defaultValues?.id && (
+          <CoOrganizersManager eventId={defaultValues.id} />
+        )}
 
         <FormField
           control={form.control}

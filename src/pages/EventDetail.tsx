@@ -470,6 +470,41 @@ const EventDetail = () => {
                                                                                                                     </div>
                                                                                                                 )}
 
+                                                                                                                {/* Co-organizzatori accettati */}
+                                                                                                                {event.coorganizers && Array.isArray(event.coorganizers) && event.coorganizers.length > 0 && (
+                                                                                                                    <div className="mb-3 flex flex-wrap items-center gap-2">
+                                                                                                                        <span className="text-xs text-gray-500 mr-1">{t('events.with_coorganizers', 'con')}</span>
+                                                                                                                        {event.coorganizers.map((co: any) => (
+                                                                                                                            <div key={co.id} className="flex items-center gap-1.5">
+                                                                                                                                {co.public_profile_enabled && co.public_slug ? (
+                                                                                                                                    <Link to={`/profile/${co.public_slug}`} className="flex items-center gap-1.5 group">
+                                                                                                                                        <Avatar className="h-7 w-7">
+                                                                                                                                            <AvatarImage src={ensureAbsoluteUrl(co.avatar_url || undefined) || ''} alt={co.full_name || co.email} />
+                                                                                                                                            <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
+                                                                                                                                        </Avatar>
+                                                                                                                                        <span className="text-sm font-medium text-blue-700 group-hover:underline">{co.full_name || co.email}</span>
+                                                                                                                                    </Link>
+                                                                                                                                ) : co.user_id ? (
+                                                                                                                                    <Link to={`/profile/id/${co.user_id}`} className="flex items-center gap-1.5 group">
+                                                                                                                                        <Avatar className="h-7 w-7">
+                                                                                                                                            <AvatarImage src={ensureAbsoluteUrl(co.avatar_url || undefined) || ''} alt={co.full_name || co.email} />
+                                                                                                                                            <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
+                                                                                                                                        </Avatar>
+                                                                                                                                        <span className="text-sm font-medium text-blue-700 group-hover:underline">{co.full_name || co.email}</span>
+                                                                                                                                    </Link>
+                                                                                                                                ) : (
+                                                                                                                                    <div className="flex items-center gap-1.5">
+                                                                                                                                        <Avatar className="h-7 w-7">
+                                                                                                                                            <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
+                                                                                                                                        </Avatar>
+                                                                                                                                        <span className="text-sm font-medium text-gray-700">{co.full_name || co.email}</span>
+                                                                                                                                    </div>
+                                                                                                                                )}
+                                                                                                                            </div>
+                                                                                                                        ))}
+                                                                                                                    </div>
+                                                                                                                )}
+
                                                         <h1 className={`font-bold text-blue-900 mb-2 leading-tight ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>{event.title}</h1>
                             
                             {/* Nota: la sezione 'Organizzato da' è ora integrata sopra al titolo con avatar */}

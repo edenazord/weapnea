@@ -30,7 +30,7 @@ type AllLanguagesTemplates = {
   [lang: string]: EmailTemplates;
 };
 
-const TEMPLATE_TYPES = ['welcome', 'password_reset', 'event_registration_user', 'event_registration_organizer', 'event_invite'];
+const TEMPLATE_TYPES = ['welcome', 'password_reset', 'event_registration_user', 'event_registration_organizer', 'event_invite', 'co_organizer_invite'];
 const LANGUAGES = [
   { code: 'it', name: 'Italiano', flag: '🇮🇹' },
   { code: 'en', name: 'English', flag: '🇬🇧' },
@@ -109,6 +109,8 @@ const EmailTemplatesManager = () => {
         return 'Iscrizione Evento (Organizzatore)';
       case 'event_invite':
         return 'Invito Evento';
+      case 'co_organizer_invite':
+        return 'Invito Co-Organizzatore';
       default:
         return type;
     }
@@ -129,6 +131,8 @@ const EmailTemplatesManager = () => {
         return [...baseFields, 'closing'];
       case 'event_invite':
         return [...baseFields, 'closing'];
+      case 'co_organizer_invite':
+        return [...baseFields, 'link_label', 'closing'];
       default:
         return baseFields;
     }

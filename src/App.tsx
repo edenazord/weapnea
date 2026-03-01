@@ -36,6 +36,7 @@ import ChiSiamo from "./pages/ChiSiamo";
 import Contattaci from "./pages/Contattaci";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import CookiePolicy from "./pages/CookiePolicy";
+import CoOrganizerInvite from "./pages/CoOrganizerInvite";
 import ProtectedRoute from "./components/ProtectedRoute";
 import PublicProfileBanner from "./components/PublicProfileBanner";
 import ChatWidget from "./components/ChatWidget";
@@ -99,6 +100,7 @@ const App = () => {
                   <Route path="/auth/confirm" element={<AuthConfirm />} />
                   <Route path="/password-reset" element={<PasswordResetPage />} />
                   <Route path="/verify-email" element={<VerifyEmail />} />
+                  <Route path="/co-organizer-invite/:token" element={<CoOrganizerInvite />} />
                   {/* Legacy path: redirect to friendly URL */}
                   <Route path="/events/:slug" element={<LegacyEventRedirect />} />
                   {/* SEO-friendly public event route (root-level, single segment) */}

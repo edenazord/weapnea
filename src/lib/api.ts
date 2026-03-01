@@ -47,6 +47,17 @@ export interface Event {
   organizer_id?: string | null;
   organizer_name?: string | null;
   organizer_avatar_url?: string | null;
+  // Co-organizers (accepted only, from API)
+  coorganizers?: Array<{
+    id: string;
+    user_id: string | null;
+    email: string;
+    status: string;
+    full_name: string | null;
+    avatar_url: string | null;
+    public_slug: string | null;
+    public_profile_enabled: boolean;
+  }> | null;
 }
 
 export type EventWithCategory = Event & {

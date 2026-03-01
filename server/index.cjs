@@ -211,6 +211,25 @@ async function runMigrationsAtStartup() {
       CREATE INDEX IF NOT EXISTS idx_event_feedback_emails_event_id ON public.event_feedback_emails(event_id);
     `);
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.event_coorganizers (
+        id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+        event_id uuid NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
+        user_id uuid REFERENCES public.profiles(id) ON DELETE SET NULL,
+        email text NOT NULL,
+        status text NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined')),
+        invite_token text NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+        invited_at timestamptz NOT NULL DEFAULT now(),
+        responded_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        UNIQUE(event_id, email)
+      );
+      CREATE INDEX IF NOT EXISTS idx_event_coorganizers_event_id ON public.event_coorganizers(event_id);
+      CREATE INDEX IF NOT EXISTS idx_event_coorganizers_user_id ON public.event_coorganizers(user_id) WHERE user_id IS NOT NULL;
+      CREATE INDEX IF NOT EXISTS idx_event_coorganizers_invite_token ON public.event_coorganizers(invite_token);
+      CREATE INDEX IF NOT EXISTS idx_event_coorganizers_status ON public.event_coorganizers(status);
+    `);
+    console.log('[startup] ensured event_coorganizers table');
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS public.seo_settings (
         path text PRIMARY KEY,
         title text,
@@ -774,6 +793,10 @@ async function renderEmailWithTemplate(type, vars, fallbackSubject, fallbackHtml
         ctaText = tpl.link_label || 'Vai all\'evento';
         ctaUrl = vars.event_url || (vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com');
         break;
+      case 'co_organizer_invite':
+        ctaText = tpl.link_label || 'Accetta invito';
+        ctaUrl = vars.accept_url || (vars.public_base || process.env.PUBLIC_BASE_URL || 'https://www.weapnea.com');
+        break;
     }
     
     const html = buildBrandedEmail(tpl, vars, ctaText, ctaUrl);
@@ -901,6 +924,18 @@ const DEFAULT_TEMPLATES = {
        <p>È stato appena pubblicato un nuovo evento: <strong>{{event_title}}</strong>.</p>
        <p>Non perdertelo, i posti sono limitati!</p>`,
       'Scopri l\'evento', '{{event_url}}'
+    )
+  },
+  co_organizer_invite: {
+    subject: 'Invito a co-organizzare: {{event_title}}',
+    html: BASE_EMAIL_TEMPLATE(
+      'Invito Co-Organizzatore',
+      `<p>Ciao {{full_name}},</p>
+       <p><strong>{{organizer_name}}</strong> ti ha invitato come co-organizzatore per l'evento <strong>{{event_title}}</strong> su {{app_name}}.</p>
+       {{#if event_dates}}<p><strong>Date:</strong> {{event_dates}}</p>{{/if}}
+       {{#if event_location}}<p><strong>Luogo:</strong> {{event_location}}</p>{{/if}}
+       <p>Accetta l'invito per comparire come co-organizzatore dell'evento.</p>`,
+      'Accetta invito', '{{accept_url}}'
     )
   }
 };
@@ -2035,6 +2070,20 @@ function eventsSelect() {
     COALESCE(p.company_name, p.full_name) AS organizer_name,
     p.avatar_url AS organizer_avatar_url,
     ${organizerExtras}
+    -- Co-organizers (only accepted ones shown publicly)
+    COALESCE(
+      (SELECT json_agg(json_build_object(
+        'id', co.id, 'user_id', co.user_id, 'email', co.email, 'status', co.status,
+        'full_name', COALESCE(cop.company_name, cop.full_name),
+        'avatar_url', cop.avatar_url,
+        'public_slug', cop.public_slug,
+        'public_profile_enabled', COALESCE(cop.public_profile_enabled, false)
+      ) ORDER BY co.created_at)
+      FROM event_coorganizers co
+      LEFT JOIN profiles cop ON cop.id = co.user_id
+      WHERE co.event_id = e.id AND co.status = 'accepted'),
+      '[]'::json
+    ) AS coorganizers,
     json_build_object('name', c.name) AS categories
   FROM events e
   LEFT JOIN categories c ON c.id = e.category_id
@@ -3865,6 +3914,270 @@ app.post('/api/events/:id/invite', requireAuth, async (req, res) => {
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
+
+// ===================== CO-ORGANIZERS =====================
+
+// GET /api/events/:id/co-organizers — list co-organizers for an event (public: only accepted; owner/admin: all)
+app.get('/api/events/:id/co-organizers', async (req, res) => {
+  const eventId = req.params.id;
+  try {
+    // Check if requester is owner/admin to show all statuses
+    let showAll = false;
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      try {
+        const token = authHeader.replace(/^Bearer\s+/i, '');
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded && decoded.id) {
+          const { rows: evCheck } = await pool.query('SELECT created_by FROM events WHERE id = $1', [eventId]);
+          if (evCheck[0]?.created_by === decoded.id || decoded.role === 'admin') showAll = true;
+        }
+      } catch (_) { /* ignore token errors */ }
+    }
+
+    const statusFilter = showAll ? '' : "AND co.status = 'accepted'";
+    const { rows } = await pool.query(`
+      SELECT co.id, co.event_id, co.user_id, co.email, co.status, co.invited_at, co.responded_at,
+             COALESCE(p.company_name, p.full_name) AS full_name,
+             p.avatar_url,
+             p.public_slug,
+             COALESCE(p.public_profile_enabled, false) AS public_profile_enabled
+      FROM event_coorganizers co
+      LEFT JOIN profiles p ON p.id = co.user_id
+      WHERE co.event_id = $1 ${statusFilter}
+      ORDER BY co.created_at
+    `, [eventId]);
+
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// POST /api/events/:id/co-organizers/invite — invite a co-organizer by email
+app.post('/api/events/:id/co-organizers/invite', requireAuth, async (req, res) => {
+  const eventId = req.params.id;
+  try {
+    // Load event
+    const { rows: evRows } = await pool.query(
+      'SELECT id, title, slug, date, end_date, location, created_by FROM events WHERE id = $1 LIMIT 1',
+      [eventId]
+    );
+    const ev = evRows[0];
+    if (!ev) return res.status(404).json({ error: 'Event not found' });
+
+    // Only owner / admin
+    if (ev.created_by !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const { email } = req.body || {};
+    if (!email || typeof email !== 'string' || !email.includes('@')) {
+      return res.status(400).json({ error: 'Valid email is required' });
+    }
+    const trimmedEmail = email.trim().toLowerCase();
+
+    // Check if this is the event creator
+    const { rows: creatorRows } = await pool.query('SELECT email FROM profiles WHERE id = $1 LIMIT 1', [ev.created_by]);
+    if (creatorRows[0]?.email?.toLowerCase() === trimmedEmail) {
+      return res.status(400).json({ error: 'already_organizer', message: 'Questo utente è già l\'organizzatore principale dell\'evento.' });
+    }
+
+    // Check if already invited
+    const { rows: existingRows } = await pool.query(
+      'SELECT id, status FROM event_coorganizers WHERE event_id = $1 AND LOWER(email) = $2 LIMIT 1',
+      [eventId, trimmedEmail]
+    );
+    if (existingRows.length > 0) {
+      const existing = existingRows[0];
+      if (existing.status === 'accepted') {
+        return res.status(400).json({ error: 'already_coorganizer', message: 'Questo utente è già co-organizzatore dell\'evento.' });
+      }
+      if (existing.status === 'pending') {
+        return res.status(400).json({ error: 'already_invited', message: 'Questo utente ha già un invito pendente.' });
+      }
+      // If declined, allow re-invite by updating
+      await pool.query(
+        "UPDATE event_coorganizers SET status = 'pending', invite_token = encode(gen_random_bytes(32), 'hex'), invited_at = now(), responded_at = NULL WHERE id = $1 RETURNING invite_token",
+        [existing.id]
+      );
+    }
+
+    // Check if user exists on the platform
+    const { rows: userRows } = await pool.query(
+      'SELECT id, full_name, company_name, email FROM profiles WHERE LOWER(email) = $1 LIMIT 1',
+      [trimmedEmail]
+    );
+    const existingUser = userRows[0] || null;
+    const userId = existingUser?.id || null;
+
+    // Insert co-organizer invitation (or it was re-invited above)
+    let inviteToken;
+    if (existingRows.length === 0 || existingRows[0].status !== 'declined') {
+      if (existingRows.length === 0) {
+        const { rows: inserted } = await pool.query(
+          `INSERT INTO event_coorganizers (event_id, user_id, email, status) VALUES ($1, $2, $3, 'pending') RETURNING invite_token`,
+          [eventId, userId, trimmedEmail]
+        );
+        inviteToken = inserted[0].invite_token;
+      }
+    }
+    // If re-invited after decline, get the updated token
+    if (!inviteToken) {
+      const { rows: tkRows } = await pool.query(
+        'SELECT invite_token FROM event_coorganizers WHERE event_id = $1 AND LOWER(email) = $2 LIMIT 1',
+        [eventId, trimmedEmail]
+      );
+      inviteToken = tkRows[0]?.invite_token;
+    }
+
+    // Build invitation email
+    const base = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
+    const safeBase = base.replace(/\/$/, '');
+    const acceptUrl = `${safeBase}/co-organizer-invite/${inviteToken}`;
+    const eventUrl = ev.slug ? `${safeBase}/events/${encodeURIComponent(ev.slug)}` : `${safeBase}/events/${ev.id}`;
+
+    // Organizer name
+    const { rows: orgRows } = await pool.query('SELECT full_name, company_name FROM profiles WHERE id = $1 LIMIT 1', [ev.created_by]);
+    const organizerName = orgRows[0]?.company_name || orgRows[0]?.full_name || '';
+
+    // Date text
+    const fmt = (s) => { try { return new Date(s).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }); } catch { return s; } };
+    const dateText = ev.date ? (ev.end_date && ev.end_date !== ev.date ? `${fmt(ev.date)} – ${fmt(ev.end_date)}` : fmt(ev.date)) : '';
+
+    const fullName = existingUser ? (existingUser.company_name || existingUser.full_name || trimmedEmail.split('@')[0]) : trimmedEmail.split('@')[0];
+
+    const { subject, html } = await renderEmailWithTemplate(
+      'co_organizer_invite',
+      {
+        full_name: fullName,
+        organizer_name: organizerName,
+        event_title: ev.title,
+        event_url: eventUrl,
+        accept_url: acceptUrl,
+        event_dates: dateText,
+        event_location: ev.location || '',
+        app_name: APP_NAME,
+        public_base: safeBase,
+        is_registered: existingUser ? 'true' : '',
+      },
+      `Invito a co-organizzare: ${ev.title}`,
+      BASE_EMAIL_TEMPLATE(
+        'Invito Co-Organizzatore',
+        `<p>Ciao ${fullName},</p>
+         <p><strong>${organizerName}</strong> ti ha invitato come co-organizzatore per l'evento <strong>${ev.title}</strong> su ${APP_NAME}.</p>
+         ${dateText ? `<p><strong>Date:</strong> ${dateText}</p>` : ''}
+         ${ev.location ? `<p><strong>Luogo:</strong> ${ev.location}</p>` : ''}
+         <p>Accetta l'invito per comparire come co-organizzatore dell'evento.</p>
+         ${!existingUser ? `<p class="muted">Se non hai ancora un account, registrati su ${APP_NAME} prima di accettare l'invito.</p>` : ''}`,
+        'Accetta invito', acceptUrl
+      )
+    );
+
+    const emailResult = await sendEmail({ to: trimmedEmail, subject, html });
+
+    res.json({
+      ok: true,
+      email_sent: emailResult.ok || false,
+      user_exists: !!existingUser,
+      status: 'pending',
+    });
+  } catch (e) {
+    if (e?.code === '23505') {
+      return res.status(400).json({ error: 'already_invited', message: 'Questo utente ha già un invito per questo evento.' });
+    }
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// GET /api/co-organizer-invite/:token — get invite details (public, for accept/decline page)
+app.get('/api/co-organizer-invite/:token', async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT co.id, co.event_id, co.email, co.status, co.user_id,
+             e.title AS event_title, e.slug AS event_slug,
+             COALESCE(p.company_name, p.full_name) AS organizer_name
+      FROM event_coorganizers co
+      JOIN events e ON e.id = co.event_id
+      LEFT JOIN profiles p ON p.id = e.created_by
+      WHERE co.invite_token = $1 LIMIT 1
+    `, [req.params.token]);
+    if (!rows[0]) return res.status(404).json({ error: 'Invite not found' });
+    res.json(rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// POST /api/co-organizer-invite/:token/accept — accept co-organizer invitation
+app.post('/api/co-organizer-invite/:token/accept', requireAuth, async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id, event_id, email, status, user_id FROM event_coorganizers WHERE invite_token = $1 LIMIT 1',
+      [req.params.token]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Invite not found' });
+    const invite = rows[0];
+
+    if (invite.status === 'accepted') {
+      return res.json({ ok: true, already: true, message: 'Invito già accettato.' });
+    }
+
+    // Check that the authenticated user's email matches the invite
+    const { rows: userRows } = await pool.query('SELECT email FROM profiles WHERE id = $1', [req.user.id]);
+    const userEmail = userRows[0]?.email?.toLowerCase() || '';
+    if (userEmail !== invite.email.toLowerCase()) {
+      return res.status(403).json({ error: 'email_mismatch', message: 'L\'email del tuo account non corrisponde all\'invito. Devi accedere con l\'account associato a ' + invite.email });
+    }
+
+    await pool.query(
+      "UPDATE event_coorganizers SET status = 'accepted', user_id = $1, responded_at = now() WHERE id = $2",
+      [req.user.id, invite.id]
+    );
+
+    res.json({ ok: true, event_id: invite.event_id });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// POST /api/co-organizer-invite/:token/decline — decline co-organizer invitation
+app.post('/api/co-organizer-invite/:token/decline', async (req, res) => {
+  try {
+    const { rows } = await pool.query(
+      'SELECT id, status FROM event_coorganizers WHERE invite_token = $1 LIMIT 1',
+      [req.params.token]
+    );
+    if (!rows[0]) return res.status(404).json({ error: 'Invite not found' });
+
+    await pool.query(
+      "UPDATE event_coorganizers SET status = 'declined', responded_at = now() WHERE id = $1",
+      [rows[0].id]
+    );
+
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// DELETE /api/events/:id/co-organizers/:coOrgId — remove a co-organizer (owner/admin only)
+app.delete('/api/events/:id/co-organizers/:coOrgId', requireAuth, async (req, res) => {
+  try {
+    const { rows: evRows } = await pool.query('SELECT created_by FROM events WHERE id = $1 LIMIT 1', [req.params.id]);
+    if (!evRows[0]) return res.status(404).json({ error: 'Event not found' });
+    if (evRows[0].created_by !== req.user.id && req.user.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    await pool.query('DELETE FROM event_coorganizers WHERE id = $1 AND event_id = $2', [req.params.coOrgId, req.params.id]);
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// ===================== END CO-ORGANIZERS =====================
 
 // Register to an event for free (used when EVENTS_FREE_MODE=true or event cost is 0)
 app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {

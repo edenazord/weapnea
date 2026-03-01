@@ -156,7 +156,12 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
           {organizerDisplayName && (
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <User className="h-3.5 w-3.5" />
-              <span>{organizerDisplayName}</span>
+              <span>
+                {organizerDisplayName}
+                {event.coorganizers && Array.isArray(event.coorganizers) && event.coorganizers.length > 0 && (
+                  <> &amp; {event.coorganizers.map((co: any) => co.full_name || co.email).join(', ')}</>
+                )}
+              </span>
             </div>
           )}
         </div>
