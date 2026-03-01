@@ -76,7 +76,7 @@ const CategoryEvents = () => {
       {isLoading ? (
         <div className="text-center py-20">
           <Loader2 className="mx-auto h-12 w-12 text-gray-400 animate-spin" />
-          <p className="mt-4 text-xl text-gray-500">Caricamento eventi...</p>
+          <p className="mt-4 text-xl text-gray-500">{t('category_events.loading', 'Caricamento eventi...')}</p>
         </div>
       ) : categoryEvents.length > 0 ? (
   <div className={`grid gap-6 items-stretch ${isMobile ? "grid-cols-1" : "md:grid-cols-2 lg:grid-cols-3"}`}>
@@ -92,8 +92,8 @@ const CategoryEvents = () => {
       ) : (
         <div className="text-center py-20">
           <Search className="mx-auto h-12 w-12 text-gray-400" />
-          <p className="mt-4 text-xl text-gray-500">Nessun evento trovato</p>
-          <p className="text-gray-400">Gli eventi per questa categoria verranno aggiunti presto!</p>
+          <p className="mt-4 text-xl text-gray-500">{t('category_events.no_events', 'Nessun evento trovato')}</p>
+          <p className="text-gray-400">{t('category_events.coming_soon', 'Gli eventi per questa categoria verranno aggiunti presto!')}</p>
         </div>
       )}
     </div>

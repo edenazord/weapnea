@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Users, Zap, Trophy } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface OrganizerPackage {
   id: string;
@@ -19,7 +20,7 @@ interface OrganizerPackage {
   popular?: boolean;
 }
 
-const organizerPackages: OrganizerPackage[] = [
+const buildOrganizerPackages = (t: (key: string, fallback: string) => string): OrganizerPackage[] => [
   {
     id: 'entry',
     name: 'Entry',
@@ -27,10 +28,10 @@ const organizerPackages: OrganizerPackage[] = [
     duration: 12,
     icon: <Users className="h-8 w-8" />,
     features: [
-      'Creazione eventi base',
-      'Gestione partecipanti limitata (50)',
-      'Supporto email',
-      'Dashboard base'
+      t('organizer_packages_page.features.basic_events', 'Creazione eventi base'),
+      t('organizer_packages_page.features.limited_participants', 'Gestione partecipanti limitata (50)'),
+      t('organizer_packages_page.features.email_support', 'Supporto email'),
+      t('organizer_packages_page.features.basic_dashboard', 'Dashboard base')
     ]
   },
   {
@@ -41,12 +42,12 @@ const organizerPackages: OrganizerPackage[] = [
     icon: <Zap className="h-8 w-8" />,
     popular: true,
     features: [
-      'Creazione eventi illimitata',
-      'Gestione partecipanti estesa (500)',
-      'Strumenti marketing avanzati',
-      'Analytics dettagliato',
-      'Supporto prioritario',
-      'Integrazione pagamenti'
+      t('organizer_packages_page.features.unlimited_events', 'Creazione eventi illimitata'),
+      t('organizer_packages_page.features.extended_participants', 'Gestione partecipanti estesa (500)'),
+      t('organizer_packages_page.features.advanced_marketing', 'Strumenti marketing avanzati'),
+      t('organizer_packages_page.features.detailed_analytics', 'Analytics dettagliato'),
+      t('organizer_packages_page.features.priority_support', 'Supporto prioritario'),
+      t('organizer_packages_page.features.payment_integration', 'Integrazione pagamenti')
     ]
   },
   {
@@ -56,13 +57,13 @@ const organizerPackages: OrganizerPackage[] = [
     duration: 9,
     icon: <Trophy className="h-8 w-8" />,
     features: [
-      'Tutto dello Startup',
-      'Gestione partecipanti illimitata',
-      'White-label completo',
-      'API personalizzate',
-      'Account manager dedicato',
-      'Formazione 1-to-1',
-      'Supporto 24/7'
+      t('organizer_packages_page.features.everything_startup', 'Tutto dello Startup'),
+      t('organizer_packages_page.features.unlimited_participants', 'Gestione partecipanti illimitata'),
+      t('organizer_packages_page.features.white_label', 'White-label completo'),
+      t('organizer_packages_page.features.custom_api', 'API personalizzate'),
+      t('organizer_packages_page.features.dedicated_manager', 'Account manager dedicato'),
+      t('organizer_packages_page.features.one_to_one_training', 'Formazione 1-to-1'),
+      t('organizer_packages_page.features.support_24_7', 'Supporto 24/7')
     ]
   }
 ];
@@ -81,13 +82,15 @@ type OrganizerCheckoutResponse = {
 const OrganizerPackages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
+  const organizerPackages = buildOrganizerPackages(t);
   const [loading, setLoading] = useState<string | null>(null);
 
   const checkActiveSubscription = async () => {
     try {
       toast({
-        title: "Verifica in corso",
-        description: "Se il pagamento è andato a buon fine, il pacchetto sarà attivo entro pochi minuti.",
+        title: t('organizer_packages_page.checking', 'Verifica in corso'),
+        description: t('organizer_packages_page.checking_desc', 'Se il pagamento è andato a buon fine, il pacchetto sarà attivo entro pochi minuti.'),
       });
     } catch (error) {
       console.error('Error checking subscription:', error);
@@ -106,8 +109,8 @@ const OrganizerPackages = () => {
       // Handle free entry package differently
       if (packageId === 'entry') {
         toast({
-          title: "Pacchetto Entry",
-          description: "Il pacchetto Entry è gratuito. Contattaci per attivarlo sul tuo account.",
+          title: t('organizer_packages_page.entry_package', 'Pacchetto Entry'),
+          description: t('organizer_packages_page.entry_free_desc', 'Il pacchetto Entry è gratuito. Contattaci per attivarlo sul tuo account.'),
         });
         
         // Clear URL parameters
@@ -119,8 +122,8 @@ const OrganizerPackages = () => {
       // This function will automatically activate the package if it finds an active subscription
       // API-only: per ora mostriamo conferma e rimandiamo alla dashboard
       toast({
-        title: "Pagamento completato!",
-        description: "Se il pagamento è confermato, il pacchetto sarà attivo entro pochi minuti.",
+        title: t('organizer_packages_page.payment_completed', 'Pagamento completato!'),
+        description: t('organizer_packages_page.payment_completed_desc', 'Se il pagamento è confermato, il pacchetto sarà attivo entro pochi minuti.'),
       });
 
       // Clear URL parameters
@@ -133,8 +136,8 @@ const OrganizerPackages = () => {
     } catch (error) {
       console.error('Error handling payment success:', error);
       toast({
-        title: "Errore nell'attivazione",
-        description: error instanceof Error ? error.message : "Si è verificato un errore. Contatta il supporto se il problema persiste.",
+        title: t('organizer_packages_page.activation_error', "Errore nell'attivazione"),
+        description: error instanceof Error ? error.message : t('organizer_packages_page.activation_error_desc', 'Si è verificato un errore. Contatta il supporto se il problema persiste.'),
         variant: "destructive"
       });
     }
@@ -169,8 +172,8 @@ const OrganizerPackages = () => {
             } else {
               console.error('User not authenticated after payment success');
               toast({
-                title: "Login necessario",
-                description: "Per completare l'attivazione del pacchetto, effettua il login.",
+                title: t('organizer_packages_page.login_required', 'Login necessario'),
+                description: t('organizer_packages_page.login_required_desc', "Per completare l'attivazione del pacchetto, effettua il login."),
                 variant: "destructive"
               });
               // Redirect to login page with return URL
@@ -181,8 +184,8 @@ const OrganizerPackages = () => {
       }, 1000);
     } else if (canceled === 'true') {
       toast({
-        title: "Pagamento annullato",
-        description: "Il pagamento è stato annullato. Puoi riprovare quando vuoi.",
+        title: t('organizer_packages_page.payment_cancelled', 'Pagamento annullato'),
+        description: t('organizer_packages_page.payment_cancelled_desc', 'Il pagamento è stato annullato. Puoi riprovare quando vuoi.'),
         variant: "destructive"
       });
       // Clear URL parameters
@@ -194,7 +197,7 @@ const OrganizerPackages = () => {
     if (!user?.id) {
       toast({
         title: "Errore",
-        description: "Devi essere autenticato per procedere",
+        description: t('organizer_packages_page.auth_required', 'Devi essere autenticato per procedere'),
         variant: "destructive"
       });
       return;
@@ -203,8 +206,8 @@ const OrganizerPackages = () => {
     // Entry package is free - handle differently
     if (packageData.id === 'entry') {
       toast({
-        title: "Pacchetto Entry",
-        description: "Il pacchetto Entry è gratuito. Contattaci per attivarlo sul tuo account.",
+        title: t('organizer_packages_page.entry_package', 'Pacchetto Entry'),
+        description: t('organizer_packages_page.entry_free_desc', 'Il pacchetto Entry è gratuito. Contattaci per attivarlo sul tuo account.'),
       });
       return;
     }
@@ -252,14 +255,14 @@ const OrganizerPackages = () => {
       <div className="container mx-auto px-4">
         {/* Back Button */}
         <div className="mb-8">
-          <BackButton fallbackPath="/dashboard" label="Torna alla Dashboard" />
+          <BackButton fallbackPath="/dashboard" label={t('organizer_packages_page.back_to_dashboard', 'Torna alla Dashboard')} />
         </div>
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Pacchetti Organizzatore
+            {t('organizer_packages_page.title', 'Pacchetti Organizzatore')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Organizza eventi di apnea professionali con i nostri strumenti avanzati
+            {t('organizer_packages_page.subtitle', 'Organizza eventi di apnea professionali con i nostri strumenti avanzati')}
           </p>
         </div>
 
@@ -276,7 +279,7 @@ const OrganizerPackages = () => {
               {pkg.popular && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
-                    Consigliato
+                    {t('organizer_packages_page.recommended', 'Consigliato')}
                   </span>
                 </div>
               )}
@@ -288,7 +291,7 @@ const OrganizerPackages = () => {
                 <CardTitle className="text-2xl font-bold">{pkg.name}</CardTitle>
                 <CardDescription className="text-lg">
                   {pkg.price === 0 ? (
-                    <span className="text-3xl font-bold text-foreground">Gratuito</span>
+                    <span className="text-3xl font-bold text-foreground">{t('organizer_packages_page.free', 'Gratuito')}</span>
                   ) : (
                     <>
                       <span className="text-3xl font-bold text-foreground">€{pkg.price}</span>
@@ -315,11 +318,11 @@ const OrganizerPackages = () => {
                   variant={pkg.popular ? "default" : pkg.price === 0 ? "outline" : "outline"}
                 >
                   {loading === pkg.id ? (
-                    "Creazione checkout..."
+                    t('organizer_packages_page.creating_checkout', 'Creazione checkout...')
                   ) : pkg.price === 0 ? (
-                    "Inizia Gratis"
+                    t('organizer_packages_page.start_free', 'Inizia Gratis')
                   ) : (
-                    `Scegli ${pkg.name}`
+                    t('organizer_packages_page.choose_package', 'Scegli {name}').replace('{name}', pkg.name)
                   )}
                 </Button>
               </CardContent>
@@ -333,15 +336,15 @@ const OrganizerPackages = () => {
             variant="outline"
             className="mb-4"
           >
-            Verifica Stato Pagamento
+            {t('organizer_packages_page.verify_payment', 'Verifica Stato Pagamento')}
           </Button>
         </div>
 
         <div className="text-center mt-4">
           <p className="text-muted-foreground">
-            Hai domande sui nostri pacchetti organizzatore?{" "}
+            {t('organizer_packages_page.questions', 'Hai domande sui nostri pacchetti organizzatore?')}{" "}
             <a href="mailto:info@weapnea.com" className="text-primary hover:underline">
-              Contattaci
+              {t('organizer_packages_page.contact_us', 'Contattaci')}
             </a>
           </p>
         </div>

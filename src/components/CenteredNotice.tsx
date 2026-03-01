@@ -1,5 +1,6 @@
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export type CenteredNoticeProps = {
   open: boolean;
@@ -9,7 +10,10 @@ export type CenteredNoticeProps = {
   onClose: () => void;
 };
 
-export function CenteredNotice({ open, title = "Operazione completata", message, okLabel = "OK", onClose }: CenteredNoticeProps) {
+export function CenteredNotice({ open, title, message, okLabel, onClose }: CenteredNoticeProps) {
+  const { t } = useLanguage();
+  const displayTitle = title || t('centered_notice.default_title', 'Operazione completata');
+  const displayOk = okLabel || "OK";
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!v) onClose(); }}>
       <DialogContent
@@ -18,11 +22,11 @@ export function CenteredNotice({ open, title = "Operazione completata", message,
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle>{displayTitle}</DialogTitle>
           <DialogDescription>{message}</DialogDescription>
         </DialogHeader>
         <DialogFooter className="sm:justify-center">
-          <Button variant="brand" onClick={onClose}>{okLabel}</Button>
+          <Button variant="brand" onClick={onClose}>{displayOk}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

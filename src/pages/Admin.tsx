@@ -29,7 +29,7 @@ const AdminDashboard = () => {
                 return (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Eventi e Allenamenti</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_events', 'Gestione Eventi e Allenamenti')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <EventsManager />
@@ -40,7 +40,7 @@ const AdminDashboard = () => {
                 return (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Categorie</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_categories', 'Gestione Categorie')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <CategoriesManager />
@@ -70,7 +70,7 @@ const AdminDashboard = () => {
                 return (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Utenti</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_users', 'Gestione Utenti')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <UsersManager />
@@ -81,7 +81,7 @@ const AdminDashboard = () => {
                 return (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Email</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_email', 'Gestione Email')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <EmailTemplatesManager />
@@ -92,7 +92,7 @@ const AdminDashboard = () => {
                 return (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Impostazioni SEO</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_seo', 'Impostazioni SEO')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <SeoManager />
@@ -103,7 +103,7 @@ const AdminDashboard = () => {
                 return (
                     <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Eventi e Allenamenti</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_events', 'Gestione Eventi e Allenamenti')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <EventsManager />
@@ -120,8 +120,8 @@ const AdminDashboard = () => {
                     <div className="flex items-center gap-3">
                         <BackButton fallbackPath="/" label="" />
                         <div>
-                            <h1 className="text-xl font-bold text-blue-900">Admin Dashboard</h1>
-                            <p className="text-sm text-gray-600">Benvenuto, {profile?.full_name || 'Admin'}!</p>
+                            <h1 className="text-xl font-bold text-blue-900">{t('admin_dashboard.mobile_title', 'Admin Dashboard')}</h1>
+                            <p className="text-sm text-gray-600">{t('admin_dashboard.welcome', 'Benvenuto, {name}!').replace('{name}', profile?.full_name || t('admin_dashboard.welcome_fallback', 'Admin'))}</p>
                         </div>
                     </div>
                 </div>
@@ -146,23 +146,23 @@ const AdminDashboard = () => {
             </div>
             
             <div className="mb-6">
-                <h1 className="text-3xl font-bold text-blue-900">Dashboard Amministratore</h1>
-                <p className="text-gray-600">Benvenuto, {profile?.full_name || 'Admin'}!</p>
+                <h1 className="text-3xl font-bold text-blue-900">{t('admin_dashboard.title', 'Dashboard Amministratore')}</h1>
+                <p className="text-gray-600">{t('admin_dashboard.welcome', 'Benvenuto, {name}!').replace('{name}', profile?.full_name || t('admin_dashboard.welcome_fallback', 'Admin'))}</p>
             </div>
             
             <Tabs defaultValue="events">
                 <TabsList className="grid w-full grid-cols-6">
-                    <TabsTrigger value="events">Eventi</TabsTrigger>
-                    <TabsTrigger value="categories">Categorie</TabsTrigger>
-                    <TabsTrigger value="blog">Blog</TabsTrigger>
-                    <TabsTrigger value="users">Utenti</TabsTrigger>
-                    <TabsTrigger value="email">Email</TabsTrigger>
-                    <TabsTrigger value="seo">SEO</TabsTrigger>
+                    <TabsTrigger value="events">{t('admin_dashboard.tabs.events', 'Eventi')}</TabsTrigger>
+                    <TabsTrigger value="categories">{t('admin_dashboard.tabs.categories', 'Categorie')}</TabsTrigger>
+                    <TabsTrigger value="blog">{t('admin_dashboard.tabs.blog', 'Blog')}</TabsTrigger>
+                    <TabsTrigger value="users">{t('admin_dashboard.tabs.users', 'Utenti')}</TabsTrigger>
+                    <TabsTrigger value="email">{t('admin_dashboard.tabs.email', 'Email')}</TabsTrigger>
+                    <TabsTrigger value="seo">{t('admin_dashboard.tabs.seo', 'SEO')}</TabsTrigger>
                 </TabsList>
                 <TabsContent value="events">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Eventi e Allenamenti</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_events', 'Gestione Eventi e Allenamenti')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <EventsManager />
@@ -172,7 +172,7 @@ const AdminDashboard = () => {
                 <TabsContent value="categories">
                      <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Categorie</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_categories', 'Gestione Categorie')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <CategoriesManager />
@@ -182,7 +182,7 @@ const AdminDashboard = () => {
                 <TabsContent value="blog">
                      <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Articoli Blog</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_blog', 'Gestione Articoli Blog')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <BlogManager />
@@ -198,7 +198,7 @@ const AdminDashboard = () => {
                 <TabsContent value="users">
                      <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Utenti</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_users', 'Gestione Utenti')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <UsersManager />
@@ -208,7 +208,7 @@ const AdminDashboard = () => {
                 <TabsContent value="email">
                      <Card>
                         <CardHeader>
-                            <CardTitle>Gestione Email</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_email', 'Gestione Email')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <EmailTemplatesManager />
@@ -218,7 +218,7 @@ const AdminDashboard = () => {
                 <TabsContent value="seo">
                     <Card>
                         <CardHeader>
-                            <CardTitle>Impostazioni SEO</CardTitle>
+                            <CardTitle>{t('admin_dashboard.manage_seo', 'Impostazioni SEO')}</CardTitle>
                         </CardHeader>
                         <CardContent>
                             <SeoManager />

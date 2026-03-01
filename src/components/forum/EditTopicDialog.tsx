@@ -17,6 +17,7 @@ import { Pencil } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateForumTopicContent } from "@/lib/forum-api";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { ForumTopic } from "@/lib/forum-api";
 
 interface EditTopicDialogProps {
@@ -28,6 +29,7 @@ const EditTopicDialog = ({ topic, topicId }: EditTopicDialogProps) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(topic.title);
   const [content, setContent] = useState(topic.content);
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
@@ -35,17 +37,17 @@ const EditTopicDialog = ({ topic, topicId }: EditTopicDialogProps) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['forum-topic', topicId] });
       queryClient.invalidateQueries({ queryKey: ['forum-topics'] });
-      toast.success('Topic aggiornato con successo!');
+      toast.success(t('forum_edit.topic_updated', 'Topic aggiornato con successo!'));
       setOpen(false);
     },
     onError: (error) => {
-      toast.error('Errore nell\'aggiornamento del topic: ' + error.message);
+      toast.error(t('forum_edit.topic_update_error', 'Errore nell\'aggiornamento del topic: ') + error.message);
     },
   });
 
   const handleSubmit = () => {
     if (!title.trim() || !content.trim()) {
-      toast.error('Titolo e contenuto sono obbligatori');
+      toast.error(t('forum_edit.title_content_required', 'Titolo e contenuto sono obbligatori'));
       return;
     }
 
@@ -67,42 +69,42 @@ const EditTopicDialog = ({ topic, topicId }: EditTopicDialogProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Modifica Topic</DialogTitle>
+          <DialogTitle>{t('forum_edit.edit_topic', 'Modifica Topic')}</DialogTitle>
           <DialogDescription>
-            Modifica il titolo e il contenuto del tuo topic.
+            {t('forum_edit.edit_topic_desc', 'Modifica il titolo e il contenuto del tuo topic.')}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="title">Titolo</Label>
+            <Label htmlFor="title">{t('forum_edit.title_label', 'Titolo')}</Label>
             <Input
               id="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              placeholder="Inserisci il titolo del topic..."
+              placeholder={t('forum_edit.title_placeholder', 'Inserisci il titolo del topic...')}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="content">Contenuto</Label>
+            <Label htmlFor="content">{t('forum_edit.content_label', 'Contenuto')}</Label>
             <Textarea
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Scrivi il contenuto del topic..."
+              placeholder={t('forum_edit.content_placeholder', 'Scrivi il contenuto del topic...')}
               className="min-h-32"
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>
-            Annulla
+            {t('forum_edit.cancel', 'Annulla')}
           </Button>
           <Button 
             onClick={handleSubmit}
             disabled={updateMutation.isPending || !title.trim() || !content.trim()}
             variant="brand"
           >
-            {updateMutation.isPending ? 'Salvataggio...' : 'Salva Modifiche'}
+            {updateMutation.isPending ? t('forum_edit.saving', 'Salvataggio...') : t('forum_edit.save_changes', 'Salva Modifiche')}
           </Button>
         </DialogFooter>
       </DialogContent>

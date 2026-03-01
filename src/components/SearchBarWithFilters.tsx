@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/DatePicker";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface SearchBarWithFiltersProps {
   searchTerm: string;
@@ -27,6 +28,7 @@ export const SearchBarWithFilters = ({
   nations = [],
   isMobile = false,
 }: SearchBarWithFiltersProps) => {
+  const { t } = useLanguage();
   return (
     <div className="relative max-w-4xl mx-auto">
       <div className={`relative bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border-0 overflow-hidden ${
@@ -36,7 +38,7 @@ export const SearchBarWithFilters = ({
         <div className="flex-1 relative">
           <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
           <Input
-            placeholder="Cerca eventi, corsi, competizioni..."
+            placeholder={t('search_bar.placeholder', 'Cerca eventi, corsi, competizioni...')}
             value={searchTerm}
             onChange={(e) => onSearchChange(e.target.value)}
             className={`pl-14 pr-6 border-0 bg-transparent text-lg focus:ring-0 focus:outline-none ${
@@ -57,10 +59,10 @@ export const SearchBarWithFilters = ({
             <SelectTrigger className={`border-0 bg-transparent focus:ring-0 ${
               isMobile ? 'h-12 pl-12 w-full' : 'h-16 pl-12 w-48'
             }`}>
-              <SelectValue placeholder="Tutte le Nazioni" />
+              <SelectValue placeholder={t('search_bar.all_nations', 'Tutte le Nazioni')} />
             </SelectTrigger>
             <SelectContent className="bg-white border shadow-xl z-50">
-              <SelectItem value="all">Tutte le Nazioni</SelectItem>
+              <SelectItem value="all">{t('search_bar.all_nations', 'Tutte le Nazioni')}</SelectItem>
               {nations.map((nation) => (
                 <SelectItem key={nation} value={nation}>
                   {nation}
@@ -82,7 +84,7 @@ export const SearchBarWithFilters = ({
             <DatePicker
               date={dateFilter}
               onDateChange={onDateChange}
-              placeholder="Seleziona data"
+              placeholder={t('search_bar.select_date', 'Seleziona data')}
               className="border-0 bg-transparent"
             />
           </div>

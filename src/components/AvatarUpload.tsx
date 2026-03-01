@@ -7,6 +7,7 @@ import { apiSend } from "@/lib/apiClient";
 import { useToast } from "@/components/ui/use-toast";
 import { Upload, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { backendConfig } from "@/lib/backendConfig";
 
 interface AvatarUploadProps {
@@ -17,6 +18,7 @@ interface AvatarUploadProps {
 export function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: AvatarUploadProps) {
   const { user, refreshProfile } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [uploading, setUploading] = useState(false);
 
   const uploadAvatar = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,7 +26,7 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: AvatarUploadP
       setUploading(true);
       
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('Devi selezionare un\'immagine da caricare.');
+        throw new Error(t('avatar_upload.select_image', 'Devi selezionare un\'immagine da caricare.'));
       }
 
       const file = event.target.files[0];
@@ -46,14 +48,14 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: AvatarUploadP
       await refreshProfile();
       
       toast({
-        title: "Avatar aggiornato",
-        description: "La tua immagine del profilo è stata aggiornata con successo.",
+        title: t('avatar_upload.updated', 'Avatar aggiornato'),
+        description: t('avatar_upload.updated_desc', 'La tua immagine del profilo è stata aggiornata con successo.'),
       });
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast({
-        title: "Errore",
-        description: "Impossibile caricare l'immagine. Riprova più tardi.",
+        title: t('avatar_upload.error', 'Errore'),
+        description: t('avatar_upload.upload_error', "Impossibile caricare l'immagine. Riprova più tardi."),
         variant: "destructive",
       });
     } finally {
@@ -71,14 +73,14 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: AvatarUploadP
   await refreshProfile();
       
       toast({
-        title: "Avatar rimosso",
-        description: "La tua immagine del profilo è stata rimossa.",
+        title: t('avatar_upload.removed', 'Avatar rimosso'),
+        description: t('avatar_upload.removed_desc', 'La tua immagine del profilo è stata rimossa.'),
       });
     } catch (error) {
       console.error('Error removing avatar:', error);
       toast({
-        title: "Errore",
-        description: "Impossibile rimuovere l'immagine. Riprova più tardi.",
+        title: t('avatar_upload.error', 'Errore'),
+        description: t('avatar_upload.remove_error', "Impossibile rimuovere l'immagine. Riprova più tardi."),
         variant: "destructive",
       });
     } finally {
@@ -110,7 +112,7 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: AvatarUploadP
           />
           <Button variant="outline" size="sm" disabled={uploading}>
             <Upload className="h-4 w-4 mr-2" />
-            {uploading ? "Caricando..." : "Carica Foto"}
+            {uploading ? t('avatar_upload.uploading', 'Caricando...') : t('avatar_upload.upload_photo', 'Carica Foto')}
           </Button>
         </div>
         
@@ -122,7 +124,7 @@ export function AvatarUpload({ currentAvatarUrl, onAvatarUpdate }: AvatarUploadP
             disabled={uploading}
           >
             <X className="h-4 w-4 mr-2" />
-            Rimuovi
+            {t('avatar_upload.remove', 'Rimuovi')}
           </Button>
         )}
       </div>

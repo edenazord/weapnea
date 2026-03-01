@@ -1,4 +1,5 @@
 import { Calendar, FolderTree, FileText, Users, Mail, Globe } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DashboardMobileNavProps {
   activeTab: string;
@@ -6,13 +7,14 @@ interface DashboardMobileNavProps {
 }
 
 const DashboardMobileNav = ({ activeTab, onTabChange }: DashboardMobileNavProps) => {
+  const { t } = useLanguage();
   const navItems = [
-    { id: "events", icon: Calendar, label: "Eventi" },
-    { id: "categories", icon: FolderTree, label: "Categorie" },
-    { id: "blog", icon: FileText, label: "Blog" },
-    { id: "users", icon: Users, label: "Utenti" },
-    { id: "email", icon: Mail, label: "Email" },
-    { id: "seo", icon: Globe, label: "SEO" },
+    { id: "events", icon: Calendar, label: t('admin_dashboard.tabs.events', 'Eventi') },
+    { id: "categories", icon: FolderTree, label: t('admin_dashboard.tabs.categories', 'Categorie') },
+    { id: "blog", icon: FileText, label: t('admin_dashboard.tabs.blog', 'Blog') },
+    { id: "users", icon: Users, label: t('admin_dashboard.tabs.users', 'Utenti') },
+    { id: "email", icon: Mail, label: t('admin_dashboard.tabs.email', 'Email') },
+    { id: "seo", icon: Globe, label: t('admin_dashboard.tabs.seo', 'SEO') },
   ];
 
   return (

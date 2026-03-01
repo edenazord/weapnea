@@ -236,7 +236,7 @@ const Profile = () => {
   const createMutation = useMutation({
     mutationFn: (payload: Partial<Event>) => createEvent(payload as Event),
     onSuccess: () => {
-      setNoticeMsg("Creato con successo!");
+      setNoticeMsg(t('profile_extra.created_success', 'Creato con successo!'));
       setNoticeOpen(true);
   // Chiudi lo sheet laterale
   setIsSheetOpen(false);
@@ -244,37 +244,37 @@ const Profile = () => {
       refetchOrganized();
     },
     onError: (err: any) => {
-      toast({ title: 'Errore creazione', description: err?.message || 'Creazione fallita', variant: 'destructive' });
+      toast({ title: t('profile_extra.create_error_title', 'Errore creazione'), description: err?.message || t('profile_extra.create_error_desc', 'Creazione fallita'), variant: 'destructive' });
     }
   });
 
   const editMutation = useMutation({
     mutationFn: (payload: { id: string; patch: Partial<Event> }) => updateEvent(payload.id, payload.patch),
     onSuccess: () => {
-      setNoticeMsg("Salvato con successo!");
+      setNoticeMsg(t('profile_extra.saved_success', 'Salvato con successo!'));
       setNoticeOpen(true);
       setIsEditSheetOpen(false);
       refetchOrganized();
     },
     onError: (err: any) => {
-      toast({ title: 'Errore salvataggio', description: err?.message || 'Modifica fallita', variant: 'destructive' });
+      toast({ title: t('profile_extra.save_error_title', 'Errore salvataggio'), description: err?.message || t('profile_extra.save_error_desc', 'Modifica fallita'), variant: 'destructive' });
     }
   });
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => deleteEvent(id),
     onSuccess: () => {
-      setNoticeMsg("Evento eliminato con successo!");
+      setNoticeMsg(t('profile_extra.deleted_success', 'Evento eliminato con successo!'));
       setNoticeOpen(true);
       refetchOrganized();
     },
     onError: (err: any) => {
-      toast({ title: 'Errore eliminazione', description: err?.message || 'Eliminazione fallita', variant: 'destructive' });
+      toast({ title: t('profile_extra.delete_error_title', 'Errore eliminazione'), description: err?.message || t('profile_extra.delete_error_desc', 'Eliminazione fallita'), variant: 'destructive' });
     }
   });
 
   const handleDeleteEvent = (id: string, title: string) => {
-    if (window.confirm(`Sei sicuro di voler eliminare l'evento "${title}"? Questa azione non può essere annullata.`)) {
+    if (window.confirm(t('profile_extra.delete_confirm', 'Sei sicuro di voler eliminare l\'evento "{title}"? Questa azione non può essere annullata.').replace('{title}', title))) {
       deleteMutation.mutate(id);
     }
   };
@@ -374,7 +374,7 @@ const Profile = () => {
   const formatEventWithFixed = (ev: EventWithCategory) => {
     if (ev.fixed_appointment) {
       const validity = formatEventDate(ev.date || undefined, ev.end_date || undefined);
-      const text = ev.fixed_appointment_text ? ev.fixed_appointment_text : 'Appuntamento ricorrente';
+      const text = ev.fixed_appointment_text ? ev.fixed_appointment_text : t('profile_extra.recurring_appointment', 'Appuntamento ricorrente');
       return `${text} (${validity})`;
     }
     return formatEventDate(ev.date || undefined, ev.end_date || undefined);
@@ -624,8 +624,8 @@ const Profile = () => {
       const futureBrevetto = expiryBrevetto ? expiryBrevetto >= new Date(new Date().setHours(0,0,0,0)) : false;
       if (!hasBrevetto || !hasNumeroBrevetto || !futureBrevetto) {
         toast({
-          title: 'Dati Brevetto incompleti',
-          description: 'Inserisci brevetto, numero e una scadenza futura prima di confermare la dichiarazione brevetto valido.',
+          title: t('profile_extra.patent_incomplete_title', 'Dati Brevetto incompleti'),
+          description: t('profile_extra.patent_incomplete_desc', 'Inserisci brevetto, numero e una scadenza futura prima di confermare la dichiarazione brevetto valido.'),
           variant: 'destructive'
         });
         return;
@@ -635,11 +635,11 @@ const Profile = () => {
     // Blocca submit se lo slug è preso da altri
     if (formData.public_profile_enabled) {
       if (!formData.public_slug?.trim()) {
-        toast({ title: 'Slug mancante', description: 'Inserisci uno slug per il profilo pubblico oppure disattiva la visibilità.', variant: 'destructive' });
+        toast({ title: t('profile_extra.slug_missing_title', 'Slug mancante'), description: t('profile_extra.slug_missing_desc', 'Inserisci uno slug per il profilo pubblico oppure disattiva la visibilità.'), variant: 'destructive' });
         return;
       }
       if (slugStatus === 'taken' || slugStatus === 'checking') {
-        toast({ title: 'Slug non disponibile', description: 'Scegli uno slug diverso, quello attuale è già occupato.', variant: 'destructive' });
+        toast({ title: t('profile_extra.slug_taken_title', 'Slug non disponibile'), description: t('profile_extra.slug_taken_desc', 'Scegli uno slug diverso, quello attuale è già occupato.'), variant: 'destructive' });
         return;
       }
     }
@@ -703,7 +703,7 @@ const Profile = () => {
         const msg = String(err?.message || '');
         // Gestione lato client di un possibile 409 dal server per slug già occupato
         if (msg.includes(' 409 ') || msg.toLowerCase().includes('conflict')) {
-          toast({ title: 'Slug in conflitto', description: 'Lo slug scelto è già in uso. Scegline un altro e riprova.', variant: 'destructive' });
+          toast({ title: t('profile_extra.slug_conflict_title', 'Slug in conflitto'), description: t('profile_extra.slug_conflict_desc', 'Lo slug scelto è già in uso. Scegline un altro e riprova.'), variant: 'destructive' });
           setSlugStatus('taken');
           throw err;
         }
@@ -776,12 +776,12 @@ const Profile = () => {
 
   const profileContent = (
     <div className="px-4 py-1 profile-theme">
-      <PageHead title="Il Mio Profilo" description="Gestisci il tuo profilo WeApnea, certificazioni e preferenze." />
+      <PageHead title={t('profile_extra.page_title', 'Il Mio Profilo')} description={t('profile_extra.page_description', 'Gestisci il tuo profilo WeApnea, certificazioni e preferenze.')} />
       <div className="max-w-5xl mx-auto">
         <CenteredNotice
           open={noticeOpen}
           onClose={() => setNoticeOpen(false)}
-          title="Operazione completata"
+          title={t('profile_extra.notice_title', 'Operazione completata')}
           message={noticeMsg}
         />
         {!isMobile && (
@@ -1156,7 +1156,7 @@ const Profile = () => {
                   <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
                     <div className="flex items-center justify-between gap-2 px-6 py-3">
                       <SheetTitle className="text-base sm:text-lg">
-                        Iscritti — {participantsEventTitle || 'Evento'}
+                        {t('profile_extra.enrolled_title', 'Iscritti — {event}').replace('{event}', participantsEventTitle || t('profile_extra.event_fallback', 'Evento'))}
                       </SheetTitle>
                       <div className="flex items-center gap-1">
                         {participants.length > 0 && (
@@ -1164,10 +1164,10 @@ const Profile = () => {
                             type="button"
                             variant="ghost"
                             size="icon"
-                            aria-label="Scarica CSV"
-                            title="Scarica CSV partecipanti"
+                            aria-label={t('profile_extra.download_csv', 'Scarica CSV')}
+                            title={t('profile_extra.download_csv_title', 'Scarica CSV partecipanti')}
                             onClick={() => {
-                              const headers = ['Nome', 'Email', 'Telefono', 'Azienda', 'Pagato il'];
+                              const headers = [t('profile_extra.csv_headers_name', 'Nome'), t('profile_extra.csv_headers_email', 'Email'), t('profile_extra.csv_headers_phone', 'Telefono'), t('profile_extra.csv_headers_company', 'Azienda'), t('profile_extra.csv_headers_paid', 'Pagato il')];
                               const rows = participants.map((p) => [
                                 p.full_name || '',
                                 (p as any).email || '',
@@ -1191,7 +1191,7 @@ const Profile = () => {
                           </Button>
                         )}
                         <SheetClose asChild>
-                          <Button type="button" variant="ghost" size="icon" aria-label="Chiudi">
+                          <Button type="button" variant="ghost" size="icon" aria-label={t('profile_extra.close', 'Chiudi')}>
                             <X className="h-4 w-4" />
                           </Button>
                         </SheetClose>
@@ -1200,7 +1200,7 @@ const Profile = () => {
                   </div>
                   <div className="px-6 py-4">
                     {participantsLoading ? (
-                      <div className="py-8 text-center text-muted-foreground text-sm">Caricamento iscritti...</div>
+                      <div className="py-8 text-center text-muted-foreground text-sm">{t('profile_extra.loading_enrolled', 'Caricamento iscritti...')}</div>
                     ) : participants.length > 0 ? (
                       <>
                       {/* Desktop: Table */}
@@ -1208,9 +1208,9 @@ const Profile = () => {
                       <Table>
                         <TableHeader>
                           <TableRow>
-                            <TableHead>Nome</TableHead>
-                            <TableHead>Telefono</TableHead>
-                            <TableHead>Pagato il</TableHead>
+                            <TableHead>{t('profile_extra.name_col', 'Nome')}</TableHead>
+                            <TableHead>{t('profile_extra.phone_col', 'Telefono')}</TableHead>
+                            <TableHead>{t('profile_extra.paid_col', 'Pagato il')}</TableHead>
                             <TableHead className="w-10"></TableHead>
                           </TableRow>
                         </TableHeader>
@@ -1242,7 +1242,7 @@ const Profile = () => {
                                     <button
                                       type="button"
                                       className="p-2 rounded hover:bg-blue-50 text-blue-600"
-                                      title="Chatta con questo partecipante"
+                                      title={t('profile_extra.chat_participant', 'Chatta con questo partecipante')}
                                       onClick={() => {
                                         openChat(p.user_id, participantsEventId);
                                         setParticipantsOpen(false);
@@ -1254,16 +1254,16 @@ const Profile = () => {
                                   <button
                                     type="button"
                                     className="p-2 rounded hover:bg-red-50 text-red-600"
-                                    title="Rimuovi partecipante"
+                                    title={t('profile_extra.remove_participant', 'Rimuovi partecipante')}
                                     onClick={async () => {
-                                      const confirmed = window.confirm(`Rimuovere ${p.full_name || 'questo partecipante'}?`);
+                                      const confirmed = window.confirm(t('profile_extra.confirm_remove', 'Rimuovere {name}?').replace('{name}', p.full_name || t('profile_extra.remove_participant', 'questo partecipante')));
                                       if (!confirmed) return;
                                       try {
                                         await removeEventParticipant(participantsEventId, p.user_id);
-                                        toast({ title: "Partecipante rimosso", description: "L'utente è stato rimosso dall'evento." });
+                                        toast({ title: t('profile_extra.participant_removed_title', 'Partecipante rimosso'), description: t('profile_extra.participant_removed_desc', "L'utente è stato rimosso dall'evento.") });
                                         setParticipants(prev => prev.filter(part => part.user_id !== p.user_id));
                                       } catch (e) {
-                                        toast({ title: "Errore", description: "Impossibile rimuovere il partecipante", variant: "destructive" });
+                                        toast({ title: t('profile_extra.error', 'Errore'), description: t('profile_extra.remove_error', 'Impossibile rimuovere il partecipante'), variant: "destructive" });
                                       }
                                     }}
                                   >
@@ -1295,7 +1295,7 @@ const Profile = () => {
                                   <button
                                     type="button"
                                     className="p-2 rounded hover:bg-blue-50 text-blue-600"
-                                    title="Chatta"
+                                    title={t('profile_extra.chat_tooltip', 'Chatta')}
                                     onClick={() => {
                                       openChat(p.user_id, participantsEventId);
                                       setParticipantsOpen(false);
@@ -1307,16 +1307,16 @@ const Profile = () => {
                                 <button
                                   type="button"
                                   className="p-2 rounded hover:bg-red-50 text-red-600"
-                                  title="Rimuovi"
+                                  title={t('profile_extra.remove_tooltip', 'Rimuovi')}
                                   onClick={async () => {
-                                    const confirmed = window.confirm(`Rimuovere ${p.full_name || 'questo partecipante'}?`);
+                                    const confirmed = window.confirm(t('profile_extra.confirm_remove', 'Rimuovere {name}?').replace('{name}', p.full_name || t('profile_extra.remove_participant', 'questo partecipante')));
                                     if (!confirmed) return;
                                     try {
                                       await removeEventParticipant(participantsEventId, p.user_id);
-                                      toast({ title: "Partecipante rimosso", description: "L'utente è stato rimosso dall'evento." });
+                                      toast({ title: t('profile_extra.participant_removed_title', 'Partecipante rimosso'), description: t('profile_extra.participant_removed_desc', "L'utente è stato rimosso dall'evento.") });
                                       setParticipants(prev => prev.filter(part => part.user_id !== p.user_id));
                                     } catch (e) {
-                                      toast({ title: "Errore", description: "Impossibile rimuovere il partecipante", variant: "destructive" });
+                                      toast({ title: t('profile_extra.error', 'Errore'), description: t('profile_extra.remove_error', 'Impossibile rimuovere il partecipante'), variant: "destructive" });
                                     }
                                   }}
                                 >
@@ -1330,14 +1330,14 @@ const Profile = () => {
                                   <Phone className="h-3.5 w-3.5" />{p.phone}
                                 </a>
                               ) : null}
-                              <span>{p.paid_at ? `Pagato: ${format(parseISO(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: itLocale })}` : 'Non pagato'}</span>
+                              <span>{p.paid_at ? t('profile_extra.paid_label', 'Pagato: {date}').replace('{date}', format(parseISO(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: itLocale })) : t('profile_extra.not_paid', 'Non pagato')}</span>
                             </div>
                           </div>
                         ))}
                       </div>
                       </>
                     ) : (
-                      <div className="py-8 text-center text-muted-foreground text-sm">Nessun iscritto al momento.</div>
+                      <div className="py-8 text-center text-muted-foreground text-sm">{t('profile_extra.no_enrolled', 'Nessun iscritto al momento.')}</div>
                     )}
                   </div>
                 </SheetContent>

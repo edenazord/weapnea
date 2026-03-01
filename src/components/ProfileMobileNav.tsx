@@ -1,4 +1,5 @@
 import { Calendar, UserCircle, Shield, FileText } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ProfileMobileNavProps {
   activeTab: string;
@@ -6,11 +7,12 @@ interface ProfileMobileNavProps {
 }
 
 const ProfileMobileNav = ({ activeTab, onTabChange }: ProfileMobileNavProps) => {
+  const { t } = useLanguage();
   const navItems = [
-    { id: "events", icon: Calendar, label: "Eventi" },
-    { id: "personal", icon: UserCircle, label: "Personali" },
-    { id: "certifications", icon: Shield, label: "Certificazioni" },
-    { id: "records", icon: FileText, label: "Record" },
+    { id: "events", icon: Calendar, label: t('mobile_nav.events', 'Eventi') },
+    { id: "personal", icon: UserCircle, label: t('mobile_nav.personal', 'Personali') },
+    { id: "certifications", icon: Shield, label: t('mobile_nav.certifications', 'Certificazioni') },
+    { id: "records", icon: FileText, label: t('mobile_nav.records', 'Record') },
   ];
 
   return (

@@ -22,6 +22,7 @@ import { parseISO, isValid, startOfDay, format } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
 import { useEffect, useState } from "react";
 import { getPublicConfig } from "@/lib/publicConfig";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 
 const Dashboard = () => {
@@ -32,6 +33,7 @@ const Dashboard = () => {
         return () => { mounted = false; };
     }, []);
     const { profile } = useAuth();
+    const { t } = useLanguage();
     const isMobile = useIsMobile();
     const queryClient = useQueryClient();
     const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -70,7 +72,7 @@ const Dashboard = () => {
     const createMutation = useMutation({
         mutationFn: createEvent,
         onSuccess: () => {
-            setNoticeMsg("Evento creato con successo!");
+            setNoticeMsg(t('organizer_dashboard.event_created', 'Evento creato con successo!'));
             setNoticeOpen(true);
             queryClient.invalidateQueries({ queryKey: ["events"] });
             queryClient.invalidateQueries({ queryKey: ["events", "user", profile?.id] });
@@ -85,7 +87,7 @@ const Dashboard = () => {
     const updateMutation = useMutation({
         mutationFn: (data: { id: string; values: Partial<Event> }) => updateEvent(data.id, data.values),
         onSuccess: () => {
-            setNoticeMsg("Evento aggiornato con successo!");
+            setNoticeMsg(t('organizer_dashboard.event_updated', 'Evento aggiornato con successo!'));
             setNoticeOpen(true);
             queryClient.invalidateQueries({ queryKey: ["events"] });
             queryClient.invalidateQueries({ queryKey: ["events", "user", profile?.id] });
@@ -100,7 +102,7 @@ const Dashboard = () => {
     const deleteMutation = useMutation({
         mutationFn: deleteEvent,
         onSuccess: () => {
-            toast.success("Evento eliminato con successo!");
+            toast.success(t('organizer_dashboard.event_deleted', 'Evento eliminato con successo!'));
             queryClient.invalidateQueries({ queryKey: ["events"] });
             queryClient.invalidateQueries({ queryKey: ["events", "user", profile?.id] });
         },
@@ -219,13 +221,13 @@ const Dashboard = () => {
             <CenteredNotice
                 open={noticeOpen}
                 onClose={() => setNoticeOpen(false)}
-                title="Operazione completata"
+                title={t('organizer_dashboard.operation_completed', 'Operazione completata')}
                 message={noticeMsg}
             />
             <div className="space-y-3">
                 <div>
-                    <h1 className={`font-bold text-blue-900 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>Dashboard Organizzatore</h1>
-                    <p className={`text-gray-600 ${isMobile ? 'text-sm' : 'text-base'}`}>Benvenuto, {profile?.full_name || 'Organizzatore'}!</p>
+                    <h1 className={`font-bold text-blue-900 ${isMobile ? 'text-2xl' : 'text-3xl'}`}>{t('organizer_dashboard.title', 'Dashboard Organizzatore')}</h1>
+                    <p className={`text-gray-600 ${isMobile ? 'text-sm' : 'text-base'}`}>{t('organizer_dashboard.welcome', 'Benvenuto, {name}!').replace('{name}', profile?.full_name || t('organizer_dashboard.welcome_fallback', 'Organizzatore'))}</p>
                 </div>
                 <div className="flex flex-col gap-3">
                     <div className="flex gap-3">
@@ -233,14 +235,14 @@ const Dashboard = () => {
                             className={`${isMobile ? 'flex-1 text-sm' : 'w-auto'} bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700`} 
                             onClick={handleCreateEventClick}
                         >
-                            <PlusCircle className="mr-2 h-4 w-4" /> {isMobile ? 'Crea Evento' : 'Crea Nuovo Evento'}
+                            <PlusCircle className="mr-2 h-4 w-4" /> {isMobile ? t('organizer_dashboard.create_event_short', 'Crea Evento') : t('organizer_dashboard.create_event', 'Crea Nuovo Evento')}
                         </Button>
                         <Button 
                             variant="secondary" 
                             className={`${isMobile ? 'flex-1 text-sm' : 'w-auto'} bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700`} 
                             onClick={handleCreateAllenamentiClick}
                         >
-                            <Users className="mr-2 h-4 w-4" /> {isMobile ? 'Allenamento' : 'Crea Allenamento Condiviso'}
+                            <Users className="mr-2 h-4 w-4" /> {isMobile ? t('organizer_dashboard.create_training_short', 'Allenamento') : t('organizer_dashboard.create_training', 'Crea Allenamento Condiviso')}
                         </Button>
                         {/* Pulsante "Diventa Sponsor" rimosso */}
                     </div>
@@ -256,10 +258,10 @@ const Dashboard = () => {
                         <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
                             <div className="flex items-center justify-between gap-2 px-6 py-3">
                                 <SheetTitle className="text-base sm:text-lg">
-                                    {isAllenamentiMode ? (selectedEvent ? "Modifica Allenamento Condiviso" : "Crea Allenamento Condiviso") : (selectedEvent ? "Modifica Evento" : "Crea Nuovo Evento")}
+                                    {isAllenamentiMode ? (selectedEvent ? t('organizer_dashboard.edit_training', 'Modifica Allenamento Condiviso') : t('organizer_dashboard.create_training', 'Crea Allenamento Condiviso')) : (selectedEvent ? t('organizer_dashboard.edit_event', 'Modifica Evento') : t('organizer_dashboard.create_event', 'Crea Nuovo Evento'))}
                                 </SheetTitle>
                                 <SheetClose asChild>
-                                    <Button variant="ghost" size="icon" aria-label="Chiudi">
+                                    <Button variant="ghost" size="icon" aria-label={t('organizer_dashboard.close_label', 'Chiudi')}>
                                         <X className="h-4 w-4" />
                                     </Button>
                                 </SheetClose>
@@ -304,22 +306,22 @@ const Dashboard = () => {
                 <div className={`grid gap-4 ${isMobile ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}>
                     <Card>
                         <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-2' : 'pb-2'}`}>
-                            <CardTitle className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>Partecipanti</CardTitle>
+                            <CardTitle className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>{t('organizer_dashboard.participants_label', 'Partecipanti')}</CardTitle>
                             <Users className={`text-muted-foreground ${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
                         </CardHeader>
                         <CardContent>
                             <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{organizerStats?.totalPaidParticipants || 0}</div>
-                            <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>Iscritti paganti</p>
+                            <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>{t('organizer_dashboard.paid_subscribers', 'Iscritti paganti')}</p>
                         </CardContent>
                     </Card>
                     <Card>
                         <CardHeader className={`flex flex-row items-center justify-between space-y-0 ${isMobile ? 'pb-2' : 'pb-2'}`}>
-                            <CardTitle className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>Guadagni</CardTitle>
+                            <CardTitle className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>{t('organizer_dashboard.earnings_label', 'Guadagni')}</CardTitle>
                             <BarChart3 className={`text-muted-foreground ${isMobile ? 'h-4 w-4' : 'h-4 w-4'}`} />
                         </CardHeader>
                         <CardContent>
                             <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>€{organizerStats?.totalRevenue?.toFixed(2) || '0.00'}</div>
-                            <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>Ricavi reali</p>
+                            <p className={`text-muted-foreground ${isMobile ? 'text-xs' : 'text-xs'}`}>{t('organizer_dashboard.real_revenue', 'Ricavi reali')}</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -329,17 +331,17 @@ const Dashboard = () => {
                 <div className="grid grid-cols-3 gap-3">
                     <Button variant="ghost" className="h-auto p-3 flex flex-col items-center space-y-2 bg-blue-50 hover:bg-blue-100 border border-blue-100">
                         <Calendar className="h-5 w-5 text-blue-600" />
-                        <span className="text-xs font-medium text-blue-700">Eventi</span>
+                        <span className="text-xs font-medium text-blue-700">{t('organizer_dashboard.events_label', 'Eventi')}</span>
                     </Button>
                     {eventsFree !== true && (
                         <>
                             <Button variant="ghost" className="h-auto p-3 flex flex-col items-center space-y-2 bg-green-50 hover:bg-green-100 border border-green-100">
                                 <Users className="h-5 w-5 text-green-600" />
-                                <span className="text-xs font-medium text-green-700">Partecipanti</span>
+                                <span className="text-xs font-medium text-green-700">{t('organizer_dashboard.participants_label', 'Partecipanti')}</span>
                             </Button>
                             <Button variant="ghost" className="h-auto p-3 flex flex-col items-center space-y-2 bg-purple-50 hover:bg-purple-100 border border-purple-100">
                                 <BarChart3 className="h-5 w-5 text-purple-600" />
-                                <span className="text-xs font-medium text-purple-700">Statistiche</span>
+                                <span className="text-xs font-medium text-purple-700">{t('organizer_dashboard.statistics_label', 'Statistiche')}</span>
                             </Button>
                         </>
                     )}
@@ -351,29 +353,29 @@ const Dashboard = () => {
                 <Card
                     className={`cursor-pointer transition ${eventFilter === 'active' ? 'ring-2 ring-blue-600 border-blue-600 bg-blue-50' : 'hover:bg-gray-50'}`}
                     onClick={() => setEventFilter('active')}
-                    title="Mostra solo eventi attivi"
+                    title={t('organizer_dashboard.show_active_events', 'Mostra solo eventi attivi')}
                 >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className={isMobile ? 'text-sm' : 'text-sm'}>Eventi Attivi</CardTitle>
+                        <CardTitle className={isMobile ? 'text-sm' : 'text-sm'}>{t('organizer_dashboard.active_events', 'Eventi Attivi')}</CardTitle>
                         <Calendar className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
                         <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{activeEvents.length}</div>
-                        <p className="text-xs text-muted-foreground">Clicca per filtrare</p>
+                        <p className="text-xs text-muted-foreground">{t('organizer_dashboard.click_to_filter', 'Clicca per filtrare')}</p>
                     </CardContent>
                 </Card>
                 <Card
                     className={`cursor-pointer transition ${eventFilter === 'past' ? 'ring-2 ring-blue-600 border-blue-600 bg-blue-50' : 'hover:bg-gray-50'}`}
                     onClick={() => setEventFilter('past')}
-                    title="Mostra solo eventi passati"
+                    title={t('organizer_dashboard.show_past_events', 'Mostra solo eventi passati')}
                 >
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className={isMobile ? 'text-sm' : 'text-sm'}>Eventi Passati</CardTitle>
+                        <CardTitle className={isMobile ? 'text-sm' : 'text-sm'}>{t('organizer_dashboard.past_events', 'Eventi Passati')}</CardTitle>
                         <Clock className="h-4 w-4 text-blue-600" />
                     </CardHeader>
                     <CardContent>
                         <div className={`font-bold ${isMobile ? 'text-xl' : 'text-2xl'}`}>{pastEvents.length}</div>
-                        <p className="text-xs text-muted-foreground">Clicca per filtrare</p>
+                        <p className="text-xs text-muted-foreground">{t('organizer_dashboard.click_to_filter', 'Clicca per filtrare')}</p>
                     </CardContent>
                 </Card>
             </div>
@@ -381,12 +383,12 @@ const Dashboard = () => {
             {eventFilter === 'active' && (
             <Card>
                 <CardHeader>
-                    <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>Eventi Attivi</CardTitle>
+                    <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>{t('organizer_dashboard.active_events', 'Eventi Attivi')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {isLoadingEvents ? (
                         <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
-                            <p className="text-gray-600">Caricamento eventi...</p>
+                            <p className="text-gray-600">{t('organizer_dashboard.loading_events', 'Caricamento eventi...')}</p>
                         </div>
                     ) : activeEvents && activeEvents.length > 0 ? (
                         <div className="space-y-4">
@@ -399,12 +401,12 @@ const Dashboard = () => {
                                             <p className="text-sm text-gray-500 mt-1">📍 {event.location}</p>
                                         )}
                                         <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                            <span className="ml-auto text-gray-600">💰 Gratuito</span>
+                                            <span className="ml-auto text-gray-600">{t('organizer_dashboard.free_label', '💰 Gratuito')}</span>
                                         </div>
                                     </div>
                                     <div className="flex gap-2 ml-4">
                                         {/* Link rapido alla pagina evento */}
-                                        <Button asChild variant="ghost" size="icon" className="h-8 w-8" title="Apri evento">
+                                        <Button asChild variant="ghost" size="icon" className="h-8 w-8" title={t('organizer_dashboard.open_event', 'Apri evento')}>
                                             <Link to={buildFriendlyEventPath(event.slug)}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
                                             </Link>
@@ -426,15 +428,15 @@ const Dashboard = () => {
                                             </AlertDialogTrigger>
                                             <AlertDialogContent>
                                                 <AlertDialogHeader>
-                                                    <AlertDialogTitle>Sei sicuro?</AlertDialogTitle>
+                                                    <AlertDialogTitle>{t('organizer_dashboard.confirm_delete_title', 'Sei sicuro?')}</AlertDialogTitle>
                                                     <AlertDialogDescription>
-                                                        Questa azione non può essere annullata. L'evento "{event.title}" sarà eliminato permanentemente.
+                                                        {t('organizer_dashboard.confirm_delete_desc', 'Questa azione non può essere annullata. L\'evento "{title}" sarà eliminato permanentemente.').replace('{title}', event.title)}
                                                     </AlertDialogDescription>
                                                 </AlertDialogHeader>
                                                 <AlertDialogFooter>
-                                                    <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                                    <AlertDialogCancel>{t('common.cancel', 'Annulla')}</AlertDialogCancel>
                                                     <AlertDialogAction className="bg-red-600 hover:bg-red-700" onClick={() => handleDeleteEvent(event.id)}>
-                                                        Elimina
+                                                        {t('common.delete', 'Elimina')}
                                                     </AlertDialogAction>
                                                 </AlertDialogFooter>
                                             </AlertDialogContent>
@@ -446,11 +448,11 @@ const Dashboard = () => {
                     ) : (
                         <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
                             <Calendar className={`text-gray-400 mx-auto mb-4 ${isMobile ? 'h-12 w-12' : 'h-16 w-16'}`} />
-                            <h3 className={`font-semibold text-gray-600 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>Nessun evento attivo</h3>
-                            <p className={`text-gray-500 mb-4 ${isMobile ? 'text-sm' : 'text-base'}`}>Non hai eventi futuri attivi. Clicca il pulsante sopra per crearne uno.</p>
+                            <h3 className={`font-semibold text-gray-600 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>{t('organizer_dashboard.no_active_events', 'Nessun evento attivo')}</h3>
+                            <p className={`text-gray-500 mb-4 ${isMobile ? 'text-sm' : 'text-base'}`}>{t('organizer_dashboard.no_active_events_desc', 'Non hai eventi futuri attivi. Clicca il pulsante sopra per crearne uno.')}</p>
                             <Button variant="outline" size={isMobile ? "sm" : "default"} onClick={handleCreateEventClick}>
                                 <PlusCircle className="mr-2 h-4 w-4" />
-                                {isMobile ? 'Nuovo Evento' : 'Crea un nuovo evento'}
+                                {isMobile ? t('organizer_dashboard.new_event', 'Nuovo Evento') : t('organizer_dashboard.create_new_event_desc', 'Crea un nuovo evento')}
                             </Button>
                         </div>
                     )}
@@ -461,12 +463,12 @@ const Dashboard = () => {
             {eventFilter === 'past' && (
             <Card>
                 <CardHeader>
-                    <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>Eventi Passati</CardTitle>
+                    <CardTitle className={isMobile ? 'text-lg' : 'text-xl'}>{t('organizer_dashboard.past_events', 'Eventi Passati')}</CardTitle>
                 </CardHeader>
                 <CardContent>
                     {isLoadingEvents ? (
                         <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
-                            <p className="text-gray-600">Caricamento eventi...</p>
+                            <p className="text-gray-600">{t('organizer_dashboard.loading_events', 'Caricamento eventi...')}</p>
                         </div>
                     ) : pastEvents && pastEvents.length > 0 ? (
                         <div className="space-y-4">
@@ -481,7 +483,7 @@ const Dashboard = () => {
                                     </div>
                                     <div className="flex gap-2 ml-4">
                                         {/* Link rapido alla pagina evento */}
-                                        <Button asChild variant="ghost" size="icon" title="Apri evento">
+                                        <Button asChild variant="ghost" size="icon" title={t('organizer_dashboard.open_event', 'Apri evento')}>
                                             <Link to={`/events/${event.slug}`}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d="M13.5 3a1.5 1.5 0 0 0 0 3h2.379l-6.94 6.94a1.5 1.5 0 1 0 2.122 2.12l6.94-6.939V11.5a1.5 1.5 0 0 0 3 0V4.5A1.5 1.5 0 0 0 19.5 3h-6z"/><path d="M5.25 6.75A2.25 2.25 0 0 0 3 9v9.75A2.25 2.25 0 0 0 5.25 21h9.75A2.25 2.25 0 0 0 17.25 18.75V15a1.5 1.5 0 0 0-3 0v3.75H6V9.75h3.75a1.5 1.5 0 0 0 0-3H5.25z"/></svg>
                                             </Link>
@@ -489,7 +491,7 @@ const Dashboard = () => {
                                                 {/* Icona iscritti: apre modal con lista */}
                                                 <EventParticipantsModal eventId={event.id} eventTitle={event.title} organizerId={event.created_by as any} />
                                         <Button asChild variant="outline" size="sm">
-                                            <Link to={buildFriendlyEventPath(event.slug)}>Dettagli</Link>
+                                            <Link to={buildFriendlyEventPath(event.slug)}>{t('organizer_dashboard.details', 'Dettagli')}</Link>
                                         </Button>
                                     </div>
                                 </div>
@@ -498,8 +500,8 @@ const Dashboard = () => {
                     ) : (
                         <div className={`text-center ${isMobile ? 'py-8' : 'py-12'}`}>
                             <Calendar className={`text-gray-400 mx-auto mb-4 ${isMobile ? 'h-12 w-12' : 'h-16 w-16'}`} />
-                            <h3 className={`font-semibold text-gray-600 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>Nessun evento passato</h3>
-                            <p className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-base'}`}>Quando gli eventi si concluderanno, appariranno qui.</p>
+                            <h3 className={`font-semibold text-gray-600 mb-2 ${isMobile ? 'text-base' : 'text-lg'}`}>{t('organizer_dashboard.no_past_events', 'Nessun evento passato')}</h3>
+                            <p className={`text-gray-500 ${isMobile ? 'text-sm' : 'text-base'}`}>{t('organizer_dashboard.no_past_events_desc', 'Quando gli eventi si concluderanno, appariranno qui.')}</p>
                         </div>
                     )}
                 </CardContent>
@@ -512,8 +514,8 @@ const Dashboard = () => {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
                 <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-200 px-4 py-3">
-                    <h1 className="text-xl font-bold text-blue-900">Dashboard</h1>
-                    <p className="text-sm text-gray-600">Benvenuto, {profile?.full_name || 'Organizzatore'}!</p>
+                    <h1 className="text-xl font-bold text-blue-900">{t('mobile_nav.dashboard', 'Dashboard')}</h1>
+                    <p className="text-sm text-gray-600">{t('organizer_dashboard.welcome', 'Benvenuto, {name}!').replace('{name}', profile?.full_name || t('organizer_dashboard.welcome_fallback', 'Organizzatore'))}</p>
                 </div>
                 <div className="pb-20 px-4 py-6">{content}</div>
                 <Sheet open={isSheetOpen} onOpenChange={(open) => { setIsSheetOpen(open); if (!open) { setSelectedEvent(undefined); setIsAllenamentiMode(false); } }}>
@@ -526,10 +528,10 @@ const Dashboard = () => {
                         <div className="sticky top-0 z-50 bg-background border-b shadow-sm supports-[backdrop-filter]:bg-background/80 backdrop-blur">
                             <div className="flex items-center justify-between gap-2 px-6 py-3">
                                 <SheetTitle className="text-base sm:text-lg">
-                                    {isAllenamentiMode ? (selectedEvent ? "Modifica Allenamento Condiviso" : "Crea Allenamento Condiviso") : (selectedEvent ? "Modifica Evento" : "Crea Nuovo Evento")}
+                                    {isAllenamentiMode ? (selectedEvent ? t('organizer_dashboard.edit_training', 'Modifica Allenamento Condiviso') : t('organizer_dashboard.create_training', 'Crea Allenamento Condiviso')) : (selectedEvent ? t('organizer_dashboard.edit_event', 'Modifica Evento') : t('organizer_dashboard.create_event', 'Crea Nuovo Evento'))}
                                 </SheetTitle>
                                 <SheetClose asChild>
-                                    <Button variant="ghost" size="icon" aria-label="Chiudi">
+                                    <Button variant="ghost" size="icon" aria-label={t('organizer_dashboard.close_label', 'Chiudi')}>
                                         <X className="h-4 w-4" />
                                     </Button>
                                 </SheetClose>
@@ -550,17 +552,17 @@ const Dashboard = () => {
                             <AlertDialogHeader>
                                 <AlertDialogTitle className="flex items-center gap-2">
                                     <Package className="h-5 w-5 text-blue-600" />
-                                    {profile?.role === 'admin' ? 'Accesso Amministratore' : 'Scegli un Pacchetto Organizzatore'}
+                                    {profile?.role === 'admin' ? t('organizer_dashboard.admin_access', 'Accesso Amministratore') : t('organizer_dashboard.choose_package', 'Scegli un Pacchetto Organizzatore')}
                                 </AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    {profile?.role === 'admin' ? 'Come amministratore puoi creare eventi senza limitazioni.' : 'Per creare eventi hai bisogno di un pacchetto organizzatore attivo. Scegli il piano più adatto alle tue esigenze.'}
+                                    {profile?.role === 'admin' ? t('organizer_dashboard.admin_can_create', 'Come amministratore puoi creare eventi senza limitazioni.') : t('organizer_dashboard.need_package', 'Per creare eventi hai bisogno di un pacchetto organizzatore attivo. Scegli il piano più adatto alle tue esigenze.')}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Annulla</AlertDialogCancel>
+                                <AlertDialogCancel>{t('common.cancel', 'Annulla')}</AlertDialogCancel>
                                 {profile?.role !== 'admin' && (
                                     <AlertDialogAction asChild>
-                                        <Link to="/organizer-packages">Scegli Pacchetto</Link>
+                                        <Link to="/organizer-packages">{t('organizer_dashboard.choose_package_btn', 'Scegli Pacchetto')}</Link>
                                     </AlertDialogAction>
                                 )}
                             </AlertDialogFooter>

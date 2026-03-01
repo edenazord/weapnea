@@ -134,7 +134,7 @@ export default function InstructorPublicProfile() {
                 <AvatarFallback className="text-2xl">{data.full_name ? data.full_name.charAt(0).toUpperCase() : <User className="w-12 h-12"/>}</AvatarFallback>
               </Avatar>
               {data.club_team && <p className="text-sm font-medium text-purple-600 mb-1">{data.club_team}</p>}
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">{data.full_name || 'Nome non specificato'}</h1>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">{data.full_name || t('instructor_profile_page.name_not_specified', 'Nome non specificato')}</h1>
               {data.company_name && <p className="text-lg text-blue-600 mb-2">{data.company_name}</p>}
               {data.public_show_personal !== false && data.instagram_contact && (
                 <div className="mt-3">
@@ -156,7 +156,7 @@ export default function InstructorPublicProfile() {
                     onClick={() => openChat(data.id)}
                     className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white border-0 hover:from-blue-600 hover:to-purple-700 shadow-md hover:shadow-lg transition-all"
                   >
-                    <MessageCircle className="w-4 h-4 mr-2"/>Chatta con {data.full_name?.split(' ')[0] || 'utente'}
+                    <MessageCircle className="w-4 h-4 mr-2"/>{t('instructor_profile_page.chat_with', 'Chatta con {name}').replace('{name}', data.full_name?.split(' ')[0] || 'utente')}
                   </Button>
                 </div>
               )}
@@ -164,10 +164,10 @@ export default function InstructorPublicProfile() {
           </Card>
           {data.public_show_personal !== false && data.role === 'company' && (data.company_address || data.vat_number) && (
             <Card className="mt-6">
-              <CardHeader><CardTitle className="text-lg flex items-center"><MapPin className="w-5 h-5 mr-2"/>Informazioni Aziendali</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-lg flex items-center"><MapPin className="w-5 h-5 mr-2"/>{t('instructor_profile_page.company_info', 'Informazioni Aziendali')}</CardTitle></CardHeader>
               <CardContent>
-                {data.company_address && (<div className="mb-3"><p className="text-sm font-semibold text-gray-600">Indirizzo</p><p className="text-gray-800">{data.company_address}</p></div>)}
-                {data.vat_number && (<div><p className="text-sm font-semibold text-gray-600">Partita IVA</p><p className="text-gray-800">{data.vat_number}</p></div>)}
+                {data.company_address && (<div className="mb-3"><p className="text-sm font-semibold text-gray-600">{t('instructor_profile_page.address', 'Indirizzo')}</p><p className="text-gray-800">{data.company_address}</p></div>)}
+                {data.vat_number && (<div><p className="text-sm font-semibold text-gray-600">{t('instructor_profile_page.vat_number', 'Partita IVA')}</p><p className="text-gray-800">{data.vat_number}</p></div>)}
               </CardContent>
             </Card>
           )}
@@ -175,47 +175,47 @@ export default function InstructorPublicProfile() {
         <div className="lg:col-span-2 space-y-6">
           {data.public_show_personal !== false && (
             <Card>
-              <CardHeader><CardTitle className="text-xl">Chi sono</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-xl">{t('instructor_profile_page.about_me', 'Chi sono')}</CardTitle></CardHeader>
               <CardContent>
                 {data.bio ? (
                   <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">{data.bio}</div>
                 ) : (
-                  <div className="text-gray-500">Bio non disponibile</div>
+                  <div className="text-gray-500">{t('instructor_profile_page.bio_not_available', 'Bio non disponibile')}</div>
                 )}
               </CardContent>
             </Card>
           )}
           {data.public_show_certifications !== false && (
             <Card>
-              <CardHeader><CardTitle className="text-xl">Certificazioni</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-xl">{t('instructor_profile_page.certifications', 'Certificazioni')}</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 {data.brevetto && (
                   <div>
-                    <div className="flex items-center mb-2"><Award className="w-4 h-4 mr-2 text-blue-600"/><p className="font-semibold text-gray-800">Brevetto</p></div>
+                    <div className="flex items-center mb-2"><Award className="w-4 h-4 mr-2 text-blue-600"/><p className="font-semibold text-gray-800">{t('instructor_profile_page.brevetto', 'Brevetto')}</p></div>
                     <p className="text-gray-600 ml-6">{data.brevetto}</p>
                   </div>
                 )}
                 {data.assicurazione && (
                   <div>
-                    <div className="flex items-center mb-2"><Shield className="w-4 h-4 mr-2 text-green-600"/><p className="font-semibold text-gray-800">Assicurazione</p></div>
+                    <div className="flex items-center mb-2"><Shield className="w-4 h-4 mr-2 text-green-600"/><p className="font-semibold text-gray-800">{t('instructor_profile_page.insurance', 'Assicurazione')}</p></div>
                     <p className="text-gray-600 ml-6">{data.assicurazione}</p>
                   </div>
                 )}
                 {/* Altre certificazioni */}
                 {data.other_certifications && data.other_certifications.length > 0 && (
                   <div className="space-y-3">
-                    <p className="font-semibold text-gray-800">Altre certificazioni</p>
+                    <p className="font-semibold text-gray-800">{t('instructor_profile_page.other_certs', 'Altre certificazioni')}</p>
                     {data.other_certifications.map((cert, idx) => (
                       <div key={idx} className="ml-6 p-3 bg-gray-50 rounded-lg">
-                        <p className="font-medium text-gray-800">{cert.name || 'Certificazione'}</p>
+                        <p className="font-medium text-gray-800">{cert.name || t('instructor_profile_page.certification', 'Certificazione')}</p>
                         {cert.number && <p className="text-sm text-gray-600">N° {cert.number}</p>}
-                        {cert.expiry && <p className="text-sm text-gray-500">Scadenza: {new Date(cert.expiry).toLocaleDateString('it-IT')}</p>}
+                        {cert.expiry && <p className="text-sm text-gray-500">{t('instructor_profile_page.expiry_prefix', 'Scadenza: ')}{new Date(cert.expiry).toLocaleDateString('it-IT')}</p>}
                       </div>
                     ))}
                   </div>
                 )}
                 {!data.brevetto && !data.assicurazione && (!data.other_certifications || data.other_certifications.length === 0) && (
-                  <div className="text-gray-500">Nessuna certificazione disponibile</div>
+                  <div className="text-gray-500">{t('instructor_profile_page.no_certs_available', 'Nessuna certificazione disponibile')}</div>
                 )}
               </CardContent>
             </Card>
@@ -223,10 +223,10 @@ export default function InstructorPublicProfile() {
 
           {data.public_show_events !== false && (
             <Card>
-              <CardHeader><CardTitle className="text-xl flex items-center"><Calendar className="w-5 h-5 mr-2"/>Eventi</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-xl flex items-center"><Calendar className="w-5 h-5 mr-2"/>{t('instructor_profile_page.events', 'Eventi')}</CardTitle></CardHeader>
               <CardContent>
                 {loadingEvents ? (
-                  <div className="py-4 text-gray-500">Caricamento eventi...</div>
+                  <div className="py-4 text-gray-500">{t('instructor_profile_page.loading_events', 'Caricamento eventi...')}</div>
                 ) : (events && events.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {events.map((e) => (
@@ -234,7 +234,7 @@ export default function InstructorPublicProfile() {
                     ))}
                   </div>
                 ) : (
-                  <div className="py-2 text-gray-500">Nessun evento pubblicato</div>
+                  <div className="py-2 text-gray-500">{t('instructor_profile_page.no_events', 'Nessun evento pubblicato')}</div>
                 ))}
               </CardContent>
             </Card>
@@ -242,7 +242,7 @@ export default function InstructorPublicProfile() {
 
           {data.public_show_records !== false && (
             <Card>
-              <CardHeader><CardTitle className="text-xl flex items-center"><Target className="w-5 h-5 mr-2"/>Record</CardTitle></CardHeader>
+              <CardHeader><CardTitle className="text-xl flex items-center"><Target className="w-5 h-5 mr-2"/>{t('instructor_profile_page.records', 'Record')}</CardTitle></CardHeader>
               <CardContent>
                 {data.personal_best && (Array.isArray(data.personal_best) ? data.personal_best.length > 0 : Object.keys(data.personal_best).length > 0) ? (
                   <ul className="list-disc pl-5 space-y-1 text-gray-700">
@@ -256,7 +256,7 @@ export default function InstructorPublicProfile() {
                     }
                   </ul>
                 ) : (
-                  <div className="text-gray-500">Nessun record disponibile</div>
+                  <div className="text-gray-500">{t('instructor_profile_page.no_records', 'Nessun record disponibile')}</div>
                 )}
               </CardContent>
             </Card>

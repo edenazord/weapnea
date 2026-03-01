@@ -16,6 +16,7 @@ import { Pencil } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateForumReplyContent } from "@/lib/forum-api";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 import type { ForumReply } from "@/lib/forum-api";
 
 interface EditReplyDialogProps {
@@ -26,6 +27,7 @@ interface EditReplyDialogProps {
 const EditReplyDialog = ({ reply, topicId }: EditReplyDialogProps) => {
   const [open, setOpen] = useState(false);
   const [content, setContent] = useState(reply.content);
+  const { t } = useLanguage();
   const queryClient = useQueryClient();
 
   const updateMutation = useMutation({
@@ -34,17 +36,17 @@ const EditReplyDialog = ({ reply, topicId }: EditReplyDialogProps) => {
       queryClient.invalidateQueries({ queryKey: ['forum-replies', topicId] });
       queryClient.invalidateQueries({ queryKey: ['forum-topic', topicId] });
       queryClient.invalidateQueries({ queryKey: ['forum-topics'] });
-      toast.success('Risposta aggiornata con successo!');
+      toast.success(t('forum_edit.reply_updated', 'Risposta aggiornata con successo!'));
       setOpen(false);
     },
     onError: (error) => {
-      toast.error('Errore nell\'aggiornamento della risposta: ' + error.message);
+      toast.error(t('forum_edit.reply_update_error', 'Errore nell\'aggiornamento della risposta: ') + error.message);
     },
   });
 
   const handleSubmit = () => {
     if (!content.trim()) {
-      toast.error('Il contenuto è obbligatorio');
+      toast.error(t('forum_edit.content_required', 'Il contenuto è obbligatorio'));
       return;
     }
 
@@ -65,33 +67,33 @@ const EditReplyDialog = ({ reply, topicId }: EditReplyDialogProps) => {
       </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Modifica Risposta</DialogTitle>
+          <DialogTitle>{t('forum_edit.edit_reply', 'Modifica Risposta')}</DialogTitle>
           <DialogDescription>
-            Modifica il contenuto della tua risposta.
+            {t('forum_edit.edit_reply_desc', 'Modifica il contenuto della tua risposta.')}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="content">Contenuto</Label>
+            <Label htmlFor="content">{t('forum_edit.content_label', 'Contenuto')}</Label>
             <Textarea
               id="content"
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              placeholder="Scrivi il contenuto della risposta..."
+              placeholder={t('forum_edit.reply_content_placeholder', 'Scrivi il contenuto della risposta...')}
               className="min-h-32"
             />
           </div>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel}>
-            Annulla
+            {t('forum_edit.cancel', 'Annulla')}
           </Button>
           <Button 
             onClick={handleSubmit}
             disabled={updateMutation.isPending || !content.trim()}
             variant="brand"
           >
-            {updateMutation.isPending ? 'Salvataggio...' : 'Salva Modifiche'}
+            {updateMutation.isPending ? t('forum_edit.saving', 'Salvataggio...') : t('forum_edit.save_changes', 'Salva Modifiche')}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -111,7 +111,7 @@ const InstructorProfile = () => {
               </Avatar>
               
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {instructor.full_name || "Nome non specificato"}
+                {instructor.full_name || t('instructor_profile_page.name_not_specified', 'Nome non specificato')}
               </h1>
               
               {instructor.company_name && (
@@ -119,7 +119,7 @@ const InstructorProfile = () => {
               )}
               
               <p className="text-sm text-gray-500 capitalize">
-                {instructor.role === 'instructor' ? 'Istruttore' : 'Azienda'}
+                {instructor.role === 'instructor' ? t('instructor_profile_page.role_instructor', 'Istruttore') : t('instructor_profile_page.role_company', 'Azienda')}
               </p>
 
               {instructor.instagram_contact && (
@@ -145,19 +145,19 @@ const InstructorProfile = () => {
               <CardHeader>
                 <CardTitle className="text-lg flex items-center">
                   <MapPin className="w-5 h-5 mr-2" />
-                  Informazioni Aziendali
+                  {t('instructor_profile_page.company_info', 'Informazioni Aziendali')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {instructor.company_address && (
                   <div className="mb-3">
-                    <p className="text-sm font-semibold text-gray-600">Indirizzo</p>
+                    <p className="text-sm font-semibold text-gray-600">{t('instructor_profile_page.address', 'Indirizzo')}</p>
                     <p className="text-gray-800">{instructor.company_address}</p>
                   </div>
                 )}
                 {instructor.vat_number && (
                   <div>
-                    <p className="text-sm font-semibold text-gray-600">Partita IVA</p>
+                    <p className="text-sm font-semibold text-gray-600">{t('instructor_profile_page.vat_number', 'Partita IVA')}</p>
                     <p className="text-gray-800">{instructor.vat_number}</p>
                   </div>
                 )}
@@ -172,7 +172,7 @@ const InstructorProfile = () => {
           {instructor.bio && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-xl">Chi sono</CardTitle>
+                <CardTitle className="text-xl">{t('instructor_profile_page.about_me', 'Chi sono')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="prose max-w-none text-gray-700 whitespace-pre-wrap">
@@ -188,7 +188,7 @@ const InstructorProfile = () => {
               <CardHeader>
                 <CardTitle className="text-xl flex items-center">
                   <Award className="w-5 h-5 mr-2" />
-                  Certificazioni
+                  {t('instructor_profile_page.certifications', 'Certificazioni')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -196,12 +196,12 @@ const InstructorProfile = () => {
                   <div>
                     <div className="flex items-center mb-2">
                       <Award className="w-4 h-4 mr-2 text-blue-600" />
-                      <p className="font-semibold text-gray-800">Brevetto</p>
+                      <p className="font-semibold text-gray-800">{t('instructor_profile_page.brevetto', 'Brevetto')}</p>
                     </div>
                     <p className="text-gray-600 ml-6">{instructor.brevetto}</p>
                     {instructor.scadenza_brevetto && (
                       <p className="text-sm text-gray-500 ml-6">
-                        Scadenza: {new Date(instructor.scadenza_brevetto).toLocaleDateString('it-IT')}
+                        {t('instructor_profile_page.expiry_prefix', 'Scadenza: ')}{new Date(instructor.scadenza_brevetto).toLocaleDateString('it-IT')}
                       </p>
                     )}
                   </div>
@@ -211,12 +211,12 @@ const InstructorProfile = () => {
                   <div>
                     <div className="flex items-center mb-2">
                       <Shield className="w-4 h-4 mr-2 text-green-600" />
-                      <p className="font-semibold text-gray-800">Assicurazione</p>
+                      <p className="font-semibold text-gray-800">{t('instructor_profile_page.insurance', 'Assicurazione')}</p>
                     </div>
                     <p className="text-gray-600 ml-6">{instructor.assicurazione}</p>
                     {instructor.scadenza_assicurazione && (
                       <p className="text-sm text-gray-500 ml-6">
-                        Scadenza: {new Date(instructor.scadenza_assicurazione).toLocaleDateString('it-IT')}
+                        {t('instructor_profile_page.expiry_prefix', 'Scadenza: ')}{new Date(instructor.scadenza_assicurazione).toLocaleDateString('it-IT')}
                       </p>
                     )}
                   </div>
@@ -226,10 +226,10 @@ const InstructorProfile = () => {
                   <div>
                     <div className="flex items-center mb-2">
                       <Calendar className="w-4 h-4 mr-2 text-red-600" />
-                      <p className="font-semibold text-gray-800">Certificato Medico</p>
+                      <p className="font-semibold text-gray-800">{t('instructor_profile_page.medical_cert', 'Certificato Medico')}</p>
                     </div>
                     <p className="text-sm text-gray-500 ml-6">
-                      Scadenza: {new Date(instructor.scadenza_certificato_medico).toLocaleDateString('it-IT')}
+                      {t('instructor_profile_page.expiry_prefix', 'Scadenza: ')}{new Date(instructor.scadenza_certificato_medico).toLocaleDateString('it-IT')}
                     </p>
                   </div>
                 )}

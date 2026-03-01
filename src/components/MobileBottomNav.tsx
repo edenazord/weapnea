@@ -16,17 +16,17 @@ const MobileBottomNav = ({ variant = "default" }: MobileBottomNavProps) => {
     switch (variant) {
       case "dashboard":
         return [
-          { icon: Home, label: "Home", path: "/" },
-          { icon: Calendar, label: "I Miei Eventi", path: "/my-events" },
-          { icon: Settings, label: "Dashboard", path: "/dashboard" },
-          { icon: User, label: "Profilo", path: "/profile" },
+          { icon: Home, label: t('mobile_nav.home', 'Home'), path: "/" },
+          { icon: Calendar, label: t('mobile_nav.my_events', 'I Miei Eventi'), path: "/my-events" },
+          { icon: Settings, label: t('mobile_nav.dashboard', 'Dashboard'), path: "/dashboard" },
+          { icon: User, label: t('mobile_nav.profile', 'Profilo'), path: "/profile" },
         ];
       case "profile":
         return [
-          { icon: Home, label: "Home", path: "/" },
-          { icon: Calendar, label: "Eventi", path: "/my-events" },
-          { icon: User, label: "Profilo", path: "/profile" },
-          { icon: Settings, label: "Impostazioni", path: "/dashboard" },
+          { icon: Home, label: t('mobile_nav.home', 'Home'), path: "/" },
+          { icon: Calendar, label: t('mobile_nav.events', 'Eventi'), path: "/my-events" },
+          { icon: User, label: t('mobile_nav.profile', 'Profilo'), path: "/profile" },
+          { icon: Settings, label: t('mobile_nav.settings', 'Impostazioni'), path: "/dashboard" },
         ];
       default:
         return [

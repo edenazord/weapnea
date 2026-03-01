@@ -291,12 +291,12 @@ const EventDetail = () => {
     const formatEventType = (eventType: string | null) => {
         if (!eventType) return null;
         const typeMap: { [key: string]: string } = {
-            'corso': 'Corso',
-            'escursione': 'Escursione',
-            'gara': 'Gara',
-            'workshop': 'Workshop',
-            'conferenza': 'Conferenza',
-            'evento_sociale': 'Evento Sociale'
+            'corso': t('event_formats.type.corso', 'Corso'),
+            'escursione': t('event_formats.type.escursione', 'Escursione'),
+            'gara': t('event_formats.type.gara', 'Gara'),
+            'workshop': t('event_formats.type.workshop', 'Workshop'),
+            'conferenza': t('event_formats.type.conferenza', 'Conferenza'),
+            'evento_sociale': t('event_formats.type.evento_sociale', 'Evento Sociale')
         };
         return typeMap[eventType] || eventType.charAt(0).toUpperCase() + eventType.slice(1);
     };
@@ -304,11 +304,11 @@ const EventDetail = () => {
     const formatLevel = (level: string | null) => {
         if (!level) return null;
         const levelMap: { [key: string]: string } = {
-            'principiante_senza_brevetto': 'Principiante senza brevetto',
-            'inesperto_con_brevetto': 'Inesperto con brevetto',
-            'avanzato_con_brevetto': 'Avanzato con brevetto',
-            'tutti_i_brevettati': 'Tutti i brevettati',
-            'brevettati_e_non': 'Sia brevettati che non'
+            'principiante_senza_brevetto': t('event_formats.level.principiante_senza_brevetto', 'Principiante senza brevetto'),
+            'inesperto_con_brevetto': t('event_formats.level.inesperto_con_brevetto', 'Inesperto con brevetto'),
+            'avanzato_con_brevetto': t('event_formats.level.avanzato_con_brevetto', 'Avanzato con brevetto'),
+            'tutti_i_brevettati': t('event_formats.level.tutti_i_brevettati', 'Tutti i brevettati'),
+            'brevettati_e_non': t('event_formats.level.brevettati_e_non', 'Sia brevettati che non')
         };
         return levelMap[level] || level.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     };
@@ -316,9 +316,9 @@ const EventDetail = () => {
     const formatDiscipline = (discipline: string | null) => {
         if (!discipline) return null;
         const disciplineMap: { [key: string]: string } = {
-            'indoor': 'Indoor',
-            'outdoor': 'Outdoor',
-            'indoor&outdoor': 'Indoor & Outdoor'
+            'indoor': t('event_formats.discipline.indoor', 'Indoor'),
+            'outdoor': t('event_formats.discipline.outdoor', 'Outdoor'),
+            'indoor&outdoor': t('event_formats.discipline.indoor_outdoor', 'Indoor & Outdoor')
         };
         return disciplineMap[discipline] || discipline.charAt(0).toUpperCase() + discipline.slice(1);
     };

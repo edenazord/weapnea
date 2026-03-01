@@ -10,6 +10,7 @@ import { apiGet } from "@/lib/apiClient";
 import { toast } from "sonner";
 import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
+import { useLanguage } from "@/contexts/LanguageContext";
 import Layout from "@/components/Layout";
 
 interface Event {
@@ -42,6 +43,7 @@ interface EventParticipation {
 
 const MyEvents = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [participations, setParticipations] = useState<EventParticipation[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -53,7 +55,7 @@ const MyEvents = () => {
       setParticipations(Array.isArray(participationsData) ? participationsData : []);
     } catch (error) {
       console.error('Error fetching user events:', error);
-      toast.error('Errore nel caricamento degli eventi');
+      toast.error(t('my_events_page.loading_error', 'Errore nel caricamento degli eventi'));
     } finally {
       setLoading(false);
     }
@@ -68,7 +70,7 @@ const MyEvents = () => {
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Devi essere autenticato per visualizzare i tuoi eventi.</p>
+        <p>{t('my_events_page.auth_required', 'Devi essere autenticato per visualizzare i tuoi eventi.')}</p>
       </div>
     );
   }
@@ -87,14 +89,14 @@ const MyEvents = () => {
       <div className="max-w-6xl mx-auto">
         {/* Back Button */}
         <div className="mb-6">
-          <BackButton fallbackPath="/profile" label="Torna al Profilo" />
+          <BackButton fallbackPath="/profile" label={t('my_events_page.back_to_profile', 'Torna al Profilo')} />
         </div>
 
         <div className="flex items-center gap-4 mb-6">
           <Calendar className="h-8 w-8 text-blue-600" />
           <div>
-            <h1 className="text-3xl font-bold">Eventi a cui sei iscritto</h1>
-            <p className="text-gray-600">La lista delle tue iscrizioni agli eventi</p>
+            <h1 className="text-3xl font-bold">{t('my_events_page.title', 'Eventi a cui sei iscritto')}</h1>
+            <p className="text-gray-600">{t('my_events_page.subtitle', 'La lista delle tue iscrizioni agli eventi')}</p>
           </div>
         </div>
 
@@ -117,7 +119,7 @@ const MyEvents = () => {
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
                           <Calendar className="h-4 w-4" />
                           {participation.events.fixed_appointment === true
-                            ? ((participation.events.fixed_appointment_text && participation.events.fixed_appointment_text.trim()) || 'Appuntamento ricorrente')
+                            ? ((participation.events.fixed_appointment_text && participation.events.fixed_appointment_text.trim()) || t('my_events_page.recurring', 'Appuntamento ricorrente'))
                             : formatEventDate(participation.events.date, participation.events.end_date)}
                           {participation.events.location && (
                             <>
@@ -132,7 +134,7 @@ const MyEvents = () => {
                       <Button asChild variant="outline" size="sm">
                         <Link to={buildFriendlyEventPath(participation.events.slug)}>
                           <Eye className="h-4 w-4 mr-1" />
-                          Visualizza
+                          {t('my_events_page.view', 'Visualizza')}
                         </Link>
                       </Button>
                     </div>
@@ -143,13 +145,13 @@ const MyEvents = () => {
               <div className="text-center py-12">
                 <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-semibold text-gray-600 mb-2">
-                  Nessun evento iscritto
+                  {t('my_events_page.no_events', 'Nessun evento iscritto')}
                 </h3>
                 <p className="text-gray-500 mb-6">
-                  Non hai ancora effettuato iscrizioni.
+                  {t('my_events_page.no_events_desc', 'Non hai ancora effettuato iscrizioni.')}
                 </p>
                 <Button asChild>
-                  <Link to="/">Scopri gli eventi</Link>
+                  <Link to="/">{t('my_events_page.discover_events', 'Scopri gli eventi')}</Link>
                 </Button>
               </div>
             )}

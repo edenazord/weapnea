@@ -90,10 +90,10 @@ export default function Comments({ blogId, eventId, canComment }: CommentsProps)
         toast.success(t('comments.posted', 'Commento pubblicato!'));
       } else {
         const err = await res.json();
-        toast.error(err.error || 'Errore');
+        toast.error(err.error || t('comments.error', 'Errore'));
       }
     } catch (e) {
-      toast.error('Errore di rete');
+      toast.error(t('comments.network_error', 'Errore di rete'));
     } finally {
       setPosting(false);
     }
@@ -110,7 +110,7 @@ export default function Comments({ blogId, eventId, canComment }: CommentsProps)
         toast.success(t('comments.deleted', 'Commento eliminato'));
       }
     } catch (e) {
-      toast.error('Errore');
+      toast.error(t('comments.error', 'Errore'));
     }
   };
 

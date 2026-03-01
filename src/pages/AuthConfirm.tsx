@@ -2,12 +2,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Waves, CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 const AuthConfirm = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
 
   useEffect(() => {
@@ -30,8 +32,8 @@ const AuthConfirm = () => {
         } else {
           setStatus('error');
           toast({
-            title: "Link non valido",
-            description: "Il link di recupero password non è valido.",
+            title: t('auth_confirm.invalid_link', 'Link non valido'),
+            description: t('auth_confirm.invalid_recovery_link', 'Il link di recupero password non è valido.'),
             variant: "destructive",
           });
           setTimeout(() => navigate('/auth'), 3000);
@@ -46,8 +48,8 @@ const AuthConfirm = () => {
         console.error('Missing confirmation token or email in URL');
         setStatus('error');
         toast({
-          title: "Link non valido",
-          description: "Il link di conferma non è valido. Richiedi un nuovo link di conferma.",
+          title: t('auth_confirm.invalid_link', 'Link non valido'),
+          description: t('auth_confirm.invalid_confirm_link', 'Il link di conferma non è valido. Richiedi un nuovo link di conferma.'),
           variant: "destructive",
         });
         setTimeout(() => navigate('/auth'), 3000);
@@ -56,7 +58,7 @@ const AuthConfirm = () => {
 
   // In API mode non eseguiamo conferma via client: il link di conferma viene gestito dal backend o flusso email.
   setStatus('success');
-  toast({ title: "Email confermata!", description: "La tua email è stata confermata. Ora puoi accedere." });
+  toast({ title: t('auth_confirm.email_confirmed_toast', 'Email confermata!'), description: t('auth_confirm.email_confirmed_toast_desc', 'La tua email è stata confermata. Ora puoi accedere.') });
   setTimeout(() => navigate('/auth?view=login'), 1500);
     };
 
@@ -78,18 +80,18 @@ const AuthConfirm = () => {
     switch (status) {
       case 'loading':
         return {
-          title: "Conferma email in corso...",
-          description: "Attendere prego mentre confermiamo la tua email."
+          title: t('auth_confirm.loading_title', 'Conferma email in corso...'),
+          description: t('auth_confirm.loading_desc', 'Attendere prego mentre confermiamo la tua email.')
         };
       case 'success':
         return {
-          title: "Email confermata!",
-          description: "La tua email è stata confermata con successo. Verrai reindirizzato alla pagina di accesso."
+          title: t('auth_confirm.success_title', 'Email confermata!'),
+          description: t('auth_confirm.success_desc', 'La tua email è stata confermata con successo. Verrai reindirizzato alla pagina di accesso.')
         };
       case 'error':
         return {
-          title: "Errore di conferma",
-          description: "Non è stato possibile confermare l'email. Verrai reindirizzato alla pagina di registrazione."
+          title: t('auth_confirm.error_title', 'Errore di conferma'),
+          description: t('auth_confirm.error_desc', "Non è stato possibile confermare l'email. Verrai reindirizzato alla pagina di registrazione.")
         };
     }
   };

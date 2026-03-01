@@ -15,11 +15,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const NewForumTopic = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { session, user } = useAuth();
+  const { t } = useLanguage();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [categoryId, setCategoryId] = useState('');
@@ -32,11 +34,11 @@ const NewForumTopic = () => {
   const topicMutation = useMutation({
     mutationFn: createForumTopic,
     onSuccess: () => {
-      toast.success('Topic creato con successo!');
+      toast.success(t('new_forum_topic_page.success', 'Topic creato con successo!'));
       navigate('/forum');
     },
     onError: (error) => {
-      toast.error('Errore nella creazione del topic: ' + error.message);
+      toast.error(t('new_forum_topic_page.error_prefix', 'Errore nella creazione del topic: ') + error.message);
     },
   });
 
@@ -51,7 +53,7 @@ const NewForumTopic = () => {
     e.preventDefault();
     
     if (!title.trim() || !content.trim() || !categoryId || !user) {
-      toast.error('Compila tutti i campi richiesti');
+      toast.error(t('new_forum_topic_page.fill_required', 'Compila tutti i campi richiesti'));
       return;
     }
 
@@ -90,26 +92,26 @@ const NewForumTopic = () => {
           </div>
           
           <h1 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-purple-900 via-blue-700 to-purple-900 bg-clip-text text-transparent leading-tight">
-            Crea un nuovo topic
+            {t('new_forum_topic_page.title', 'Crea un nuovo topic')}
           </h1>
           <p className="text-xl text-gray-600 leading-relaxed">
-            Condividi le tue idee e discussioni con la community
+            {t('new_forum_topic_page.subtitle', 'Condividi le tue idee e discussioni con la community')}
           </p>
         </div>
       </div>
 
       {/* Navigation */}
       <div className="flex items-center gap-2 text-sm text-gray-600 mb-6">
-        <Link to="/forum" className="hover:text-purple-600 transition-colors duration-300">Forum</Link>
+        <Link to="/forum" className="hover:text-purple-600 transition-colors duration-300">{t('new_forum_topic_page.breadcrumb_forum', 'Forum')}</Link>
         <span>/</span>
-        <span className="text-gray-900">Nuovo Topic</span>
+        <span className="text-gray-900">{t('new_forum_topic_page.breadcrumb_new', 'Nuovo Topic')}</span>
       </div>
 
       {/* Back Button */}
       <Button variant="outline" asChild className="border-purple-200 hover:border-purple-400 hover:bg-gradient-to-r hover:from-purple-50 hover:to-blue-50 transition-all duration-300 rounded-full">
         <Link to="/forum">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Torna al Forum
+          {t('new_forum_topic_page.back_to_forum', 'Torna al Forum')}
         </Link>
       </Button>
 
@@ -117,18 +119,18 @@ const NewForumTopic = () => {
       <Card className="modern-blur border border-white/20 shadow-2xl">
         <CardHeader className="text-center pb-6">
           <CardTitle className="text-2xl bg-gradient-to-r from-purple-900 to-blue-900 bg-clip-text text-transparent">
-            Nuovo Topic di Discussione
+            {t('new_forum_topic_page.form_title', 'Nuovo Topic di Discussione')}
           </CardTitle>
         </CardHeader>
         <CardContent className="p-8">
           <form onSubmit={handleSubmit} className="space-y-8">
             <div className="space-y-3">
-              <Label htmlFor="category" className="text-lg font-semibold text-gray-700">Categoria *</Label>
+              <Label htmlFor="category" className="text-lg font-semibold text-gray-700">{t('new_forum_topic_page.category_label', 'Categoria *')}</Label>
               <div className="gradient-border">
                 <div className="gradient-border-inner">
                   <Select value={categoryId} onValueChange={setCategoryId}>
                     <SelectTrigger className="border-0 focus:ring-2 focus:ring-purple-500">
-                      <SelectValue placeholder="Seleziona una categoria" />
+                      <SelectValue placeholder={t('new_forum_topic_page.category_placeholder', 'Seleziona una categoria')} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((category) => (
@@ -143,13 +145,13 @@ const NewForumTopic = () => {
             </div>
 
             <div className="space-y-3">
-              <Label htmlFor="title" className="text-lg font-semibold text-gray-700">Titolo *</Label>
+              <Label htmlFor="title" className="text-lg font-semibold text-gray-700">{t('new_forum_topic_page.title_label', 'Titolo *')}</Label>
               <div className="gradient-border">
                 <div className="gradient-border-inner">
                   <Input
                     id="title"
                     type="text"
-                    placeholder="Inserisci il titolo del topic"
+                    placeholder={t('new_forum_topic_page.title_placeholder', 'Inserisci il titolo del topic')}
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     maxLength={200}
@@ -160,12 +162,12 @@ const NewForumTopic = () => {
             </div>
 
             <div className="space-y-3">
-              <Label htmlFor="content" className="text-lg font-semibold text-gray-700">Contenuto *</Label>
+              <Label htmlFor="content" className="text-lg font-semibold text-gray-700">{t('new_forum_topic_page.content_label', 'Contenuto *')}</Label>
               <div className="gradient-border">
                 <div className="gradient-border-inner">
                   <Textarea
                     id="content"
-                    placeholder="Descrivi la tua discussione..."
+                    placeholder={t('new_forum_topic_page.content_placeholder', 'Descrivi la tua discussione...')}
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     className="min-h-48 border-0 focus:ring-2 focus:ring-purple-500 text-base leading-relaxed"
@@ -176,7 +178,7 @@ const NewForumTopic = () => {
 
             <div className="flex justify-end gap-4 pt-6">
               <Button type="button" variant="outline" asChild className="border-gray-300 hover:border-gray-400 rounded-full">
-                <Link to="/forum">Annulla</Link>
+                <Link to="/forum">{t('new_forum_topic_page.cancel', 'Annulla')}</Link>
               </Button>
               <Button 
                 type="submit" 
@@ -184,7 +186,7 @@ const NewForumTopic = () => {
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-blue-600 hover:to-purple-600 shadow-lg hover:shadow-xl transition-all duration-300 rounded-full px-8"
               >
                 <Send className="mr-2 h-4 w-4" />
-                {topicMutation.isPending ? 'Creazione...' : 'Crea Topic'}
+                {topicMutation.isPending ? t('new_forum_topic_page.creating', 'Creazione...') : t('new_forum_topic_page.create', 'Crea Topic')}
               </Button>
             </div>
           </form>

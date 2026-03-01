@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Check, Star, Crown } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { activatePackage } from "@/lib/packages-api";
 import { startCheckout } from "@/lib/payments-api";
 
@@ -17,17 +18,17 @@ interface SponsorPackage {
   popular?: boolean;
 }
 
-const sponsorPackages: SponsorPackage[] = [
+const buildSponsorPackages = (t: (key: string, fallback: string) => string): SponsorPackage[] => [
   {
     id: 'partner',
     name: 'Partner',
     price: 450,
     icon: <Star className="h-8 w-8" />,
     features: [
-      'Logo sul sito web',
-      'Menzione nei social media',
-      'Visibilità durante gli eventi',
-      'Report di performance'
+      t('sponsor_packages_page.features.logo_website', 'Logo sul sito web'),
+      t('sponsor_packages_page.features.social_mention', 'Menzione nei social media'),
+      t('sponsor_packages_page.features.event_visibility', 'Visibilità durante gli eventi'),
+      t('sponsor_packages_page.features.performance_report', 'Report di performance')
     ]
   },
   {
@@ -37,12 +38,12 @@ const sponsorPackages: SponsorPackage[] = [
     icon: <Crown className="h-8 w-8" />,
     popular: true,
     features: [
-      'Logo prominente sul sito web',
-      'Campagne dedicate sui social',
-      'Massima visibilità durante gli eventi',
-      'Report dettagliato di performance',
-      'Spazio espositivo negli eventi',
-      'Supporto marketing dedicato'
+      t('sponsor_packages_page.features.prominent_logo', 'Logo prominente sul sito web'),
+      t('sponsor_packages_page.features.dedicated_campaigns', 'Campagne dedicate sui social'),
+      t('sponsor_packages_page.features.max_visibility', 'Massima visibilità durante gli eventi'),
+      t('sponsor_packages_page.features.detailed_report', 'Report dettagliato di performance'),
+      t('sponsor_packages_page.features.exhibition_space', 'Spazio espositivo negli eventi'),
+      t('sponsor_packages_page.features.dedicated_marketing', 'Supporto marketing dedicato')
     ]
   }
 ];
@@ -50,13 +51,15 @@ const sponsorPackages: SponsorPackage[] = [
 const SponsorPackages = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { t } = useLanguage();
+  const sponsorPackages = buildSponsorPackages(t);
   const [loading, setLoading] = useState<string | null>(null);
 
   const handlePaymentSuccess = useCallback(async (packageId: string) => {
     try {
       const packageData = sponsorPackages.find(pkg => pkg.id === packageId);
       if (!packageData) {
-        throw new Error("Pacchetto non trovato");
+        throw new Error(t('sponsor_packages_page.package_not_found', 'Pacchetto non trovato'));
       }
 
       console.log('Activating sponsor package after successful payment:', packageId);
@@ -65,8 +68,8 @@ const SponsorPackages = () => {
       await activatePackage('sponsor', packageId, packageData.name, 12);
 
       toast({
-        title: "Pagamento completato!",
-        description: `Il pacchetto di sponsorizzazione ${packageData.name} è stato attivato con successo!`,
+        title: t('sponsor_packages_page.payment_completed', 'Pagamento completato!'),
+        description: t('sponsor_packages_page.payment_completed_desc', 'Il pacchetto di sponsorizzazione {name} è stato attivato con successo!').replace('{name}', packageData.name),
       });
 
       // Clear URL parameters
@@ -80,8 +83,8 @@ const SponsorPackages = () => {
     } catch (error) {
       console.error('Error activating sponsor package:', error);
       toast({
-        title: "Errore nell'attivazione",
-        description: "Il pagamento è andato a buon fine, ma c'è stato un problema nell'attivazione del pacchetto. Contatta il supporto.",
+        title: t('sponsor_packages_page.activation_error', "Errore nell'attivazione"),
+        description: t('sponsor_packages_page.activation_error_desc', "Il pagamento è andato a buon fine, ma c'è stato un problema nell'attivazione del pacchetto. Contatta il supporto."),
         variant: "destructive"
       });
     }
@@ -98,8 +101,8 @@ const SponsorPackages = () => {
       handlePaymentSuccess(packageId);
     } else if (canceled === 'true') {
       toast({
-        title: "Pagamento annullato",
-        description: "Il pagamento è stato annullato. Puoi riprovare quando vuoi.",
+        title: t('sponsor_packages_page.payment_cancelled', 'Pagamento annullato'),
+        description: t('sponsor_packages_page.payment_cancelled_desc', 'Il pagamento è stato annullato. Puoi riprovare quando vuoi.'),
         variant: "destructive"
       });
       // Clear URL parameters
@@ -110,8 +113,8 @@ const SponsorPackages = () => {
   const handleSelectPackage = async (packageData: SponsorPackage) => {
     if (!user?.id) {
       toast({
-        title: "Errore",
-        description: "Devi essere autenticato per procedere",
+        title: t('sponsor_packages_page.error', 'Errore'),
+        description: t('sponsor_packages_page.auth_required', 'Devi essere autenticato per procedere'),
         variant: "destructive"
       });
       return;
@@ -123,15 +126,15 @@ const SponsorPackages = () => {
       const { url } = await startCheckout({
         kind: 'sponsor_package',
         id: packageData.id,
-        title: `Sponsorizzazione ${packageData.name}`,
+        title: t('sponsor_packages_page.sponsorship', 'Sponsorizzazione {name}').replace('{name}', packageData.name),
         amount: packageData.price,
       });
       window.location.href = url;
     } catch (error) {
       console.error('Errore:', error);
       toast({
-        title: "Errore",
-        description: "Si è verificato un errore imprevisto",
+        title: t('sponsor_packages_page.error', 'Errore'),
+        description: t('sponsor_packages_page.unexpected_error', 'Si è verificato un errore imprevisto'),
         variant: "destructive"
       });
     } finally {
@@ -144,14 +147,14 @@ const SponsorPackages = () => {
       <div className="container mx-auto px-4">
         {/* Back Button */}
         <div className="mb-8">
-          <BackButton fallbackPath="/dashboard" label="Torna alla Dashboard" />
+          <BackButton fallbackPath="/dashboard" label={t('sponsor_packages_page.back_to_dashboard', 'Torna alla Dashboard')} />
         </div>
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-foreground mb-4">
-            Pacchetti Sponsorizzazione
+            {t('sponsor_packages_page.title', 'Pacchetti Sponsorizzazione')}
           </h1>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Diventa partner di WeApnea e raggiungi migliaia di apneisti in tutta Italia
+            {t('sponsor_packages_page.subtitle', 'Diventa partner di WeApnea e raggiungi migliaia di apneisti in tutta Italia')}
           </p>
         </div>
 
@@ -168,7 +171,7 @@ const SponsorPackages = () => {
               {pkg.popular && (
                 <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
                   <span className="bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-medium">
-                    Più Popolare
+                    {t('sponsor_packages_page.most_popular', 'Più Popolare')}
                   </span>
                 </div>
               )}
@@ -180,7 +183,7 @@ const SponsorPackages = () => {
                 <CardTitle className="text-2xl font-bold">{pkg.name}</CardTitle>
                 <CardDescription className="text-lg">
                   <span className="text-3xl font-bold text-foreground">€{pkg.price}</span>
-                  <span className="text-muted-foreground">/anno</span>
+                  <span className="text-muted-foreground">/{t('sponsor_packages_page.per_year', 'anno')}</span>
                 </CardDescription>
               </CardHeader>
 
@@ -201,9 +204,9 @@ const SponsorPackages = () => {
                   variant={pkg.popular ? "default" : "outline"}
                 >
                   {loading === pkg.id ? (
-                    "Creazione checkout..."
+                    t('sponsor_packages_page.creating_checkout', 'Creazione checkout...')
                   ) : (
-                    `Scegli ${pkg.name}`
+                    t('sponsor_packages_page.choose_package', 'Scegli {name}').replace('{name}', pkg.name)
                   )}
                 </Button>
               </CardContent>
@@ -213,9 +216,9 @@ const SponsorPackages = () => {
 
         <div className="text-center mt-12">
           <p className="text-muted-foreground">
-            Hai domande sui nostri pacchetti sponsorizzazione?{" "}
+            {t('sponsor_packages_page.questions', 'Hai domande sui nostri pacchetti sponsorizzazione?')}{" "}
             <a href="mailto:info@weapnea.com" className="text-primary hover:underline">
-              Contattaci
+              {t('sponsor_packages_page.contact_us', 'Contattaci')}
             </a>
           </p>
         </div>
