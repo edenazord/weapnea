@@ -3028,6 +3028,31 @@ app.post('/api/payments/create-package-checkout', requireAuth, async (req, res) 
   }
 });
 
+// GET /api/me/pending-co-organizer-invites — check if logged-in user has pending co-organizer invitations
+app.get('/api/me/pending-co-organizer-invites', requireAuth, async (req, res) => {
+  if (!req.user?.id) return res.status(401).json({ error: 'Unauthorized' });
+  try {
+    const { rows: userRows } = await pool.query('SELECT email FROM profiles WHERE id = $1 LIMIT 1', [req.user.id]);
+    const userEmail = userRows[0]?.email?.toLowerCase();
+    if (!userEmail) return res.json([]);
+
+    const { rows } = await pool.query(`
+      SELECT co.id, co.event_id, co.invite_token, co.email, co.status,
+             e.title AS event_title, e.slug AS event_slug,
+             COALESCE(p.company_name, p.full_name) AS organizer_name
+      FROM event_coorganizers co
+      JOIN events e ON e.id = co.event_id
+      LEFT JOIN profiles p ON p.id = e.created_by
+      WHERE LOWER(co.email) = $1 AND co.status = 'pending'
+      ORDER BY co.invited_at DESC
+    `, [userEmail]);
+
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 // -----------------------------
 // User-centric endpoints (participations, wishlist, my events)
 // -----------------------------

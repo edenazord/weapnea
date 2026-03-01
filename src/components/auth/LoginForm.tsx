@@ -17,7 +17,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { apiSend } from "@/lib/apiClient";
+import { apiGet, apiSend } from "@/lib/apiClient";
 
 const LoginForm = () => {
   const { t } = useLanguage();
@@ -48,8 +48,26 @@ const LoginForm = () => {
   useEffect(() => {
     if (user && !isLoading && !hasRedirected.current) {
       hasRedirected.current = true;
-      const target = redirectUrl || '/';
-      navigate(target, { replace: true });
+      
+      if (redirectUrl) {
+        navigate(redirectUrl, { replace: true });
+        return;
+      }
+      
+      // Check for pending co-organizer invites
+      (async () => {
+        try {
+          const invites = await apiGet('/api/me/pending-co-organizer-invites');
+          if (Array.isArray(invites) && invites.length > 0) {
+            const first = invites[0] as { invite_token?: string };
+            if (first.invite_token) {
+              navigate(`/co-organizer-invite/${first.invite_token}`, { replace: true });
+              return;
+            }
+          }
+        } catch (_) { /* ignore */ }
+        navigate('/', { replace: true });
+      })();
     }
   }, [user, isLoading, redirectUrl, navigate]);
   async function onSubmit(values: z.infer<typeof formSchema>) {
