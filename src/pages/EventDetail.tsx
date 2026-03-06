@@ -632,7 +632,7 @@ const EventDetail = () => {
                                     </div>
                                 </div>
                             )}
-                            {(typeof event.participants === 'number' && event.participants > 0) || typeof (event as any).participants_paid_count === 'number' ? (
+                            {(typeof event.participants === 'number' && event.participants > 0) || (Number((event as any).participants_paid_count) > 0) ? (
                                 <div className="flex items-start">
                                     <Users className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                     <div>

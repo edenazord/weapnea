@@ -216,7 +216,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
 
           <div className="flex items-center justify-between">
             {/* Partecipanti: mostra x/y dove possibile – nasconde posti rimanenti negli eventi passati */}
-            {!isPast && ((typeof event.participants === 'number' && event.participants > 0) || (typeof event.participants_paid_count === 'number')) ? (
+            {!isPast && ((typeof event.participants === 'number' && event.participants > 0) || (Number(event.participants_paid_count) > 0)) ? (
               <div className="flex items-center gap-2 text-xs text-gray-600">
                 <Users className="h-4 w-4 text-purple-500 flex-shrink-0" />
                 {typeof event.participants === 'number' && event.participants > 0 && typeof event.participants_paid_count === 'number' ? (
