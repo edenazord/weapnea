@@ -187,14 +187,12 @@ const Profile = () => {
   const medicalOk = formData.scadenza_certificato_medico ? (new Date(formData.scadenza_certificato_medico) >= toleranceDate) : false;
   const publicEnabled = !!formData.public_profile_enabled;
   const hasSlug = !!(formData.public_slug && formData.public_slug.trim());
-  const organizerEligible = publicEnabled && hasSlug && hasInsurance && insuranceOk && medicalOk;
+  const organizerEligible = publicEnabled && hasSlug && medicalOk;
 
   // Lista requisiti mancanti per organizzare
   const missingRequirements: string[] = [];
   if (!publicEnabled) missingRequirements.push(t('profile.requirements.public_profile', 'Profilo pubblico attivo'));
   if (!hasSlug) missingRequirements.push(t('profile.requirements.public_slug', 'Slug profilo pubblico'));
-  if (!hasInsurance) missingRequirements.push(t('profile.requirements.insurance', 'Assicurazione'));
-  if (hasInsurance && !insuranceOk) missingRequirements.push(t('profile.requirements.insurance_valid', 'Assicurazione in corso di validità'));
   if (!medicalOk) missingRequirements.push(t('profile.requirements.medical', 'Certificato medico in corso di validità'));
 
   // Nessun calcolo di progress: le sezioni sono opzionali/variabili per ruolo
@@ -1666,7 +1664,6 @@ const Profile = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <Shield className="h-5 w-5 text-primary" />
                         <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</h3>
-                        <Badge variant="outline" className="text-xs">{t('profile.sections.certifications.required_badge', 'Obbligatoria')}</Badge>
                       </div>
 
                       <div className="flex items-start gap-3 p-3 border rounded-md border-primary/30 bg-primary/5">
@@ -1728,7 +1725,6 @@ const Profile = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <FileText className="h-5 w-5 text-primary" />
                         <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_medical', 'Certificato medico')}</h3>
-                        <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.organizer_only_badge', 'Per organizzatori')}</Badge>
                       </div>
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1783,7 +1779,6 @@ const Profile = () => {
                         <div className="flex items-center gap-2">
                           <FileText className="h-5 w-5" />
                           <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_brevetto', 'Brevetto')}</h3>
-                          <Badge variant="secondary" className="text-xs">{t('profile.sections.certifications.organizer_only_badge', 'Per organizzatori')}</Badge>
                         </div>
                         <Switch
                           checked={!!(formData.brevetto?.trim() || formData.dichiarazione_brevetto_valido || (formData as any)._showBrevetto)}
@@ -2104,36 +2099,7 @@ const Profile = () => {
                   )}
                   {/* Telefono */}
 
-                  {/* Assicurazione */}
-                  {missingSnapshot && (!missingSnapshot.hasInsurance || !missingSnapshot.insuranceOk) && (
-                    <div className="space-y-3">
-                      <Label className="font-semibold">{t('profile.sections.certifications.accordion_insurance', 'Assicurazione')}</Label>
-                      {!missingSnapshot.hasInsurance && (
-                        <div className="space-y-1">
-                          <Label htmlFor="modal_assicurazione">{t('profile.sections.certifications.insurance_label', 'Nome Assicurazione')}</Label>
-                          <Input
-                            id="modal_assicurazione"
-                            value={formData.assicurazione}
-                            onChange={(e) => handleInputChange('assicurazione', e.target.value)}
-                            placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')}
-                          />
-                        </div>
-                      )}
-                      {!missingSnapshot.insuranceOk && (
-                        <div className="space-y-1">
-                          <Label htmlFor="modal_scadenza_assicurazione">{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
-                          <DatePicker
-                            date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined}
-                            onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))}
-                          />
-                          {formData.scadenza_assicurazione && new Date(formData.scadenza_assicurazione) < toleranceDate && (
-                            <p className="text-xs text-destructive">{t('profile.missing_modal.insurance_expired', 'La scadenza inserita non è valida o è già trascorsa.')}</p>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
-                  {/* Certificato medico */}
+                  {/* Certificato medico */
                   {missingSnapshot && !missingSnapshot.medicalOk && (
                     <div className="space-y-2">
                       <Label htmlFor="modal_scadenza_certificato_medico" className="font-semibold">{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
@@ -2162,10 +2128,8 @@ const Profile = () => {
                       // (i valori di formData vengono già aggiornati in tempo reale)
                       const nowPublic = formData.public_profile_enabled;
                       const nowSlug = !!(formData.public_slug && formData.public_slug.trim());
-                      const nowInsurance = !!(formData.assicurazione && formData.assicurazione.trim());
-                      const nowInsuranceOk = formData.scadenza_assicurazione ? (new Date(formData.scadenza_assicurazione) >= toleranceDate) : false;
                       const nowMedicalOk = formData.scadenza_certificato_medico ? (new Date(formData.scadenza_certificato_medico) >= toleranceDate) : false;
-                      if (nowPublic && nowSlug && nowInsurance && nowInsuranceOk && nowMedicalOk) {
+                      if (nowPublic && nowSlug && nowMedicalOk) {
                         setShowMissingFieldsModal(false);
                         setMissingSnapshot(null);
                         setShowOrganizer(true);

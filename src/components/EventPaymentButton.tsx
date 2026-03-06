@@ -100,10 +100,7 @@ export const EventPaymentButton = ({
     if (!hasPhone) {
       missing.push(t('profile.fields.phone', 'Telefono'));
     }
-    if (isEmpty(user.assicurazione)) missing.push(t('profile.fields.insurance', 'Assicurazione'));
-    const sa = user.scadenza_assicurazione ? new Date(user.scadenza_assicurazione) : null;
     const sc = user.scadenza_certificato_medico ? new Date(user.scadenza_certificato_medico) : null;
-    if (!sa || isNaN(sa.getTime()) || sa < toleranceDate) missing.push(t('profile.fields.insurance_expiry', 'Scadenza assicurazione'));
     if (!sc || isNaN(sc.getTime()) || sc < toleranceDate) missing.push(t('profile.fields.medical_cert_expiry', 'Scadenza certificato medico'));
     // Richiedi anche il tipo di certificato medico (agonistico/non_agonistico)
     const tipo = (user as any).certificato_medico_tipo as string | null | undefined;
@@ -151,10 +148,8 @@ export const EventPaymentButton = ({
             const miss = Array.isArray(data?.missing) ? data.missing : [];
             const map: Record<string,string> = {
               phone: t('profile.fields.phone', 'Telefono'),
-              assicurazione: t('profile.fields.insurance', 'Assicurazione'),
-              scadenza_assicurazione: t('profile.fields.insurance_expiry', 'Scadenza assicurazione'),
               scadenza_certificato_medico: t('profile.fields.medical_cert_expiry', 'Scadenza certificato medico'),
-                certificato_medico_tipo: t('profile.fields.medical_cert_type', 'Tipo certificato medico'),
+              certificato_medico_tipo: t('profile.fields.medical_cert_type', 'Tipo certificato medico'),
             };
             const human = miss.map((k:string)=> map[k] || k);
             setMissingFields(human);

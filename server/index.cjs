@@ -2978,10 +2978,7 @@ app.post('/api/payments/create-checkout-session', requireAuth, async (req, res) 
     const toleranceDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
     const isEmpty = (v) => !v || String(v).trim() === '';
     if (isEmpty(prof.phone)) missing.push('phone');
-    if (isEmpty(prof.assicurazione)) missing.push('assicurazione');
-    const sa = prof.scadenza_assicurazione ? new Date(prof.scadenza_assicurazione) : null;
     const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
-    if (!sa || !(sa instanceof Date) || isNaN(sa.getTime()) || sa < toleranceDate) missing.push('scadenza_assicurazione');
     if (!sc || !(sc instanceof Date) || isNaN(sc.getTime()) || sc < toleranceDate) missing.push('scadenza_certificato_medico');
     if (missing.length) {
       return res.status(400).json({ error: 'profile_incomplete', missing });
@@ -4266,13 +4263,6 @@ app.post('/api/events/:id/register-free', requireAuth, async (req, res) => {
       const toleranceDate = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
       const isEmpty = (v) => !v || String(v).trim() === '';
       if (isEmpty(prof.phone)) missing.push('phone');
-      // Assicurazione: basta la dichiarazione OPPURE i dati assicurativi completi
-      const hasInsuranceDeclaration = Boolean(prof.dichiarazione_assicurazione_valida);
-      const hasInsuranceData = !isEmpty(prof.assicurazione);
-      const sa = prof.scadenza_assicurazione ? new Date(prof.scadenza_assicurazione) : null;
-      const insuranceDateOk = sa && (sa instanceof Date) && !isNaN(sa.getTime()) && sa >= toleranceDate;
-      if (!hasInsuranceDeclaration && !hasInsuranceData) missing.push('assicurazione');
-      if (!hasInsuranceDeclaration && (!sa || !insuranceDateOk)) missing.push('scadenza_assicurazione');
       const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
       if (!sc || !(sc instanceof Date) || isNaN(sc.getTime()) || sc < toleranceDate) missing.push('scadenza_certificato_medico');
       if (missing.length) {
