@@ -16,7 +16,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
-import { Waves, ArrowLeft } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { apiSend } from "@/lib/apiClient";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -158,7 +158,7 @@ const PasswordResetPage = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 p-4">
         <Link to="/" className="flex items-center space-x-2 mb-8 no-underline">
-          <Waves className="h-10 w-10 text-blue-600" />
+          <img src="/images/weapnea-logo.png" alt="WeApnea" className="h-10 w-10 object-contain" />
           <span className="text-4xl font-bold text-blue-900">WeApnea</span>
         </Link>
         
@@ -185,7 +185,7 @@ const PasswordResetPage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 via-cyan-50 to-blue-100 p-4">
       <Link to="/" className="flex items-center space-x-2 mb-8 no-underline">
-        <Waves className="h-10 w-10 text-blue-600" />
+        <img src="/images/weapnea-logo.png" alt="WeApnea" className="h-10 w-10 object-contain" />
         <span className="text-4xl font-bold text-blue-900">WeApnea</span>
       </Link>
       

@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Waves, Mail, MapPin, Sparkles } from "lucide-react";
+import { Mail, MapPin, Sparkles } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
@@ -15,7 +15,7 @@ const Footer = () => {
         <div className="px-5 py-6 space-y-4">
           {/* Logo + tagline */}
           <div className="flex items-center gap-2">
-            <Waves className="h-6 w-6 text-blue-300" />
+            <img src="/images/weapnea-logo.png" alt="WeApnea" className="h-6 w-6 object-contain brightness-0 invert" />
             <span className="text-lg font-bold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
               WeApnea
             </span>
@@ -60,7 +60,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <Link to="/" className="flex items-center space-x-3 mb-6 group">
               <div className="relative">
-                <Waves className="h-10 w-10 text-blue-300 group-hover:text-white transition-colors duration-300" />
+                <img src="/images/weapnea-logo.png" alt="WeApnea" className="h-10 w-10 object-contain brightness-0 invert" />
                 <div className="absolute -top-1 -right-1">
                   <Sparkles className="h-4 w-4 text-yellow-400 animate-pulse" />
                 </div>

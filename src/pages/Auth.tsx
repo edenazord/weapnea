@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import LoginForm from "@/components/auth/LoginForm"
 import RegisterForm from "@/components/auth/RegisterForm"
 import { Link, useSearchParams } from "react-router-dom"
-import { Waves, ArrowLeft } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useLanguage } from "@/contexts/LanguageContext"
 

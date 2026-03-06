@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useScrollToTop } from "@/hooks/useScrollToTop";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Waves, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -30,7 +30,7 @@ const AppMobileLayout = ({ children, navVariant = "default" }: AppMobileLayoutPr
         <div className="flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2 group">
             <div className="relative">
-              <Waves className="h-6 w-6 text-blue-600 group-hover:text-purple-600 transition-colors duration-300" />
+              <img src="/images/weapnea-logo.png" alt="WeApnea" className="h-6 w-6 object-contain" />
               <div className="absolute -top-1 -right-1">
                 <Sparkles className="h-3 w-3 text-yellow-400 animate-pulse" />
               </div>

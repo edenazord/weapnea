@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Waves, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 
 const AuthConfirm = () => {
   const navigate = useNavigate();
@@ -103,7 +103,7 @@ const AuthConfirm = () => {
       <div className="max-w-md w-full mx-4">
         <div className="bg-white rounded-lg shadow-lg p-8 text-center">
           <div className="flex justify-center mb-6">
-            <Waves className="h-12 w-12 text-blue-600" />
+            <img src="/images/weapnea-logo.png" alt="WeApnea" className="h-14 w-14" />
           </div>
           
           <div className="flex justify-center mb-6">

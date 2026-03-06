@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Waves, CheckCircle2, XCircle, Loader2, MailOpen } from 'lucide-react';
+import { CheckCircle2, XCircle, Loader2, MailOpen } from 'lucide-react';
 import { apiGet, apiSend } from '@/lib/apiClient';
 import { useLanguage } from '@/contexts/LanguageContext';
 
@@ -58,7 +58,7 @@ const VerifyEmail = () => {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-3">
-            <Waves className="h-10 w-10 text-blue-600" />
+            <img src="/images/weapnea-logo.png" alt="WeApnea" className="h-12 w-12" />
           </div>
           <CardTitle className="text-2xl">
             {state === 'loading' && t('verify_email.loading_title', 'Verifica in corso...')}

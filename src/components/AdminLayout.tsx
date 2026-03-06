@@ -5,7 +5,6 @@ import { UserNav } from "@/components/UserNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Waves } from "lucide-react";
 import { ReactNode } from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
@@ -19,7 +18,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
                 <div className="container mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
                         <Link to="/" className="flex items-center space-x-2">
-                            <Waves className="h-8 w-8 text-blue-600" />
+                            <img src="/images/weapnea-logo.png" alt="WeApnea" className="h-8 w-8 object-contain" />
                             <span className="text-2xl font-bold text-blue-900">WeApnea</span>
                         </Link>
                         

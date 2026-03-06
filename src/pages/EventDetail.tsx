@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEventById, getEventBySlug, EventWithCategory } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, MapPin, Users, Waves, CreditCard, Globe, BookOpen, Target, Check, X, Clock, Languages, FileText, MessageCircle } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, CreditCard, Globe, BookOpen, Target, Check, X, Clock, Languages, FileText, MessageCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { UserNav } from "@/components/UserNav";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,7 +45,7 @@ const EventDetailSkeleton = () => (
             <div className="container mx-auto px-4 py-4">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                        <Waves className="h-8 w-8 text-blue-600" />
+                        <img src="/images/weapnea-logo.png" alt="WeApnea" className="h-8 w-8 object-contain" />
                         <span className="text-2xl font-bold text-blue-900">WeApnea</span>
                     </div>
                     <div className="flex items-center space-x-3">
@@ -738,7 +738,7 @@ const EventDetail = () => {
                                 )}
                                 {event.discipline && (
                                     <div className="flex items-start">
-                                        <Waves className="h-5 w-5 mr-3 mt-1 text-blue-600" />
+                                        <img src="/images/weapnea-logo.png" alt="" className="h-5 w-5 mr-3 mt-1 object-contain flex-shrink-0" />
                                         <div>
                                             <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.discipline_label', 'Disciplina')}</p>
                                             <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>{formatDiscipline(event.discipline)}</p>
