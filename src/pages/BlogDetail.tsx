@@ -28,6 +28,15 @@ const BlogDetail = () => {
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
 
+  // Supporta slug SEO-friendly "/blog/DD-mese-YYYY-titolo" estraendo solo lo slug del titolo
+  const effectiveSlug = slug ? (parseFriendlyBlogSlug(slug)?.titleSlug ?? slug) : undefined;
+
+  const { data: article, isLoading, error } = useQuery({
+    queryKey: ['blog-article', effectiveSlug],
+    queryFn: () => getBlogArticleBySlug(effectiveSlug!),
+    enabled: !!effectiveSlug,
+  });
+
   const openLightbox = (index: number) => { setLightboxIndex(index); setLightboxOpen(true); };
   const goPrev = useCallback(() => setLightboxIndex((i) => (i - 1 + (article?.gallery_images?.length || 1)) % (article?.gallery_images?.length || 1)), [article?.gallery_images?.length]);
   const goNext = useCallback(() => setLightboxIndex((i) => (i + 1) % (article?.gallery_images?.length || 1)), [article?.gallery_images?.length]);
@@ -42,15 +51,6 @@ const BlogDetail = () => {
     window.addEventListener('keydown', handler);
     return () => window.removeEventListener('keydown', handler);
   }, [lightboxOpen, goPrev, goNext]);
-
-  // Supporta slug SEO-friendly "/blog/DD-mese-YYYY-titolo" estraendo solo lo slug del titolo
-  const effectiveSlug = slug ? (parseFriendlyBlogSlug(slug)?.titleSlug ?? slug) : undefined;
-
-  const { data: article, isLoading, error } = useQuery({
-    queryKey: ['blog-article', effectiveSlug],
-    queryFn: () => getBlogArticleBySlug(effectiveSlug!),
-    enabled: !!effectiveSlug,
-  });
 
   const formatDate = (dateString: string) => {
     try {
