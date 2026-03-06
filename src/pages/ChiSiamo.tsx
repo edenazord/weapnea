@@ -36,7 +36,7 @@ const ChiSiamo = () => {
         <div className="space-y-5">
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight">
             {t('about_page.hero_heading_pre', 'About')}{' '}
-            <span className="text-[#0891b2]">WeApnea.com</span>
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">WeApnea.com</span>
           </h1>
           <p className="text-lg md:text-xl font-medium text-gray-600">
             {t('about_page.hero_tagline', 'Connecting freedivers worldwide.')}
@@ -50,7 +50,7 @@ const ChiSiamo = () => {
               e.preventDefault();
               document.getElementById('mission')?.scrollIntoView({ behavior: 'smooth' });
             }}
-            className="inline-flex items-center gap-2 bg-[#0891b2] hover:bg-[#0e7490] text-white font-semibold px-7 py-3 rounded-full transition-colors shadow-md shadow-cyan-200"
+            className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white font-semibold px-7 py-3 rounded-full transition-all duration-300 shadow-lg shadow-blue-200"
           >
             {t('about_page.cta_mission', 'La Nostra Mission')} <span aria-hidden>→</span>
           </Link>
@@ -68,15 +68,15 @@ const ChiSiamo = () => {
       </section>
 
       {/* ── 3 FEATURE STRIP ── */}
-      <section className="bg-[#e0f7fa]/60 border-y border-cyan-100">
+      <section className="bg-gradient-to-r from-blue-50 to-purple-50 border-y border-blue-100">
         <div className="max-w-5xl mx-auto px-6 py-10 grid grid-cols-3 gap-6 text-center">
           {[
-            { icon: <GraduationCap className="h-7 w-7 text-[#0891b2]" />, label: t('about_page.feature_learn', 'Impara l\'Apnea') },
-            { icon: <Target className="h-7 w-7 text-[#0891b2]" />, label: t('about_page.feature_improve', 'Migliora le Abilità') },
-            { icon: <Handshake className="h-7 w-7 text-[#0891b2]" />, label: t('about_page.feature_community', 'Entra nella Community') },
+            { icon: <GraduationCap className="h-7 w-7 text-blue-600" />, label: t('about_page.feature_learn', "Impara l'Apnea") },
+            { icon: <Target className="h-7 w-7 text-purple-600" />, label: t('about_page.feature_improve', 'Migliora le Abilità') },
+            { icon: <Handshake className="h-7 w-7 text-blue-600" />, label: t('about_page.feature_community', 'Entra nella Community') },
           ].map((f, i, arr) => (
-            <div key={i} className={`flex flex-col items-center gap-3 ${i < arr.length - 1 ? 'border-r border-cyan-200' : ''}`}>
-              <div className="w-14 h-14 rounded-full border-2 border-[#0891b2]/30 flex items-center justify-center bg-white shadow-sm">
+            <div key={i} className={`flex flex-col items-center gap-3 ${i < arr.length - 1 ? 'border-r border-blue-200' : ''}`}>
+              <div className="w-14 h-14 rounded-full border-2 border-blue-200 flex items-center justify-center bg-white shadow-sm">
                 {f.icon}
               </div>
               <span className="text-sm md:text-base font-semibold text-gray-700">{f.label}</span>
@@ -89,7 +89,7 @@ const ChiSiamo = () => {
       <section id="mission" className="max-w-6xl mx-auto px-6 py-14 md:py-16 grid md:grid-cols-2 gap-8">
         <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-[#0891b2] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
               <Target className="h-5 w-5 text-white" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">{t('about_page.mission_title', 'La Nostra Mission')}</h2>
@@ -98,7 +98,7 @@ const ChiSiamo = () => {
         </div>
         <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-full bg-[#0891b2] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-blue-600 flex items-center justify-center">
               <Globe className="h-5 w-5 text-white" />
             </div>
             <h2 className="text-xl font-bold text-gray-900">{t('about_page.vision_title', 'La Nostra Vision')}</h2>
@@ -111,17 +111,17 @@ const ChiSiamo = () => {
       <section className="bg-gray-50 border-y border-gray-100">
         <div className="max-w-6xl mx-auto px-6 py-14">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-gray-900">{t('about_page.values_title', 'I Nostri Valori')}</h2>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">{t('about_page.values_title', 'I Nostri Valori')}</h2>
             <p className="text-gray-500 mt-2">{t('about_page.values_subtitle', 'I principi che guidano ogni nostra scelta')}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { icon: <Users className="h-7 w-7 text-[#0891b2]" />, title: t('about_page.values.community_title', 'Community'), desc: t('about_page.values.community_desc', 'Crediamo nella forza della community e nella condivisione di esperienze per crescere insieme come apneisti.') },
-              { icon: <Heart className="h-7 w-7 text-[#0891b2]" />, title: t('about_page.values.passion_title', 'Passione'), desc: t('about_page.values.passion_desc', "L'apnea è la nostra passione e vogliamo trasmetterla attraverso eventi e esperienze indimenticabili.") },
-              { icon: <Globe className="h-7 w-7 text-[#0891b2]" />, title: t('about_page.values.innovation_title', 'Innovazione'), desc: t('about_page.values.innovation_desc', "Utilizziamo la tecnologia per rendere l'apnea più accessibile e connettere apneisti in tutto il mondo.") },
+              { icon: <Users className="h-7 w-7 text-blue-600" />, title: t('about_page.values.community_title', 'Community'), desc: t('about_page.values.community_desc', 'Crediamo nella forza della community e nella condivisione di esperienze per crescere insieme come apneisti.') },
+              { icon: <Heart className="h-7 w-7 text-purple-600" />, title: t('about_page.values.passion_title', 'Passione'), desc: t('about_page.values.passion_desc', "L'apnea è la nostra passione e vogliamo trasmetterla attraverso eventi e esperienze indimenticabili.") },
+              { icon: <Globe className="h-7 w-7 text-blue-600" />, title: t('about_page.values.innovation_title', 'Innovazione'), desc: t('about_page.values.innovation_desc', "Utilizziamo la tecnologia per rendere l'apnea più accessibile e connettere apneisti in tutto il mondo.") },
             ].map((v, i) => (
               <div key={i} className="text-center">
-                <div className="w-16 h-16 rounded-full border-2 border-[#0891b2]/25 bg-white flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <div className="w-16 h-16 rounded-full border-2 border-blue-100 bg-white flex items-center justify-center mx-auto mb-4 shadow-sm">
                   {v.icon}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">{v.title}</h3>
@@ -134,7 +134,7 @@ const ChiSiamo = () => {
 
       {/* ── TEAM ── */}
       <section className="max-w-6xl mx-auto px-6 py-14">
-        <h2 className="text-3xl font-bold text-gray-900 mb-3">{t('about_page.team_title', 'Il Nostro Team')}</h2>
+        <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">{t('about_page.team_title', 'Il Nostro Team')}</h2>
         <p className="text-gray-500 mb-10 max-w-2xl leading-relaxed">
           {t('about_page.team_desc', "Siamo un team di apneisti appassionati, sviluppatori e professionisti del settore che lavorano insieme per creare la migliore esperienza possibile per la community dell'apnea.")}
         </p>
