@@ -2700,7 +2700,16 @@ app.get('/api/instructors/slug/:slug/events', async (req, res) => {
       ownerId = await getSlugOwner(slug);
     }
     if (!ownerId) return res.status(404).json({ error: 'Not found' });
-    const { rows } = await pool.query(`${eventsSelect()} WHERE e.created_by = $1 ORDER BY e.date DESC NULLS LAST`, [ownerId]);
+    const { rows } = await pool.query(
+      `${eventsSelect()}
+       WHERE e.created_by = $1
+          OR e.id IN (
+            SELECT event_id FROM event_coorganizers
+            WHERE user_id = $1 AND status = 'accepted'
+          )
+       ORDER BY e.date DESC NULLS LAST`,
+      [ownerId]
+    );
     res.json(rows);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
