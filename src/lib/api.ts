@@ -47,6 +47,8 @@ export interface Event {
   organizer_id?: string | null;
   organizer_name?: string | null;
   organizer_avatar_url?: string | null;
+  organizer_public_enabled?: boolean | null;
+  organizer_public_slug?: string | null;
   // Co-organizers (accepted only, from API)
   coorganizers?: Array<{
     id: string;

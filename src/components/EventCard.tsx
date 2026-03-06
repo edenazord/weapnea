@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -157,9 +157,32 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
             <div className="flex items-center gap-1.5 text-xs text-gray-500">
               <User className="h-3.5 w-3.5" />
               <span>
-                {organizerDisplayName}
+                {event.organizer_public_enabled && event.organizer_public_slug ? (
+                  <Link
+                    to={`/profile/${event.organizer_public_slug}`}
+                    className="text-blue-600 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {organizerDisplayName}
+                  </Link>
+                ) : (
+                  organizerDisplayName
+                )}
                 {event.coorganizers && Array.isArray(event.coorganizers) && event.coorganizers.length > 0 && (
-                  <> &amp; {event.coorganizers.map((co: any) => co.full_name || co.email).join(', ')}</>
+                  <> &amp; {event.coorganizers.map((co: any) =>
+                    co.public_profile_enabled && co.public_slug ? (
+                      <Link
+                        key={co.user_id || co.id}
+                        to={`/profile/${co.public_slug}`}
+                        className="text-blue-600 hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {co.full_name || co.email}
+                      </Link>
+                    ) : (
+                      co.full_name || co.email
+                    )
+                  ).reduce((acc: React.ReactNode[], el, i) => i === 0 ? [el] : [...acc, ', ', el], [])}</>
                 )}
               </span>
             </div>
