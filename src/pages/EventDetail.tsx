@@ -632,14 +632,14 @@ const EventDetail = () => {
                                     </div>
                                 </div>
                             )}
-                            {(typeof event.participants === 'number' && event.participants > 0) || (Number((event as any).participants_paid_count) > 0) ? (
+                            {(Number(event.participants) > 0 || Number((event as any).participants_paid_count) > 0) ? (
                                 <div className="flex items-start">
                                     <Users className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                     <div>
                                         <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.remaining_spots', 'Posti rimanenti')}</p>
                                         <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>
-                                            {typeof event.participants === 'number' && event.participants > 0
-                                                ? `${Math.max(0, event.participants - Number((event as any).participants_paid_count || 0))}`
+                                            {Number(event.participants) > 0
+                                                ? `${Math.max(0, Number(event.participants) - Number((event as any).participants_paid_count || 0))}`
                                                 : `${Math.max(0, Number((event as any).participants_paid_count || 0))} ${t('events.enrolled', 'iscritti')}`}
                                         </p>
                                     </div>
@@ -673,7 +673,7 @@ const EventDetail = () => {
                                                         eventTitle={event.title}
                                                         eventCost={event.cost ? Number(event.cost) : 0}
                                                         organizerId={(event as any).organizer_id || event.created_by || null}
-                                                        isFull={(typeof event.participants === 'number' && event.participants > 0) 
+                                                        isFull={(Number(event.participants) > 0) 
                                                             ? Number(event.participants_paid_count || 0) >= Number(event.participants)
                                                             : false}
                                                                                                                 className="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
@@ -689,7 +689,7 @@ const EventDetail = () => {
                                                             eventTitle={event.title}
                                                             eventCost={event.cost ? Number(event.cost) : 0}
                                                             organizerId={(event as any).organizer_id || event.created_by || null}
-                                                            isFull={(typeof event.participants === 'number' && event.participants > 0)
+                                                            isFull={(Number(event.participants) > 0)
                                                                 ? Number(event.participants_paid_count || 0) >= Number(event.participants)
                                                                 : false}
                                                                                                                         className="w-full mt-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"

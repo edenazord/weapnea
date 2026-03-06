@@ -1100,7 +1100,7 @@ const Profile = () => {
                         ) : (organizedEvents && organizedEvents.length > 0 ? (
                           <div className="grid gap-3">
                             {organizedEvents.map(ev => {
-                              const isSoldOut = typeof ev.participants === 'number' && ev.participants > 0 && typeof ev.participants_paid_count === 'number' && ev.participants_paid_count >= ev.participants;
+                              const isSoldOut = Number(ev.participants) > 0 && typeof ev.participants_paid_count === 'number' && ev.participants_paid_count >= Number(ev.participants);
                               return (
                               <div key={ev.id} className="border rounded-lg p-4 hover:shadow-sm transition-shadow">
                                 <div className="flex items-start justify-between gap-3">

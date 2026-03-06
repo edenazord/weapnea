@@ -25,7 +25,7 @@ interface EventCardProps {
 }
 
 const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = true, isPast = false }: EventCardProps) => {
-  const isSoldOut = typeof event.participants === 'number' && event.participants > 0 && typeof event.participants_paid_count === 'number' && event.participants_paid_count >= event.participants;
+  const isSoldOut = Number(event.participants) > 0 && typeof event.participants_paid_count === 'number' && event.participants_paid_count >= Number(event.participants);
   const [imageError, setImageError] = useState(false);
   // null = sconosciuto (evita lampeggio del prezzo prima di caricare la config)
   const [eventsFree, setEventsFree] = useState<boolean | null>(null);
