@@ -33,6 +33,8 @@ import { format, parseISO, isValid } from "date-fns";
 import { it as itLocale } from "date-fns/locale";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { useDebounce } from "@/hooks/useDebounce";
@@ -1241,32 +1243,50 @@ const Profile = () => {
                         {participants.length > 0 && (
                           <Button
                             type="button"
-                            variant="ghost"
-                            size="icon"
-                            aria-label={t('profile_extra.download_csv', 'Scarica CSV')}
-                            title={t('profile_extra.download_csv_title', 'Scarica CSV partecipanti')}
+                            variant="default"
+                            size="sm"
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white font-semibold rounded-full shadow-md px-4"
+                            aria-label={t('profile_extra.download_pdf', 'Scarica lista')}
+                            title={t('profile_extra.download_pdf_title', 'Scarica PDF partecipanti')}
                             onClick={() => {
-                              const headers = [t('profile_extra.csv_headers_name', 'Nome'), t('profile_extra.csv_headers_email', 'Email'), t('profile_extra.csv_headers_phone', 'Telefono'), t('profile_extra.csv_headers_company', 'Azienda'), t('profile_extra.csv_headers_paid', 'Pagato il')];
-                              const rows = participants.map((p) => [
-                                p.full_name || '',
-                                (p as any).email || '',
-                                p.phone || '',
-                                p.company_name || '',
-                                p.paid_at ? format(parseISO(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: itLocale }) : '',
-                              ]);
-                              const csvContent = [headers, ...rows]
-                                .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-                                .join('\n');
-                              const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-                              const url = URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = `partecipanti-${(participantsEventTitle || 'evento').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40)}.csv`;
-                              a.click();
-                              URL.revokeObjectURL(url);
+                              const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+                              doc.setFontSize(16);
+                              doc.setTextColor(30, 64, 175);
+                              doc.text('Lista Partecipanti', 14, 18);
+
+                              doc.setFontSize(11);
+                              doc.setTextColor(60, 60, 60);
+                              doc.text(participantsEventTitle || 'Evento', 14, 26);
+
+                              doc.setFontSize(9);
+                              doc.setTextColor(120, 120, 120);
+                              doc.text(`Generato il ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: itLocale })} — ${participants.length} partecipanti`, 14, 32);
+
+                              autoTable(doc, {
+                                startY: 38,
+                                head: [['#', 'Nome', 'Email', 'Telefono', 'Azienda', 'Pagato il']],
+                                body: participants.map((p, i) => [
+                                  i + 1,
+                                  p.full_name || '',
+                                  (p as any).email || '',
+                                  p.phone || '',
+                                  p.company_name || '',
+                                  p.paid_at ? format(parseISO(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: itLocale }) : '—',
+                                ]),
+                                headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+                                bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },
+                                alternateRowStyles: { fillColor: [241, 245, 255] },
+                                columnStyles: { 0: { cellWidth: 8 }, 2: { cellWidth: 55 } },
+                                margin: { left: 14, right: 14 },
+                              });
+
+                              const safeName = (participantsEventTitle || 'evento').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);
+                              doc.save(`partecipanti-${safeName}.pdf`);
                             }}
                           >
-                            <Download className="h-4 w-4" />
+                            <Download className="h-4 w-4 mr-2" />
+                            {t('profile_extra.download_pdf', 'Scarica lista')}
                           </Button>
                         )}
                         <SheetClose asChild>
