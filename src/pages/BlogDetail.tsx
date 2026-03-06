@@ -260,45 +260,45 @@ const BlogDetail = () => {
               ))}
             </div>
           </div>
+        )}
 
-          {/* Lightbox blog */}
-          {article.gallery_images && article.gallery_images.length > 0 && (
-            <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
-              <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none">
-                <DialogTitle className="sr-only">{t('blog_page.gallery_title', 'Galleria')}</DialogTitle>
-                <div className="relative w-screen h-screen flex items-center justify-center">
-                  <button
-                    type="button"
-                    aria-label={t('common.close', 'Chiudi')}
-                    onClick={() => setLightboxOpen(false)}
-                    className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white focus:outline-none focus:ring-2 focus:ring-white/50 transition-colors"
-                  >
-                    <X className="h-5 w-5" />
-                  </button>
-                  <img
-                    src={article.gallery_images[lightboxIndex]}
-                    alt={`${t('blog_page.gallery_title', 'Galleria')} ${lightboxIndex + 1}`}
-                    className="max-h-[90vh] max-w-[95vw] object-contain drop-shadow-2xl"
-                    onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
-                  />
-                  {article.gallery_images.length > 1 && (
-                    <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3 text-white">
-                      <button type="button" aria-label="Precedente" onClick={goPrev} className="p-2 rounded-full bg-black/40 hover:bg-black/60 focus:outline-none">
-                        <ChevronLeft className="h-5 w-5" />
-                      </button>
-                      <div className="bg-black/40 px-3 py-1 rounded-full text-sm tabular-nums">
-                        {lightboxIndex + 1} / {article.gallery_images.length}
-                      </div>
-                      <button type="button" aria-label="Successiva" onClick={goNext} className="p-2 rounded-full bg-black/40 hover:bg-black/60 focus:outline-none">
-                        <ChevronRight className="h-5 w-5" />
-                      </button>
+        {/* Lightbox blog */}
+        {article.gallery_images && article.gallery_images.length > 0 && (
+          <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
+            <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none">
+              <DialogTitle className="sr-only">{t('blog_page.gallery_title', 'Galleria')}</DialogTitle>
+              <div className="relative w-screen h-screen flex items-center justify-center">
+                <button
+                  type="button"
+                  aria-label={t('common.close', 'Chiudi')}
+                  onClick={() => setLightboxOpen(false)}
+                  className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white focus:outline-none focus:ring-2 focus:ring-white/50 transition-colors"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <img
+                  src={article.gallery_images[lightboxIndex]}
+                  alt={`${t('blog_page.gallery_title', 'Galleria')} ${lightboxIndex + 1}`}
+                  className="max-h-[90vh] max-w-[95vw] object-contain drop-shadow-2xl"
+                  onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
+                />
+                {article.gallery_images.length > 1 && (
+                  <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-3 text-white">
+                    <button type="button" aria-label="Precedente" onClick={goPrev} className="p-2 rounded-full bg-black/40 hover:bg-black/60 focus:outline-none">
+                      <ChevronLeft className="h-5 w-5" />
+                    </button>
+                    <div className="bg-black/40 px-3 py-1 rounded-full text-sm tabular-nums">
+                      {lightboxIndex + 1} / {article.gallery_images.length}
                     </div>
-                  )}
-                </div>
-              </DialogContent>
-            </Dialog>
-          )}
-        }
+                    <button type="button" aria-label="Successiva" onClick={goNext} className="p-2 rounded-full bg-black/40 hover:bg-black/60 focus:outline-none">
+                      <ChevronRight className="h-5 w-5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
 
         {/* Back to Blog */}
   <div className="text-center py-8 md:py-12 border-t border-gray-200">

@@ -402,7 +402,7 @@ const EventDetail = () => {
                 <div className={isMobile ? 'col-span-1' : 'md:col-span-2'}>
                     {/* Banner immagine: carosello automatico */}
                     <Card className="overflow-hidden shadow-lg">
-                        <div className={`relative w-full ${isMobile ? 'h-48' : 'h-64 md:h-96'}`}>
+                        <div className={`relative w-full bg-gray-100 ${isMobile ? 'h-48' : 'h-64 md:h-96'}`}>
                             {/* Slides */}
                             <div className="absolute inset-0">
                                 {bannerImages.map((src, idx) => (
@@ -410,7 +410,7 @@ const EventDetail = () => {
                                         key={`${src}-${idx}`}
                                         src={src || '/placeholder.svg'}
                                         alt={`${event.title} - immagine ${idx + 1}`}
-                                        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${idx === bannerIndex ? 'opacity-100' : 'opacity-0'}`}
+                                        className={`absolute inset-0 w-full h-full object-contain transition-opacity duration-700 ${idx === bannerIndex ? 'opacity-100' : 'opacity-0'}`}
                                         onError={(e) => { (e.target as HTMLImageElement).src = '/placeholder.svg'; }}
                                         loading={idx === 0 ? 'eager' : 'lazy'}
                                     />
