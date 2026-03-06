@@ -23,7 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiGet } from "@/lib/apiClient";
 import { ensureAbsoluteUrl } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import { friendlyToCanonicalSlug } from "@/lib/seo-utils";
 import { useChatStore } from "@/hooks/useChatStore";
 import { toast } from "sonner";
@@ -856,6 +856,15 @@ const EventDetail = () => {
                             <DialogTitle className="sr-only">{t('events.image_gallery_title', 'Galleria immagini')}</DialogTitle>
                             <DialogDescription className="sr-only">{t('events.image_zoom', 'Zoom immagine')} {lightboxIndex + 1} / {galleryAbs.length}</DialogDescription>
                                                         <div className="relative w-screen h-screen flex items-center justify-center">
+                                                            {/* Pulsante chiudi */}
+                                                            <button
+                                                                type="button"
+                                                                aria-label={t('common.close', 'Chiudi')}
+                                                                onClick={() => setLightboxOpen(false)}
+                                                                className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white focus:outline-none focus:ring-2 focus:ring-white/50 transition-colors"
+                                                            >
+                                                                <X className="h-5 w-5" />
+                                                            </button>
                                                                 {/* Image */}
                                 {hasGallery && (
                                     <img

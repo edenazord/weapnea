@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/apiClient";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, MapPin, Instagram, Award, Shield, User, Calendar, Target, MessageCircle } from "lucide-react";
+import { ArrowLeft, MapPin, Instagram, Award, Shield, User, Calendar, Target, MessageCircle, BookOpen } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useIsMobile } from "@/hooks/useIsMobile";
@@ -77,6 +77,16 @@ export default function InstructorPublicProfile() {
     queryFn: async () => {
       if (!slug) return [];
       const res = await apiGet(`/api/instructors/slug/${encodeURIComponent(slug)}/events`);
+      return Array.isArray(res) ? res : [];
+    },
+    enabled: !!slug,
+  });
+
+  const { data: articles, isLoading: loadingArticles } = useQuery<any[]>({
+    queryKey: ['public-instructor-articles', slug],
+    queryFn: async () => {
+      if (!slug) return [];
+      const res = await apiGet(`/api/instructors/slug/${encodeURIComponent(slug)}/articles`);
       return Array.isArray(res) ? res : [];
     },
     enabled: !!slug,
@@ -257,6 +267,42 @@ export default function InstructorPublicProfile() {
                   </ul>
                 ) : (
                   <div className="text-gray-500">{t('instructor_profile_page.no_records', 'Nessun record disponibile')}</div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Articoli pubblicati */}
+          {articles && articles.length > 0 && (
+            <Card>
+              <CardHeader><CardTitle className="text-xl flex items-center"><BookOpen className="w-5 h-5 mr-2"/>{t('instructor_profile_page.articles', 'Articoli pubblicati')}</CardTitle></CardHeader>
+              <CardContent>
+                {loadingArticles ? (
+                  <div className="py-4 text-gray-500">{t('common.loading', 'Caricamento...')}</div>
+                ) : (
+                  <div className="space-y-4">
+                    {articles.map((article) => (
+                      <a
+                        key={article.id}
+                        href={`/blog/${article.slug}`}
+                        className="flex gap-4 group hover:bg-gray-50 rounded-lg p-2 -mx-2 transition-colors"
+                      >
+                        {article.cover_image_url && (
+                          <img
+                            src={article.cover_image_url}
+                            alt={article.title}
+                            className="w-20 h-16 object-cover rounded-lg flex-shrink-0"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors line-clamp-2 leading-snug">{article.title}</p>
+                          {article.excerpt && <p className="text-sm text-gray-500 mt-1 line-clamp-2">{article.excerpt}</p>}
+                          <p className="text-xs text-gray-400 mt-1">{new Date(article.created_at).toLocaleDateString('it-IT')}</p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
                 )}
               </CardContent>
             </Card>

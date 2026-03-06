@@ -5,7 +5,7 @@ import { backendConfig } from '@/lib/backendConfig';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { Camera, Upload, Trash2, Loader2, ImagePlus, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Camera, Upload, Trash2, Loader2, ImagePlus, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { ensureAbsoluteUrl } from '@/lib/utils';
@@ -271,6 +271,15 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
         <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none">
           <DialogTitle className="sr-only">{t('media.community_gallery', 'Foto & Video della Community')}</DialogTitle>
           <div className="relative w-screen h-screen flex items-center justify-center">
+            {/* Pulsante chiudi */}
+            <button
+              type="button"
+              aria-label="Chiudi"
+              onClick={() => setLightboxOpen(false)}
+              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white focus:outline-none focus:ring-2 focus:ring-white/50 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
             {media[lightboxIndex] && (
               media[lightboxIndex].media_type === 'video' ? (
                 <video

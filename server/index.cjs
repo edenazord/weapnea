@@ -2697,6 +2697,34 @@ app.get('/api/instructors/slug/:slug/events', async (req, res) => {
   }
 });
 
+// Articoli pubblicati da un utente (per profilo pubblico)
+app.get('/api/instructors/slug/:slug/articles', async (req, res) => {
+  try {
+    const slug = String(req.params.slug || '').trim().toLowerCase();
+    let ownerId = null;
+    if (HAS_PUBLIC_PROFILE_FIELDS) {
+      try {
+        const { rows } = await pool.query(`SELECT id FROM profiles WHERE lower(public_slug) = lower($1) AND COALESCE(public_profile_enabled,false) = true LIMIT 1`, [slug]);
+        if (rows[0]) ownerId = rows[0].id;
+      } catch (_) {}
+    }
+    if (!ownerId) {
+      ownerId = await getSlugOwner(slug);
+    }
+    if (!ownerId) return res.status(404).json({ error: 'Not found' });
+    const { rows } = await pool.query(
+      `SELECT b.id, b.title, b.subtitle, b.slug, b.excerpt, b.cover_image_url, b.created_at, b.language
+       FROM blog_articles b
+       WHERE b.author_id = $1 AND b.published = true
+       ORDER BY b.created_at DESC`,
+      [ownerId]
+    );
+    res.json(rows);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 // Forum: categories
 app.get('/api/forum/categories', async (_req, res) => {
   try {
