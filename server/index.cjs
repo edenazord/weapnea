@@ -1256,10 +1256,10 @@ app.post('/api/auth/register', async (req, res) => {
     // Build the verification link
     const verifyBase = process.env.PUBLIC_BASE_URL || PRODUCTION_BASE_URL;
     const verifyLink = `${verifyBase.replace(/\/$/, '')}/verify-email?token=${encodeURIComponent(verificationToken)}`;
-    // Send verification email instead of welcome email
+    // Send combined welcome + verification email
     renderEmailWithTemplate('email_verification', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME, verify_link: verifyLink },
-      'Conferma il tuo account {{app_name}}',
-      `<p>Ciao {{full_name}},</p><p>grazie per esserti registrato su {{app_name}}!</p><p>Per attivare il tuo account, clicca sul pulsante qui sotto:</p><p><a href="{{verify_link}}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;">Conferma email</a></p><p>Il link scade tra 24 ore.</p><p>Se non hai richiesto questa registrazione, ignora questa email.</p>`
+      'Benvenuto su {{app_name}} — Conferma il tuo account',
+      `<p>Ciao {{full_name}},</p><p>benvenuto su {{app_name}}! Siamo felici di averti con noi.</p><p>Per attivare il tuo account e iniziare a esplorare eventi, allenamenti e molto altro, clicca sul pulsante qui sotto:</p><p><a href="{{verify_link}}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;border-radius:6px;text-decoration:none;font-weight:bold;">Conferma email e accedi</a></p><p>Il link scade tra 24 ore.</p><p>Se non hai richiesto questa registrazione, ignora questa email.</p>`
     ).then(t => sendEmail({ to: user.email, subject: t.subject, html: t.html })).catch(e => { console.error('[register] verification email failed:', e); });
     // Return success WITHOUT token — user must verify email first
     res.status(201).json({ needsVerification: true, message: "Controlla la tua email per confermare l'account." });
@@ -1367,11 +1367,7 @@ app.get('/api/auth/verify-email', async (req, res) => {
     if (user.email_verification_token !== token) return res.status(400).json({ error: 'invalid or expired token' });
     // Activate the user and clear the verification token
     await pool.query('UPDATE profiles SET is_active = true, email_verification_token = NULL WHERE id = $1', [user.id]);
-    // Send welcome email now that the account is verified
-    renderEmailWithTemplate('welcome', { full_name: user.full_name || '', email: user.email, app_name: APP_NAME },
-      'Benvenuto su {{app_name}}',
-      `<p>Ciao {{full_name}},</p><p>benvenuto su {{app_name}}! Il tuo account è stato attivato con successo.</p>`
-    ).then(t => sendEmail({ to: user.email, subject: t.subject, html: t.html })).catch(() => {});
+    // No separate welcome email — benvenuto is already included in the verification email
     res.json({ ok: true });
   } catch (e) {
     if (e?.name === 'TokenExpiredError') return res.status(400).json({ error: 'token expired' });
