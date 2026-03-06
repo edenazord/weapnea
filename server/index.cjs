@@ -5123,21 +5123,26 @@ app.get('/api/seo-meta', async (req, res) => {
       });
     }
 
-    // 2) /blog/:slug
+    // 2) /blog/:slug (supporta slug con prefisso data tipo DD-mese-YYYY-titolo)
     const blogMatch = rawPath.match(/^\/blog\/([^/?#]+)/);
     if (blogMatch) {
-      const slug = blogMatch[1];
+      const slugRaw = blogMatch[1];
+      // Estrai solo la parte titolo se ha il prefisso data (es. 12-marzo-2026-il-mio-articolo)
+      const titleSlug = slugRaw.replace(/^\d{1,2}-[a-z]+-\d{4}-/, '');
       const { rows } = await pool.query(
-        `SELECT title, excerpt, cover_image_url FROM blog_posts WHERE slug = $1 AND published = true LIMIT 1`,
-        [slug]
+        `SELECT title, excerpt, cover_image_url FROM blog_articles WHERE (slug = $1 OR slug = $2) AND published = true ORDER BY created_at DESC LIMIT 1`,
+        [slugRaw, titleSlug]
       );
       if (rows[0]) {
         const p = rows[0];
+        const img = p.cover_image_url
+          ? (p.cover_image_url.startsWith('http') ? p.cover_image_url : `${base}${p.cover_image_url}`)
+          : defaultMeta.image;
         return res.json({
           ...defaultMeta,
           title: `${p.title} | WeApnea`,
           description: p.excerpt || defaultMeta.description,
-          image: p.cover_image_url || defaultMeta.image,
+          image: img,
           url: `${base}${rawPath}`,
           type: 'article',
         });
@@ -5154,11 +5159,14 @@ app.get('/api/seo-meta', async (req, res) => {
       );
       if (rows[0]) {
         const p = rows[0];
+        const img = p.avatar_url
+          ? (p.avatar_url.startsWith('http') ? p.avatar_url : `${base}${p.avatar_url}`)
+          : defaultMeta.image;
         return res.json({
           ...defaultMeta,
           title: `${p.full_name} | WeApnea`,
           description: p.bio ? p.bio.slice(0, 160) : `Profilo istruttore di apnea su WeApnea.`,
-          image: p.avatar_url || defaultMeta.image,
+          image: img,
           url: `${base}${rawPath}`,
           type: 'profile',
         });
@@ -5178,11 +5186,14 @@ app.get('/api/seo-meta', async (req, res) => {
         const desc = ev.description
           ? ev.description.replace(/<[^>]+>/g, '').slice(0, 160)
           : `Evento di apnea${dateStr ? ` – ${dateStr}` : ''}${ev.location ? ` a ${ev.location}` : ''} su WeApnea.`;
+        const img = ev.cover_image_url
+          ? (ev.cover_image_url.startsWith('http') ? ev.cover_image_url : `${base}${ev.cover_image_url}`)
+          : defaultMeta.image;
         return res.json({
           ...defaultMeta,
           title: `${ev.title} | WeApnea`,
           description: desc,
-          image: ev.cover_image_url || defaultMeta.image,
+          image: img,
           url: `${base}${rawPath}`,
           type: 'event',
         });
