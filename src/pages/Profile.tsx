@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 // import { supabase } from "@/integrations/supabase/client";
 import { apiSend, apiGet } from "@/lib/apiClient";
@@ -126,6 +126,9 @@ const Profile = () => {
   const [slugStatus, setSlugStatus] = useState<"idle" | "checking" | "available" | "taken" | "error">("idle");
   const [isEditingSlug, setIsEditingSlug] = useState(false);
   const debouncedPublicSlug = useDebounce(formData.public_slug, 400);
+
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const autoSaveEnabled = useRef(false);
 
   // Sync activeTab -> URL hash
   useEffect(() => {
@@ -389,6 +392,15 @@ const Profile = () => {
       .replace(/^-+|-+$/g, '')
       .slice(0, 80);
 
+  // Abilita autosave 1.5s dopo il caricamento del profilo (per non salvare al mount)
+  useEffect(() => {
+    if (user) {
+      autoSaveEnabled.current = false;
+      const t = setTimeout(() => { autoSaveEnabled.current = true; }, 1500);
+      return () => clearTimeout(t);
+    }
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (user) {
       setFormData({
@@ -598,6 +610,74 @@ const Profile = () => {
   const handleAvatarUpdate = (url: string) => {
     setFormData(prev => ({ ...prev, avatar_url: url }));
   };
+
+  // --- Auto-save silenzioso ---
+  const profileDataKey = JSON.stringify({ formData, bestEntries, certEntries });
+  const debouncedProfileKey = useDebounce(profileDataKey, 4000);
+
+  useEffect(() => {
+    if (!autoSaveEnabled.current) return;
+    const doSave = async () => {
+      if (!user || loading) return;
+      if (formData.public_profile_enabled) {
+        if (!formData.public_slug?.trim()) return;
+        if (slugStatus === 'taken' || slugStatus === 'checking') return;
+      }
+      setAutoSaveStatus('saving');
+      try {
+        let computedSlug = formData.public_slug?.trim() ? slugify(formData.public_slug) : "";
+        if (user?.public_slug && !isEditingSlug) computedSlug = String(user.public_slug);
+        if (formData.public_profile_enabled && !computedSlug) {
+          const base = formData.full_name || formData.company_name || user.email?.split('@')[0] || '';
+          computedSlug = slugify(base);
+          if (!computedSlug) { setAutoSaveStatus('idle'); return; }
+        }
+        const dataToUpdate: any = {
+          ...formData,
+          public_slug: computedSlug || null,
+          scadenza_brevetto: formData.scadenza_brevetto || null,
+          scadenza_certificato_medico: formData.scadenza_certificato_medico || null,
+          certificato_medico_tipo: formData.certificato_medico_tipo || null,
+          scadenza_assicurazione: formData.scadenza_assicurazione || null,
+          bio: formData.bio || null,
+          brevetto: formData.brevetto || null,
+          didattica_brevetto: formData.didattica_brevetto || null,
+          numero_brevetto: formData.numero_brevetto || null,
+          foto_brevetto_url: formData.foto_brevetto_url || null,
+          assicurazione: formData.assicurazione || null,
+          numero_assicurazione: formData.numero_assicurazione || null,
+          dichiarazione_brevetto_valido: Boolean(formData.dichiarazione_brevetto_valido),
+          dichiarazione_assicurazione_valida: Boolean(formData.dichiarazione_assicurazione_valida),
+          instagram_contact: formData.instagram_contact || null,
+          phone: formData.phone || null,
+          contact_email: formData.contact_email || null,
+          club_team: formData.club_team || null,
+          company_name: formData.company_name || null,
+          vat_number: formData.vat_number || null,
+          company_address: formData.company_address || null,
+          personal_best: bestEntries
+            .filter(e => e.value && e.discipline)
+            .map(e => ({ discipline: e.discipline, value: e.value })),
+          other_certifications: certEntries.filter(c => c.name.trim() || c.number.trim()).map(c => ({
+            type: c.type,
+            name: c.name.trim(),
+            number: c.number.trim(),
+            expiry: c.expiry || null,
+          })),
+        };
+        const res: any = await apiSend('/api/profile', 'PUT', dataToUpdate);
+        if (!res?.user) throw new Error('Update failed');
+        setAutoSaveStatus('saved');
+        setTimeout(() => setAutoSaveStatus('idle'), 3000);
+        await refreshProfile();
+      } catch {
+        setAutoSaveStatus('idle');
+      }
+    };
+    doSave();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedProfileKey]);
+  // --- Fine auto-save ---
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -2127,7 +2207,13 @@ const Profile = () => {
               </DialogContent>
             </Dialog>
 
-            <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50">
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
+              {autoSaveStatus === 'saving' && (
+                <span className="text-xs text-muted-foreground animate-pulse">{t('profile.autosave.saving', 'Salvataggio automatico...')}</span>
+              )}
+              {autoSaveStatus === 'saved' && (
+                <span className="text-xs text-green-600">{t('profile.autosave.saved', '✓ Salvato automaticamente')}</span>
+              )}
               <Button
                 type="submit"
                 disabled={
@@ -2137,7 +2223,6 @@ const Profile = () => {
                     )
                   )
                 }
-                className="shadow-lg"
                 variant="brand"
               >
                 {loading ? t('profile.buttons.saving', 'Salvando...') : t('profile.buttons.save', 'Salva Modifiche')}
