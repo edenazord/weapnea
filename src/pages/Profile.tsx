@@ -2084,7 +2084,7 @@ const Profile = () => {
                   )}
                   {/* Telefono */}
 
-                  {/* Certificato medico */
+                  {/* Certificato medico */}
                   {missingSnapshot && !missingSnapshot.medicalOk && (
                     <div className="space-y-2">
                       <Label htmlFor="modal_scadenza_certificato_medico" className="font-semibold">{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
