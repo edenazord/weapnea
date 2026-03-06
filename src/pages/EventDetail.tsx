@@ -482,17 +482,10 @@ const EventDetail = () => {
                                                                                                                                                 </Avatar>
                                                                                                                                                 <span className="text-sm font-medium text-blue-700 group-hover:underline">{co.full_name || co.email}</span>
                                                                                                                                             </Link>
-                                                                                                                                        ) : co.user_id ? (
-                                                                                                                                            <Link to={`/profile/id/${co.user_id}`} className="flex items-center gap-1.5 group">
-                                                                                                                                                <Avatar className="h-7 w-7">
-                                                                                                                                                    <AvatarImage src={ensureAbsoluteUrl(co.avatar_url || undefined) || ''} alt={co.full_name || co.email} />
-                                                                                                                                                    <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
-                                                                                                                                                </Avatar>
-                                                                                                                                                <span className="text-sm font-medium text-blue-700 group-hover:underline">{co.full_name || co.email}</span>
-                                                                                                                                            </Link>
                                                                                                                                         ) : (
                                                                                                                                             <div className="flex items-center gap-1.5">
                                                                                                                                                 <Avatar className="h-7 w-7">
+                                                                                                                                                    <AvatarImage src={ensureAbsoluteUrl(co.avatar_url || undefined) || ''} alt={co.full_name || co.email} />
                                                                                                                                                     <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
                                                                                                                                                 </Avatar>
                                                                                                                                                 <span className="text-sm font-medium text-gray-700">{co.full_name || co.email}</span>
