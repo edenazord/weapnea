@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Users, ExternalLink, Calendar, Euro, Phone, MessageCircle, Download } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import { getEventParticipants, EventParticipant, removeEventParticipant } from "@/lib/payments-api";
 import { format } from "date-fns";
 import { it } from "date-fns/locale";
@@ -213,35 +215,57 @@ export const EventParticipantsModal = ({
             )}
             {canManage && (
               <Button
-                variant="outline"
+                variant="default"
                 size="sm"
-                className="w-full mt-3"
+                className="w-full mt-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-purple-600 hover:to-blue-600 text-white font-semibold rounded-full shadow-md"
                 onClick={() => {
                   if (!participants) return;
-                  const headers = ['Nome', 'Email', 'Telefono', 'Azienda', 'Importo (€)', 'Stato', 'Data iscrizione'];
-                  const rows = participants.map((p) => [
-                    p.full_name || '',
-                    p.email || '',
-                    p.phone || '',
-                    p.company_name || '',
-                    p.amount ? Number(p.amount).toFixed(2) : '0.00',
-                    p.paid_at ? 'Pagato' : 'Iscritto',
-                    p.paid_at ? format(new Date(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: it }) : '',
-                  ]);
-                  const csvContent = [headers, ...rows]
-                    .map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-                    .join('\n');
-                  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-                  const url = URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = `partecipanti-${eventTitle.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40)}.csv`;
-                  a.click();
-                  URL.revokeObjectURL(url);
+                  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+                  // Intestazione
+                  doc.setFontSize(16);
+                  doc.setTextColor(30, 64, 175);
+                  doc.text('Lista Partecipanti', 14, 18);
+
+                  doc.setFontSize(11);
+                  doc.setTextColor(60, 60, 60);
+                  doc.text(eventTitle, 14, 26);
+
+                  doc.setFontSize(9);
+                  doc.setTextColor(120, 120, 120);
+                  doc.text(`Generato il ${format(new Date(), 'dd/MM/yyyy HH:mm', { locale: it })} — ${participants.length} partecipanti`, 14, 32);
+
+                  const totalRevenue = participants.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+                  if (totalRevenue > 0) {
+                    doc.text(`Ricavo totale: €${totalRevenue.toFixed(2)}`, 14, 38);
+                  }
+
+                  autoTable(doc, {
+                    startY: totalRevenue > 0 ? 44 : 38,
+                    head: [['#', 'Nome', 'Email', 'Telefono', 'Azienda', 'Importo (€)', 'Stato', 'Data iscrizione']],
+                    body: participants.map((p, i) => [
+                      i + 1,
+                      p.full_name || '',
+                      p.email || '',
+                      p.phone || '',
+                      p.company_name || '',
+                      p.amount ? `€${Number(p.amount).toFixed(2)}` : '—',
+                      p.paid_at ? 'Pagato' : 'Iscritto',
+                      p.paid_at ? format(new Date(p.paid_at), 'dd/MM/yyyy HH:mm', { locale: it }) : '—',
+                    ]),
+                    headStyles: { fillColor: [30, 64, 175], textColor: 255, fontStyle: 'bold', fontSize: 9 },
+                    bodyStyles: { fontSize: 9, textColor: [30, 30, 30] },
+                    alternateRowStyles: { fillColor: [241, 245, 255] },
+                    columnStyles: { 0: { cellWidth: 8 }, 2: { cellWidth: 50 } },
+                    margin: { left: 14, right: 14 },
+                  });
+
+                  const safeName = eventTitle.replace(/[^a-zA-Z0-9]/g, '_').substring(0, 40);
+                  doc.save(`partecipanti-${safeName}.pdf`);
                 }}
               >
                 <Download className="h-4 w-4 mr-2" />
-                {t('events.download_csv', 'Scarica CSV')}
+                {t('events.download_pdf', 'Scarica lista')}
               </Button>
             )}
           </div>
