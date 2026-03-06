@@ -1288,7 +1288,7 @@ app.post('/api/auth/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'email and password are required' });
   try {
     const { rows } = await pool.query(
-      `SELECT id, email, full_name, role, is_active, password_hash FROM profiles WHERE email = $1 LIMIT 1`,
+      `SELECT id, email, full_name, role, is_active, password_hash, public_profile_enabled, public_slug FROM profiles WHERE email = $1 LIMIT 1`,
       [email]
     );
     const user = rows[0];

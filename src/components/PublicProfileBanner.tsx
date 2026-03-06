@@ -22,8 +22,8 @@ export default function PublicProfileBanner() {
   if (loading) return null;
   // Only show for logged-in users
   if (!user) return null;
-  // Don't show if the user already has public profile enabled
-  if ((user as any).public_profile_enabled) return null;
+  // Don't show if public_profile_enabled is not yet loaded (undefined) or is already enabled
+  if ((user as any).public_profile_enabled !== false) return null;
   // Don't show if already on the profile page (avoid nagging)
   if (location.pathname === "/profile") return null;
   // Don't show if dismissed this session

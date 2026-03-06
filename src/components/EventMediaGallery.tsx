@@ -268,9 +268,9 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
 
       {/* Lightbox with navigation */}
       <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
-        <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none [&>button]:hidden">
+        <DialogContent className="fixed inset-0 left-0 top-0 max-w-none translate-x-0 translate-y-0 w-screen h-screen p-0 bg-transparent border-none shadow-none [&>button]:hidden overflow-hidden">
           <DialogTitle className="sr-only">{t('media.community_gallery', 'Foto & Video della Community')}</DialogTitle>
-          <div className="relative w-screen h-screen flex items-center justify-center">
+          <div className="relative w-full h-full flex items-center justify-center bg-black/90">
             {/* Pulsante chiudi */}
             <button
               type="button"
@@ -278,7 +278,7 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
               onClick={() => setLightboxOpen(false)}
               className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white focus:outline-none focus:ring-2 focus:ring-white/50 transition-colors"
             >
-              <X className="h-5 w-5" />
+              <X className="h-6 w-6" />
             </button>
             {media[lightboxIndex] && (
               media[lightboxIndex].media_type === 'video' ? (
