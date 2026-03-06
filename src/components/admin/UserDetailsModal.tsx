@@ -124,22 +124,24 @@ const UserDetailsModal = ({ user, open, onClose, onSave }: UserDetailsModalProps
                 }
               </p>
             </div>
-            {user.profile?.public_profile_enabled && user.profile?.public_slug && (
-              <div className="col-span-2">
-                <Label className="text-sm font-medium text-gray-500">Profilo Pubblico</Label>
-                <div className="mt-1">
-                  <Link
-                    to={`/profile/${user.profile.public_slug}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
-                  >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    /profile/{user.profile.public_slug}
-                  </Link>
-                </div>
+            <div className="col-span-2">
+              <Label className="text-sm font-medium text-gray-500">Profilo</Label>
+              <div className="mt-1">
+                <Link
+                  to={user.profile?.public_profile_enabled && user.profile?.public_slug
+                    ? `/profile/${user.profile.public_slug}`
+                    : `/profile/id/${user.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  {user.profile?.public_profile_enabled && user.profile?.public_slug
+                    ? `/profile/${user.profile.public_slug}`
+                    : `/profile/id/${user.id}`}
+                </Link>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Informazioni Profilo Modificabili */}
