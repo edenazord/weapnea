@@ -869,16 +869,6 @@ const Profile = () => {
             {/* Contenuto */}
             <div className="flex-1 min-w-0 md:p-5 md:bg-gray-50/40 md:dark:bg-neutral-950/20">
               <form onSubmit={handleSubmit}>
-              <div className="sticky top-0 z-20 -mx-1 md:-mx-5 px-1 md:px-5 py-2 mb-3 bg-background/95 backdrop-blur border-b flex justify-end">
-                <Button
-                  type="submit"
-                  disabled={loading || (formData.public_profile_enabled && (!formData.public_slug?.trim() || slugStatus === 'taken' || slugStatus === 'checking'))}
-                  variant="brand"
-                  size="sm"
-                >
-                  {loading ? t('profile.buttons.saving', 'Salvando...') : t('profile.buttons.save', 'Salva Modifiche')}
-                </Button>
-              </div>
             <TabsContent value="events">
               <Card className="border-0 md:border shadow-none md:shadow-sm">
                 <CardHeader className="px-1 md:px-6 pb-3 md:pb-6">
@@ -1928,7 +1918,7 @@ const Profile = () => {
                       <p className="text-sm text-muted-foreground py-2 text-center">{t('profile.sections.personal_bests.empty', 'Nessun record inserito. Aggiungi il primo!')}</p>
                     )}
                     {bestEntries.length > 0 && (
-                      <div className="grid grid-cols-[1fr_160px_148px] gap-x-2 items-center pb-1 px-1 border-b">
+                      <div className="grid grid-cols-[2fr_130px_148px] gap-x-2 items-center pb-1 px-1 border-b">
                         <span className="text-xs font-medium text-muted-foreground">{t('profile.sections.personal_bests.discipline', 'Disciplina')}</span>
                         <span className="text-xs font-medium text-muted-foreground">{t('profile.sections.personal_bests.value', 'Valore')}</span>
                         <span className="text-xs font-medium text-muted-foreground text-right">{t('common.actions', 'Azioni')}</span>
@@ -1942,7 +1932,7 @@ const Profile = () => {
                         return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_placeholder', 'es. 4:30') : t('profile.sections.personal_bests.meters_placeholder', 'es. 75');
                       })();
                       return (
-                        <div key={idx} className="grid grid-cols-[1fr_160px_148px] gap-x-2 items-center py-1.5 px-1 border-b last:border-b-0">
+                        <div key={idx} className="grid grid-cols-[2fr_130px_148px] gap-x-2 items-center py-1.5 px-1 border-b last:border-b-0">
                           <Select value={entry.discipline} onValueChange={(v) => handleBestChange(idx, { discipline: v as BestDiscipline })}>
                             <SelectTrigger className="select-trigger h-9 text-sm">
                               <SelectValue placeholder={t('profile.sections.personal_bests.discipline_placeholder', 'Seleziona disciplina')} />
@@ -2137,7 +2127,7 @@ const Profile = () => {
               </DialogContent>
             </Dialog>
 
-            <div className="flex justify-end mt-6">
+            <div className="fixed bottom-24 md:bottom-6 right-4 md:right-6 z-50">
               <Button
                 type="submit"
                 disabled={
@@ -2147,7 +2137,7 @@ const Profile = () => {
                     )
                   )
                 }
-                className="w-full md:w-auto"
+                className="shadow-lg"
                 variant="brand"
               >
                 {loading ? t('profile.buttons.saving', 'Salvando...') : t('profile.buttons.save', 'Salva Modifiche')}
