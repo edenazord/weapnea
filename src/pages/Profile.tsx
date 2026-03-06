@@ -670,7 +670,8 @@ const Profile = () => {
         setAutoSaveStatus('saved');
         setTimeout(() => setAutoSaveStatus('idle'), 3000);
         await refreshProfile();
-      } catch {
+      } catch (err) {
+        // Se è un 401, l'evento auth:expired viene già emesso da apiSend — non mostrare errore
         setAutoSaveStatus('idle');
       }
     };

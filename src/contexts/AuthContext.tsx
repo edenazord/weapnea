@@ -1,5 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useState, useEffect, useContext, ReactNode, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { apiGet, apiSend } from '@/lib/apiClient';
 
 interface CustomUser {
@@ -58,6 +59,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const ApiAuthProvider = ({ children }: { children: ReactNode }) => {
   type RoleType = 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger' | 'creator';
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<CustomUser | null>(() => {
     const raw = localStorage.getItem('auth_user');
@@ -130,12 +132,32 @@ const ApiAuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => { setUser(null); persistUser(null); localStorage.removeItem('api_token'); };
 
+  // Gestione token scaduto: logout automatico + redirect al login
+  useEffect(() => {
+    const handleExpired = () => {
+      setUser(null);
+      persistUser(null);
+      localStorage.removeItem('api_token');
+      navigate('/auth?expired=1', { replace: true });
+    };
+    window.addEventListener('auth:expired', handleExpired);
+    return () => window.removeEventListener('auth:expired', handleExpired);
+  }, [navigate]);
+
   const refreshProfile = useCallback(async () => {
     try {
       const res = await apiGet('/api/profile');
       if (res?.user) { setUser(res.user); persistUser(res.user); }
     } catch (e) {
-      if (import.meta.env.DEV) console.debug('refreshProfile(api) failed', e);
+      const msg = String((e as Error)?.message || '');
+      // Se il token è scaduto/invalido al refresh iniziale, pulisci la sessione
+      if (msg.includes('401') || msg === 'Unauthorized') {
+        setUser(null);
+        persistUser(null);
+        localStorage.removeItem('api_token');
+      } else if (import.meta.env.DEV) {
+        console.debug('refreshProfile(api) failed', e);
+      }
     }
   }, []);
 

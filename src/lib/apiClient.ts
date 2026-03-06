@@ -15,14 +15,21 @@ function getAuthHeader() {
   }
 }
 
+/** Emette un evento globale quando il server risponde 401 (token scaduto/invalido) */
+function handleUnauthorized() {
+  window.dispatchEvent(new CustomEvent('auth:expired'));
+}
+
 export async function apiGet(path: string) {
   const base = getBase();
   const res = await fetch(`${base}${path}`, { headers: { ...getAuthHeader(), 'Accept': 'application/json' } });
+  if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized'); }
   if (res.ok) return res.json();
   // Fallback: se il base URL è vuoto e stiamo chiamando un endpoint /api, riprova contro Render
   if (!base && path.startsWith('/api/')) {
     try {
       const res2 = await fetch(`${FALLBACK_API_BASE}${path}`, { headers: { ...getAuthHeader(), 'Accept': 'application/json' } });
+      if (res2.status === 401) { handleUnauthorized(); throw new Error('Unauthorized'); }
       if (res2.ok) return res2.json();
     } catch (_) {
       // ignora e gestisci errore sotto
@@ -43,12 +50,14 @@ export async function apiSend(path: string, method: 'POST' | 'PUT' | 'DELETE', b
     body: body !== undefined ? JSON.stringify(body) : undefined,
   });
   const res = await doFetch(base);
+  if (res.status === 401) { handleUnauthorized(); throw new Error('Unauthorized'); }
   if (method === 'DELETE') {
     if (!res.ok && res.status !== 204) {
       // Fallback anche per DELETE
       if (!base && path.startsWith('/api/')) {
         try {
           const res2 = await doFetch(FALLBACK_API_BASE);
+          if (res2.status === 401) { handleUnauthorized(); throw new Error('Unauthorized'); }
           if (res2.ok || res2.status === 204) return null;
         } catch (_) { /* ignore */ }
       }
@@ -65,6 +74,7 @@ export async function apiSend(path: string, method: 'POST' | 'PUT' | 'DELETE', b
     if (!base && path.startsWith('/api/')) {
       try {
         const res2 = await doFetch(FALLBACK_API_BASE);
+        if (res2.status === 401) { handleUnauthorized(); throw new Error('Unauthorized'); }
         if (res2.ok) return res2.json();
       } catch (_) { /* ignore */ }
     }

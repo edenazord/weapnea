@@ -11,6 +11,7 @@ import { useLanguage } from "@/contexts/LanguageContext"
 const AuthPage = () => {
   const [searchParams] = useSearchParams();
   const defaultTab = searchParams.get('view') || 'login';
+  const sessionExpired = searchParams.get('expired') === '1';
   const { t } = useLanguage();
 
   return (
@@ -19,6 +20,11 @@ const AuthPage = () => {
         <img src="/images/weapnea-logo.png" alt="WeApnea Logo" className="h-14 w-14" />
         <span className="text-4xl font-bold text-blue-900">WeApnea</span>
       </Link>
+      {sessionExpired && (
+        <div className="w-full max-w-md mb-4 px-4 py-3 rounded-lg bg-amber-50 border border-amber-300 text-amber-800 text-sm text-center">
+          {t('auth.session_expired', 'La tua sessione è scaduta. Accedi di nuovo per continuare.')}
+        </div>
+      )}
       <Tabs defaultValue={defaultTab} className="w-full max-w-md">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="login">{t('common.login', 'Accedi')}</TabsTrigger>

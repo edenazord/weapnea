@@ -1119,8 +1119,7 @@ async function maybeSendChatNotificationEmail(senderId, recipientId, senderName,
 function requireAuth(req, res, next) {
   const auth = req.headers['authorization'] || '';
   if (!auth.startsWith('Bearer ')) {
-    if (API_TOKEN) return res.status(401).json({ error: 'Unauthorized' });
-    return next(); // dev: allow if no token provided and no API_TOKEN enforced
+    return res.status(401).json({ error: 'Unauthorized' });
   }
   const token = auth.slice('Bearer '.length);
   // Accept static API token (for admin/dev) OR JWT (for users)
@@ -2904,6 +2903,7 @@ app.post('/api/events', requireAuth, async (req, res) => {
   const values = cols.map((k) => {
     let v = e[k] ?? null;
     if (k === 'slug') v = slug;
+    if (k === 'participants' && v !== null) v = Number(v) || null;
     if (v !== null && jsonCols.has(k)) {
       try { v = JSON.stringify(v); } catch (_) { /* leave as-is */ }
     }
@@ -3335,6 +3335,7 @@ app.put('/api/events/:id', requireAuth, async (req, res) => {
 
   const values = fields.map((k) => {
     let v = e[k];
+    if (k === 'participants' && v !== null && v !== undefined) v = Number(v) || null;
     if (v !== null && v !== undefined && jsonCols.has(k)) {
       try { v = JSON.stringify(v); } catch (_) { /* leave as-is */ }
     }
