@@ -869,6 +869,16 @@ const Profile = () => {
             {/* Contenuto */}
             <div className="flex-1 min-w-0 md:p-5 md:bg-gray-50/40 md:dark:bg-neutral-950/20">
               <form onSubmit={handleSubmit}>
+              <div className="sticky top-0 z-20 -mx-1 md:-mx-5 px-1 md:px-5 py-2 mb-3 bg-background/95 backdrop-blur border-b flex justify-end">
+                <Button
+                  type="submit"
+                  disabled={loading || (formData.public_profile_enabled && (!formData.public_slug?.trim() || slugStatus === 'taken' || slugStatus === 'checking'))}
+                  variant="brand"
+                  size="sm"
+                >
+                  {loading ? t('profile.buttons.saving', 'Salvando...') : t('profile.buttons.save', 'Salva Modifiche')}
+                </Button>
+              </div>
             <TabsContent value="events">
               <Card className="border-0 md:border shadow-none md:shadow-sm">
                 <CardHeader className="px-1 md:px-6 pb-3 md:pb-6">
@@ -1912,84 +1922,69 @@ const Profile = () => {
                     )}
                   </div>
 
-                  {/* Desktop: Table */}
-                  <div className="hidden md:block">
-                  <Table>
+                  {/* Desktop: Grid layout */}
+                  <div className="hidden md:block space-y-1">
                     {bestEntries.length === 0 && (
-                      <TableCaption>{t('profile.sections.personal_bests.empty', 'Nessun record inserito. Aggiungi il primo!')}</TableCaption>
+                      <p className="text-sm text-muted-foreground py-2 text-center">{t('profile.sections.personal_bests.empty', 'Nessun record inserito. Aggiungi il primo!')}</p>
                     )}
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-[40%]">{t('profile.sections.personal_bests.discipline', 'Disciplina')}</TableHead>
-                        <TableHead>{t('profile.sections.personal_bests.value', 'Valore')}</TableHead>
-                        <TableHead className="w-[120px] text-right">{t('common.actions', 'Azioni')}</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {bestEntries.map((entry, idx) => {
-                        const used = new Set(bestEntries.map((b, i) => i === idx ? undefined : b.discipline));
-                        const invalid = !isValidBest(entry);
-                        const placeholder = (() => {
-                          const d = DISCIPLINE_CODES.find(d => d.code === entry.discipline);
-                          return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_placeholder', 'es. 4:30') : t('profile.sections.personal_bests.meters_placeholder', 'es. 75');
-                        })();
-                        return (
-                          <TableRow key={idx}>
-                            <TableCell>
-                              <Select value={entry.discipline} onValueChange={(v) => handleBestChange(idx, { discipline: v as BestDiscipline })}>
-                                <SelectTrigger className="select-trigger">
-                                  <SelectValue placeholder={t('profile.sections.personal_bests.discipline_placeholder', 'Seleziona disciplina')} />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {DISCIPLINE_CODES.map(d => (
-                                    <SelectItem key={d.code} value={d.code} disabled={used.has(d.code)}>
-                                      {t(`profile.sections.personal_bests.disciplines.${d.labelKey}`, d.labelKey)}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </TableCell>
-                            <TableCell>
-                              {invalid && entry.value ? (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Input
-                                      value={entry.value}
-                                      onChange={(e) => handleBestChange(idx, { value: e.target.value })}
-                                      placeholder={placeholder}
-                                      className='border-destructive'
-                                    />
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    {entry.discipline === 'STA' ? 'Formato: mm:ss (es. 4:30)' : 'Formato: metri interi o con decimali (es. 75)'}
-                                  </TooltipContent>
-                                </Tooltip>
-                              ) : (
+                    {bestEntries.length > 0 && (
+                      <div className="grid grid-cols-[1fr_160px_148px] gap-x-2 items-center pb-1 px-1 border-b">
+                        <span className="text-xs font-medium text-muted-foreground">{t('profile.sections.personal_bests.discipline', 'Disciplina')}</span>
+                        <span className="text-xs font-medium text-muted-foreground">{t('profile.sections.personal_bests.value', 'Valore')}</span>
+                        <span className="text-xs font-medium text-muted-foreground text-right">{t('common.actions', 'Azioni')}</span>
+                      </div>
+                    )}
+                    {bestEntries.map((entry, idx) => {
+                      const used = new Set(bestEntries.map((b, i) => i === idx ? undefined : b.discipline));
+                      const invalid = !isValidBest(entry);
+                      const placeholder = (() => {
+                        const d = DISCIPLINE_CODES.find(d => d.code === entry.discipline);
+                        return d?.hint === 'mm:ss' ? t('profile.sections.personal_bests.time_placeholder', 'es. 4:30') : t('profile.sections.personal_bests.meters_placeholder', 'es. 75');
+                      })();
+                      return (
+                        <div key={idx} className="grid grid-cols-[1fr_160px_148px] gap-x-2 items-center py-1.5 px-1 border-b last:border-b-0">
+                          <Select value={entry.discipline} onValueChange={(v) => handleBestChange(idx, { discipline: v as BestDiscipline })}>
+                            <SelectTrigger className="select-trigger h-9 text-sm">
+                              <SelectValue placeholder={t('profile.sections.personal_bests.discipline_placeholder', 'Seleziona disciplina')} />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {DISCIPLINE_CODES.map(d => (
+                                <SelectItem key={d.code} value={d.code} disabled={used.has(d.code)}>
+                                  {t(`profile.sections.personal_bests.disciplines.${d.labelKey}`, d.labelKey)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          {invalid && entry.value ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
                                 <Input
                                   value={entry.value}
                                   onChange={(e) => handleBestChange(idx, { value: e.target.value })}
                                   placeholder={placeholder}
+                                  className="h-9 text-sm border-destructive"
                                 />
-                              )}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <Button type="button" variant="ghost" size="sm" disabled={idx === 0} onClick={() => moveBest(idx, 'up')} title="Sposta su">
-                                  ▲
-                                </Button>
-                                <Button type="button" variant="ghost" size="sm" disabled={idx === bestEntries.length - 1} onClick={() => moveBest(idx, 'down')} title="Sposta giù">
-                                  ▼
-                                </Button>
-                                <Button type="button" variant="destructive" size="sm" onClick={() => removeBest(idx)}>
-                                  {t('common.delete', 'Elimina')}
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {entry.discipline === 'STA' ? 'Formato: mm:ss (es. 4:30)' : 'Formato: metri interi o con decimali (es. 75)'}
+                              </TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <Input
+                              value={entry.value}
+                              onChange={(e) => handleBestChange(idx, { value: e.target.value })}
+                              placeholder={placeholder}
+                              className="h-9 text-sm"
+                            />
+                          )}
+                          <div className="flex items-center justify-end gap-1">
+                            <Button type="button" variant="ghost" size="sm" disabled={idx === 0} onClick={() => moveBest(idx, 'up')} title="Sposta su">▲</Button>
+                            <Button type="button" variant="ghost" size="sm" disabled={idx === bestEntries.length - 1} onClick={() => moveBest(idx, 'down')} title="Sposta giù">▼</Button>
+                            <Button type="button" variant="destructive" size="sm" onClick={() => removeBest(idx)}>{t('common.delete', 'Elimina')}</Button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
 
                   {/* Mobile: Card layout */}

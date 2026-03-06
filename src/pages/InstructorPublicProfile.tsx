@@ -255,16 +255,22 @@ export default function InstructorPublicProfile() {
               <CardHeader><CardTitle className="text-xl flex items-center"><Target className="w-5 h-5 mr-2"/>{t('instructor_profile_page.records', 'Record')}</CardTitle></CardHeader>
               <CardContent>
                 {data.personal_best && (Array.isArray(data.personal_best) ? data.personal_best.length > 0 : Object.keys(data.personal_best).length > 0) ? (
-                  <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                  <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-gray-700">
                     {Array.isArray(data.personal_best)
                       ? data.personal_best.map((entry: any, idx: number) => (
-                          <li key={entry.discipline || idx}><span className="font-semibold mr-1">{String(entry.discipline || '').toUpperCase()}:</span> {String(entry.value || '')}</li>
+                          <>
+                            <span key={`d-${entry.discipline || idx}`} className="font-semibold text-right">{String(entry.discipline || '').toUpperCase()}</span>
+                            <span key={`v-${entry.discipline || idx}`}>{String(entry.value || '')}</span>
+                          </>
                         ))
                       : Object.entries(data.personal_best).map(([disc, val]) => (
-                          <li key={disc}><span className="font-semibold mr-1">{disc.toUpperCase()}:</span> {String(val)}</li>
+                          <>
+                            <span key={`d-${disc}`} className="font-semibold text-right">{disc.toUpperCase()}</span>
+                            <span key={`v-${disc}`}>{String(val)}</span>
+                          </>
                         ))
                     }
-                  </ul>
+                  </div>
                 ) : (
                   <div className="text-gray-500">{t('instructor_profile_page.no_records', 'Nessun record disponibile')}</div>
                 )}
