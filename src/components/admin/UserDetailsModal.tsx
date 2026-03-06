@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Save, X } from "lucide-react";
+import { Save, X, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 import { AdminUser, UserRole } from "@/lib/admin-users-api";
 
 type UserDetailsModalProps = {
@@ -117,12 +118,28 @@ const UserDetailsModal = ({ user, open, onClose, onSave }: UserDetailsModalProps
             <div>
               <Label className="text-sm font-medium text-gray-500">Ultimo Accesso</Label>
               <p className="text-sm">
-                {user.last_sign_in_at 
-                  ? new Date(user.last_sign_in_at).toLocaleDateString('it-IT')
-                  : 'Mai'
+                {user.last_sign_in_at
+                  ? new Date(user.last_sign_in_at).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })
+                  : 'Non registrato'
                 }
               </p>
             </div>
+            {user.profile?.public_profile_enabled && user.profile?.public_slug && (
+              <div className="col-span-2">
+                <Label className="text-sm font-medium text-gray-500">Profilo Pubblico</Label>
+                <div className="mt-1">
+                  <Link
+                    to={`/profile/${user.profile.public_slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5" />
+                    /profile/{user.profile.public_slug}
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Informazioni Profilo Modificabili */}

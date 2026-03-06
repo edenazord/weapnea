@@ -146,10 +146,6 @@ const UsersManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Gestione Utenti</h2>
-      </div>
-
       <Tabs defaultValue="users" className="space-y-4">
         <TabsList>
           <TabsTrigger value="users">Lista Utenti</TabsTrigger>

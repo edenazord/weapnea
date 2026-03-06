@@ -140,6 +140,8 @@ async function runMigrationsAtStartup() {
     await detectSchema();
     // Garantisci SEMPRE le colonne del profilo pubblico: l'ALTER è idempotente
   await ensurePublicProfileColumnsAtRuntime();
+  // Safeguard: ensure last_sign_in_at column exists
+  await ensureLastSignInAtColumn();
   // Safeguard: ensure events.fixed_appointment_text exists even if migrations didn't run yet
   await ensureEventsFixedAppointmentTextColumn();
   // Ensure email verification column exists
@@ -397,6 +399,17 @@ async function ensureMedicalCertificateTypeColumnAtRuntime() {
     console.warn('[profiles] ensure certificato_medico_tipo column failed:', e?.message || e);
   }
 }
+async function ensureLastSignInAtColumn() {
+  try {
+    await pool.query(`
+      ALTER TABLE IF EXISTS public.profiles
+        ADD COLUMN IF NOT EXISTS last_sign_in_at timestamptz;
+    `);
+  } catch (e) {
+    console.warn('[profiles] ensure last_sign_in_at column failed:', e?.message || e);
+  }
+}
+
 async function ensurePublicProfileColumnsAtRuntime() {
   try {
     await pool.query(`
@@ -1285,6 +1298,8 @@ app.post('/api/auth/login', async (req, res) => {
     // Block login for unverified accounts
     if (!user.is_active) return res.status(403).json({ error: 'Account non verificato. Controlla la tua email per il link di conferma.', needsVerification: true, email: user.email });
     const jwtToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    // Registra l'ultimo accesso
+    await pool.query(`UPDATE profiles SET last_sign_in_at = now() WHERE id = $1`, [user.id]).catch(() => {});
     delete user.password_hash;
     res.json({ token: jwtToken, user });
   } catch (e) {
@@ -3569,7 +3584,8 @@ app.get('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
     const dataParams = [...params, limitNum, offset];
     const { rows } = await pool.query(`
       SELECT id, email, created_at, organizer_upgrade_requested_at,
-        full_name, role, is_active, avatar_url, company_name, vat_number, company_address
+        full_name, role, is_active, avatar_url, company_name, vat_number, company_address,
+        last_sign_in_at, public_slug, public_profile_enabled
       FROM profiles
       ${where}
       ORDER BY full_name ASC NULLS LAST, email ASC
@@ -3581,7 +3597,7 @@ app.get('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
       created_at: r.created_at,
       organizer_upgrade_requested_at: r.organizer_upgrade_requested_at,
       email_confirmed_at: null,
-      last_sign_in_at: null,
+      last_sign_in_at: r.last_sign_in_at || null,
       profile: {
         full_name: r.full_name,
         role: r.role,
@@ -3590,6 +3606,8 @@ app.get('/api/admin/users', requireAuth, requireAdmin, async (req, res) => {
         company_name: r.company_name,
         vat_number: r.vat_number,
         company_address: r.company_address,
+        public_slug: r.public_slug || null,
+        public_profile_enabled: r.public_profile_enabled || false,
       }
     }));
     res.json({ data: out, total, page: pageNum, limit: limitNum, totalPages: Math.ceil(total / limitNum) });

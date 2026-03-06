@@ -15,6 +15,8 @@ export type AdminUser = {
     company_name: string | null;
     vat_number: string | null;
     company_address: string | null;
+    public_slug: string | null;
+    public_profile_enabled: boolean;
   };
 };
 
