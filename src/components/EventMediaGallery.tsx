@@ -268,7 +268,7 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
 
       {/* Lightbox with navigation */}
       <Dialog open={lightboxOpen} onOpenChange={setLightboxOpen}>
-        <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none">
+        <DialogContent className="w-screen max-w-[95vw] p-0 bg-transparent border-none shadow-none [&>button]:hidden">
           <DialogTitle className="sr-only">{t('media.community_gallery', 'Foto & Video della Community')}</DialogTitle>
           <div className="relative w-screen h-screen flex items-center justify-center">
             {/* Pulsante chiudi */}
@@ -276,7 +276,7 @@ export default function EventMediaGallery({ eventId, isParticipant, isOwner }: E
               type="button"
               aria-label="Chiudi"
               onClick={() => setLightboxOpen(false)}
-              className="absolute top-4 right-4 z-10 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white focus:outline-none focus:ring-2 focus:ring-white/50 transition-colors"
+              className="absolute top-4 right-4 z-50 p-2 rounded-full bg-black/50 hover:bg-black/80 text-white focus:outline-none focus:ring-2 focus:ring-white/50 transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
