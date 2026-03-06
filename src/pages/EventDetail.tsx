@@ -430,12 +430,13 @@ const EventDetail = () => {
                             )}
                         </div>
                         <div className={`${isMobile ? 'p-4' : 'p-6 md:p-8'}`}>
-                                                                                                                {/* Organizzatore con avatar sopra al titolo */}
+                                                                                                                {/* Organizzatore + co-organizzatori sulla stessa riga */}
                                                                                                                 {(organizerId || event.organizer_name) && (
-                                                                                                                    <div className="mb-3 flex items-center gap-3">
+                                                                                                                    <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+                                                                                                                        {/* Organizzatore principale */}
                                                                                                                         {organizerId ? (
-                                                                                                                            <Link to={(event as any).organizer_public_enabled && (event as any).organizer_public_slug ? `/profile/${(event as any).organizer_public_slug}` : `/profile/id/${organizerId}`} className="flex items-center gap-3 group">
-                                                                                                                                <Avatar className="h-9 w-9">
+                                                                                                                            <Link to={(event as any).organizer_public_enabled && (event as any).organizer_public_slug ? `/profile/${(event as any).organizer_public_slug}` : `/profile/id/${organizerId}`} className="flex items-center gap-2 group">
+                                                                                                                                <Avatar className="h-8 w-8">
                                                                                                                                     <AvatarImage src={ensureAbsoluteUrl(event.organizer_avatar_url || organizerProfile?.avatar_url || undefined) || ''} alt={event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || 'Organizzatore'} />
                                                                                                                                     <AvatarFallback>
                                                                                                                                         {(event.organizer_name || organizerProfile?.full_name || organizerProfile?.company_name || event.organizer?.company_name || event.organizer?.full_name || 'O')
@@ -451,8 +452,8 @@ const EventDetail = () => {
                                                                                                                                 </div>
                                                                                                                             </Link>
                                                                                                                         ) : (
-                                                                                                                            <div className="flex items-center gap-3">
-                                                                                                                                <Avatar className="h-9 w-9">
+                                                                                                                            <div className="flex items-center gap-2">
+                                                                                                                                <Avatar className="h-8 w-8">
                                                                                                                                     <AvatarImage src={ensureAbsoluteUrl(event.organizer_avatar_url || undefined) || ''} alt={event.organizer_name || 'Organizzatore'} />
                                                                                                                                     <AvatarFallback>
                                                                                                                                         {(event.organizer_name || 'O').charAt(0).toUpperCase()}
@@ -466,42 +467,41 @@ const EventDetail = () => {
                                                                                                                                 </div>
                                                                                                                             </div>
                                                                                                                         )}
-                                                                                                                                                                                                                                                {/* WhatsApp inline icon rimosso su richiesta */}
-                                                                                                                    </div>
-                                                                                                                )}
 
-                                                                                                                {/* Co-organizzatori accettati */}
-                                                                                                                {event.coorganizers && Array.isArray(event.coorganizers) && event.coorganizers.length > 0 && (
-                                                                                                                    <div className="mb-3 flex flex-wrap items-center gap-2">
-                                                                                                                        <span className="text-xs text-gray-500 mr-1">{t('events.with_coorganizers', 'con')}</span>
-                                                                                                                        {event.coorganizers.map((co: any) => (
-                                                                                                                            <div key={co.id} className="flex items-center gap-1.5">
-                                                                                                                                {co.public_profile_enabled && co.public_slug ? (
-                                                                                                                                    <Link to={`/profile/${co.public_slug}`} className="flex items-center gap-1.5 group">
-                                                                                                                                        <Avatar className="h-7 w-7">
-                                                                                                                                            <AvatarImage src={ensureAbsoluteUrl(co.avatar_url || undefined) || ''} alt={co.full_name || co.email} />
-                                                                                                                                            <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
-                                                                                                                                        </Avatar>
-                                                                                                                                        <span className="text-sm font-medium text-blue-700 group-hover:underline">{co.full_name || co.email}</span>
-                                                                                                                                    </Link>
-                                                                                                                                ) : co.user_id ? (
-                                                                                                                                    <Link to={`/profile/id/${co.user_id}`} className="flex items-center gap-1.5 group">
-                                                                                                                                        <Avatar className="h-7 w-7">
-                                                                                                                                            <AvatarImage src={ensureAbsoluteUrl(co.avatar_url || undefined) || ''} alt={co.full_name || co.email} />
-                                                                                                                                            <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
-                                                                                                                                        </Avatar>
-                                                                                                                                        <span className="text-sm font-medium text-blue-700 group-hover:underline">{co.full_name || co.email}</span>
-                                                                                                                                    </Link>
-                                                                                                                                ) : (
-                                                                                                                                    <div className="flex items-center gap-1.5">
-                                                                                                                                        <Avatar className="h-7 w-7">
-                                                                                                                                            <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
-                                                                                                                                        </Avatar>
-                                                                                                                                        <span className="text-sm font-medium text-gray-700">{co.full_name || co.email}</span>
+                                                                                                                        {/* Co-organizzatori sulla stessa riga */}
+                                                                                                                        {event.coorganizers && Array.isArray(event.coorganizers) && event.coorganizers.length > 0 && (
+                                                                                                                            <>
+                                                                                                                                <span className="text-xs text-gray-400">{t('events.with_coorganizers', 'con')}</span>
+                                                                                                                                {event.coorganizers.map((co: any) => (
+                                                                                                                                    <div key={co.id} className="flex items-center gap-1.5">
+                                                                                                                                        {co.public_profile_enabled && co.public_slug ? (
+                                                                                                                                            <Link to={`/profile/${co.public_slug}`} className="flex items-center gap-1.5 group">
+                                                                                                                                                <Avatar className="h-7 w-7">
+                                                                                                                                                    <AvatarImage src={ensureAbsoluteUrl(co.avatar_url || undefined) || ''} alt={co.full_name || co.email} />
+                                                                                                                                                    <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
+                                                                                                                                                </Avatar>
+                                                                                                                                                <span className="text-sm font-medium text-blue-700 group-hover:underline">{co.full_name || co.email}</span>
+                                                                                                                                            </Link>
+                                                                                                                                        ) : co.user_id ? (
+                                                                                                                                            <Link to={`/profile/id/${co.user_id}`} className="flex items-center gap-1.5 group">
+                                                                                                                                                <Avatar className="h-7 w-7">
+                                                                                                                                                    <AvatarImage src={ensureAbsoluteUrl(co.avatar_url || undefined) || ''} alt={co.full_name || co.email} />
+                                                                                                                                                    <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
+                                                                                                                                                </Avatar>
+                                                                                                                                                <span className="text-sm font-medium text-blue-700 group-hover:underline">{co.full_name || co.email}</span>
+                                                                                                                                            </Link>
+                                                                                                                                        ) : (
+                                                                                                                                            <div className="flex items-center gap-1.5">
+                                                                                                                                                <Avatar className="h-7 w-7">
+                                                                                                                                                    <AvatarFallback className="text-xs">{(co.full_name || co.email || 'C').charAt(0).toUpperCase()}</AvatarFallback>
+                                                                                                                                                </Avatar>
+                                                                                                                                                <span className="text-sm font-medium text-gray-700">{co.full_name || co.email}</span>
+                                                                                                                                            </div>
+                                                                                                                                        )}
                                                                                                                                     </div>
-                                                                                                                                )}
-                                                                                                                            </div>
-                                                                                                                        ))}
+                                                                                                                                ))}
+                                                                                                                            </>
+                                                                                                                        )}
                                                                                                                     </div>
                                                                                                                 )}
 

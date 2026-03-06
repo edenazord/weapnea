@@ -1,9 +1,8 @@
 import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import { useIsMobile } from "@/hooks/useIsMobile";
-import { Users, Target, Heart, Globe, Sparkles } from "lucide-react";
+import { Users, Target, Heart, Globe, ChevronDown } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import PageHeader from "@/components/PageHeader";
 import PageTopBar from "@/components/PageTopBar";
 import PageHead from "@/components/PageHead";
 import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext } from "@/components/ui/carousel";
@@ -32,16 +31,37 @@ const ChiSiamo = () => {
   const content = (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 via-indigo-50 to-purple-50">
       <PageHead title="Chi Siamo" description="Scopri il team WeApnea e la nostra missione per la community dell'apnea." />
-      {/* Decorative hero */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 pointer-events-none" />
-        <PageTopBar className="relative z-10" fallbackPath="/" label={t('not_found.back_home', 'Torna alla Home')} />
-        <div className="max-w-6xl mx-auto px-4 md:px-6 pt-10 md:pt-14 pb-4">
-          <PageHeader
-            title={t('about_page.title', 'Chi Siamo')}
-            subtitle={t("about_page.subtitle", "WeApnea è la prima piattaforma internazionale dedicata all'apnea, nata dalla passione di un gruppo di apneisti che ha voluto creare uno spazio di condivisione e crescita per tutta la community.")}
-            align="left"
-          />
+
+      {/* Hero con immagine */}
+      <div className="relative h-[60vh] min-h-[380px] overflow-hidden">
+        {/* Immagine di sfondo */}
+        <img
+          src="/images/cenote-1.webp"
+          alt="Apnea subacquea"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        {/* Overlay gradiente scuro */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+
+        {/* Barra navigazione in cima */}
+        <PageTopBar className="relative z-20 !bg-transparent border-none [&_*]:text-white/90 [&_svg]:text-white/90" fallbackPath="/" label={t('not_found.back_home', 'Torna alla Home')} />
+
+        {/* Testo centrato sull'immagine */}
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 z-10">
+          <div className="flex items-center gap-2 mb-4">
+            <img src="/images/weapnea-logo.png" alt="WeApnea" className="h-10 w-10 rounded-full bg-white/20 p-1" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <span className="text-white/80 text-sm font-semibold uppercase tracking-widest">WeApnea</span>
+          </div>
+          <h1 className="text-4xl md:text-6xl font-extrabold text-white drop-shadow-lg mb-4 leading-tight">
+            {t('about_page.title', 'Chi Siamo')}
+          </h1>
+          <p className="text-white/85 text-base md:text-xl max-w-2xl leading-relaxed drop-shadow">
+            {t("about_page.subtitle", "WeApnea è la prima piattaforma internazionale dedicata all'apnea, nata dalla passione di un gruppo di apneisti che ha voluto creare uno spazio di condivisione e crescita per tutta la community.")}
+          </p>
+          {/* Freccia scroll */}
+          <div className="absolute bottom-6 animate-bounce text-white/60">
+            <ChevronDown className="h-7 w-7" />
+          </div>
         </div>
       </div>
 

@@ -133,7 +133,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   const { user } = useAuth();
   const isMobile = useIsMobile();
   const location = useLocation();
-  const { isOpen: storeIsOpen, closeChat: storeCloseChat } = useChatStore();
+  const { isOpen: storeIsOpen, closeChat: storeCloseChat, setUnreadTotal: storeSetUnreadTotal } = useChatStore();
   const [isOpen, setIsOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
@@ -142,6 +142,11 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [unreadTotal, setUnreadTotal] = useState(0);
+
+  // Sync unread count to store so MobileBottomNav can show the badge
+  useEffect(() => {
+    storeSetUnreadTotal(unreadTotal);
+  }, [unreadTotal, storeSetUnreadTotal]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);

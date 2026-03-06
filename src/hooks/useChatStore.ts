@@ -4,6 +4,9 @@ interface ChatStore {
   isOpen: boolean;
   targetUserId: string | null;
   targetEventId: string | null;
+  /** Total unread messages count (shared with MobileBottomNav badge) */
+  unreadTotal: number;
+  setUnreadTotal: (count: number) => void;
   openChat: (userId: string, eventId?: string) => void;
   /** Open the conversation list (no specific target user) */
   openList: () => void;
@@ -15,6 +18,8 @@ export const useChatStore = create<ChatStore>((set) => ({
   isOpen: false,
   targetUserId: null,
   targetEventId: null,
+  unreadTotal: 0,
+  setUnreadTotal: (count) => set({ unreadTotal: count }),
   openChat: (userId, eventId) => {
     console.log('[useChatStore] openChat called with userId:', userId, 'eventId:', eventId);
     set({ isOpen: true, targetUserId: userId, targetEventId: eventId || null });
