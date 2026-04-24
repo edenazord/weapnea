@@ -1265,7 +1265,7 @@ const Profile = () => {
 
                               autoTable(doc, {
                                 startY: 38,
-                                head: [['#', 'Nome', 'Email', 'Telefono', 'Azienda', 'Pagato il']],
+                                head: [['#', 'Nome', 'Email', 'Telefono', 'Azienda', 'Iscritto il']],
                                 body: participants.map((p, i) => [
                                   i + 1,
                                   p.full_name || '',
@@ -1309,7 +1309,7 @@ const Profile = () => {
                           <TableRow>
                             <TableHead>{t('profile_extra.name_col', 'Nome')}</TableHead>
                             <TableHead>{t('profile_extra.phone_col', 'Telefono')}</TableHead>
-                            <TableHead>{t('profile_extra.paid_col', 'Pagato il')}</TableHead>
+                            <TableHead>{t('profile_extra.paid_col', 'Iscritto il')}</TableHead>
                             <TableHead className="w-10"></TableHead>
                           </TableRow>
                         </TableHeader>

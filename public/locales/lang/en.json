@@ -1159,7 +1159,7 @@
     "csv_headers_email": "Email",
     "csv_headers_phone": "Phone",
     "csv_headers_company": "Company",
-    "csv_headers_paid": "Paid on",
+    "csv_headers_paid": "Joined",
     "chat_tooltip": "Chat",
     "remove_tooltip": "Remove",
     "close": "Close",
