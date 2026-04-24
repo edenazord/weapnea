@@ -609,6 +609,21 @@ const EventDetail = () => {
                     <Card className={`shadow-lg p-6`}>
                         <h2 className={`font-bold text-blue-900 mb-6 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.quick_info', 'Informazioni Rapide')}</h2>
                         <div className="space-y-4">
+                            {event?.fixed_appointment && (event?.date || event?.end_date) && (
+                                <div className="flex items-start">
+                                    <Calendar className="h-5 w-5 mr-3 mt-1 text-blue-600" />
+                                    <div>
+                                        <p className={`font-semibold text-gray-800 ${isMobile ? 'text-sm' : ''}`}>{t('events.period_label', 'Periodo')}</p>
+                                        <p className={`text-gray-600 ${isMobile ? 'text-sm' : ''}`}>
+                                            {event.date && event.end_date && event.end_date !== event.date
+                                                ? `${formatEventDate(event.date)} - ${formatEventDate(event.end_date)}`
+                                                : event.date
+                                                    ? formatEventDate(event.date)
+                                                    : formatEventDate(event.end_date!)}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
                             <div className="flex items-start">
                                 <Calendar className="h-5 w-5 mr-3 mt-1 text-blue-600" />
                                 <div>
