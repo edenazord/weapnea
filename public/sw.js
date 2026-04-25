@@ -1,6 +1,6 @@
 // Service Worker con caching limitato agli asset statici
 // Incrementa la versione per forzare l'aggiornamento dei client quando si deploya
-const CACHE_NAME = 'apnea-app-v3-20251001';
+const CACHE_NAME = 'apnea-app-v4-20260425';
 
 self.addEventListener('install', (event) => {
   console.log('SW: Installing service worker');
