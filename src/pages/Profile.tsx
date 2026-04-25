@@ -1122,14 +1122,11 @@ const Profile = () => {
                                       {!eventsFreeMode && ev.cost != null && ev.cost > 0 && <span className="font-medium text-foreground">€{Number(ev.cost).toFixed(2)}</span>}
                                     </div>
                                   </div>
-                                  <div className="flex items-center gap-1 flex-shrink-0">
-                                    <Button type="button" size="sm" variant="outline" className="gap-1 hidden md:inline-flex" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
+                                  {/* Desktop: icone a destra */}
+                                  <div className="hidden md:flex items-center gap-1 flex-shrink-0">
+                                    <Button type="button" size="sm" variant="outline" className="gap-1" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
                                       <Users className="h-4 w-4" />
                                       <span className="font-semibold">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</span>
-                                    </Button>
-                                    <Button type="button" size="sm" variant="outline" className="md:hidden gap-1 h-8 px-2" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
-                                      <Users className="h-4 w-4" />
-                                      <span className="text-xs font-semibold">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</span>
                                     </Button>
                                     {!isSoldOut && (
                                       <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_invite', 'Invita')} onClick={() => setInviteEvent({ id: ev.id, title: ev.title })} className="h-8 w-8">
@@ -1143,6 +1140,30 @@ const Profile = () => {
                                       <Trash2 className="h-4 w-4" />
                                     </Button>
                                   </div>
+                                </div>
+                                {/* Mobile: Visualizza + icone in riga */}
+                                <div className="flex items-center gap-1 mt-3 md:hidden">
+                                  <Button asChild size="sm" variant="outline" className="gap-1 h-8">
+                                    <Link to={buildFriendlyEventPath(ev.slug)}>
+                                      <Eye className="h-4 w-4" />
+                                      {t('common.view', 'Visualizza')}
+                                    </Link>
+                                  </Button>
+                                  <Button type="button" size="sm" variant="outline" className="gap-1 h-8 px-2" onClick={() => openParticipantsForEvent({ id: ev.id, title: ev.title })}>
+                                    <Users className="h-4 w-4" />
+                                    <span className="text-xs font-semibold">{typeof ev.participants_paid_count === 'number' ? ev.participants_paid_count : 0}</span>
+                                  </Button>
+                                  {!isSoldOut && (
+                                    <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_invite', 'Invita')} onClick={() => setInviteEvent({ id: ev.id, title: ev.title })} className="h-8 w-8">
+                                      <UserPlus className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_edit', 'Modifica')} onClick={() => openEditEvent(ev)} className="h-8 w-8">
+                                    <Pencil className="h-4 w-4" />
+                                  </Button>
+                                  <Button type="button" size="icon" variant="ghost" title={t('profile.sections.my_events.action_delete', 'Elimina')} onClick={() => handleDeleteEvent(ev.id, ev.title)} className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
                                 </div>
                               </div>
                               );
