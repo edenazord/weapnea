@@ -86,6 +86,7 @@ const Profile = () => {
   const [eventsFreeMode, setEventsFreeMode] = useState(true); // default true per sicurezza
   // Step corrente nella sezione Certificazioni (0=Assicurazione, 1=Cert. medico, 2=Brevetto)
   const [certStep, setCertStep] = useState(0);
+  const [showInsuranceForm, setShowInsuranceForm] = useState(false);
   // Stato locale per mostrare vista organizzazione dentro la tab Eventi
   const [showOrganizer, setShowOrganizer] = useState(false);
   const [formData, setFormData] = useState({
@@ -1778,22 +1779,26 @@ const Profile = () => {
                         </Label>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label>{t('profile.sections.certifications.insurance_label', 'Assicurazione')}</Label>
-                          <Input value={formData.assicurazione} onChange={(e) => handleInputChange('assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')} />
-                        </div>
-                        <div>
-                          <Label>{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
-                          <DatePicker date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined} onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))} />
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label>{t('profile.sections.certifications.insurance_number_label', 'Numero assicurazione')}</Label>
-                          <Input value={formData.numero_assicurazione} onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Inserire numero assicurazione')} />
-                        </div>
-                      </div>
+                      {(showInsuranceForm || !!(formData.assicurazione && formData.assicurazione.trim())) && (
+                        <>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label>{t('profile.sections.certifications.insurance_label', 'Assicurazione')}</Label>
+                              <Input value={formData.assicurazione} onChange={(e) => handleInputChange('assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')} />
+                            </div>
+                            <div>
+                              <Label>{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
+                              <DatePicker date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined} onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))} />
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label>{t('profile.sections.certifications.insurance_number_label', 'Numero assicurazione')}</Label>
+                              <Input value={formData.numero_assicurazione} onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Inserire numero assicurazione')} />
+                            </div>
+                          </div>
+                        </>
+                      )}
 
                       {/* Assicurazioni aggiuntive */}
                       {insuranceEntries.length > 0 && (
@@ -1814,7 +1819,7 @@ const Profile = () => {
                           ))}
                         </div>
                       )}
-                      <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => addCert('insurance')}>
+                      <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => { if (!showInsuranceForm && !(formData.assicurazione && formData.assicurazione.trim())) { setShowInsuranceForm(true); } else { addCert('insurance'); } }}>
                         <PlusCircle className="h-4 w-4 mr-2" />{t('profile.sections.certifications.add_insurance', 'Aggiungi assicurazione')}
                       </Button>
                     </div>
