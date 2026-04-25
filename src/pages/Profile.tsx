@@ -87,6 +87,7 @@ const Profile = () => {
   // Step corrente nella sezione Certificazioni (0=Assicurazione, 1=Cert. medico, 2=Brevetto)
   const [certStep, setCertStep] = useState(0);
   const [showInsuranceForm, setShowInsuranceForm] = useState(false);
+  const [showMedicalForm, setShowMedicalForm] = useState(false);
   // Stato locale per mostrare vista organizzazione dentro la tab Eventi
   const [showOrganizer, setShowOrganizer] = useState(false);
   const [formData, setFormData] = useState({
@@ -1825,34 +1826,32 @@ const Profile = () => {
                         <h3 className="text-base font-semibold">{t('profile.sections.certifications.accordion_medical', 'Certificato medico')}</h3>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label>{t('profile.sections.certifications.medical_expiry_label', 'Scadenza Certificato Medico')}</Label>
-                          <DatePicker
-                            date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined}
-                            onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))}
-                          />
+                      {(showMedicalForm || !!(formData.scadenza_certificato_medico || (formData as any).certificato_medico_tipo)) && (
+                        <div className="p-3 border rounded-md space-y-2">
+                          <div className="flex justify-between items-start">
+                            <span className="text-xs text-muted-foreground">#1</span>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => { setFormData(prev => ({ ...prev, scadenza_certificato_medico: '', certificato_medico_tipo: '' } as any)); setShowMedicalForm(false); }}><X className="h-4 w-4" /></Button>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <Select value={(formData as any).certificato_medico_tipo || ''} onValueChange={(v) => handleInputChange('certificato_medico_tipo', v)}>
+                              <SelectTrigger><SelectValue placeholder={t('profile.sections.certifications.medical_type_placeholder', 'Seleziona tipo')} /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="agonistico">{t('profile.sections.certifications.medical_type_agonistico', 'Agonistico')}</SelectItem>
+                                <SelectItem value="non_agonistico">{t('profile.sections.certifications.medical_type_non_agonistico', 'Non agonistico')}</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <DatePicker date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined} onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))} />
+                          </div>
                         </div>
-                        <div>
-                          <Label>{t('profile.sections.certifications.medical_type_label', 'Tipo certificato medico')}</Label>
-                          <Select value={(formData as any).certificato_medico_tipo || ''} onValueChange={(v) => handleInputChange('certificato_medico_tipo', v)}>
-                            <SelectTrigger><SelectValue placeholder={t('profile.sections.certifications.medical_type_placeholder', 'Seleziona tipo')} /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="agonistico">{t('profile.sections.certifications.medical_type_agonistico', 'Agonistico')}</SelectItem>
-                              <SelectItem value="non_agonistico">{t('profile.sections.certifications.medical_type_non_agonistico', 'Non agonistico')}</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
+                      )}
 
                       {/* Certificati medici aggiuntivi */}
                       {medicalEntries.length > 0 && (
                         <div className="mt-2 space-y-3">
-                          <p className="text-sm font-medium">{t('profile.sections.certifications.other_medicals', 'Altri certificati medici')}</p>
                           {medicalEntries.map((entry) => (
                             <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
                               <div className="flex justify-between items-start">
-                                <span className="text-xs text-muted-foreground">#{medicalEntries.indexOf(entry) + 1}</span>
+                                <span className="text-xs text-muted-foreground">#{(showMedicalForm || !!(formData.scadenza_certificato_medico || (formData as any).certificato_medico_tipo)) ? medicalEntries.indexOf(entry) + 2 : medicalEntries.indexOf(entry) + 1}</span>
                                 <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}><X className="h-4 w-4" /></Button>
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
@@ -1864,7 +1863,7 @@ const Profile = () => {
                           ))}
                         </div>
                       )}
-                      <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => addCert('medical')}>
+                      <Button type="button" variant="outline" size="sm" className="mt-1" onClick={() => { if (!showMedicalForm && !(formData.scadenza_certificato_medico || (formData as any).certificato_medico_tipo)) { setShowMedicalForm(true); } else { addCert('medical'); } }}>
                         <PlusCircle className="h-4 w-4 mr-2" />{t('profile.sections.certifications.add_medical', 'Aggiungi certificato medico')}
                       </Button>
                     </div>
