@@ -1780,34 +1780,26 @@ const Profile = () => {
                       </div>
 
                       {(showInsuranceForm || !!(formData.assicurazione && formData.assicurazione.trim())) && (
-                        <>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label>{t('profile.sections.certifications.insurance_label', 'Assicurazione')}</Label>
-                              <Input value={formData.assicurazione} onChange={(e) => handleInputChange('assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')} />
-                            </div>
-                            <div>
-                              <Label>{t('profile.sections.certifications.insurance_expiry_label', 'Scadenza Assicurazione')}</Label>
-                              <DatePicker date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined} onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))} />
-                            </div>
+                        <div className="p-3 border rounded-md space-y-2">
+                          <div className="flex justify-between items-start">
+                            <span className="text-xs text-muted-foreground">#1</span>
+                            <Button type="button" variant="ghost" size="sm" onClick={() => { setFormData(prev => ({ ...prev, assicurazione: '', numero_assicurazione: '', scadenza_assicurazione: '' })); setShowInsuranceForm(false); }}><X className="h-4 w-4" /></Button>
                           </div>
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label>{t('profile.sections.certifications.insurance_number_label', 'Numero assicurazione')}</Label>
-                              <Input value={formData.numero_assicurazione} onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Inserire numero assicurazione')} />
-                            </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <Input value={formData.assicurazione} onChange={(e) => handleInputChange('assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')} />
+                            <Input value={formData.numero_assicurazione} onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Numero')} />
+                            <DatePicker date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined} onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))} />
                           </div>
-                        </>
+                        </div>
                       )}
 
                       {/* Assicurazioni aggiuntive */}
                       {insuranceEntries.length > 0 && (
                         <div className="mt-2 space-y-3">
-                          <p className="text-sm font-medium">{t('profile.sections.certifications.other_insurances', 'Altre assicurazioni')}</p>
                           {insuranceEntries.map((entry) => (
                             <div key={entry.originalIdx} className="p-3 border rounded-md space-y-2">
                               <div className="flex justify-between items-start">
-                                <span className="text-xs text-muted-foreground">#{insuranceEntries.indexOf(entry) + 1}</span>
+                                <span className="text-xs text-muted-foreground">#{(showInsuranceForm || !!(formData.assicurazione && formData.assicurazione.trim())) ? insuranceEntries.indexOf(entry) + 2 : insuranceEntries.indexOf(entry) + 1}</span>
                                 <Button type="button" variant="ghost" size="sm" onClick={() => removeCert(entry.originalIdx)}><X className="h-4 w-4" /></Button>
                               </div>
                               <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
