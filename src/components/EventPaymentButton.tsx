@@ -194,7 +194,7 @@ export const EventPaymentButton = ({
     <div className="flex flex-col items-stretch gap-1">
     <Button 
       onClick={handlePayment}
-      disabled={disabled || isLoading || isAlreadyRegistered || justRegistered || isFull || isOrganizer || missingPhone}
+      disabled={disabled || isLoading || isAlreadyRegistered || justRegistered || isFull || isOrganizer}
       className={className}
     >
       {isLoading ? (
@@ -215,16 +215,6 @@ export const EventPaymentButton = ({
         </>
       )}
     </Button>
-    {missingPhone && user && !isAlreadyRegistered && !justRegistered && !isOrganizer && (
-      <button
-        type="button"
-        onClick={() => navigate('/profile')}
-        className="flex items-center gap-1 text-xs text-amber-600 hover:text-amber-800 hover:underline transition-colors cursor-pointer"
-      >
-        <AlertCircle className="h-3.5 w-3.5 flex-shrink-0" />
-        {t('events.phone_required', 'Inserisci il telefono nel profilo per iscriverti')}
-      </button>
-    )}
     </div>
 
     {/* Dialog di conferma iscrizione */}
