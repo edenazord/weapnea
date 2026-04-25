@@ -1,6 +1,6 @@
 // Service Worker con caching limitato agli asset statici
 // Incrementa la versione per forzare l'aggiornamento dei client quando si deploya
-const CACHE_NAME = 'apnea-app-v4-20260425';
+const CACHE_NAME = 'apnea-app-v5-20260425';
 
 self.addEventListener('install', (event) => {
   console.log('SW: Installing service worker');
@@ -13,6 +13,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
+          // Cancella TUTTE le cache vecchie
           if (cacheName !== CACHE_NAME) {
             console.log('SW: Deleting old cache', cacheName);
             return caches.delete(cacheName);
@@ -40,8 +41,12 @@ self.addEventListener('fetch', (event) => {
   // Non intercettare richieste cross-origin (es. https://api.weapnea.com)
   if (url.origin !== self.location.origin) return;
 
-  // Limita il caching solo ad asset statici noti
-  const cacheableDest = ['script', 'style', 'image', 'font'];
+  // NON cachare script JS: sempre network-first senza fallback in cache
+  // così i nuovi bundle vengono sempre scaricati
+  if (req.destination === 'script') return;
+
+  // Caching solo per immagini e font (cambiano raramente)
+  const cacheableDest = ['image', 'font'];
   if (!cacheableDest.includes(req.destination)) return;
 
   // Network-first per asset; in fallback usa cache
