@@ -110,12 +110,18 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
           <img
             src={imageUrl}
             alt={event.title}
-            className="w-full h-28 object-cover object-center md:object-[50%_35%] transition-transform duration-200 hover:scale-105"
+            className="w-full aspect-square object-cover object-center md:object-[50%_35%] transition-transform duration-200 hover:scale-105"
             onError={handleImageError}
             onLoad={handleImageLoad}
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
+          {/* Badge categoria in alto a sinistra */}
+          {event.categories && (
+            <span className="absolute top-2 left-2 z-10 bg-white/90 text-blue-800 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow">
+              {localizeCategoryName(event.categories.name, t)}
+            </span>
+          )}
           {/* Bottone chat per contattare organizzatore */}
           <button
             type="button"
@@ -131,8 +137,14 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
       )}
       
       {!showImage && (
-        <Link to={eventPath} className="relative h-28 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0 block">
+        <Link to={eventPath} className="relative aspect-square bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0 block">
           <ImageIcon className="h-12 w-12 text-gray-400" />
+          {/* Badge categoria in alto a sinistra anche senza immagine */}
+          {event.categories && (
+            <span className="absolute top-2 left-2 z-10 bg-white/90 text-blue-800 text-[10px] font-semibold px-2 py-0.5 rounded-full shadow">
+              {localizeCategoryName(event.categories.name, t)}
+            </span>
+          )}
           {/* Bottone chat anche quando non c'è immagine */}
           <button
             type="button"
@@ -149,11 +161,6 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
 
       <CardHeader className="pb-1 pt-3 px-3 flex-shrink-0">
         <div className="space-y-2">
-      {event.categories && showCategoryBadge && (
-            <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full w-fit">
-        {localizeCategoryName(event.categories.name, t)}
-            </Badge>
-          )}
           <div className="flex items-start gap-2">
             <Link to={eventPath} className="flex-1 min-w-0">
               <CardTitle className="text-base font-semibold text-gray-900 leading-tight line-clamp-2 hover:text-blue-600 transition-colors cursor-pointer">

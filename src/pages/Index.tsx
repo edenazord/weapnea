@@ -378,17 +378,7 @@ const Index = () => {
                   {eventsByCategory.map((category, index) => (
                     <div key={category.id}>
                       <div className="space-y-3">
-                        {/* Titolo Categoria */}
-                        <div className="flex items-center gap-3 mb-2">
-                          <h2 className="text-2xl md:text-3xl font-bold leading-relaxed pb-1 bg-gradient-to-r from-blue-900 via-purple-700 to-blue-900 bg-clip-text text-transparent">
-                            {localizeCategoryName(category.name, t)}
-                          </h2>
-                          <span className="inline-flex items-center justify-center px-3 py-1 text-xs font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-md hover:shadow-lg transition-shadow">
-                            {category.events.length}
-                          </span>
-                        </div>
-
-                        {/* Carosello Eventi */}
+                        {/* Carosello Eventi */}}
                         <Carousel
                           opts={{
                             align: "start",
