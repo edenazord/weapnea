@@ -123,7 +123,7 @@ export const SearchWithDropdown = ({
               <SelectValue placeholder={t('search.category', 'Tipologia')} />
             </SelectTrigger>
             <SelectContent className="bg-white border shadow-xl z-[60]">
-              <SelectItem value="all">{t('search.all_categories', 'Tutte le Categorie')}</SelectItem>
+              <SelectItem value="all" className="text-blue-600 font-medium">{t('search.all_categories', 'Tutte le Categorie')}</SelectItem>
               {categories.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.id === 'uncategorized'

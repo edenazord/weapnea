@@ -104,13 +104,13 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
   const organizerDisplayName = event.organizer_name || null;
 
   return (
-  <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200 bg-white/90 backdrop-blur-sm border-0 shadow-md h-auto min-h-[400px] md:min-h-[440px] flex flex-col">
+  <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-200 bg-white/90 backdrop-blur-sm border-0 shadow-md h-auto flex flex-col">
       {showImage && (
-        <Link to={eventPath} className="relative overflow-hidden flex-shrink-0 aspect-[16/9] block">
+        <Link to={eventPath} className="relative overflow-hidden flex-shrink-0 block">
           <img
             src={imageUrl}
             alt={event.title}
-            className="w-full h-full object-cover object-center md:object-[50%_35%] transition-transform duration-200 hover:scale-105"
+            className="w-full h-28 object-cover object-center md:object-[50%_35%] transition-transform duration-200 hover:scale-105"
             onError={handleImageError}
             onLoad={handleImageLoad}
             loading="lazy"
@@ -131,7 +131,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
       )}
       
       {!showImage && (
-        <Link to={eventPath} className="relative aspect-[16/9] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0 block">
+        <Link to={eventPath} className="relative h-28 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0 block">
           <ImageIcon className="h-12 w-12 text-gray-400" />
           {/* Bottone chat anche quando non c'è immagine */}
           <button
@@ -147,7 +147,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
         </Link>
       )}
 
-      <CardHeader className="pb-2 flex-shrink-0">
+      <CardHeader className="pb-1 pt-3 px-3 flex-shrink-0">
         <div className="space-y-2">
       {event.categories && showCategoryBadge && (
             <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-xs px-2 py-0.5 rounded-full w-fit">
@@ -201,13 +201,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
         </div>
       </CardHeader>
 
-  <CardContent className="pt-0 pb-4 space-y-2 flex-1 flex flex-col">
-        {event.description && variant === "full" && (
-          <p className="text-xs text-gray-600 line-clamp-2 leading-relaxed">
-            {event.description.replace(/<[^>]*>/g, '')}
-          </p>
-        )}
-
+  <CardContent className="pt-0 pb-3 px-3 space-y-1 flex-1 flex flex-col">
         <div className="space-y-1 flex-1">
           {/* Se appuntamento ricorrente, mostra la ricorrenza al posto della data */}
           {event.fixed_appointment === true ? (
