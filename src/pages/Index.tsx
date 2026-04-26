@@ -3,7 +3,7 @@ import { useEffect, useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEvents, getNationsWithEvents, getCategories } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Loader2, Calendar, RefreshCw, ChevronRight } from "lucide-react";
+import { Loader2, Calendar, RefreshCw } from "lucide-react";
 import Layout from "@/components/Layout";
 import MobileLayout from "@/components/MobileLayout";
 import EventCard from "@/components/EventCard";
@@ -14,7 +14,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { format, parseISO, isValid, startOfDay } from "date-fns";
 import { localizeCategoryName } from "@/lib/i18n-utils";
 import { it } from "date-fns/locale";
-import { Link } from "react-router-dom";
+
 import {
   Carousel,
   CarouselContent,
@@ -378,25 +378,14 @@ const Index = () => {
                   {eventsByCategory.map((category, index) => (
                     <div key={category.id}>
                       <div className="space-y-3">
-                        {/* Titolo Categoria + link Vedi tutti */}
-                        <div className="flex items-center justify-between gap-4 mb-2">
-                          <div className="flex items-center gap-3">
-                            <h2 className="text-2xl md:text-3xl font-bold leading-relaxed pb-1 bg-gradient-to-r from-blue-900 via-purple-700 to-blue-900 bg-clip-text text-transparent">
-                              {localizeCategoryName(category.name, t)}
-                            </h2>
-                            <span className="inline-flex items-center justify-center px-3 py-1 text-xs font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-md hover:shadow-lg transition-shadow">
-                              {category.events.length}
-                            </span>
-                          </div>
-                          {category.id !== 'past-events' && (
-                            <Link
-                              to="/eventi-imminenti"
-                              className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-purple-700 transition-colors flex-shrink-0"
-                            >
-                              {t('homepage.view_all', 'Vedi tutti')}
-                              <ChevronRight className="h-4 w-4" />
-                            </Link>
-                          )}
+                        {/* Titolo Categoria */}
+                        <div className="flex items-center gap-3 mb-2">
+                          <h2 className="text-2xl md:text-3xl font-bold leading-relaxed pb-1 bg-gradient-to-r from-blue-900 via-purple-700 to-blue-900 bg-clip-text text-transparent">
+                            {localizeCategoryName(category.name, t)}
+                          </h2>
+                          <span className="inline-flex items-center justify-center px-3 py-1 text-xs font-semibold bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full shadow-md hover:shadow-lg transition-shadow">
+                            {category.events.length}
+                          </span>
                         </div>
 
                         {/* Carosello Eventi */}
