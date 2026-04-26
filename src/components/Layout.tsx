@@ -24,7 +24,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
     return (
         <div className="flex flex-col min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
             <header className="sticky top-0 z-50 modern-blur border-b border-white/20 shadow-lg">
-                <div className="px-6 py-4 w-full max-w-none">
+                <div className="px-6 py-4 w-full max-w-7xl mx-auto">
                     <div className="flex items-center justify-between">
                         <Logo imgClassName="h-9 origin-left scale-110" showText />
                         
@@ -91,7 +91,7 @@ const Layout = ({ children }: { children: ReactNode }) => {
                     </div>
                 </div>
             </header>
-            <main className="flex-1 w-full max-w-none">
+            <main className="flex-1 w-full max-w-7xl mx-auto">
                 {children}
             </main>
             <Footer />
