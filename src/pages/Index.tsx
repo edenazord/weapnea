@@ -378,7 +378,7 @@ const Index = () => {
                   {eventsByCategory.map((category, index) => (
                     <div key={category.id}>
                       <div className="space-y-3">
-                        {/* Carosello Eventi */}}
+                        {/* Carosello Eventi */}
                         <Carousel
                           opts={{
                             align: "start",
