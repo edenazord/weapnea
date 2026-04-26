@@ -110,7 +110,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
           <img
             src={imageUrl}
             alt={event.title}
-            className="w-full h-36 object-cover object-center md:object-[50%_35%] transition-transform duration-200 hover:scale-105"
+            className="w-full aspect-[450/350] object-cover object-center md:object-[50%_35%] transition-transform duration-200 hover:scale-105"
             onError={handleImageError}
             onLoad={handleImageLoad}
             loading="lazy"
@@ -137,7 +137,7 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
       )}
       
       {!showImage && (
-        <Link to={eventPath} className="relative h-36 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0 block">
+        <Link to={eventPath} className="relative aspect-[450/350] bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center flex-shrink-0 block">
           <ImageIcon className="h-12 w-12 text-gray-400" />
           {/* Badge categoria in alto a sinistra anche senza immagine */}
           {event.categories && (
