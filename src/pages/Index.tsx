@@ -376,6 +376,25 @@ const Index = () => {
                   ))}
                 </div>
               )}
+
+              {/* Sezione eventi passati */}
+              {pastEvents.length > 0 && (
+                <div className="mt-12">
+                  <h2 className="text-xl font-bold text-gray-400 mb-4">{t('homepage.past_events', 'Eventi passati')}</h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 opacity-70">
+                    {pastEvents.map((event) => (
+                      <EventCard
+                        key={event.id}
+                        event={event}
+                        variant="full"
+                        formatDate={formatEventDate}
+                        showCategoryBadge={false}
+                        isPast={true}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
