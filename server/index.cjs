@@ -5311,39 +5311,49 @@ app.put('/api/admin/seo-settings', requireAuth, requireAdmin, async (req, res) =
 app.get('/sitemap.xml', async (_req, res) => {
   try {
     const base = PRODUCTION_BASE_URL;
+    const toDate = (d) => d ? new Date(d).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
     let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
     xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
     // Static pages
-    const staticPages = ['/', '/eventi-imminenti', '/chi-siamo', '/contattaci', '/blog', '/forum', '/privacy-policy', '/cookie-policy'];
+    const staticPages = [
+      { path: '/', changefreq: 'daily', priority: '1.0' },
+      { path: '/eventi-imminenti', changefreq: 'daily', priority: '0.9' },
+      { path: '/blog', changefreq: 'weekly', priority: '0.8' },
+      { path: '/forum', changefreq: 'daily', priority: '0.7' },
+      { path: '/chi-siamo', changefreq: 'monthly', priority: '0.7' },
+      { path: '/contattaci', changefreq: 'monthly', priority: '0.6' },
+      { path: '/privacy-policy', changefreq: 'monthly', priority: '0.4' },
+      { path: '/cookie-policy', changefreq: 'monthly', priority: '0.4' },
+    ];
     for (const p of staticPages) {
-      xml += `  <url><loc>${base}${p}</loc><changefreq>weekly</changefreq><priority>${p === '/' ? '1.0' : '0.7'}</priority></url>\n`;
+      xml += `  <url><loc>${base}${p.path}</loc><changefreq>${p.changefreq}</changefreq><priority>${p.priority}</priority></url>\n`;
     }
 
-    // Events
-    const { rows: events } = await pool.query("SELECT slug, date FROM events ORDER BY date DESC LIMIT 500");
+    // Events (all, including past)
+    const { rows: events } = await pool.query("SELECT slug, date, updated_at, created_at FROM events WHERE slug IS NOT NULL AND slug != '' ORDER BY date DESC NULLS LAST LIMIT 1000");
     for (const ev of events) {
-      if (ev.slug) {
-        xml += `  <url><loc>${base}/${ev.slug}</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
-      }
+      const lastmod = toDate(ev.updated_at || ev.date || ev.created_at);
+      xml += `  <url><loc>${base}/${ev.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
     }
 
-    // Blog posts
-    const { rows: posts } = await pool.query("SELECT slug, created_at FROM blog_posts WHERE published = true ORDER BY created_at DESC LIMIT 500");
+    // Blog posts (published only) — tabella: blog_articles
+    const { rows: posts } = await pool.query("SELECT slug, updated_at, created_at FROM blog_articles WHERE published = true AND slug IS NOT NULL AND slug != '' ORDER BY created_at DESC LIMIT 1000");
     for (const p of posts) {
-      if (p.slug) {
-        xml += `  <url><loc>${base}/blog/${p.slug}</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>\n`;
-      }
+      const lastmod = toDate(p.updated_at || p.created_at);
+      xml += `  <url><loc>${base}/blog/${p.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>\n`;
     }
 
     // Public profiles
-    const { rows: profiles } = await pool.query("SELECT public_slug FROM profiles WHERE public_profile_enabled = true AND public_slug IS NOT NULL AND public_slug != ''");
+    const { rows: profiles } = await pool.query("SELECT public_slug, updated_at FROM profiles WHERE public_profile_enabled = true AND public_slug IS NOT NULL AND public_slug != ''");
     for (const p of profiles) {
-      xml += `  <url><loc>${base}/profile/${p.public_slug}</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
+      const lastmod = toDate(p.updated_at);
+      xml += `  <url><loc>${base}/profile/${p.public_slug}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
     }
 
     xml += '</urlset>';
     res.set('Content-Type', 'application/xml');
+    res.set('Cache-Control', 'public, max-age=3600'); // cache 1h lato CDN/browser
     res.send(xml);
   } catch (e) {
     res.status(500).send('Error generating sitemap');

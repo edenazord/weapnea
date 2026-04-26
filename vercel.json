@@ -3,6 +3,7 @@
   "buildCommand": "rm -rf node_modules/.vite && npm run build",
   "outputDirectory": "dist",
   "routes": [
+    { "src": "/sitemap.xml", "dest": "https://weapnea-api.onrender.com/sitemap.xml" },
     { "handle": "filesystem" },
     { "src": "/[^.]+", "dest": "/" }
   ],
