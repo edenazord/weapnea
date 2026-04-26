@@ -41,6 +41,7 @@ interface SeoMeta {
   url: string;
   type: string;
   lang?: string;
+  jsonld?: string;
 }
 
 function buildHtml(meta: SeoMeta, pathname: string): string {
@@ -50,6 +51,10 @@ function buildHtml(meta: SeoMeta, pathname: string): string {
   const u = escapeHtml(meta.url);
   const lang = meta.lang || 'it';
   const ogType = meta.type === 'article' ? 'article' : meta.type === 'profile' ? 'profile' : 'website';
+  const OG_LOCALE_MAP: Record<string, string> = { it: 'it_IT', en: 'en_US', es: 'es_ES', fr: 'fr_FR', pl: 'pl_PL', ru: 'ru_RU' };
+  const ogLocale = OG_LOCALE_MAP[lang] || 'it_IT';
+  const orgFallbackJsonLd = `{"@context":"https://schema.org","@type":"Organization","name":"WeApnea","url":"${SITE_BASE}","logo":"${SITE_BASE}/images/weapnea-logo.png"}`;
+  const jsonldStr = (meta.jsonld || orgFallbackJsonLd).replace(/<\/script>/gi, '<\\/script>');
 
   // hreflang alternate links (same URL for all languages – language is chosen client-side)
   const hreflangTags = SUPPORTED_LANGS.map(
@@ -81,7 +86,7 @@ ${hreflangTags}
   <meta property="og:image" content="${img}" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:locale" content="${lang}_${lang.toUpperCase()}" />
+  <meta property="og:locale" content="${ogLocale}" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
@@ -89,6 +94,7 @@ ${hreflangTags}
   <meta name="twitter:title" content="${t}" />
   <meta name="twitter:description" content="${d}" />
   <meta name="twitter:image" content="${img}" />
+  <script type="application/ld+json">${jsonldStr}</script>
 </head>
 <body>
   <h1>${t}</h1>
@@ -109,14 +115,50 @@ export default async function middleware(request: Request): Promise<Response | u
   const url = new URL(request.url);
   const { pathname } = url;
 
-  // Home page: let the default index.html be served (already has reasonable defaults)
-  if (pathname === '/' || pathname === '') {
-    return undefined;
-  }
-
   // Detect language from Accept-Language header
   const acceptLang = request.headers.get('accept-language');
   const lang = resolveLang(acceptLang);
+
+  // Home page: serve with WebSite + Organization JSON-LD for bots
+  if (pathname === '/' || pathname === '') {
+    const homeJsonLd = JSON.stringify([
+      {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        'name': 'WeApnea',
+        'url': SITE_BASE,
+        'potentialAction': { '@type': 'SearchAction', 'target': `${SITE_BASE}/?q={search_term_string}`, 'query-input': 'required name=search_term_string' },
+      },
+      {
+        '@context': 'https://schema.org',
+        '@type': 'Organization',
+        'name': 'WeApnea',
+        'url': SITE_BASE,
+        'logo': `${SITE_BASE}/images/weapnea-logo.png`,
+        'description': 'La community italiana per apneisti e freediver. Scopri eventi, corsi e allenamenti di apnea.',
+        'email': 'weapnea@gmail.com',
+        'sameAs': ['https://www.instagram.com/weapnea/'],
+      },
+    ]);
+    const homeMeta: SeoMeta = {
+      title: 'WeApnea – Community Apnea & Freediving',
+      description: 'La community italiana per apneisti e freediver. Scopri eventi, corsi e allenamenti di apnea.',
+      image: `${SITE_BASE}/images/weapnea-logo.png`,
+      url: SITE_BASE,
+      type: 'website',
+      lang,
+      jsonld: homeJsonLd,
+    };
+    return new Response(buildHtml(homeMeta, pathname), {
+      status: 200,
+      headers: {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'public, max-age=3600, stale-while-revalidate=300',
+        'X-Robots-Tag': 'index, follow',
+        'Vary': 'Accept-Language',
+      },
+    });
+  }
 
   try {
     const metaUrl = `${API_BASE}/api/seo-meta?path=${encodeURIComponent(pathname)}&lang=${lang}`;

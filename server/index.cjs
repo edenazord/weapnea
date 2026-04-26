@@ -5128,12 +5128,14 @@ app.get('/api/seo-meta', async (req, res) => {
       const s = dbRows[0];
       const tr = (s.translations && typeof s.translations === 'object') ? s.translations : {};
       const langData = tr[lang] || {};
+      const orgJsonLd = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', 'name': 'WeApnea', 'url': base, 'logo': `${base}/images/weapnea-logo.png` });
       return res.json({
         ...defaultMeta,
         title: langData.title || s.title || defaultMeta.title,
         description: langData.description || s.description || defaultMeta.description,
         image: s.og_image || defaultMeta.image,
         url: `${base}${rawPath}`,
+        jsonld: orgJsonLd,
       });
     }
 
@@ -5144,7 +5146,7 @@ app.get('/api/seo-meta', async (req, res) => {
       // Estrai solo la parte titolo se ha il prefisso data (es. 12-marzo-2026-il-mio-articolo)
       const titleSlug = slugRaw.replace(/^\d{1,2}-[a-z]+-\d{4}-/, '');
       const { rows } = await pool.query(
-        `SELECT title, excerpt, cover_image_url FROM blog_articles WHERE (slug = $1 OR slug = $2) AND published = true ORDER BY created_at DESC LIMIT 1`,
+        `SELECT title, excerpt, cover_image_url, seo_title, seo_description, created_at, updated_at FROM blog_articles WHERE (slug = $1 OR slug = $2) AND published = true ORDER BY created_at DESC LIMIT 1`,
         [slugRaw, titleSlug]
       );
       if (rows[0]) {
@@ -5152,13 +5154,27 @@ app.get('/api/seo-meta', async (req, res) => {
         const img = p.cover_image_url
           ? (p.cover_image_url.startsWith('http') ? p.cover_image_url : `${base}${p.cover_image_url}`)
           : defaultMeta.image;
+        const effectiveTitle = p.seo_title || p.title;
+        const effectiveDesc = p.seo_description || p.excerpt || defaultMeta.description;
+        const articleJsonLd = JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          'headline': effectiveTitle,
+          'description': effectiveDesc,
+          'image': img,
+          'url': `${base}${rawPath}`,
+          'datePublished': p.created_at ? new Date(p.created_at).toISOString() : undefined,
+          'dateModified': (p.updated_at || p.created_at) ? new Date(p.updated_at || p.created_at).toISOString() : undefined,
+          'publisher': { '@type': 'Organization', 'name': 'WeApnea', 'logo': { '@type': 'ImageObject', 'url': `${base}/images/weapnea-logo.png` } },
+        });
         return res.json({
           ...defaultMeta,
-          title: `${p.title} | WeApnea`,
-          description: p.excerpt || defaultMeta.description,
+          title: `${effectiveTitle} | WeApnea`,
+          description: effectiveDesc,
           image: img,
           url: `${base}${rawPath}`,
           type: 'article',
+          jsonld: articleJsonLd,
         });
       }
     }
@@ -5176,13 +5192,23 @@ app.get('/api/seo-meta', async (req, res) => {
         const img = p.avatar_url
           ? (p.avatar_url.startsWith('http') ? p.avatar_url : `${base}${p.avatar_url}`)
           : defaultMeta.image;
+        const profileDesc = p.bio ? p.bio.slice(0, 160) : `Profilo istruttore di apnea su WeApnea.`;
+        const personJsonLd = JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Person',
+          'name': p.full_name,
+          'description': profileDesc,
+          'image': img,
+          'url': `${base}${rawPath}`,
+        });
         return res.json({
           ...defaultMeta,
           title: `${p.full_name} | WeApnea`,
-          description: p.bio ? p.bio.slice(0, 160) : `Profilo istruttore di apnea su WeApnea.`,
+          description: profileDesc,
           image: img,
           url: `${base}${rawPath}`,
           type: 'profile',
+          jsonld: personJsonLd,
         });
       }
     }
@@ -5210,11 +5236,25 @@ app.get('/api/seo-meta', async (req, res) => {
           image: img,
           url: `${base}${rawPath}`,
           type: 'event',
+          jsonld: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Event',
+            'name': ev.title,
+            'description': desc,
+            'startDate': ev.date ? new Date(ev.date).toISOString().split('T')[0] : undefined,
+            'location': ev.location ? { '@type': 'Place', 'name': ev.location } : undefined,
+            'image': img,
+            'url': `${base}${rawPath}`,
+            'organizer': { '@type': 'Organization', 'name': 'WeApnea', 'url': base },
+          }),
         });
       }
     }
 
-    return res.json(defaultMeta);
+    return res.json({
+      ...defaultMeta,
+      jsonld: JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', 'name': 'WeApnea', 'url': base, 'logo': `${base}/images/weapnea-logo.png` }),
+    });
   } catch (e) {
     return res.json(defaultMeta);
   }
