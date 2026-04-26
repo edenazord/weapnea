@@ -94,7 +94,7 @@ export const SearchWithDropdown = ({
   return (
     <div className="relative max-w-4xl mx-auto" ref={dropdownRef}>
       {/* Barra di ricerca compatta */}
-      <div className="flex items-stretch bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-100">
+      <div className="flex items-stretch bg-white rounded-2xl shadow-lg border border-gray-100">
 
         {/* Search Input */}
         <div className="flex-1 flex items-center px-4 min-w-0">
