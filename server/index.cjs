@@ -5331,9 +5331,9 @@ app.get('/sitemap.xml', async (_req, res) => {
     }
 
     // Events (all, including past)
-    const { rows: events } = await pool.query("SELECT slug, date, updated_at, created_at FROM events WHERE slug IS NOT NULL AND slug != '' ORDER BY date DESC NULLS LAST LIMIT 1000");
+    const { rows: events } = await pool.query("SELECT slug, date, created_at FROM events WHERE slug IS NOT NULL AND slug != '' ORDER BY date DESC NULLS LAST LIMIT 1000");
     for (const ev of events) {
-      const lastmod = toDate(ev.updated_at || ev.date || ev.created_at);
+      const lastmod = toDate(ev.date || ev.created_at);
       xml += `  <url><loc>${base}/${ev.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
     }
 
@@ -5345,10 +5345,9 @@ app.get('/sitemap.xml', async (_req, res) => {
     }
 
     // Public profiles
-    const { rows: profiles } = await pool.query("SELECT public_slug, updated_at FROM profiles WHERE public_profile_enabled = true AND public_slug IS NOT NULL AND public_slug != ''");
+    const { rows: profiles } = await pool.query("SELECT public_slug FROM profiles WHERE public_profile_enabled = true AND public_slug IS NOT NULL AND public_slug != ''");
     for (const p of profiles) {
-      const lastmod = toDate(p.updated_at);
-      xml += `  <url><loc>${base}/profile/${p.public_slug}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
+      xml += `  <url><loc>${base}/profile/${p.public_slug}</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
     }
 
     xml += '</urlset>';
@@ -5356,6 +5355,7 @@ app.get('/sitemap.xml', async (_req, res) => {
     res.set('Cache-Control', 'public, max-age=3600'); // cache 1h lato CDN/browser
     res.send(xml);
   } catch (e) {
+    console.error('[sitemap] error:', e?.message || e);
     res.status(500).send('Error generating sitemap');
   }
 });
