@@ -119,7 +119,7 @@ export const SearchWithDropdown = ({
         {/* Filtro Tipologia (categoria) */}
         <div className="flex items-center px-2" style={{ minWidth: '160px' }}>
           <Select value={categoryFilter} onValueChange={onCategoryChange} onOpenChange={handleSelectOpen}>
-            <SelectTrigger className="border-0 bg-transparent focus:ring-0 h-14 text-sm font-medium text-amber-500 hover:text-amber-600 w-full">
+            <SelectTrigger className="border-0 bg-transparent focus:ring-0 h-14 text-sm font-medium text-blue-600 hover:text-blue-700 w-full">
               <SelectValue placeholder={t('search.category', 'Tipologia')} />
             </SelectTrigger>
             <SelectContent className="bg-white border shadow-xl z-[60]">
