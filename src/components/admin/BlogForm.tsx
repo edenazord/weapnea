@@ -33,7 +33,7 @@ const formSchema = z.object({
   slug: z.string().optional(),
   subtitle: z.string().optional(),
   content: z.string().min(10, { message: "Il contenuto deve essere di almeno 10 caratteri." }),
-  image_url: z.string().url().optional(),
+  image_url: z.string().optional(),
   published: z.boolean().default(false),
   seo_title: z.string().optional(),
   seo_description: z.string().optional(),
