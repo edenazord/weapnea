@@ -133,13 +133,13 @@ const BlogDetail = () => {
 
         {/* Cover Image */}
         {article.cover_image_url && (
-          <div className="relative mb-6 md:mb-10 overflow-hidden rounded-xl md:rounded-2xl shadow-lg md:shadow-2xl">
+          <div className="relative mb-6 md:mb-10 overflow-hidden rounded-xl md:rounded-2xl shadow-lg md:shadow-2xl bg-gray-100">
             <img 
               src={article.cover_image_url} 
               alt={article.title}
-              className="w-full h-48 md:h-96 object-cover"
+              className="w-full h-48 md:h-96 object-contain"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none"></div>
           </div>
         )}
 
