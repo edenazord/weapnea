@@ -512,20 +512,37 @@ const EventDetail = () => {
                                                                                                                     </div>
                                                                                                                 )}
 
-                                                        <div className="flex items-start justify-between gap-2 mb-2">
-                                                            <h1 className={`font-bold text-blue-900 leading-tight ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>{event.title}</h1>
-                                                            <Button
-                                                                type="button"
-                                                                variant="outline"
-                                                                size="sm"
-                                                                onClick={handleShare}
-                                                                className="shrink-0 mt-1 border-blue-200 hover:border-blue-400 rounded-full"
-                                                                title={t('events.share_button', 'Condividi')}
-                                                            >
-                                                                <Share2 className="h-4 w-4 mr-1.5" />
-                                                                {t('events.share_button', 'Condividi')}
-                                                            </Button>
-                                                        </div>
+                                                        {isMobile ? (
+                                                            <div className="mb-2">
+                                                                <h1 className="font-bold text-blue-900 leading-tight text-2xl mb-2">{event.title}</h1>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={handleShare}
+                                                                    className="border-blue-200 hover:border-blue-400 rounded-full"
+                                                                    title={t('events.share_button', 'Condividi')}
+                                                                >
+                                                                    <Share2 className="h-4 w-4 mr-1.5" />
+                                                                    {t('events.share_button', 'Condividi')}
+                                                                </Button>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex items-start justify-between gap-2 mb-2">
+                                                                <h1 className="font-bold text-blue-900 leading-tight text-3xl md:text-4xl">{event.title}</h1>
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={handleShare}
+                                                                    className="shrink-0 mt-1 border-blue-200 hover:border-blue-400 rounded-full"
+                                                                    title={t('events.share_button', 'Condividi')}
+                                                                >
+                                                                    <Share2 className="h-4 w-4 mr-1.5" />
+                                                                    {t('events.share_button', 'Condividi')}
+                                                                </Button>
+                                                            </div>
+                                                        )}
                             
                             {/* Nota: la sezione 'Organizzato da' è ora integrata sopra al titolo con avatar */}
                             
