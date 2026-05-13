@@ -413,7 +413,7 @@ const EventDetail = () => {
             </Button>
             <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
                 {/* Colonna sinistra - Contenuto principale */}
-                <div className={isMobile ? 'col-span-1 order-last' : 'md:col-span-2'}>
+                <div className={isMobile ? 'col-span-1' : 'md:col-span-2'}>
                     {/* Banner immagine: carosello automatico */}
                     <Card className="overflow-hidden shadow-lg">
                         <div className={`relative w-full bg-gray-100 ${isMobile ? 'h-48' : 'h-64 md:h-96'}`}>
@@ -631,7 +631,7 @@ const EventDetail = () => {
                 </div>
 
                 {/* Colonna destra - Informazioni rapide e dettagli */}
-                <div className={isMobile ? 'col-span-1 order-first' : 'md:col-span-1'}>
+                <div className={isMobile ? 'col-span-1' : 'md:col-span-1'}>
                     {/* Informazioni Rapide */}
                     <Card className={`shadow-lg p-6`}>
                         <h2 className={`font-bold text-blue-900 mb-6 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.quick_info', 'Informazioni Rapide')}</h2>
