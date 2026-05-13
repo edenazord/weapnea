@@ -15,9 +15,11 @@ interface ImageUploadProps {
   supportVideo?: boolean;
   maxImageSizeMB?: number;
   maxVideoSizeMB?: number;
+  /** Optional hint shown below the upload button (e.g. recommended dimensions) */
+  hintText?: string;
 }
 
-export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved, supportVideo = false, maxImageSizeMB = 5, maxVideoSizeMB = 100 }: ImageUploadProps) {
+export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved, supportVideo = false, maxImageSizeMB = 5, maxVideoSizeMB = 100, hintText }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null);
 
@@ -143,9 +145,13 @@ export function ImageUpload({ onImageUploaded, currentImageUrl, onImageRemoved, 
                 ? `Immagini: JPEG, PNG, WebP (max ${maxImageSizeMB}MB). Video: MP4, WebM, MOV (max ${maxVideoSizeMB}MB).`
                 : `JPEG, PNG o WebP (max ${maxImageSizeMB}MB)`}
             </p>
-            <p className="text-xs text-gray-400">
-              Dimensioni raccomandate: 1200×630 px (copertina)
-            </p>
+            {hintText ? (
+              <p className="text-xs text-blue-600 font-medium">{hintText}</p>
+            ) : (
+              <p className="text-xs text-gray-400">
+                Dimensioni raccomandate: 1200×630 px (copertina orizzontale) o 800×1200 px (verticale)
+              </p>
+            )}
           </div>
         </div>
       )}

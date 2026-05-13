@@ -173,7 +173,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       fetchConversations();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeIsOpen]);
+  }, [storeIsOpen, user]);
 
   // Fetch conversations
   const fetchConversations = useCallback(async () => {
@@ -264,6 +264,7 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
           other_user_id: otherUserId,
           other_user_name: data.other_user_name || '',
           other_user_avatar: data.other_user_avatar || null,
+          other_user_slug: data.other_user_slug || null,
           event_id: eventId || null,
           event_title: data.event_title || null,
           event_slug: data.event_slug || null,

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getEventById, getEventBySlug, EventWithCategory } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, MapPin, Users, CreditCard, Globe, BookOpen, Target, Check, X, Clock, Languages, FileText, MessageCircle } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, Users, CreditCard, Globe, BookOpen, Target, Check, X, Clock, Languages, FileText, MessageCircle, Share2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { UserNav } from "@/components/UserNav";
 import { useAuth } from "@/contexts/AuthContext";
@@ -23,7 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { apiGet } from "@/lib/apiClient";
 import { ensureAbsoluteUrl } from "@/lib/utils";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { friendlyToCanonicalSlug } from "@/lib/seo-utils";
 import { useChatStore } from "@/hooks/useChatStore";
 import { toast } from "sonner";
@@ -214,6 +214,20 @@ const EventDetail = () => {
         openChat(event.created_by, event.id);
     };
 
+    // Handle share event link
+    const handleShare = async () => {
+        try {
+            await navigator.share({
+                title: event?.title,
+                text: event?.title,
+                url: window.location.href,
+            });
+        } catch {
+            navigator.clipboard.writeText(window.location.href);
+            toast.success(t('events.share_copied_title', 'Link copiato!'));
+        }
+    };
+
     const formatEventDate = (dateString: string) => {
         try {
             const date = parseISO(dateString);
@@ -399,7 +413,7 @@ const EventDetail = () => {
             </Button>
             <div className={`grid gap-8 ${isMobile ? 'grid-cols-1' : 'md:grid-cols-3'}`}>
                 {/* Colonna sinistra - Contenuto principale */}
-                <div className={isMobile ? 'col-span-1' : 'md:col-span-2'}>
+                <div className={isMobile ? 'col-span-1 order-last' : 'md:col-span-2'}>
                     {/* Banner immagine: carosello automatico */}
                     <Card className="overflow-hidden shadow-lg">
                         <div className={`relative w-full bg-gray-100 ${isMobile ? 'h-48' : 'h-64 md:h-96'}`}>
@@ -498,7 +512,20 @@ const EventDetail = () => {
                                                                                                                     </div>
                                                                                                                 )}
 
-                                                        <h1 className={`font-bold text-blue-900 mb-2 leading-tight ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>{event.title}</h1>
+                                                        <div className="flex items-start justify-between gap-2 mb-2">
+                                                            <h1 className={`font-bold text-blue-900 leading-tight ${isMobile ? 'text-2xl' : 'text-3xl md:text-4xl'}`}>{event.title}</h1>
+                                                            <Button
+                                                                type="button"
+                                                                variant="outline"
+                                                                size="sm"
+                                                                onClick={handleShare}
+                                                                className="shrink-0 mt-1 border-blue-200 hover:border-blue-400 rounded-full"
+                                                                title={t('events.share_button', 'Condividi')}
+                                                            >
+                                                                <Share2 className="h-4 w-4 mr-1.5" />
+                                                                {t('events.share_button', 'Condividi')}
+                                                            </Button>
+                                                        </div>
                             
                             {/* Nota: la sezione 'Organizzato da' è ora integrata sopra al titolo con avatar */}
                             
@@ -604,7 +631,7 @@ const EventDetail = () => {
                 </div>
 
                 {/* Colonna destra - Informazioni rapide e dettagli */}
-                <div className={isMobile ? 'col-span-1' : 'md:col-span-1'}>
+                <div className={isMobile ? 'col-span-1 order-first' : 'md:col-span-1'}>
                     {/* Informazioni Rapide */}
                     <Card className={`shadow-lg p-6`}>
                         <h2 className={`font-bold text-blue-900 mb-6 ${isMobile ? 'text-xl' : 'text-2xl'}`}>{t('events.quick_info', 'Informazioni Rapide')}</h2>

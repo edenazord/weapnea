@@ -333,6 +333,7 @@ const BlogForm = ({ article, onSave, onCancel }: BlogFormProps) => {
                 currentImageUrl={form.getValues('image_url') || undefined}
                 onImageUploaded={(url) => form.setValue('image_url', url, { shouldDirty: true })}
                 onImageRemoved={() => form.setValue('image_url', '', { shouldDirty: true })}
+                hintText="Per la lista articoli e l'header: orizzontale min. 1200×630 px, verticale min. 800×1200 px. Entrambi i formati sono supportati."
               />
             </div>
           </FormControl>

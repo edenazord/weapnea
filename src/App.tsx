@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useSearchParams } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { AuthProvider } from "./contexts/AuthContext";
@@ -42,6 +42,8 @@ import PublicProfileBanner from "./components/PublicProfileBanner";
 import ChatWidget from "./components/ChatWidget";
 import DIdAgent from "./components/DIdAgent";
 import { useChatStore } from "./hooks/useChatStore";
+import { useAuth } from "./contexts/AuthContext";
+import { useEffect } from "react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -63,10 +65,24 @@ const LegacyEventRedirect = () => {
   return <Navigate to={target} replace />;
 };
 
-// Chat wrapper component to access store
+// Chat wrapper component to access store and handle ?openChat= URL param (from email links)
 const ChatWidgetWrapper = () => {
-  const { targetUserId, targetEventId, resetTarget } = useChatStore();
+  const { targetUserId, targetEventId, resetTarget, openChat } = useChatStore();
+  const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   console.log('[ChatWidgetWrapper] Store values - targetUserId:', targetUserId, 'targetEventId:', targetEventId);
+
+  // Auto-open chat from email notification link: /?openChat=SENDER_ID
+  useEffect(() => {
+    const chatUserId = searchParams.get('openChat');
+    if (chatUserId && user) {
+      openChat(chatUserId);
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('openChat');
+      setSearchParams(newParams, { replace: true });
+    }
+  }, [searchParams, user, openChat, setSearchParams]);
+
   return (
     <ChatWidget
       openWithUserId={targetUserId || undefined}

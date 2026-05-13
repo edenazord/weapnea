@@ -1107,7 +1107,7 @@ async function maybeSendChatNotificationEmail(senderId, recipientId, senderName,
       `<p>Ciao ${recipientName.split(' ')[0]},</p>
        <p><strong>${senderName}</strong> ti ha inviato un messaggio su ${APP_NAME}:</p>
        <p style="background: #f3f4f6; padding: 12px; border-radius: 8px; font-style: italic;">"${preview}"</p>
-       <p><a href="https://www.weapnea.com/inbox" style="background: linear-gradient(90deg, #2563eb, #7c3aed); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; display: inline-block;">Leggi il messaggio</a></p>
+       <p><a href="${PRODUCTION_BASE_URL}/?openChat=${senderId}" style="background: linear-gradient(90deg, #2563eb, #7c3aed); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; display: inline-block;">Rispondi al messaggio</a></p>
        <p style="color: #6b7280; font-size: 0.875rem;">Riceverai al massimo una notifica al giorno per i nuovi messaggi.</p>`
     );
     const html = simpleRender(rawHtml, { app_name: APP_NAME, public_base: PRODUCTION_BASE_URL });
@@ -1259,8 +1259,7 @@ app.post('/api/auth/register', async (req, res) => {
     } catch (e) {
       console.warn('[register] unable to preset public profile fields:', e?.message || e);
     }
-    const jwtToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
-    // --- Email verification flow ---
+    const jwtToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     // Generate a verification token (JWT, 24 hours validity)
     const verificationToken = jwt.sign({ id: user.id, email: user.email, t: 'verify' }, JWT_SECRET, { expiresIn: '24h' });
     // Store verification token in profile
@@ -1297,7 +1296,7 @@ app.post('/api/auth/login', async (req, res) => {
     if (!ok) return res.status(401).json({ error: 'Credenziali non valide' });
     // Block login for unverified accounts
     if (!user.is_active) return res.status(403).json({ error: 'Account non verificato. Controlla la tua email per il link di conferma.', needsVerification: true, email: user.email });
-    const jwtToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+    const jwtToken = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '30d' });
     // Registra l'ultimo accesso
     await pool.query(`UPDATE profiles SET last_sign_in_at = now() WHERE id = $1`, [user.id]).catch(() => {});
     delete user.password_hash;
@@ -2102,7 +2101,7 @@ function eventsSelect() {
 
 // Events list with basic filters
 app.get('/api/events', async (req, res) => {
-  const { searchTerm, nation, dateFrom, sortColumn = 'date', sortDirection = 'asc' } = req.query;
+  const { searchTerm, nation, dateFrom, sortColumn = 'created_at', sortDirection = 'desc' } = req.query;
   const userRole = req.query.userRole ? String(req.query.userRole) : '';
   const userId = req.query.userId ? String(req.query.userId) : '';
   const clauses = [];
@@ -2125,7 +2124,7 @@ app.get('/api/events', async (req, res) => {
     clauses.push(`e.created_by = $${params.length}`);
   }
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-  const validCols = new Set(['date', 'title', 'nation', 'category']);
+  const validCols = new Set(['date', 'title', 'nation', 'category', 'created_at']);
   const col = validCols.has(String(sortColumn)) ? String(sortColumn) : 'date';
   const dir = String(sortDirection).toLowerCase() === 'desc' ? 'DESC' : 'ASC';
   const orderBy = col === 'category' ? `ORDER BY c.name ${dir}` : `ORDER BY e.${col} ${dir}`;

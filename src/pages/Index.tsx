@@ -158,9 +158,10 @@ const Index = () => {
     }
 
     return filteredEvents.sort((a, b) => {
-      const dateA = parseISO(a.date!);
-      const dateB = parseISO(b.date!);
-      return dateA.getTime() - dateB.getTime();
+      // Ordina per data di pubblicazione (created_at) dal più recente al meno recente
+      const createdA = a.created_at ? new Date(a.created_at).getTime() : 0;
+      const createdB = b.created_at ? new Date(b.created_at).getTime() : 0;
+      return createdB - createdA;
     });
   }, [events, categoryFilter, disciplineFilter]);
 
