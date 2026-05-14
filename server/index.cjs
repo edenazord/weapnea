@@ -2882,7 +2882,8 @@ app.post('/api/events', requireAuth, async (req, res) => {
   if (!req.user || req.user.role !== 'admin') {
     try {
       const { rows: profRows } = await pool.query(
-        `SELECT public_profile_enabled, public_slug, phone, assicurazione, scadenza_assicurazione, scadenza_certificato_medico
+        `SELECT public_profile_enabled, public_slug, phone, assicurazione, scadenza_assicurazione, scadenza_certificato_medico,
+                dichiarazione_brevetto_valido, numero_brevetto, didattica_brevetto, scadenza_brevetto
          FROM profiles WHERE id = $1 LIMIT 1`,
         [req.user?.id]
       );
@@ -2902,6 +2903,12 @@ app.post('/api/events', requireAuth, async (req, res) => {
       const sc = prof.scadenza_certificato_medico ? new Date(prof.scadenza_certificato_medico) : null;
       if (!sa || isNaN(sa.getTime()) || sa < toleranceDate) missing.push('scadenza_assicurazione');
       if (!sc || isNaN(sc.getTime()) || sc < toleranceDate) missing.push('scadenza_certificato_medico');
+      // Autocertificazione istruttore: dichiarazione + numero tessera + didattica + scadenza valida
+      if (!prof.dichiarazione_brevetto_valido) missing.push('dichiarazione_brevetto_valido');
+      if (isEmpty(prof.numero_brevetto)) missing.push('numero_brevetto');
+      if (isEmpty(prof.didattica_brevetto)) missing.push('didattica_brevetto');
+      const sb = prof.scadenza_brevetto ? new Date(prof.scadenza_brevetto) : null;
+      if (!sb || isNaN(sb.getTime()) || sb < toleranceDate) missing.push('scadenza_brevetto');
       if (missing.length) {
         return res.status(400).json({ error: 'organizer_requirements_missing', missing });
       }

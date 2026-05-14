@@ -194,13 +194,20 @@ const Profile = () => {
   const medicalOk = formData.scadenza_certificato_medico ? (new Date(formData.scadenza_certificato_medico) >= toleranceDate) : false;
   const publicEnabled = !!formData.public_profile_enabled;
   const hasSlug = !!(formData.public_slug && formData.public_slug.trim());
-  const organizerEligible = publicEnabled && hasSlug && medicalOk;
+  const hasBrevetto = !!formData.dichiarazione_brevetto_valido;
+  const hasNumeroBrevetto = !!(formData.numero_brevetto && formData.numero_brevetto.trim());
+  const hasDidattica = !!(formData.didattica_brevetto && formData.didattica_brevetto.trim());
+  const brvettoScadenzaOk = formData.scadenza_brevetto ? (new Date(formData.scadenza_brevetto) >= toleranceDate) : false;
+  const organizerEligible = publicEnabled && hasSlug && hasPhone && hasInsurance && insuranceOk && medicalOk && hasBrevetto && hasNumeroBrevetto && hasDidattica && brvettoScadenzaOk;
 
   // Lista requisiti mancanti per organizzare
   const missingRequirements: string[] = [];
   if (!publicEnabled) missingRequirements.push(t('profile.requirements.public_profile', 'Profilo pubblico attivo'));
   if (!hasSlug) missingRequirements.push(t('profile.requirements.public_slug', 'Slug profilo pubblico'));
+  if (!hasPhone) missingRequirements.push(t('profile.requirements.phone', 'Numero di telefono'));
+  if (!hasInsurance || !insuranceOk) missingRequirements.push(t('profile.requirements.insurance', 'Assicurazione in corso di validità'));
   if (!medicalOk) missingRequirements.push(t('profile.requirements.medical', 'Certificato medico in corso di validità'));
+  if (!hasBrevetto || !hasNumeroBrevetto || !hasDidattica || !brvettoScadenzaOk) missingRequirements.push(t('profile.requirements.brevetto', 'Autocertificazione istruttore (numero tessera, didattica e scadenza)'));
 
   // Nessun calcolo di progress: le sezioni sono opzionali/variabili per ruolo
 
