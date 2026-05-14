@@ -93,78 +93,155 @@ export const SearchWithDropdown = ({
 
   return (
     <div className="relative max-w-4xl mx-auto" ref={dropdownRef}>
-      {/* Barra di ricerca compatta */}
-      <div className="flex items-stretch bg-white rounded-2xl shadow-lg border border-gray-100">
+      {isMobile ? (
+        /* ── Layout mobile: ricerca + filtri su due righe ── */
+        <div className="space-y-2">
+          {/* Riga 1: campo di ricerca */}
+          <div className="flex items-stretch bg-white rounded-2xl shadow-lg border border-gray-100">
+            <div className="flex-1 flex items-center px-4 min-w-0">
+              <Search className="h-4 w-4 text-gray-400 shrink-0 mr-2" />
+              <Input
+                ref={inputRef}
+                placeholder={t('search.placeholder', 'Cerca...')}
+                value={searchTerm}
+                onChange={handleInputChange}
+                onClick={handleInputClick}
+                className="border-0 bg-transparent text-sm focus:ring-0 focus:outline-none h-12 p-0 placeholder:text-gray-400"
+              />
+              {searchTerm && (
+                <button onClick={() => onSearchChange("")} className="ml-1 text-gray-400 hover:text-gray-600">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+            <Button
+              onClick={() => setIsDropdownOpen(false)}
+              className="rounded-none rounded-r-2xl h-full px-5 text-sm font-semibold bg-primary hover:bg-primary/90 text-white shrink-0"
+              style={{ minHeight: '48px' }}
+            >
+              {t('search.search_button', 'Cerca')}
+            </Button>
+          </div>
 
-        {/* Search Input */}
-        <div className="flex-1 flex items-center px-4 min-w-0">
-          <Search className="h-4 w-4 text-gray-400 shrink-0 mr-2" />
-          <Input
-            ref={inputRef}
-            placeholder={t('search.placeholder', 'Cerca...')}
-            value={searchTerm}
-            onChange={handleInputChange}
-            className="border-0 bg-transparent text-sm focus:ring-0 focus:outline-none h-14 p-0 placeholder:text-gray-400"
-          />
-          {searchTerm && (
-            <button onClick={() => onSearchChange("")} className="ml-1 text-gray-400 hover:text-gray-600">
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
-        </div>
+          {/* Riga 2: filtri affiancati */}
+          <div className="flex gap-2">
+            <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 min-w-0">
+              <Select value={categoryFilter} onValueChange={onCategoryChange} onOpenChange={handleSelectOpen}>
+                <SelectTrigger className="border-0 bg-transparent focus:ring-0 h-11 text-sm font-medium text-blue-600 w-full px-3">
+                  <SelectValue placeholder={t('search.category', 'Tipologia')} />
+                </SelectTrigger>
+                <SelectContent className="bg-white border shadow-xl z-[60]">
+                  <SelectItem value="all" className="text-blue-600 font-medium">{t('search.all_categories', 'Tutte')}</SelectItem>
+                  {categories.map((category) => (
+                    <SelectItem key={category.id} value={category.id}>
+                      {category.id === 'uncategorized'
+                        ? t('search.uncategorized_trainings', 'Allenamenti')
+                        : category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        {/* Separatore */}
-        <div className="w-px bg-gray-200 self-stretch my-3" />
+            <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-100 min-w-0 flex items-center px-3 gap-2">
+              <MonthPicker
+                date={dateFilter}
+                onDateChange={handleDateChange}
+                placeholder={t('search.period', 'Periodo')}
+                className="border-0 bg-transparent text-sm text-gray-500 w-full"
+              />
+              <Calendar className="h-4 w-4 text-gray-400 shrink-0" />
+              {dateFilter && (
+                <button onClick={() => onDateChange(undefined)} className="text-gray-400 hover:text-gray-600">
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
 
-        {/* Filtro Tipologia (categoria) */}
-        <div className="flex items-center px-2" style={{ minWidth: '160px' }}>
-          <Select value={categoryFilter} onValueChange={onCategoryChange} onOpenChange={handleSelectOpen}>
-            <SelectTrigger className="border-0 bg-transparent focus:ring-0 h-14 text-sm font-medium text-blue-600 hover:text-blue-700 w-full">
-              <SelectValue placeholder={t('search.category', 'Tipologia')} />
-            </SelectTrigger>
-            <SelectContent className="bg-white border shadow-xl z-[60]">
-              <SelectItem value="all" className="text-blue-600 font-medium">{t('search.all_categories', 'Tutte le Categorie')}</SelectItem>
-              {categories.map((category) => (
-                <SelectItem key={category.id} value={category.id}>
-                  {category.id === 'uncategorized'
-                    ? t('search.uncategorized_trainings', 'Allenamenti (senza categoria)')
-                    : category.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Separatore */}
-        <div className="w-px bg-gray-200 self-stretch my-3" />
-
-        {/* Filtro Periodo (mese) */}
-        <div className="flex items-center px-4" style={{ minWidth: '160px' }}>
-          <div className="flex items-center gap-2 w-full">
-            <MonthPicker
-              date={dateFilter}
-              onDateChange={handleDateChange}
-              placeholder={t('search.period', 'Periodo')}
-              className="border-0 bg-transparent text-sm text-gray-500 w-full"
-            />
-            <Calendar className="h-4 w-4 text-gray-400 shrink-0" />
-            {dateFilter && (
-              <button onClick={() => onDateChange(undefined)} className="text-gray-400 hover:text-gray-600">
-                <X className="h-3.5 w-3.5" />
+            {hasActiveFilters && (
+              <button
+                onClick={clearAllFilters}
+                className="shrink-0 flex items-center justify-center w-11 h-11 bg-white rounded-xl shadow-sm border border-gray-100 text-gray-400 hover:text-red-500 transition-colors"
+                title={t('search.clear_filters', 'Rimuovi filtri')}
+              >
+                <X className="h-4 w-4" />
               </button>
             )}
           </div>
         </div>
+      ) : (
+        /* ── Layout desktop: barra orizzontale compatta ── */
+        <div className="flex items-stretch bg-white rounded-2xl shadow-lg border border-gray-100">
+          {/* Search Input */}
+          <div className="flex-1 flex items-center px-4 min-w-0">
+            <Search className="h-4 w-4 text-gray-400 shrink-0 mr-2" />
+            <Input
+              ref={inputRef}
+              placeholder={t('search.placeholder', 'Cerca...')}
+              value={searchTerm}
+              onChange={handleInputChange}
+              className="border-0 bg-transparent text-sm focus:ring-0 focus:outline-none h-14 p-0 placeholder:text-gray-400"
+            />
+            {searchTerm && (
+              <button onClick={() => onSearchChange("")} className="ml-1 text-gray-400 hover:text-gray-600">
+                <X className="h-3.5 w-3.5" />
+              </button>
+            )}
+          </div>
 
-        {/* Bottone Cerca */}
-        <Button
-          onClick={() => setIsDropdownOpen(false)}
-          className="rounded-none rounded-r-2xl h-full px-8 text-base font-semibold bg-primary hover:bg-primary/90 text-white shrink-0"
-          style={{ minHeight: '56px' }}
-        >
-          {t('search.search_button', 'Cerca')}
-        </Button>
-      </div>
+          {/* Separatore */}
+          <div className="w-px bg-gray-200 self-stretch my-3" />
+
+          {/* Filtro Tipologia (categoria) */}
+          <div className="flex items-center px-2" style={{ minWidth: '160px' }}>
+            <Select value={categoryFilter} onValueChange={onCategoryChange} onOpenChange={handleSelectOpen}>
+              <SelectTrigger className="border-0 bg-transparent focus:ring-0 h-14 text-sm font-medium text-blue-600 hover:text-blue-700 w-full">
+                <SelectValue placeholder={t('search.category', 'Tipologia')} />
+              </SelectTrigger>
+              <SelectContent className="bg-white border shadow-xl z-[60]">
+                <SelectItem value="all" className="text-blue-600 font-medium">{t('search.all_categories', 'Tutte le Categorie')}</SelectItem>
+                {categories.map((category) => (
+                  <SelectItem key={category.id} value={category.id}>
+                    {category.id === 'uncategorized'
+                      ? t('search.uncategorized_trainings', 'Allenamenti (senza categoria)')
+                      : category.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Separatore */}
+          <div className="w-px bg-gray-200 self-stretch my-3" />
+
+          {/* Filtro Periodo (mese) */}
+          <div className="flex items-center px-4" style={{ minWidth: '160px' }}>
+            <div className="flex items-center gap-2 w-full">
+              <MonthPicker
+                date={dateFilter}
+                onDateChange={handleDateChange}
+                placeholder={t('search.period', 'Periodo')}
+                className="border-0 bg-transparent text-sm text-gray-500 w-full"
+              />
+              <Calendar className="h-4 w-4 text-gray-400 shrink-0" />
+              {dateFilter && (
+                <button onClick={() => onDateChange(undefined)} className="text-gray-400 hover:text-gray-600">
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Bottone Cerca */}
+          <Button
+            onClick={() => setIsDropdownOpen(false)}
+            className="rounded-none rounded-r-2xl h-full px-8 text-base font-semibold bg-primary hover:bg-primary/90 text-white shrink-0"
+            style={{ minHeight: '56px' }}
+          >
+            {t('search.search_button', 'Cerca')}
+          </Button>
+        </div>
+      )}
 
       {/* Filtri extra (nazione, disciplina) — mostrati solo se attivi */}
       {(nationFilter !== "all" || disciplineFilter !== "all") && (

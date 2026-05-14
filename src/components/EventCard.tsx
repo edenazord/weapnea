@@ -4,7 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Users, Euro, Image as ImageIcon, Target, MessageCircle, User } from "lucide-react";
+import { Calendar, MapPin, Users, Euro, Image as ImageIcon, Target, MessageCircle, User, Share2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import type { EventWithCategory } from "@/lib/api";
 import { ensureAbsoluteUrl } from "@/lib/utils";
@@ -101,6 +101,18 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
   };
 
   const eventPath = buildFriendlyEventPath(event.slug);
+
+  // Handle share event link
+  const handleShare = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const url = window.location.origin + eventPath;
+    if (navigator.share) {
+      navigator.share({ title: event.title, url }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(url);
+    }
+  };
   const organizerDisplayName = event.organizer_name || null;
 
   return (
@@ -122,17 +134,28 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
               {localizeCategoryName(event.categories.name, t)}
             </span>
           )}
-          {/* Bottone chat per contattare organizzatore */}
-          <button
-            type="button"
-            onClick={handleContactOrganizer}
-            className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground hover:bg-primary focus:outline-none focus:ring-2 focus:ring-white/60"
-            aria-label={t('events.request_info', 'Richiedi info')}
-            title={t('events.request_info', 'Richiedi info')}
-          >
-            <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
-          </button>
+          {/* Bottoni in alto a destra: chat + condividi */}
+          <div className="absolute top-2 right-2 z-10 flex gap-1">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/40 text-white hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/60 backdrop-blur-sm"
+              aria-label={t('events.share_button', 'Condividi')}
+              title={t('events.share_button', 'Condividi')}
+            >
+              <Share2 className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleContactOrganizer}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground hover:bg-primary focus:outline-none focus:ring-2 focus:ring-white/60"
+              aria-label={t('events.request_info', 'Richiedi info')}
+              title={t('events.request_info', 'Richiedi info')}
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
+            </button>
+          </div>
         </Link>
       )}
       
@@ -145,17 +168,28 @@ const EventCard = ({ event, variant = "full", formatDate, showCategoryBadge = tr
               {localizeCategoryName(event.categories.name, t)}
             </span>
           )}
-          {/* Bottone chat anche quando non c'è immagine */}
-          <button
-            type="button"
-            onClick={handleContactOrganizer}
-            className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground hover:bg-primary focus:outline-none focus:ring-2 focus:ring-white/60"
-            aria-label={t('events.request_info', 'Richiedi info')}
-            title={t('events.request_info', 'Richiedi info')}
-          >
-            <MessageCircle className="h-4 w-4" />
-            <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
-          </button>
+          {/* Bottoni in alto a destra: condividi + chat (anche senza immagine) */}
+          <div className="absolute top-2 right-2 z-10 flex gap-1">
+            <button
+              type="button"
+              onClick={handleShare}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-black/40 text-white hover:bg-black/60 focus:outline-none focus:ring-2 focus:ring-white/60 backdrop-blur-sm"
+              aria-label={t('events.share_button', 'Condividi')}
+              title={t('events.share_button', 'Condividi')}
+            >
+              <Share2 className="h-3.5 w-3.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleContactOrganizer}
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-primary/90 text-primary-foreground hover:bg-primary focus:outline-none focus:ring-2 focus:ring-white/60"
+              aria-label={t('events.request_info', 'Richiedi info')}
+              title={t('events.request_info', 'Richiedi info')}
+            >
+              <MessageCircle className="h-4 w-4" />
+              <span className="hidden sm:inline text-xs font-medium">{t('events.request_info', 'Richiedi info')}</span>
+            </button>
+          </div>
         </Link>
       )}
 

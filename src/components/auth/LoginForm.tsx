@@ -18,6 +18,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { apiGet, apiSend } from "@/lib/apiClient";
+import { Eye, EyeOff } from "lucide-react";
 
 const LoginForm = () => {
   const { t } = useLanguage();
@@ -31,6 +32,7 @@ const LoginForm = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [verificationNeeded, setVerificationNeeded] = useState<string | null>(null);
   const [resending, setResending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { signIn, user } = useAuth();
   const hasRedirected = useRef(false);
   
@@ -144,7 +146,18 @@ const LoginForm = () => {
               <FormItem>
                 <FormLabel>{t('auth.login.form.password_label', 'Password')}</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="••••••••" {...field} />
+                  <div className="relative">
+                    <Input type={showPassword ? "text" : "password"} placeholder="••••••••" {...field} className="pr-10" />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute inset-y-0 right-0 flex items-center px-3 text-gray-400 hover:text-gray-600"
+                      tabIndex={-1}
+                      aria-label={showPassword ? "Nascondi password" : "Mostra password"}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
                 </FormControl>
                 <FormMessage />
               </FormItem>
