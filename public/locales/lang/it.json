@@ -434,6 +434,7 @@
 				"create_event_sheet_title": "Crea Evento",
 				"edit_event_sheet_title": "Modifica Evento",
 				"complete_sections_hint": "Completa le sezioni \"Certificazioni\" e \"Visibilità\" per abilitare la creazione.",
+				"missing_requirements": "Requisiti mancanti per organizzare eventi:",
 				"your_organized_events": "I tuoi eventi da Organizzatore",
 				"loading_events": "Caricamento eventi...",
 				"no_organized_events": "Nessun evento organizzato ancora.",
@@ -624,6 +625,14 @@
 			"insurance_incomplete_desc": "Compila assicurazione, numero e una scadenza valida futura prima di confermare la dichiarazione.",
 			"brevetto_incomplete_title": "Dati Brevetto incompleti",
 			"brevetto_incomplete_desc": "Inserisci brevetto, numero e una scadenza futura prima di confermare la dichiarazione brevetto valido."
+		},
+		"requirements": {
+			"public_profile": "Profilo pubblico attivo",
+			"public_slug": "Slug profilo pubblico",
+			"phone": "Numero di telefono",
+			"insurance": "Assicurazione in corso di validità",
+			"medical": "Certificato medico in corso di validità",
+			"brevetto": "Autocertificazione istruttore (numero tessera, didattica e scadenza)"
 		},
 		"login_required": "Devi essere autenticato per visualizzare il profilo."
 	},

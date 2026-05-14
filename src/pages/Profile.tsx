@@ -1094,15 +1094,100 @@ const Profile = () => {
                           </Button>
                         </div>
                       ) : null}
-                      {!(user?.role === 'admin' || organizerEligible) && missingRequirements.length > 0 && (
-                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-                          <p className="text-sm font-medium text-amber-800 mb-2">{t('profile.sections.my_events.missing_requirements', 'Requisiti mancanti per organizzare eventi:')}</p>
-                          <ul className="list-disc list-inside text-sm text-amber-700 space-y-1">
-                            {missingRequirements.map((req, i) => (
-                              <li key={i}>{req}</li>
-                            ))}
-                          </ul>
-                          <p className="text-xs text-amber-600 mt-2">{t('profile.sections.my_events.complete_sections_hint', 'Completa le sezioni "Certificazioni" e "Visibilità" per abilitare la creazione.')}</p>
+                      {!(user?.role === 'admin' || organizerEligible) && (
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg space-y-5">
+                          <p className="text-sm font-medium text-amber-800">{t('profile.sections.my_events.complete_sections_hint', 'Completa i dati richiesti per abilitare la creazione di eventi:')}</p>
+
+                          {/* Telefono */}
+                          {!hasPhone && (
+                            <div className="space-y-1">
+                              <Label htmlFor="req_phone" className="text-sm font-medium">{t('profile.sections.personal_info.phone_label', 'Telefono')} <span className="text-red-500">*</span></Label>
+                              <Input
+                                id="req_phone"
+                                type="tel"
+                                value={formData.phone}
+                                onChange={(e) => { const cleaned = e.target.value.replace(/[^0-9+\s\-]/g, ''); handleInputChange('phone', cleaned); }}
+                                placeholder={t('profile.sections.personal_info.phone_placeholder', 'Es. +39 333 1234567')}
+                              />
+                            </div>
+                          )}
+
+                          {/* Assicurazione */}
+                          {(!hasInsurance || !insuranceOk) && (
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium">{t('profile.sections.certifications.accordion_insurance', 'Assicurazione')} <span className="text-red-500">*</span></Label>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                                <Input value={formData.assicurazione} onChange={(e) => handleInputChange('assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_placeholder', 'Nome assicurazione')} />
+                                <Input value={formData.numero_assicurazione} onChange={(e) => handleInputChange('numero_assicurazione', e.target.value)} placeholder={t('profile.sections.certifications.insurance_number_placeholder', 'Numero')} />
+                                <DatePicker date={formData.scadenza_assicurazione ? new Date(formData.scadenza_assicurazione) : undefined} onDateChange={(date) => handleInputChange('scadenza_assicurazione', toLocalDateString(date))} />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Certificato medico */}
+                          {!medicalOk && (
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium">{t('profile.sections.certifications.accordion_medical', 'Certificato medico')} <span className="text-red-500">*</span></Label>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <Select value={(formData as any).certificato_medico_tipo || ''} onValueChange={(v) => handleInputChange('certificato_medico_tipo', v)}>
+                                  <SelectTrigger><SelectValue placeholder={t('profile.sections.certifications.medical_type_placeholder', 'Seleziona tipo')} /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="agonistico">{t('profile.sections.certifications.medical_type_agonistico', 'Agonistico')}</SelectItem>
+                                    <SelectItem value="non_agonistico">{t('profile.sections.certifications.medical_type_non_agonistico', 'Non agonistico')}</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <DatePicker date={formData.scadenza_certificato_medico ? new Date(formData.scadenza_certificato_medico) : undefined} onDateChange={(date) => handleInputChange('scadenza_certificato_medico', toLocalDateString(date))} />
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Brevetto istruttore */}
+                          {(!hasBrevetto || !hasNumeroBrevetto || !hasDidattica || !brvettoScadenzaOk) && (
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium">{t('profile.sections.certifications.accordion_brevetto', 'Brevetto Istruttore')} <span className="text-red-500">*</span></Label>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <Input value={formData.numero_brevetto} onChange={(e) => handleInputChange('numero_brevetto', e.target.value)} placeholder={t('profile.sections.certifications.brevetto_number_placeholder', 'Numero tessera')} />
+                                <Input value={formData.didattica_brevetto} onChange={(e) => handleInputChange('didattica_brevetto', e.target.value)} placeholder={t('profile.sections.certifications.brevetto_didattica_placeholder', 'Didattica')} />
+                              </div>
+                              <Input value={formData.brevetto} onChange={(e) => handleInputChange('brevetto', e.target.value)} placeholder={t('profile.sections.certifications.brevetto_placeholder', 'Tipologia brevetto (es. Istruttore AIDA)')} />
+                              <DatePicker date={formData.scadenza_brevetto ? new Date(formData.scadenza_brevetto) : undefined} onDateChange={(date) => handleInputChange('scadenza_brevetto', toLocalDateString(date))} />
+                              <div className="flex items-start gap-3 p-3 border rounded-md bg-white">
+                                <Checkbox
+                                  id="req_dichiarazione_brevetto"
+                                  checked={Boolean(formData.dichiarazione_brevetto_valido)}
+                                  onCheckedChange={(v) => setFormData(prev => ({ ...prev, dichiarazione_brevetto_valido: Boolean(v) }))}
+                                />
+                                <Label htmlFor="req_dichiarazione_brevetto" className="text-sm cursor-pointer leading-snug">
+                                  {t('profile.sections.certifications.brevetto_declaration', 'Dichiaro di essere istruttore certificato con BREVETTO ISTRUTTORE in corso di validità')}
+                                </Label>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Profilo pubblico */}
+                          {(!publicEnabled || !hasSlug) && (
+                            <div className="space-y-2">
+                              <Label className="text-sm font-medium">{t('profile.sections.visibility.enable_public_profile', 'Profilo pubblico')} <span className="text-red-500">*</span></Label>
+                              <div className="flex items-center gap-3 p-3 border rounded-md bg-white">
+                                <Switch
+                                  checked={formData.public_profile_enabled}
+                                  onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_profile_enabled: Boolean(v) }))}
+                                />
+                                <Label className="text-sm">{t('profile.sections.visibility.enable_public_profile_desc', 'Attiva per rendere visibile il tuo profilo')}</Label>
+                              </div>
+                              {formData.public_profile_enabled && (
+                                <Input
+                                  value={formData.public_slug}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, public_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) }))}
+                                  placeholder={t('profile.sections.visibility.public_slug_placeholder', 'es. nome-cognome')}
+                                />
+                              )}
+                            </div>
+                          )}
+
+                          <Button type="button" size="sm" onClick={(e) => handleSubmit(e as any)} disabled={loading} className="w-full">
+                            {loading ? t('profile.buttons.saving', 'Salvando...') : t('profile.buttons.save', 'Salva')}
+                          </Button>
                         </div>
                       )}
                       <div className="mt-4">

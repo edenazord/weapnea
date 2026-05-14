@@ -431,6 +431,7 @@
         "create_event_sheet_title": "Create Event",
         "edit_event_sheet_title": "Edit Event",
         "complete_sections_hint": "Complete the \"Certifications\" and \"Visibility\" sections to enable event creation.",
+        "missing_requirements": "Requirements missing to organize events:",
         "your_organized_events": "Your Organized Events",
         "loading_events": "Loading events...",
         "no_organized_events": "No organized events yet.",
@@ -621,6 +622,14 @@
       "insurance_incomplete_desc": "Fill in insurance, number and a valid future expiry date before confirming.",
       "brevetto_incomplete_title": "Incomplete certification data",
       "brevetto_incomplete_desc": "Enter certification, number and a future expiry date before confirming the valid certification statement."
+    },
+    "requirements": {
+      "public_profile": "Active public profile",
+      "public_slug": "Public profile slug",
+      "phone": "Phone number",
+      "insurance": "Valid insurance",
+      "medical": "Valid medical certificate",
+      "brevetto": "Instructor self-certification (membership number, teaching method and expiry)"
     },
     "login_required": "You must be authenticated to view the profile."
   },
