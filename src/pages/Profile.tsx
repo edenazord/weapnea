@@ -1168,14 +1168,16 @@ const Profile = () => {
                           {(!publicEnabled || !hasSlug) && (
                             <div className="space-y-2">
                               <Label className="text-sm font-medium">{t('profile.sections.visibility.enable_public_profile', 'Profilo pubblico')} <span className="text-red-500">*</span></Label>
-                              <div className="flex items-center gap-3 p-3 border rounded-md bg-white">
-                                <Switch
-                                  checked={formData.public_profile_enabled}
-                                  onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_profile_enabled: Boolean(v) }))}
-                                />
-                                <Label className="text-sm">{t('profile.sections.visibility.enable_public_profile_desc', 'Attiva per rendere visibile il tuo profilo')}</Label>
-                              </div>
-                              {formData.public_profile_enabled && (
+                              {!publicEnabled && (
+                                <div className="flex items-center gap-3 p-3 border rounded-md bg-white">
+                                  <Switch
+                                    checked={formData.public_profile_enabled}
+                                    onCheckedChange={(v) => setFormData(prev => ({ ...prev, public_profile_enabled: Boolean(v) }))}
+                                  />
+                                  <Label className="text-sm">{t('profile.sections.visibility.enable_public_profile_desc', 'Attiva per rendere visibile il tuo profilo')}</Label>
+                                </div>
+                              )}
+                              {(!hasSlug && (formData.public_profile_enabled || publicEnabled)) && (
                                 <Input
                                   value={formData.public_slug}
                                   onChange={(e) => setFormData(prev => ({ ...prev, public_slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) }))}
