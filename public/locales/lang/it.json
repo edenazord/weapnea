@@ -835,6 +835,7 @@
 		"mobile_title": "Admin Dashboard",
 		"welcome": "Benvenuto, {name}!",
 		"welcome_fallback": "Admin",
+		"manage_statistics": "Statistiche Generali",
 		"manage_events": "Gestione Eventi e Allenamenti",
 		"manage_categories": "Gestione Categorie",
 		"manage_blog": "Gestione Articoli Blog",
@@ -842,6 +843,7 @@
 		"manage_email": "Gestione Email",
 		"manage_seo": "Impostazioni SEO",
 		"tabs": {
+			"statistics": "Statistiche",
 			"events": "Eventi",
 			"categories": "Categorie",
 			"blog": "Blog",

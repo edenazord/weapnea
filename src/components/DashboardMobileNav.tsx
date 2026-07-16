@@ -1,14 +1,20 @@
 import { Calendar, FolderTree, FileText, Users, Mail, Globe } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import type { LucideIcon } from "lucide-react";
 
 interface DashboardMobileNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
+  items?: Array<{
+    id: string;
+    icon: LucideIcon;
+    label: string;
+  }>;
 }
 
-const DashboardMobileNav = ({ activeTab, onTabChange }: DashboardMobileNavProps) => {
+const DashboardMobileNav = ({ activeTab, onTabChange, items }: DashboardMobileNavProps) => {
   const { t } = useLanguage();
-  const navItems = [
+  const defaultNavItems = [
     { id: "events", icon: Calendar, label: t('admin_dashboard.tabs.events', 'Eventi') },
     { id: "categories", icon: FolderTree, label: t('admin_dashboard.tabs.categories', 'Categorie') },
     { id: "blog", icon: FileText, label: t('admin_dashboard.tabs.blog', 'Blog') },
@@ -16,6 +22,7 @@ const DashboardMobileNav = ({ activeTab, onTabChange }: DashboardMobileNavProps)
     { id: "email", icon: Mail, label: t('admin_dashboard.tabs.email', 'Email') },
     { id: "seo", icon: Globe, label: t('admin_dashboard.tabs.seo', 'SEO') },
   ];
+  const navItems = items ?? defaultNavItems;
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-t border-white/20 px-1 py-2 z-50 safe-area-inset-bottom shadow-lg">
