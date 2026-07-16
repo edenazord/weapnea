@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ReactNode } from "react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 
-const AdminLayout = ({ children }: { children: ReactNode }) => {
+const AdminLayout = ({ children, fullScreen = false }: { children: ReactNode; fullScreen?: boolean }) => {
     const { user, loading } = useAuth();
     const { t } = useLanguage();
     
@@ -45,7 +45,7 @@ const AdminLayout = ({ children }: { children: ReactNode }) => {
                     </div>
                 </div>
             </header>
-            <main className="flex-1 container mx-auto px-4 py-8">
+            <main className={fullScreen ? "flex-1 w-full px-4 py-6 md:px-6" : "flex-1 container mx-auto px-4 py-8"}>
                 {children}
             </main>
         </div>

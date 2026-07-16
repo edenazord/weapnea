@@ -12,7 +12,6 @@ import BlogTagManager from "@/components/admin/BlogTagManager";
 import UsersManager from "@/components/admin/UsersManager";
 import EmailTemplatesManager from "@/components/admin/EmailTemplatesManager";
 import SeoManager from "@/components/admin/SeoManager";
-import { BackButton } from "@/components/BackButton";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -435,16 +434,6 @@ const AdminDashboard = () => {
     if (isMobile) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-                <div className="sticky top-0 z-40 bg-white/90 backdrop-blur-sm border-b border-gray-200 px-4 py-3">
-                    <div className="flex items-center gap-3">
-                        <BackButton fallbackPath="/" label="" />
-                        <div>
-                            <h1 className="text-xl font-bold text-blue-900">{t('admin_dashboard.mobile_title', 'Admin Dashboard')}</h1>
-                            <p className="text-sm text-gray-600">{t('admin_dashboard.welcome', 'Benvenuto, {name}!').replace('{name}', profile?.full_name || t('admin_dashboard.welcome_fallback', 'Admin'))}</p>
-                        </div>
-                    </div>
-                </div>
-
                 <div className="px-4 py-4 border-b border-gray-200 bg-white/80">
                     <div className="flex gap-2 overflow-x-auto pb-1">
                         {sections.map((section) => (
@@ -469,21 +458,7 @@ const AdminDashboard = () => {
     }
 
     return (
-        <AdminLayout>
-            <div className="mb-6">
-                <BackButton fallbackPath="/" label={t("not_found.back_home", "Torna alla Home")} />
-            </div>
-
-            <div className="mb-4">
-                <h1 className="text-3xl font-bold text-blue-900">{t("admin_dashboard.title", "Dashboard Amministratore")}</h1>
-                <p className="text-gray-600">
-                    {t("admin_dashboard.welcome", "Benvenuto, {name}!").replace(
-                        "{name}",
-                        profile?.full_name || t("admin_dashboard.welcome_fallback", "Admin")
-                    )}
-                </p>
-            </div>
-
+        <AdminLayout fullScreen>
             <div className="grid grid-cols-1 gap-0 overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm xl:grid-cols-[260px_minmax(0,1fr)]">
                 <aside className="h-full border-r border-blue-100 bg-gradient-to-b from-blue-50 to-white xl:sticky xl:top-24">
                     <div className="border-b border-blue-100 px-4 py-4">
