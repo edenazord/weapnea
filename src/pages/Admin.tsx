@@ -161,7 +161,6 @@ const AdminDashboard = () => {
     ];
 
     const renderStatistics = () => {
-        const verifiedRate = stats.totalUsers > 0 ? Math.round((stats.verifiedUsers / stats.totalUsers) * 100) : 0;
         const activeUsersRate = stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0;
         const activeEventsRate = stats.totalEvents > 0 ? Math.round((stats.activeEvents / stats.totalEvents) * 100) : 0;
         const publishedRate = stats.totalBlogArticles > 0 ? Math.round((stats.publishedArticles / stats.totalBlogArticles) * 100) : 0;
@@ -226,20 +225,12 @@ const AdminDashboard = () => {
                                     <Users className="h-4 w-4 text-blue-600" />
                                 </div>
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti verificati</span><span className="font-semibold">{stats.verifiedUsers}</span></div>
                                     <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti attivi</span><span className="font-semibold">{stats.activeUsers}</span></div>
                                     <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti inattivi</span><span className="font-semibold">{stats.inactiveUsers}</span></div>
                                     <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Nuovi utenti (30 gg)</span><span className="font-semibold">{stats.newUsersLast30Days}</span></div>
                                     <div className="flex items-center justify-between"><span className="text-gray-600">Organizzatori</span><span className="font-semibold">{stats.organizersCount}</span></div>
                                 </div>
                                 <div className="mt-4 space-y-3">
-                                    <div>
-                                        <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
-                                            <span>Tasso verifica</span>
-                                            <span>{verifiedRate}%</span>
-                                        </div>
-                                        <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-blue-600" style={{ width: `${verifiedRate}%` }} /></div>
-                                    </div>
                                     <div>
                                         <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
                                             <span>Tasso utenti attivi</span>
