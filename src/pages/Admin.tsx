@@ -222,7 +222,7 @@ const AdminDashboard = () => {
                         <div className="grid gap-4 xl:grid-cols-2">
                             <section className="rounded-md border border-gray-200 bg-white p-4">
                                 <div className="mb-3 flex items-center justify-between">
-                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Macro categoria: utenti</h3>
+                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Utenti</h3>
                                     <Users className="h-4 w-4 text-blue-600" />
                                 </div>
                                 <div className="space-y-2 text-sm">
@@ -252,7 +252,7 @@ const AdminDashboard = () => {
 
                             <section className="rounded-md border border-gray-200 bg-white p-4">
                                 <div className="mb-3 flex items-center justify-between">
-                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Macro categoria: eventi</h3>
+                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Eventi</h3>
                                     <Calendar className="h-4 w-4 text-emerald-600" />
                                 </div>
                                 <div className="space-y-2 text-sm">
@@ -274,7 +274,7 @@ const AdminDashboard = () => {
 
                             <section className="rounded-md border border-gray-200 bg-white p-4">
                                 <div className="mb-3 flex items-center justify-between">
-                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Macro categoria: copertura e tassonomia</h3>
+                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Copertura e tassonomia</h3>
                                     <FolderTree className="h-4 w-4 text-cyan-600" />
                                 </div>
                                 <div className="space-y-2 text-sm">
@@ -287,7 +287,7 @@ const AdminDashboard = () => {
 
                             <section className="rounded-md border border-gray-200 bg-white p-4">
                                 <div className="mb-3 flex items-center justify-between">
-                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Macro categoria: contenuti blog</h3>
+                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Contenuti blog</h3>
                                     <FileText className="h-4 w-4 text-indigo-600" />
                                 </div>
                                 <div className="space-y-2 text-sm">
