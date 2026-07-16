@@ -2,7 +2,6 @@
 import AdminLayout from "@/components/AdminLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import EventsManager from "@/components/admin/EventsManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import BlogManager from "@/components/admin/BlogManager";
@@ -15,7 +14,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAllUsers } from "@/lib/admin-users-api";
-import { getEvents, getCategories, type EventWithCategory } from "@/lib/api";
+import { getEvents, getCategories } from "@/lib/api";
 import { getBlogArticles } from "@/lib/blog-api";
 import {
     LayoutDashboard,
@@ -162,189 +161,99 @@ const AdminDashboard = () => {
     ];
 
     const renderStatistics = () => (
-        <Card>
-            <CardHeader>
-                <CardTitle>{t("admin_dashboard.manage_statistics", "Statistiche Generali")}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-                {statsLoading ? (
-                    <p className="text-sm text-gray-600">{t("common.loading", "Caricamento...")}</p>
-                ) : (
-                    <>
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Utenti registrati</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-3xl font-bold">{stats.totalUsers}</p>
-                                    <Users className="h-5 w-5 text-blue-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Eventi registrati</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-3xl font-bold">{stats.totalEvents}</p>
-                                    <Calendar className="h-5 w-5 text-emerald-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Utenti verificati</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-3xl font-bold">{stats.verifiedUsers}</p>
-                                    <UserCheck className="h-5 w-5 text-indigo-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Nuovi utenti (30 gg)</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-3xl font-bold">{stats.newUsersLast30Days}</p>
-                                    <UserPlus className="h-5 w-5 text-orange-600" />
-                                </CardContent>
-                            </Card>
+        <div className="space-y-4 p-4 md:p-6">
+            <h2 className="text-2xl font-semibold text-blue-900">{t("admin_dashboard.manage_statistics", "Statistiche Generali")}</h2>
+            {statsLoading ? (
+                <p className="text-sm text-gray-600">{t("common.loading", "Caricamento...")}</p>
+            ) : (
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Utenti registrati</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-3xl font-bold">{stats.totalUsers}</p>
+                            <Users className="h-5 w-5 text-blue-600" />
                         </div>
-
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Eventi attivi</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.activeEvents}</p>
-                                    <BarChart3 className="h-5 w-5 text-blue-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Eventi passati</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.pastEvents}</p>
-                                    <Calendar className="h-5 w-5 text-gray-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Eventi a pagamento</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.paidEvents}</p>
-                                    <BadgeEuro className="h-5 w-5 text-amber-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Eventi gratuiti</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.freeEvents}</p>
-                                    <BadgeEuro className="h-5 w-5 text-emerald-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Nazioni coperte</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.representedCountries}</p>
-                                    <MapPin className="h-5 w-5 text-red-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Media posti dichiarati</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.avgDeclaredSpots}</p>
-                                    <Users className="h-5 w-5 text-purple-600" />
-                                </CardContent>
-                            </Card>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Eventi registrati</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-3xl font-bold">{stats.totalEvents}</p>
+                            <Calendar className="h-5 w-5 text-emerald-600" />
                         </div>
-
-                        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Utenti attivi</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.activeUsers}</p>
-                                    <UserCheck className="h-5 w-5 text-green-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Utenti disattivi</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.inactiveUsers}</p>
-                                    <UserX className="h-5 w-5 text-rose-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Organizzatori</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.organizersCount}</p>
-                                    <Users className="h-5 w-5 text-sky-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Categorie con eventi</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.categoriesWithEvents}/{stats.totalCategories}</p>
-                                    <FolderTree className="h-5 w-5 text-cyan-600" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Articoli blog</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.totalBlogArticles}</p>
-                                    <Newspaper className="h-5 w-5 text-blue-700" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Articoli pubblicati</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.publishedArticles}</p>
-                                    <FileText className="h-5 w-5 text-emerald-700" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Bozze blog</CardTitle>
-                                </CardHeader>
-                                <CardContent className="flex items-center justify-between">
-                                    <p className="text-2xl font-bold">{stats.drafts}</p>
-                                    <FileText className="h-5 w-5 text-amber-700" />
-                                </CardContent>
-                            </Card>
-                            <Card>
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-sm font-medium text-gray-600">Categoria più usata</CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-base font-semibold">{stats.topCategory}</p>
-                                    <p className="text-sm text-gray-500">{stats.topCategoryCount} eventi</p>
-                                </CardContent>
-                            </Card>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Utenti verificati</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-3xl font-bold">{stats.verifiedUsers}</p>
+                            <UserCheck className="h-5 w-5 text-indigo-600" />
                         </div>
-                    </>
-                )}
-            </CardContent>
-        </Card>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Nuovi utenti (30 gg)</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-3xl font-bold">{stats.newUsersLast30Days}</p>
+                            <UserPlus className="h-5 w-5 text-orange-600" />
+                        </div>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Eventi attivi</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-2xl font-bold">{stats.activeEvents}</p>
+                            <BarChart3 className="h-5 w-5 text-blue-600" />
+                        </div>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Eventi passati</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-2xl font-bold">{stats.pastEvents}</p>
+                            <Calendar className="h-5 w-5 text-gray-600" />
+                        </div>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Eventi a pagamento</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-2xl font-bold">{stats.paidEvents}</p>
+                            <BadgeEuro className="h-5 w-5 text-amber-600" />
+                        </div>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Eventi gratuiti</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-2xl font-bold">{stats.freeEvents}</p>
+                            <BadgeEuro className="h-5 w-5 text-emerald-600" />
+                        </div>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Nazioni coperte</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-2xl font-bold">{stats.representedCountries}</p>
+                            <MapPin className="h-5 w-5 text-red-600" />
+                        </div>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Media posti dichiarati</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-2xl font-bold">{stats.avgDeclaredSpots}</p>
+                            <Users className="h-5 w-5 text-purple-600" />
+                        </div>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Categorie con eventi</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-2xl font-bold">{stats.categoriesWithEvents}/{stats.totalCategories}</p>
+                            <FolderTree className="h-5 w-5 text-cyan-600" />
+                        </div>
+                    </div>
+                    <div className="rounded-md border border-gray-200 bg-white p-4">
+                        <p className="text-sm text-gray-600">Articoli blog</p>
+                        <div className="mt-2 flex items-center justify-between">
+                            <p className="text-2xl font-bold">{stats.totalBlogArticles}</p>
+                            <Newspaper className="h-5 w-5 text-blue-700" />
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 
     const renderContent = () => {
@@ -352,78 +261,24 @@ const AdminDashboard = () => {
             case "statistics":
                 return renderStatistics();
             case "events":
-                return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t("admin_dashboard.manage_events", "Gestione Eventi e Allenamenti")}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <EventsManager />
-                        </CardContent>
-                    </Card>
-                );
+                return <div className="p-4 md:p-6"><EventsManager /></div>;
             case "categories":
-                return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t("admin_dashboard.manage_categories", "Gestione Categorie")}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <CategoriesManager />
-                        </CardContent>
-                    </Card>
-                );
+                return <div className="p-4 md:p-6"><CategoriesManager /></div>;
             case "blog":
                 return (
-                    <>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>{t("admin_dashboard.manage_blog", "Gestione Articoli Blog")}</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <BlogManager />
-                            </CardContent>
-                        </Card>
-                        <Card className="mt-6">
-                            <CardContent className="pt-6">
-                                <BlogTagManager />
-                            </CardContent>
-                        </Card>
-                    </>
+                    <div className="space-y-4 p-4 md:p-6">
+                        <BlogManager />
+                        <div className="border-t border-gray-200 pt-4">
+                            <BlogTagManager />
+                        </div>
+                    </div>
                 );
             case "users":
-                return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t("admin_dashboard.manage_users", "Gestione Utenti")}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <UsersManager />
-                        </CardContent>
-                    </Card>
-                );
+                return <div className="p-4 md:p-6"><UsersManager /></div>;
             case "email":
-                return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t("admin_dashboard.manage_email", "Gestione Email")}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <EmailTemplatesManager />
-                        </CardContent>
-                    </Card>
-                );
+                return <div className="p-4 md:p-6"><EmailTemplatesManager /></div>;
             case "seo":
-                return (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>{t("admin_dashboard.manage_seo", "Impostazioni SEO")}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <SeoManager />
-                        </CardContent>
-                    </Card>
-                );
+                return <div className="p-4 md:p-6"><SeoManager /></div>;
             default:
                 return null;
         }
@@ -457,9 +312,9 @@ const AdminDashboard = () => {
 
     return (
         <AdminLayout fullScreen>
-            <div className="grid grid-cols-1 gap-0 overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm xl:grid-cols-[260px_minmax(0,1fr)]">
-                <aside className="h-full border-r border-blue-100 bg-gradient-to-b from-blue-50 to-white xl:sticky xl:top-24">
-                    <div className="border-b border-blue-100 px-4 py-4">
+            <div className="grid min-h-[calc(100vh-84px)] grid-cols-1 bg-white xl:grid-cols-[260px_minmax(0,1fr)]">
+                <aside className="h-full border-r border-gray-200 bg-white xl:sticky xl:top-[84px]">
+                    <div className="border-b border-gray-200 px-4 py-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.15em] text-blue-500">WeApnea</p>
                         <h2 className="text-base font-bold text-blue-900">Admin Panel</h2>
                     </div>
@@ -469,10 +324,10 @@ const AdminDashboard = () => {
                             <button
                                 key={section.id}
                                 onClick={() => setActiveSection(section.id)}
-                                className={`mb-1 flex w-full items-center gap-3 rounded-md border-l-4 px-3 py-2 text-left text-sm font-medium transition ${
+                                className={`mb-1 flex w-full items-center gap-3 rounded-sm border-l-4 px-3 py-2 text-left text-sm font-medium transition ${
                                     activeSection === section.id
-                                        ? "border-blue-600 bg-blue-600 text-white"
-                                        : "border-transparent text-gray-700 hover:bg-blue-50 hover:text-blue-700"
+                                        ? "border-blue-600 bg-blue-50 text-blue-700"
+                                        : "border-transparent text-gray-700 hover:bg-gray-50 hover:text-blue-700"
                                 }`}
                             >
                                 <section.icon className="h-4 w-4" />
@@ -482,8 +337,8 @@ const AdminDashboard = () => {
                     </nav>
                 </aside>
 
-                <section className="bg-white">
-                    <div className="bg-gray-50 p-4 md:p-6">{renderContent()}</div>
+                <section className="bg-gray-50">
+                    {renderContent()}
                 </section>
             </div>
         </AdminLayout>
