@@ -3,7 +3,6 @@ import AdminLayout from "@/components/AdminLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import EventsManager from "@/components/admin/EventsManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import BlogManager from "@/components/admin/BlogManager";
@@ -33,7 +32,6 @@ import {
     BadgeEuro,
     MapPin,
     Newspaper,
-    Search,
 } from "lucide-react";
 
 type AdminSection = "statistics" | "events" | "categories" | "blog" | "users" | "email" | "seo";
@@ -485,24 +483,6 @@ const AdminDashboard = () => {
                 </aside>
 
                 <section className="bg-white">
-                    <div className="flex flex-col gap-3 border-b border-blue-100 px-4 py-3 md:flex-row md:items-center md:justify-between">
-                        <div>
-                            <p className="text-xs uppercase tracking-wide text-gray-500">Pannello</p>
-                            <h3 className="text-lg font-semibold text-blue-900">
-                                {sections.find((item) => item.id === activeSection)?.label || t("admin_dashboard.title", "Dashboard Amministratore")}
-                            </h3>
-                        </div>
-                        <div className="relative w-full md:w-80">
-                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-                            <Input
-                                value=""
-                                onChange={() => {}}
-                                readOnly
-                                placeholder="Ricerca rapida (coming soon)"
-                                className="pl-9"
-                            />
-                        </div>
-                    </div>
                     <div className="bg-gray-50 p-4 md:p-6">{renderContent()}</div>
                 </section>
             </div>
