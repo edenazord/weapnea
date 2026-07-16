@@ -3,6 +3,7 @@ import AdminLayout from "@/components/AdminLayout";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import EventsManager from "@/components/admin/EventsManager";
 import CategoriesManager from "@/components/admin/CategoriesManager";
 import BlogManager from "@/components/admin/BlogManager";
@@ -33,6 +34,7 @@ import {
     BadgeEuro,
     MapPin,
     Newspaper,
+    Search,
 } from "lucide-react";
 
 type AdminSection = "statistics" | "events" | "categories" | "blog" | "users" | "email" | "seo";
@@ -472,7 +474,7 @@ const AdminDashboard = () => {
                 <BackButton fallbackPath="/" label={t("not_found.back_home", "Torna alla Home")} />
             </div>
 
-            <div className="mb-6">
+            <div className="mb-4">
                 <h1 className="text-3xl font-bold text-blue-900">{t("admin_dashboard.title", "Dashboard Amministratore")}</h1>
                 <p className="text-gray-600">
                     {t("admin_dashboard.welcome", "Benvenuto, {name}!").replace(
@@ -482,20 +484,22 @@ const AdminDashboard = () => {
                 </p>
             </div>
 
-            <div className="grid grid-cols-1 gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
-                <aside className="h-fit rounded-xl border border-gray-200 bg-white shadow-sm xl:sticky xl:top-24">
-                    <div className="border-b border-gray-100 px-4 py-3">
-                        <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Menu Dashboard</h2>
+            <div className="grid grid-cols-1 gap-0 overflow-hidden rounded-xl border border-blue-100 bg-white shadow-sm xl:grid-cols-[260px_minmax(0,1fr)]">
+                <aside className="h-full border-r border-blue-100 bg-gradient-to-b from-blue-50 to-white xl:sticky xl:top-24">
+                    <div className="border-b border-blue-100 px-4 py-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-blue-500">WeApnea</p>
+                        <h2 className="text-base font-bold text-blue-900">Admin Panel</h2>
                     </div>
                     <nav className="p-2">
+                        <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Navigazione</p>
                         {sections.map((section) => (
                             <button
                                 key={section.id}
                                 onClick={() => setActiveSection(section.id)}
-                                className={`mb-1 flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium transition ${
+                                className={`mb-1 flex w-full items-center gap-3 rounded-md border-l-4 px-3 py-2 text-left text-sm font-medium transition ${
                                     activeSection === section.id
-                                        ? "bg-blue-600 text-white"
-                                        : "text-gray-700 hover:bg-gray-100"
+                                        ? "border-blue-600 bg-blue-600 text-white"
+                                        : "border-transparent text-gray-700 hover:bg-blue-50 hover:text-blue-700"
                                 }`}
                             >
                                 <section.icon className="h-4 w-4" />
@@ -505,7 +509,27 @@ const AdminDashboard = () => {
                     </nav>
                 </aside>
 
-                <section>{renderContent()}</section>
+                <section className="bg-white">
+                    <div className="flex flex-col gap-3 border-b border-blue-100 px-4 py-3 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="text-xs uppercase tracking-wide text-gray-500">Pannello</p>
+                            <h3 className="text-lg font-semibold text-blue-900">
+                                {sections.find((item) => item.id === activeSection)?.label || t("admin_dashboard.title", "Dashboard Amministratore")}
+                            </h3>
+                        </div>
+                        <div className="relative w-full md:w-80">
+                            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                            <Input
+                                value=""
+                                onChange={() => {}}
+                                readOnly
+                                placeholder="Ricerca rapida (coming soon)"
+                                className="pl-9"
+                            />
+                        </div>
+                    </div>
+                    <div className="bg-gray-50 p-4 md:p-6">{renderContent()}</div>
+                </section>
             </div>
         </AdminLayout>
     );
