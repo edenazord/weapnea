@@ -314,12 +314,7 @@ const AdminDashboard = () => {
         <AdminLayout fullScreen>
             <div className="grid min-h-[calc(100vh-84px)] grid-cols-1 bg-white xl:grid-cols-[260px_minmax(0,1fr)]">
                 <aside className="h-full border-r border-gray-200 bg-white xl:sticky xl:top-[84px]">
-                    <div className="border-b border-gray-200 px-4 py-4">
-                        <p className="text-xs font-semibold uppercase tracking-[0.15em] text-blue-500">WeApnea</p>
-                        <h2 className="text-base font-bold text-blue-900">Admin Panel</h2>
-                    </div>
                     <nav className="p-2">
-                        <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wide text-gray-500">Navigazione</p>
                         {sections.map((section) => (
                             <button
                                 key={section.id}

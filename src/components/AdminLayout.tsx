@@ -45,7 +45,7 @@ const AdminLayout = ({ children, fullScreen = false }: { children: ReactNode; fu
                     </div>
                 </div>
             </header>
-            <main className={fullScreen ? "flex-1 w-full px-4 py-6 md:px-6" : "flex-1 container mx-auto px-4 py-8"}>
+            <main className={fullScreen ? "flex-1 w-full p-0" : "flex-1 container mx-auto px-4 py-8"}>
                 {children}
             </main>
         </div>
