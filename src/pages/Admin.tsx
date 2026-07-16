@@ -160,101 +160,155 @@ const AdminDashboard = () => {
         { id: "seo" as const, icon: Globe, label: t("admin_dashboard.tabs.seo", "SEO") },
     ];
 
-    const renderStatistics = () => (
-        <div className="space-y-4 p-4 md:p-6">
-            <h2 className="text-2xl font-semibold text-blue-900">{t("admin_dashboard.manage_statistics", "Statistiche Generali")}</h2>
-            {statsLoading ? (
-                <p className="text-sm text-gray-600">{t("common.loading", "Caricamento...")}</p>
-            ) : (
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Utenti registrati</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-3xl font-bold">{stats.totalUsers}</p>
-                            <Users className="h-5 w-5 text-blue-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Eventi registrati</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-3xl font-bold">{stats.totalEvents}</p>
-                            <Calendar className="h-5 w-5 text-emerald-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Utenti verificati</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-3xl font-bold">{stats.verifiedUsers}</p>
-                            <UserCheck className="h-5 w-5 text-indigo-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Nuovi utenti (30 gg)</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-3xl font-bold">{stats.newUsersLast30Days}</p>
-                            <UserPlus className="h-5 w-5 text-orange-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Eventi attivi</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-2xl font-bold">{stats.activeEvents}</p>
-                            <BarChart3 className="h-5 w-5 text-blue-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Eventi passati</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-2xl font-bold">{stats.pastEvents}</p>
-                            <Calendar className="h-5 w-5 text-gray-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Eventi a pagamento</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-2xl font-bold">{stats.paidEvents}</p>
-                            <BadgeEuro className="h-5 w-5 text-amber-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Eventi gratuiti</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-2xl font-bold">{stats.freeEvents}</p>
-                            <BadgeEuro className="h-5 w-5 text-emerald-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Nazioni coperte</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-2xl font-bold">{stats.representedCountries}</p>
-                            <MapPin className="h-5 w-5 text-red-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Media posti dichiarati</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-2xl font-bold">{stats.avgDeclaredSpots}</p>
-                            <Users className="h-5 w-5 text-purple-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Categorie con eventi</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-2xl font-bold">{stats.categoriesWithEvents}/{stats.totalCategories}</p>
-                            <FolderTree className="h-5 w-5 text-cyan-600" />
-                        </div>
-                    </div>
-                    <div className="rounded-md border border-gray-200 bg-white p-4">
-                        <p className="text-sm text-gray-600">Articoli blog</p>
-                        <div className="mt-2 flex items-center justify-between">
-                            <p className="text-2xl font-bold">{stats.totalBlogArticles}</p>
-                            <Newspaper className="h-5 w-5 text-blue-700" />
-                        </div>
-                    </div>
+    const renderStatistics = () => {
+        const verifiedRate = stats.totalUsers > 0 ? Math.round((stats.verifiedUsers / stats.totalUsers) * 100) : 0;
+        const activeUsersRate = stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0;
+        const activeEventsRate = stats.totalEvents > 0 ? Math.round((stats.activeEvents / stats.totalEvents) * 100) : 0;
+        const publishedRate = stats.totalBlogArticles > 0 ? Math.round((stats.publishedArticles / stats.totalBlogArticles) * 100) : 0;
+
+        return (
+            <div className="space-y-6 p-4 md:p-6">
+                <div className="rounded-md border border-gray-200 bg-white p-4 md:p-5">
+                    <h2 className="text-2xl font-semibold text-blue-900">
+                        {t("admin_dashboard.manage_statistics", "Statistiche Generali")}
+                    </h2>
+                    <p className="mt-1 text-sm text-gray-600">
+                        Panoramica amministrativa organizzata per macro-categorie.
+                    </p>
                 </div>
-            )}
-        </div>
-    );
+
+                {statsLoading ? (
+                    <p className="text-sm text-gray-600">{t("common.loading", "Caricamento...")}</p>
+                ) : (
+                    <>
+                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                            <div className="rounded-md border border-gray-200 bg-white p-4">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Utenti</p>
+                                <div className="mt-2 flex items-center justify-between">
+                                    <p className="text-3xl font-bold text-gray-900">{stats.totalUsers}</p>
+                                    <Users className="h-5 w-5 text-blue-600" />
+                                </div>
+                                <p className="mt-1 text-xs text-gray-500">Account registrati</p>
+                            </div>
+
+                            <div className="rounded-md border border-gray-200 bg-white p-4">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Eventi attivi</p>
+                                <div className="mt-2 flex items-center justify-between">
+                                    <p className="text-3xl font-bold text-gray-900">{stats.activeEvents}</p>
+                                    <BarChart3 className="h-5 w-5 text-emerald-600" />
+                                </div>
+                                <p className="mt-1 text-xs text-gray-500">Su {stats.totalEvents} eventi totali</p>
+                            </div>
+
+                            <div className="rounded-md border border-gray-200 bg-white p-4">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Copertura</p>
+                                <div className="mt-2 flex items-center justify-between">
+                                    <p className="text-3xl font-bold text-gray-900">{stats.representedCountries}</p>
+                                    <MapPin className="h-5 w-5 text-red-600" />
+                                </div>
+                                <p className="mt-1 text-xs text-gray-500">Nazioni rappresentate</p>
+                            </div>
+
+                            <div className="rounded-md border border-gray-200 bg-white p-4">
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Blog</p>
+                                <div className="mt-2 flex items-center justify-between">
+                                    <p className="text-3xl font-bold text-gray-900">{stats.publishedArticles}</p>
+                                    <Newspaper className="h-5 w-5 text-indigo-600" />
+                                </div>
+                                <p className="mt-1 text-xs text-gray-500">Articoli pubblicati</p>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-4 xl:grid-cols-2">
+                            <section className="rounded-md border border-gray-200 bg-white p-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Macro categoria: utenti</h3>
+                                    <Users className="h-4 w-4 text-blue-600" />
+                                </div>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti verificati</span><span className="font-semibold">{stats.verifiedUsers}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti attivi</span><span className="font-semibold">{stats.activeUsers}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti inattivi</span><span className="font-semibold">{stats.inactiveUsers}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Nuovi utenti (30 gg)</span><span className="font-semibold">{stats.newUsersLast30Days}</span></div>
+                                    <div className="flex items-center justify-between"><span className="text-gray-600">Organizzatori</span><span className="font-semibold">{stats.organizersCount}</span></div>
+                                </div>
+                                <div className="mt-4 space-y-3">
+                                    <div>
+                                        <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
+                                            <span>Tasso verifica</span>
+                                            <span>{verifiedRate}%</span>
+                                        </div>
+                                        <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-blue-600" style={{ width: `${verifiedRate}%` }} /></div>
+                                    </div>
+                                    <div>
+                                        <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
+                                            <span>Tasso utenti attivi</span>
+                                            <span>{activeUsersRate}%</span>
+                                        </div>
+                                        <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-emerald-600" style={{ width: `${activeUsersRate}%` }} /></div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <section className="rounded-md border border-gray-200 bg-white p-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Macro categoria: eventi</h3>
+                                    <Calendar className="h-4 w-4 text-emerald-600" />
+                                </div>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Eventi totali</span><span className="font-semibold">{stats.totalEvents}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Eventi attivi</span><span className="font-semibold">{stats.activeEvents}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Eventi passati</span><span className="font-semibold">{stats.pastEvents}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Eventi a pagamento</span><span className="font-semibold">{stats.paidEvents}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Eventi gratuiti</span><span className="font-semibold">{stats.freeEvents}</span></div>
+                                    <div className="flex items-center justify-between"><span className="text-gray-600">Media posti dichiarati</span><span className="font-semibold">{stats.avgDeclaredSpots}</span></div>
+                                </div>
+                                <div className="mt-4">
+                                    <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
+                                        <span>Incidenza eventi attivi</span>
+                                        <span>{activeEventsRate}%</span>
+                                    </div>
+                                    <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-emerald-600" style={{ width: `${activeEventsRate}%` }} /></div>
+                                </div>
+                            </section>
+
+                            <section className="rounded-md border border-gray-200 bg-white p-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Macro categoria: copertura e tassonomia</h3>
+                                    <FolderTree className="h-4 w-4 text-cyan-600" />
+                                </div>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Nazioni coperte</span><span className="font-semibold">{stats.representedCountries}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Categorie totali</span><span className="font-semibold">{stats.totalCategories}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Categorie con eventi</span><span className="font-semibold">{stats.categoriesWithEvents}</span></div>
+                                    <div className="flex items-center justify-between"><span className="text-gray-600">Top categoria</span><span className="font-semibold">{stats.topCategory} ({stats.topCategoryCount})</span></div>
+                                </div>
+                            </section>
+
+                            <section className="rounded-md border border-gray-200 bg-white p-4">
+                                <div className="mb-3 flex items-center justify-between">
+                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Macro categoria: contenuti blog</h3>
+                                    <FileText className="h-4 w-4 text-indigo-600" />
+                                </div>
+                                <div className="space-y-2 text-sm">
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Articoli totali</span><span className="font-semibold">{stats.totalBlogArticles}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Pubblicati</span><span className="font-semibold">{stats.publishedArticles}</span></div>
+                                    <div className="flex items-center justify-between"><span className="text-gray-600">Bozze</span><span className="font-semibold">{stats.drafts}</span></div>
+                                </div>
+                                <div className="mt-4">
+                                    <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
+                                        <span>Tasso pubblicazione</span>
+                                        <span>{publishedRate}%</span>
+                                    </div>
+                                    <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-indigo-600" style={{ width: `${publishedRate}%` }} /></div>
+                                </div>
+                            </section>
+                        </div>
+                    </>
+                )}
+            </div>
+        );
+    };
 
     const renderContent = () => {
         switch (activeSection) {
