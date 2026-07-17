@@ -126,9 +126,10 @@ interface ChatWidgetProps {
   openWithUserId?: string;
   openWithEventId?: string;
   onClose?: () => void;
+  floatingButtonSide?: 'left' | 'right';
 }
 
-export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWidgetProps) {
+export function ChatWidget({ openWithUserId, openWithEventId, onClose, floatingButtonSide = 'right' }: ChatWidgetProps) {
   const { t, currentLanguage } = useLanguage();
   const { user } = useAuth();
   const isMobile = useIsMobile();
@@ -478,7 +479,10 @@ export function ChatWidget({ openWithUserId, openWithEventId, onClose }: ChatWid
       {!isOpen && !isMobile && (
         <button
           onClick={handleOpen}
-          className="fixed z-50 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center bottom-6 right-4 w-48 h-12 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:from-blue-600 hover:to-purple-700 gap-2"
+          className={cn(
+            "fixed z-50 shadow-lg hover:shadow-xl transition-all hover:scale-105 flex items-center justify-center bottom-6 w-48 h-12 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:from-blue-600 hover:to-purple-700 gap-2",
+            floatingButtonSide === 'left' ? "left-4" : "right-4"
+          )}
           aria-label={t('chat.open', 'Apri messaggi')}
         >
           <img

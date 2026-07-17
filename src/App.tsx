@@ -69,8 +69,11 @@ const LegacyEventRedirect = () => {
 const ChatWidgetWrapper = () => {
   const { targetUserId, targetEventId, resetTarget, openChat } = useChatStore();
   const { user } = useAuth();
+  const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   console.log('[ChatWidgetWrapper] Store values - targetUserId:', targetUserId, 'targetEventId:', targetEventId);
+
+  const floatingButtonSide: 'left' | 'right' = location.pathname === '/dashboard' ? 'left' : 'right';
 
   // Auto-open chat from email notification link: /?openChat=SENDER_ID
   useEffect(() => {
@@ -88,6 +91,7 @@ const ChatWidgetWrapper = () => {
       openWithUserId={targetUserId || undefined}
       openWithEventId={targetEventId || undefined}
       onClose={resetTarget}
+      floatingButtonSide={floatingButtonSide}
     />
   );
 };

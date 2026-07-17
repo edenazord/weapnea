@@ -70,7 +70,6 @@ const AdminDashboard = () => {
     const stats = useMemo(() => {
         const now = new Date();
         const totalUsers = users.length;
-        const verifiedUsers = users.filter((u) => Boolean(u.email_confirmed_at)).length;
         const activeUsers = users.filter((u) => u.profile?.is_active !== false).length;
         const organizerIds = new Set<string>();
 
@@ -129,7 +128,6 @@ const AdminDashboard = () => {
 
         return {
             totalUsers,
-            verifiedUsers,
             activeUsers,
             organizersCount: organizerIds.size,
             totalEvents: events.length,
@@ -224,7 +222,6 @@ const AdminDashboard = () => {
                                 </div>
                                 <div className="space-y-2 text-sm">
                                     <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti attivi</span><span className="font-semibold">{stats.activeUsers}</span></div>
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti verificati</span><span className="font-semibold">{stats.verifiedUsers}</span></div>
                                     <div className="flex items-center justify-between"><span className="text-gray-600">Organizzatori + co</span><span className="font-semibold">{stats.organizersCount}</span></div>
                                 </div>
                                 <div className="mt-4 space-y-3">
