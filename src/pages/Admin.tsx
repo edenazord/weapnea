@@ -15,7 +15,6 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAllUsers } from "@/lib/admin-users-api";
 import { getEvents, getCategories } from "@/lib/api";
-import { getBlogArticles } from "@/lib/blog-api";
 import {
     LayoutDashboard,
     Calendar,
@@ -30,7 +29,6 @@ import {
     UserPlus,
     BadgeEuro,
     MapPin,
-    Newspaper,
 } from "lucide-react";
 
 type AdminSection = "statistics" | "events" | "categories" | "blog" | "users" | "email" | "seo";
@@ -67,32 +65,13 @@ const AdminDashboard = () => {
         staleTime: 60_000,
     });
 
-    const { data: blogArticles = [], isLoading: blogLoading } = useQuery({
-        queryKey: ["admin-blog", "stats"],
-        queryFn: () => getBlogArticles(false),
-        staleTime: 60_000,
-    });
-
-    const statsLoading = usersLoading || eventsLoading || categoriesLoading || blogLoading;
+    const statsLoading = usersLoading || eventsLoading || categoriesLoading;
 
     const stats = useMemo(() => {
         const now = new Date();
-        const activeUsersWindowDays = 30;
-        const activeUsersWindowMs = activeUsersWindowDays * 24 * 60 * 60 * 1000;
         const totalUsers = users.length;
         const verifiedUsers = users.filter((u) => Boolean(u.email_confirmed_at)).length;
-        const activeUsers = users.filter((u) => {
-            if (u.profile?.is_active === false) return false;
-            const lastSignIn = parseDateSafe(u.last_sign_in_at);
-            if (!lastSignIn) return false;
-            return now.getTime() - lastSignIn.getTime() <= activeUsersWindowMs;
-        }).length;
-        const inactiveUsers = Math.max(totalUsers - activeUsers, 0);
-        const newUsersLast30Days = users.filter((u) => {
-            const created = parseDateSafe(u.created_at);
-            if (!created) return false;
-            return now.getTime() - created.getTime() <= 30 * 24 * 60 * 60 * 1000;
-        }).length;
+        const activeUsers = users.filter((u) => u.profile?.is_active !== false).length;
         const organizerIds = new Set<string>();
 
         let activeEvents = 0;
@@ -100,6 +79,8 @@ const AdminDashboard = () => {
         let paidEvents = 0;
         let freeEvents = 0;
         let totalDeclaredSpots = 0;
+        let totalPaidParticipants = 0;
+        let totalRevenue = 0;
         const nations = new Set<string>();
         const categoryCountById: Record<string, number> = {};
 
@@ -119,8 +100,15 @@ const AdminDashboard = () => {
             if (isActive) activeEvents += 1;
             else pastEvents += 1;
 
-            if ((ev.cost || 0) > 0) paidEvents += 1;
-            else freeEvents += 1;
+            const eventCost = Number(ev.cost || 0);
+            const paidParticipants = Number(ev.participants_paid_count || 0);
+            if (eventCost > 0) {
+                paidEvents += 1;
+                totalPaidParticipants += paidParticipants;
+                totalRevenue += eventCost * paidParticipants;
+            } else {
+                freeEvents += 1;
+            }
 
             totalDeclaredSpots += Number(ev.participants || 0);
             if (ev.nation?.trim()) nations.add(ev.nation.trim());
@@ -139,33 +127,26 @@ const AdminDashboard = () => {
             }
         }
 
-        const publishedArticles = blogArticles.filter((item) => item.published).length;
-        const drafts = Math.max(blogArticles.length - publishedArticles, 0);
-
         return {
             totalUsers,
             verifiedUsers,
             activeUsers,
-            inactiveUsers,
-            activeUsersWindowDays,
-            newUsersLast30Days,
             organizersCount: organizerIds.size,
             totalEvents: events.length,
             activeEvents,
             pastEvents,
             paidEvents,
             freeEvents,
+            totalPaidParticipants,
+            totalRevenue,
             totalCategories: categories.length,
             categoriesWithEvents: categories.filter((cat) => Number(cat.events_count || 0) > 0).length,
             representedCountries: nations.size,
             avgDeclaredSpots,
             topCategory,
             topCategoryCount,
-            totalBlogArticles: blogArticles.length,
-            publishedArticles,
-            drafts,
         };
-    }, [users, events, categories, blogArticles]);
+    }, [users, events, categories]);
 
     const sections = [
         { id: "statistics" as const, icon: LayoutDashboard, label: t("admin_dashboard.tabs.statistics", "Statistiche") },
@@ -180,7 +161,7 @@ const AdminDashboard = () => {
     const renderStatistics = () => {
         const activeUsersRate = stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0;
         const activeEventsRate = stats.totalEvents > 0 ? Math.round((stats.activeEvents / stats.totalEvents) * 100) : 0;
-        const publishedRate = stats.totalBlogArticles > 0 ? Math.round((stats.publishedArticles / stats.totalBlogArticles) * 100) : 0;
+        const paidEventsRate = stats.totalEvents > 0 ? Math.round((stats.paidEvents / stats.totalEvents) * 100) : 0;
 
         return (
             <div className="space-y-6 p-4 md:p-6">
@@ -226,12 +207,12 @@ const AdminDashboard = () => {
                             </div>
 
                             <div className="rounded-md border border-gray-200 bg-white p-4">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Blog</p>
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Guadagni</p>
                                 <div className="mt-2 flex items-center justify-between">
-                                    <p className="text-3xl font-bold text-gray-900">{stats.publishedArticles}</p>
-                                    <Newspaper className="h-5 w-5 text-indigo-600" />
+                                    <p className="text-3xl font-bold text-gray-900">€{stats.totalRevenue.toFixed(0)}</p>
+                                    <BadgeEuro className="h-5 w-5 text-indigo-600" />
                                 </div>
-                                <p className="mt-1 text-xs text-gray-500">Articoli pubblicati</p>
+                                <p className="mt-1 text-xs text-gray-500">Ricavi stimati da eventi a pagamento</p>
                             </div>
                         </div>
 
@@ -242,15 +223,14 @@ const AdminDashboard = () => {
                                     <Users className="h-4 w-4 text-blue-600" />
                                 </div>
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti attivi ({stats.activeUsersWindowDays} gg)</span><span className="font-semibold">{stats.activeUsers}</span></div>
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti non attivi ({stats.activeUsersWindowDays} gg)</span><span className="font-semibold">{stats.inactiveUsers}</span></div>
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Nuovi utenti (30 gg)</span><span className="font-semibold">{stats.newUsersLast30Days}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti attivi</span><span className="font-semibold">{stats.activeUsers}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti verificati</span><span className="font-semibold">{stats.verifiedUsers}</span></div>
                                     <div className="flex items-center justify-between"><span className="text-gray-600">Organizzatori + co</span><span className="font-semibold">{stats.organizersCount}</span></div>
                                 </div>
                                 <div className="mt-4 space-y-3">
                                     <div>
                                         <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
-                                            <span>Tasso utenti attivi ({stats.activeUsersWindowDays} gg)</span>
+                                            <span>Tasso utenti attivi</span>
                                             <span>{activeUsersRate}%</span>
                                         </div>
                                         <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-emerald-600" style={{ width: `${activeUsersRate}%` }} /></div>
@@ -295,20 +275,20 @@ const AdminDashboard = () => {
 
                             <section className="rounded-md border border-gray-200 bg-white p-4">
                                 <div className="mb-3 flex items-center justify-between">
-                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Contenuti blog</h3>
-                                    <FileText className="h-4 w-4 text-indigo-600" />
+                                    <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Guadagni</h3>
+                                    <BadgeEuro className="h-4 w-4 text-indigo-600" />
                                 </div>
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Articoli totali</span><span className="font-semibold">{stats.totalBlogArticles}</span></div>
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Pubblicati</span><span className="font-semibold">{stats.publishedArticles}</span></div>
-                                    <div className="flex items-center justify-between"><span className="text-gray-600">Bozze</span><span className="font-semibold">{stats.drafts}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Ricavi totali stimati</span><span className="font-semibold">€{stats.totalRevenue.toFixed(2)}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Iscritti paganti</span><span className="font-semibold">{stats.totalPaidParticipants}</span></div>
+                                    <div className="flex items-center justify-between"><span className="text-gray-600">Ricavo medio per iscritto</span><span className="font-semibold">€{stats.totalPaidParticipants > 0 ? (stats.totalRevenue / stats.totalPaidParticipants).toFixed(2) : "0.00"}</span></div>
                                 </div>
                                 <div className="mt-4">
                                     <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
-                                        <span>Tasso pubblicazione</span>
-                                        <span>{publishedRate}%</span>
+                                        <span>Quota eventi a pagamento</span>
+                                        <span>{paidEventsRate}%</span>
                                     </div>
-                                    <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-indigo-600" style={{ width: `${publishedRate}%` }} /></div>
+                                    <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-indigo-600" style={{ width: `${paidEventsRate}%` }} /></div>
                                 </div>
                             </section>
                         </div>
