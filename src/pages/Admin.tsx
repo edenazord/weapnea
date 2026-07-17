@@ -24,11 +24,7 @@ import {
     Mail,
     Globe,
     BarChart3,
-    UserCheck,
-    UserX,
-    UserPlus,
     BadgeEuro,
-    MapPin,
 } from "lucide-react";
 
 type AdminSection = "statistics" | "events" | "categories" | "blog" | "users" | "email" | "seo";
@@ -71,6 +67,11 @@ const AdminDashboard = () => {
         const now = new Date();
         const totalUsers = users.length;
         const activeUsers = users.filter((u) => u.profile?.is_active !== false).length;
+        const newUsersLast30Days = users.filter((u) => {
+            const created = parseDateSafe(u.created_at);
+            if (!created) return false;
+            return now.getTime() - created.getTime() <= 30 * 24 * 60 * 60 * 1000;
+        }).length;
         const organizerIds = new Set<string>();
 
         let activeEvents = 0;
@@ -78,6 +79,9 @@ const AdminDashboard = () => {
         let paidEvents = 0;
         let freeEvents = 0;
         let totalDeclaredSpots = 0;
+        let totalEventRegistrations = 0;
+        let totalFreeEventRegistrations = 0;
+        let totalPaidEventRegistrations = 0;
         let totalPaidParticipants = 0;
         let totalRevenue = 0;
         const nations = new Set<string>();
@@ -101,12 +105,15 @@ const AdminDashboard = () => {
 
             const eventCost = Number(ev.cost || 0);
             const paidParticipants = Number(ev.participants_paid_count || 0);
+            totalEventRegistrations += paidParticipants;
             if (eventCost > 0) {
                 paidEvents += 1;
+                totalPaidEventRegistrations += paidParticipants;
                 totalPaidParticipants += paidParticipants;
                 totalRevenue += eventCost * paidParticipants;
             } else {
                 freeEvents += 1;
+                totalFreeEventRegistrations += paidParticipants;
             }
 
             totalDeclaredSpots += Number(ev.participants || 0);
@@ -129,12 +136,16 @@ const AdminDashboard = () => {
         return {
             totalUsers,
             activeUsers,
+            newUsersLast30Days,
             organizersCount: organizerIds.size,
             totalEvents: events.length,
             activeEvents,
             pastEvents,
             paidEvents,
             freeEvents,
+            totalEventRegistrations,
+            totalFreeEventRegistrations,
+            totalPaidEventRegistrations,
             totalPaidParticipants,
             totalRevenue,
             totalCategories: categories.length,
@@ -157,7 +168,7 @@ const AdminDashboard = () => {
     ];
 
     const renderStatistics = () => {
-        const activeUsersRate = stats.totalUsers > 0 ? Math.round((stats.activeUsers / stats.totalUsers) * 100) : 0;
+        const newUsersRate = stats.totalUsers > 0 ? Math.round((stats.newUsersLast30Days / stats.totalUsers) * 100) : 0;
         const activeEventsRate = stats.totalEvents > 0 ? Math.round((stats.activeEvents / stats.totalEvents) * 100) : 0;
         const paidEventsRate = stats.totalEvents > 0 ? Math.round((stats.paidEvents / stats.totalEvents) * 100) : 0;
 
@@ -196,12 +207,12 @@ const AdminDashboard = () => {
                             </div>
 
                             <div className="rounded-md border border-gray-200 bg-white p-4">
-                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Copertura</p>
+                                <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Iscritti eventi</p>
                                 <div className="mt-2 flex items-center justify-between">
-                                    <p className="text-3xl font-bold text-gray-900">{stats.representedCountries}</p>
-                                    <MapPin className="h-5 w-5 text-red-600" />
+                                    <p className="text-3xl font-bold text-gray-900">{stats.totalEventRegistrations}</p>
+                                    <Users className="h-5 w-5 text-red-600" />
                                 </div>
-                                <p className="mt-1 text-xs text-gray-500">Nazioni rappresentate</p>
+                                <p className="mt-1 text-xs text-gray-500">Iscritti totali ad eventi (gratuiti e paganti)</p>
                             </div>
 
                             <div className="rounded-md border border-gray-200 bg-white p-4">
@@ -221,16 +232,20 @@ const AdminDashboard = () => {
                                     <Users className="h-4 w-4 text-blue-600" />
                                 </div>
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti attivi</span><span className="font-semibold">{stats.activeUsers}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti</span><span className="font-semibold">{stats.totalUsers}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Nuovi utenti (30 gg)</span><span className="font-semibold">{stats.newUsersLast30Days}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Iscritti eventi</span><span className="font-semibold">{stats.totalEventRegistrations}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Iscritti eventi gratuiti</span><span className="font-semibold">{stats.totalFreeEventRegistrations}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Iscritti eventi a pagamento</span><span className="font-semibold">{stats.totalPaidEventRegistrations}</span></div>
                                     <div className="flex items-center justify-between"><span className="text-gray-600">Organizzatori + co</span><span className="font-semibold">{stats.organizersCount}</span></div>
                                 </div>
                                 <div className="mt-4 space-y-3">
                                     <div>
                                         <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
-                                            <span>Tasso utenti attivi</span>
-                                            <span>{activeUsersRate}%</span>
+                                            <span>Nuovi utenti su totale (30 gg)</span>
+                                            <span>{newUsersRate}%</span>
                                         </div>
-                                        <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-emerald-600" style={{ width: `${activeUsersRate}%` }} /></div>
+                                        <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-emerald-600" style={{ width: `${newUsersRate}%` }} /></div>
                                     </div>
                                 </div>
                             </section>
