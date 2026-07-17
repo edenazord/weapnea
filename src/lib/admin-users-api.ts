@@ -22,13 +22,40 @@ export type AdminUser = {
 
 export type UserRole = 'company' | 'instructor' | 'final_user' | 'admin' | 'blogger' | 'creator';
 
+type AdminUsersPageResponse = {
+  data?: AdminUser[];
+  page?: number;
+  totalPages?: number;
+};
+
 // Ottieni tutti gli utenti con le loro email reali utilizzando la Edge Function
 export const getAllUsers = async (): Promise<AdminUser[]> => {
-  const result = await apiGet('/api/admin/users');
-  // L'endpoint restituisce { data: [...], total, page, ... } oppure direttamente un array
-  if (Array.isArray(result)) return result as AdminUser[];
-  if (result && Array.isArray(result.data)) return result.data as AdminUser[];
-  return [];
+  const pageSize = 200;
+  const firstResult = await apiGet(`/api/admin/users?page=1&limit=${pageSize}`);
+
+  // Compatibilita: alcuni endpoint possono restituire direttamente un array.
+  if (Array.isArray(firstResult)) return firstResult as AdminUser[];
+
+  const firstPage = (firstResult || {}) as AdminUsersPageResponse;
+  const firstData = Array.isArray(firstPage.data) ? firstPage.data : [];
+  const totalPages = Math.max(1, Number(firstPage.totalPages || 1));
+
+  if (totalPages === 1) return firstData;
+
+  const users: AdminUser[] = [...firstData];
+  for (let page = 2; page <= totalPages; page += 1) {
+    const nextResult = await apiGet(`/api/admin/users?page=${page}&limit=${pageSize}`);
+    if (Array.isArray(nextResult)) {
+      users.push(...(nextResult as AdminUser[]));
+      continue;
+    }
+    const nextPage = (nextResult || {}) as AdminUsersPageResponse;
+    if (Array.isArray(nextPage.data)) {
+      users.push(...nextPage.data);
+    }
+  }
+
+  return users;
 };
 
 // Elimina un utente

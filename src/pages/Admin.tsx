@@ -77,16 +77,23 @@ const AdminDashboard = () => {
 
     const stats = useMemo(() => {
         const now = new Date();
+        const activeUsersWindowDays = 30;
+        const activeUsersWindowMs = activeUsersWindowDays * 24 * 60 * 60 * 1000;
         const totalUsers = users.length;
         const verifiedUsers = users.filter((u) => Boolean(u.email_confirmed_at)).length;
-        const activeUsers = users.filter((u) => u.profile?.is_active !== false).length;
+        const activeUsers = users.filter((u) => {
+            if (u.profile?.is_active === false) return false;
+            const lastSignIn = parseDateSafe(u.last_sign_in_at);
+            if (!lastSignIn) return false;
+            return now.getTime() - lastSignIn.getTime() <= activeUsersWindowMs;
+        }).length;
         const inactiveUsers = Math.max(totalUsers - activeUsers, 0);
         const newUsersLast30Days = users.filter((u) => {
             const created = parseDateSafe(u.created_at);
             if (!created) return false;
             return now.getTime() - created.getTime() <= 30 * 24 * 60 * 60 * 1000;
         }).length;
-        const organizersCount = users.filter((u) => ["instructor", "admin", "creator"].includes(u.profile?.role || "")).length;
+        const organizerIds = new Set<string>();
 
         let activeEvents = 0;
         let pastEvents = 0;
@@ -97,6 +104,15 @@ const AdminDashboard = () => {
         const categoryCountById: Record<string, number> = {};
 
         for (const ev of events) {
+            if (ev.created_by) organizerIds.add(ev.created_by);
+            if (Array.isArray(ev.coorganizers)) {
+                for (const co of ev.coorganizers) {
+                    if (co?.status === "accepted" && co.user_id) {
+                        organizerIds.add(co.user_id);
+                    }
+                }
+            }
+
             const start = parseDateSafe(ev.date);
             const end = parseDateSafe(ev.end_date);
             const isActive = end ? end >= now : !!start && start >= now;
@@ -131,8 +147,9 @@ const AdminDashboard = () => {
             verifiedUsers,
             activeUsers,
             inactiveUsers,
+            activeUsersWindowDays,
             newUsersLast30Days,
-            organizersCount,
+            organizersCount: organizerIds.size,
             totalEvents: events.length,
             activeEvents,
             pastEvents,
@@ -225,15 +242,15 @@ const AdminDashboard = () => {
                                     <Users className="h-4 w-4 text-blue-600" />
                                 </div>
                                 <div className="space-y-2 text-sm">
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti attivi</span><span className="font-semibold">{stats.activeUsers}</span></div>
-                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti inattivi</span><span className="font-semibold">{stats.inactiveUsers}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti attivi ({stats.activeUsersWindowDays} gg)</span><span className="font-semibold">{stats.activeUsers}</span></div>
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Utenti non attivi ({stats.activeUsersWindowDays} gg)</span><span className="font-semibold">{stats.inactiveUsers}</span></div>
                                     <div className="flex items-center justify-between border-b border-gray-100 pb-2"><span className="text-gray-600">Nuovi utenti (30 gg)</span><span className="font-semibold">{stats.newUsersLast30Days}</span></div>
-                                    <div className="flex items-center justify-between"><span className="text-gray-600">Organizzatori</span><span className="font-semibold">{stats.organizersCount}</span></div>
+                                    <div className="flex items-center justify-between"><span className="text-gray-600">Organizzatori + co</span><span className="font-semibold">{stats.organizersCount}</span></div>
                                 </div>
                                 <div className="mt-4 space-y-3">
                                     <div>
                                         <div className="mb-1 flex items-center justify-between text-xs text-gray-600">
-                                            <span>Tasso utenti attivi</span>
+                                            <span>Tasso utenti attivi ({stats.activeUsersWindowDays} gg)</span>
                                             <span>{activeUsersRate}%</span>
                                         </div>
                                         <div className="h-2 rounded-full bg-gray-100"><div className="h-2 rounded-full bg-emerald-600" style={{ width: `${activeUsersRate}%` }} /></div>
