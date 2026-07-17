@@ -173,30 +173,40 @@ const AdminDashboard = () => {
         const newUsersRate = stats.totalUsers > 0 ? Math.round((stats.newUsersLast30Days / stats.totalUsers) * 100) : 0;
         const activeEventsRate = stats.totalEvents > 0 ? Math.round((stats.activeEvents / stats.totalEvents) * 100) : 0;
         const paidEventsRate = stats.totalEvents > 0 ? Math.round((stats.paidEvents / stats.totalEvents) * 100) : 0;
-        const sortedEventsForTrend = [...events]
-            .filter((ev) => parseDateSafe(ev.date) || parseDateSafe(ev.created_at))
-            .sort((a, b) => {
-                const da = (parseDateSafe(a.date) || parseDateSafe(a.created_at))!.getTime();
-                const db = (parseDateSafe(b.date) || parseDateSafe(b.created_at))!.getTime();
-                return da - db;
-            });
+        const monthTotals = new Map<string, { month: string; iscrittiMese: number; ricaviMese: number }>();
+        for (const ev of events) {
+            const sourceDate = parseDateSafe(ev.date) || parseDateSafe(ev.created_at);
+            if (!sourceDate) continue;
+
+            const monthKey = `${sourceDate.getFullYear()}-${String(sourceDate.getMonth() + 1).padStart(2, "0")}`;
+            if (!monthTotals.has(monthKey)) {
+                monthTotals.set(monthKey, {
+                    month: sourceDate.toLocaleDateString("it-IT", { month: "short", year: "2-digit" }),
+                    iscrittiMese: 0,
+                    ricaviMese: 0,
+                });
+            }
+
+            const row = monthTotals.get(monthKey)!;
+            const paidParticipants = Number(ev.participants_paid_count || 0);
+            const eventCost = Number(ev.cost || 0);
+            row.iscrittiMese += paidParticipants;
+            row.ricaviMese += eventCost > 0 ? eventCost * paidParticipants : 0;
+        }
 
         let cumulativeRegistrations = 0;
         let cumulativeRevenue = 0;
-        const registrationsRevenueChartData = sortedEventsForTrend.map((ev, idx) => {
-            const sourceDate = parseDateSafe(ev.date) || parseDateSafe(ev.created_at);
-            const paidParticipants = Number(ev.participants_paid_count || 0);
-            const eventCost = Number(ev.cost || 0);
-            cumulativeRegistrations += paidParticipants;
-            cumulativeRevenue += eventCost > 0 ? eventCost * paidParticipants : 0;
-
-            return {
-                step: `${idx + 1}`,
-                pointLabel: sourceDate ? sourceDate.toLocaleDateString("it-IT", { day: "2-digit", month: "short" }) : `${idx + 1}`,
-                iscrittiEventi: cumulativeRegistrations,
-                ricaviTotali: cumulativeRevenue,
-            };
-        });
+        const registrationsRevenueChartData = Array.from(monthTotals.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([, monthData]) => {
+                cumulativeRegistrations += monthData.iscrittiMese;
+                cumulativeRevenue += monthData.ricaviMese;
+                return {
+                    month: monthData.month,
+                    iscrittiEventi: cumulativeRegistrations,
+                    ricaviTotali: cumulativeRevenue,
+                };
+            });
 
         const chartConfig = {
             iscrittiEventi: {
@@ -226,7 +236,7 @@ const AdminDashboard = () => {
                                 <ChartContainer config={chartConfig} className="h-[260px] w-full">
                                     <LineChart data={registrationsRevenueChartData}>
                                         <CartesianGrid vertical={false} />
-                                        <XAxis dataKey="step" tickLine={false} axisLine={false} tickMargin={8} />
+                                        <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
                                         <YAxis yAxisId="left" tickLine={false} axisLine={false} width={42} />
                                         <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} width={54} />
                                         <ChartTooltip
