@@ -15,6 +15,8 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getAllUsers } from "@/lib/admin-users-api";
 import { getEvents, getCategories } from "@/lib/api";
+import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import {
     LayoutDashboard,
     Calendar,
@@ -171,22 +173,89 @@ const AdminDashboard = () => {
         const newUsersRate = stats.totalUsers > 0 ? Math.round((stats.newUsersLast30Days / stats.totalUsers) * 100) : 0;
         const activeEventsRate = stats.totalEvents > 0 ? Math.round((stats.activeEvents / stats.totalEvents) * 100) : 0;
         const paidEventsRate = stats.totalEvents > 0 ? Math.round((stats.paidEvents / stats.totalEvents) * 100) : 0;
+        const chartDataByMonth = new Map<string, { month: string; iscrittiEventi: number; ricaviTotali: number }>();
+
+        for (const ev of events) {
+            const sourceDate = parseDateSafe(ev.date) || parseDateSafe(ev.created_at);
+            if (!sourceDate) continue;
+            const key = `${sourceDate.getFullYear()}-${String(sourceDate.getMonth() + 1).padStart(2, "0")}`;
+            const monthLabel = sourceDate.toLocaleDateString("it-IT", { month: "short", year: "2-digit" });
+
+            if (!chartDataByMonth.has(key)) {
+                chartDataByMonth.set(key, {
+                    month: monthLabel,
+                    iscrittiEventi: 0,
+                    ricaviTotali: 0,
+                });
+            }
+
+            const row = chartDataByMonth.get(key)!;
+            const paidParticipants = Number(ev.participants_paid_count || 0);
+            const eventCost = Number(ev.cost || 0);
+            row.iscrittiEventi += paidParticipants;
+            row.ricaviTotali += eventCost > 0 ? eventCost * paidParticipants : 0;
+        }
+
+        const registrationsRevenueChartData = Array.from(chartDataByMonth.entries())
+            .sort(([a], [b]) => a.localeCompare(b))
+            .map(([, value]) => value);
+
+        const chartConfig = {
+            iscrittiEventi: {
+                label: "Iscritti eventi",
+                color: "hsl(221 83% 53%)",
+            },
+            ricaviTotali: {
+                label: "Ricavi totali stimati",
+                color: "hsl(160 84% 39%)",
+            },
+        } satisfies ChartConfig;
 
         return (
             <div className="space-y-6 p-4 md:p-6">
-                <div className="rounded-md border border-gray-200 bg-white p-4 md:p-5">
-                    <h2 className="text-2xl font-semibold text-blue-900">
-                        {t("admin_dashboard.manage_statistics", "Statistiche Generali")}
-                    </h2>
-                    <p className="mt-1 text-sm text-gray-600">
-                        Panoramica amministrativa organizzata per macro-categorie.
-                    </p>
-                </div>
-
                 {statsLoading ? (
                     <p className="text-sm text-gray-600">{t("common.loading", "Caricamento...")}</p>
                 ) : (
                     <>
+                        <section className="rounded-md border border-gray-200 bg-white p-4">
+                            <div className="mb-3 flex items-center justify-between">
+                                <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-700">Trend Iscritti e Ricavi</h3>
+                                <BarChart3 className="h-4 w-4 text-blue-600" />
+                            </div>
+                            {registrationsRevenueChartData.length === 0 ? (
+                                <p className="text-sm text-gray-500">Nessun dato disponibile per il grafico.</p>
+                            ) : (
+                                <ChartContainer config={chartConfig} className="h-[260px] w-full">
+                                    <LineChart data={registrationsRevenueChartData}>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
+                                        <YAxis yAxisId="left" tickLine={false} axisLine={false} width={42} />
+                                        <YAxis yAxisId="right" orientation="right" tickLine={false} axisLine={false} width={54} />
+                                        <ChartTooltip
+                                            cursor={false}
+                                            content={<ChartTooltipContent indicator="line" />}
+                                        />
+                                        <Line
+                                            yAxisId="left"
+                                            type="monotone"
+                                            dataKey="iscrittiEventi"
+                                            stroke="var(--color-iscrittiEventi)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                        />
+                                        <Line
+                                            yAxisId="right"
+                                            type="monotone"
+                                            dataKey="ricaviTotali"
+                                            stroke="var(--color-ricaviTotali)"
+                                            strokeWidth={2}
+                                            dot={false}
+                                        />
+                                    </LineChart>
+                                </ChartContainer>
+                            )}
+                        </section>
+
                         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                             <div className="rounded-md border border-gray-200 bg-white p-4">
                                 <p className="text-xs font-semibold uppercase tracking-wide text-gray-500">Utenti</p>
