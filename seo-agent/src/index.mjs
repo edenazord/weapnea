@@ -4,6 +4,7 @@ import {
   printHistory,
   progressReport,
   runOptimization,
+  syncActivity,
 } from "./agent.mjs";
 
 const [command, ...args] = process.argv.slice(2);
@@ -26,6 +27,9 @@ try {
     await runOptimization({ apply: true });
     await evaluateActions();
     await progressReport();
+  } else if (command === "sync") {
+    assertEnv(["API_TOKEN"]);
+    await syncActivity();
   } else if (command === "report") {
     assertEnv(["GOOGLE_SERVICE_ACCOUNT_FILE"]);
     await progressReport();

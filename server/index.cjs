@@ -243,6 +243,16 @@ async function runMigrationsAtStartup() {
       ALTER TABLE public.seo_settings ADD COLUMN IF NOT EXISTS translations jsonb NOT NULL DEFAULT '{}'::jsonb;
     `);
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.seo_agent_log (
+        id bigserial PRIMARY KEY,
+        kind text NOT NULL,
+        record_id text NOT NULL,
+        data jsonb NOT NULL,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        UNIQUE (kind, record_id)
+      );
+    `);
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS public.site_config (
         id int PRIMARY KEY DEFAULT 1,
         gtm_id text,
@@ -5125,25 +5135,31 @@ app.get('/api/seo-meta', async (req, res) => {
   };
 
   try {
-    // 1) Check custom SEO settings from DB (static pages configured in admin)
+    // 1) Custom SEO settings from DB (admin / seo-agent), keyed by exact path.
+    // Valgono per pagine statiche, articoli (/blog/:slug) ed eventi (/:slug).
     const { rows: dbRows } = await pool.query(
       `SELECT title, description, og_image, translations FROM public.seo_settings WHERE path = $1 LIMIT 1`,
       [rawPath]
     );
+    let custom = null;
     if (dbRows[0]) {
       const s = dbRows[0];
       const tr = (s.translations && typeof s.translations === 'object') ? s.translations : {};
       const langData = tr[lang] || {};
-      const orgJsonLd = JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', 'name': 'WeApnea', 'url': base, 'logo': `${base}/images/weapnea-logo.png` });
-      return res.json({
-        ...defaultMeta,
-        title: langData.title || s.title || defaultMeta.title,
-        description: langData.description || s.description || defaultMeta.description,
-        image: s.og_image || defaultMeta.image,
-        url: `${base}${rawPath}`,
-        jsonld: orgJsonLd,
-      });
+      custom = {
+        title: langData.title || s.title || null,
+        description: langData.description || s.description || null,
+        image: s.og_image || null,
+      };
     }
+    const customResponse = () => ({
+      ...defaultMeta,
+      title: custom.title || defaultMeta.title,
+      description: custom.description || defaultMeta.description,
+      image: custom.image || defaultMeta.image,
+      url: `${base}${rawPath}`,
+      jsonld: JSON.stringify({ '@context': 'https://schema.org', '@type': 'Organization', 'name': 'WeApnea', 'url': base, 'logo': `${base}/images/weapnea-logo.png` }),
+    });
 
     // 2) /blog/:slug (supporta slug con prefisso data tipo DD-mese-YYYY-titolo)
     const blogMatch = rawPath.match(/^\/blog\/([^/?#]+)/);
@@ -5157,11 +5173,11 @@ app.get('/api/seo-meta', async (req, res) => {
       );
       if (rows[0]) {
         const p = rows[0];
-        const img = p.cover_image_url
+        const img = custom?.image || (p.cover_image_url
           ? (p.cover_image_url.startsWith('http') ? p.cover_image_url : `${base}${p.cover_image_url}`)
-          : defaultMeta.image;
-        const effectiveTitle = p.seo_title || p.title;
-        const effectiveDesc = p.seo_description || p.excerpt || defaultMeta.description;
+          : defaultMeta.image);
+        const effectiveTitle = custom?.title || p.seo_title || p.title;
+        const effectiveDesc = custom?.description || p.seo_description || p.excerpt || defaultMeta.description;
         const articleJsonLd = JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'Article',
@@ -5223,21 +5239,22 @@ app.get('/api/seo-meta', async (req, res) => {
     const eventSlug = rawPath.replace(/^\//, '');
     if (eventSlug && !eventSlug.includes('/')) {
       const { rows } = await pool.query(
-        `SELECT title, description, cover_image_url, date, location FROM events WHERE slug = $1 LIMIT 1`,
+        `SELECT title, description, image_url, date, end_date, location FROM events WHERE slug = $1 LIMIT 1`,
         [eventSlug]
       );
       if (rows[0]) {
         const ev = rows[0];
         const dateStr = ev.date ? new Date(ev.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
-        const desc = ev.description
+        const desc = custom?.description || (ev.description
           ? ev.description.replace(/<[^>]+>/g, '').slice(0, 160)
-          : `Evento di apnea${dateStr ? ` – ${dateStr}` : ''}${ev.location ? ` a ${ev.location}` : ''} su WeApnea.`;
-        const img = ev.cover_image_url
-          ? (ev.cover_image_url.startsWith('http') ? ev.cover_image_url : `${base}${ev.cover_image_url}`)
-          : defaultMeta.image;
+          : `Evento di apnea${dateStr ? ` – ${dateStr}` : ''}${ev.location ? ` a ${ev.location}` : ''} su WeApnea.`);
+        const img = custom?.image || (ev.image_url
+          ? (ev.image_url.startsWith('http') ? ev.image_url : `${base}${ev.image_url}`)
+          : defaultMeta.image);
+        const evTitle = custom?.title || ev.title;
         return res.json({
           ...defaultMeta,
-          title: `${ev.title} | WeApnea`,
+          title: `${evTitle} | WeApnea`,
           description: desc,
           image: img,
           url: `${base}${rawPath}`,
@@ -5245,9 +5262,10 @@ app.get('/api/seo-meta', async (req, res) => {
           jsonld: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Event',
-            'name': ev.title,
+            'name': evTitle,
             'description': desc,
             'startDate': ev.date ? new Date(ev.date).toISOString().split('T')[0] : undefined,
+            'endDate': ev.end_date ? new Date(ev.end_date).toISOString().split('T')[0] : undefined,
             'location': ev.location ? { '@type': 'Place', 'name': ev.location } : undefined,
             'image': img,
             'url': `${base}${rawPath}`,
@@ -5256,6 +5274,8 @@ app.get('/api/seo-meta', async (req, res) => {
         });
       }
     }
+
+    if (custom) return res.json(customResponse());
 
     return res.json({
       ...defaultMeta,
@@ -5352,6 +5372,46 @@ app.put('/api/admin/seo-settings', requireAuth, requireAdmin, async (req, res) =
 });
 
 // =============================================
+// SEO AGENT ACTIVITY LOG
+// =============================================
+
+app.post('/api/admin/seo-agent/log', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { kind, record_id, data, at } = req.body || {};
+    if (!['run', 'action', 'evaluation'].includes(kind) || !record_id || !data || typeof data !== 'object') {
+      return res.status(400).json({ error: 'kind, record_id and data are required' });
+    }
+    await pool.query(
+      `INSERT INTO public.seo_agent_log (kind, record_id, data, created_at)
+       VALUES ($1, $2, $3, COALESCE($4::timestamptz, now()))
+       ON CONFLICT (kind, record_id) DO NOTHING`,
+      [kind, String(record_id), JSON.stringify(data), at || null]
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+app.get('/api/admin/seo-agent/activity', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const recent = async (kind, limit) => (await pool.query(
+      `SELECT record_id, data, created_at FROM public.seo_agent_log WHERE kind = $1 ORDER BY created_at DESC LIMIT $2`,
+      [kind, limit]
+    )).rows;
+    const { rows: counts } = await pool.query(`SELECT kind, COUNT(*)::int AS n FROM public.seo_agent_log GROUP BY kind`);
+    res.json({
+      counts: Object.fromEntries(counts.map((r) => [r.kind, r.n])),
+      runs: await recent('run', 10),
+      actions: await recent('action', 40),
+      evaluations: await recent('evaluation', 20),
+    });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// =============================================
 // DYNAMIC SITEMAP
 // =============================================
 app.get('/sitemap.xml', async (_req, res) => {
@@ -5369,6 +5429,8 @@ app.get('/sitemap.xml', async (_req, res) => {
       { path: '/forum', changefreq: 'daily', priority: '0.7' },
       { path: '/chi-siamo', changefreq: 'monthly', priority: '0.7' },
       { path: '/contattaci', changefreq: 'monthly', priority: '0.6' },
+      { path: '/organizer-packages', changefreq: 'monthly', priority: '0.6' },
+      { path: '/sponsor-packages', changefreq: 'monthly', priority: '0.6' },
       { path: '/privacy-policy', changefreq: 'monthly', priority: '0.4' },
       { path: '/cookie-policy', changefreq: 'monthly', priority: '0.4' },
     ];

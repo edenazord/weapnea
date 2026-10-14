@@ -22,3 +22,16 @@ export async function getSeoSettings() {
 export function saveSeoSetting(setting) {
   return call("PUT", "/api/admin/seo-settings", setting);
 }
+
+export const getBlogArticles = () => call("GET", "/api/blog?published=true");
+
+export const getEvents = () => call("GET", "/api/events");
+
+// Non blocca l'agente se il backend non e' raggiungibile.
+export const logActivity = (kind, data, at) =>
+  call("POST", "/api/admin/seo-agent/log", {
+    kind,
+    record_id: data.id,
+    data,
+    at,
+  }).catch((err) => console.warn(`Registro remoto non aggiornato: ${err.message}`));

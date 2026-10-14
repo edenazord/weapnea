@@ -113,7 +113,7 @@ Consiglio: esegui prima `npm run run` e controlla la proposta in `data/proposals
 
 ## Limiti attuali
 
-- Gestisce solo le pagine statiche di `seo_settings`. Gli articoli del blog hanno `seo_title` e `seo_description` nel proprio record e non sono ancora coperti.
+- Copre le pagine statiche di `seo_settings`, gli articoli del blog (`/blog/<slug>`) e gli eventi (`/<slug>`): tutti salvati in `seo_settings` per path, con traduzioni per eventi e pagine statiche. Non ci sono tetti al numero di modifiche; ogni run è limitato solo dal budget di tempo (`SEO_RUN_BUDGET_MINUTES`, default 40) e i target rimasti passano al run successivo.
 - Non modifica sitemap, robots, og_image, dati strutturati o contenuti delle pagine: solo meta tag.
 - Google Search Console ha un ritardo di 2–3 giorni: il tool usa come ultimo giorno disponibile oggi meno 3.
 - La prima valutazione utile arriva dopo circa 3 settimane. Serve tempo per avere campioni significativi.

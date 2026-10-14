@@ -10,6 +10,7 @@
     "evaluate": "node --env-file=.env src/index.mjs evaluate",
     "cron": "node --env-file=.env src/index.mjs cron",
     "report": "node --env-file=.env src/index.mjs report",
+    "sync": "node --env-file=.env src/index.mjs sync",
     "history": "node --env-file=.env src/index.mjs history"
   },
   "engines": {

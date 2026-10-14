@@ -12,7 +12,8 @@ import {
   saveProposal,
   writeRecords,
 } from "./memory.mjs";
-import { getSeoSettings, saveSeoSetting } from "./site-api.mjs";
+import { getSeoSettings, logActivity, saveSeoSetting } from "./site-api.mjs";
+import { loadTargets } from "./targets.mjs";
 
 const DAY_MS = 86_400_000;
 const GSC_LAG_DAYS = 3;
@@ -117,8 +118,8 @@ export function mergeSetting(setting, changes) {
 
 function checkChange(c, pages) {
   const page = pages.get(c?.path);
-  if (!page) return "path non consentito";
-  if (!config.languages.includes(c.lang)) return "lingua non supportata";
+  if (!page) return "path non presente tra i target";
+  if (!page.languages.includes(c.lang)) return "lingua non supportata";
   if (!["title", "description"].includes(c.field))
     return "campo non consentito";
   const value = typeof c.new_value === "string" ? c.new_value.trim() : "";
@@ -153,7 +154,8 @@ function validatePlan(plan, pages) {
     });
   }
   const list = [...accepted.values()];
-  for (const extra of list.splice(config.maxChangesPerRun)) {
+  const cap = config.maxChangesPerRun;
+  for (const extra of cap > 0 ? list.splice(cap) : []) {
     rejected.push({
       change: extra,
       reason: "oltre il limite massimo per esecuzione",
@@ -172,6 +174,7 @@ function buildActions(accepted, pages) {
     const page = pages.get(p);
     return {
       path: p,
+      kind: page.kind,
       changes: items.map((c) => ({
         lang: c.lang,
         field: c.field,
@@ -214,107 +217,118 @@ function sumMetrics(metrics) {
   return totals;
 }
 
-export async function runOptimization({ apply }) {
-  const range = rangeEndingOn(latestGscDay(), 28);
-  const [metrics, queries, settings] = await Promise.all([
-    pageMetrics(range),
-    topQueries(range),
-    getSeoSettings(),
-  ]);
+const KIND_ORDER = { page: 0, blog: 1, event: 2 };
 
-  const pages = new Map(
-    config.allowedPaths.map((p) => {
-      const url = pageUrl(p);
-      const setting = settings.get(p) ?? {
-        path: p,
-        title: null,
-        description: null,
-        og_image: null,
-        translations: {},
-      };
-      return [
-        p,
-        {
-          path: p,
-          setting,
-          metrics: metrics.get(url) ?? null,
-          topQueries: (queries.get(url) ?? []).slice(0, 10),
-        },
-      ];
-    }),
+function missingLanguages(target) {
+  return target.languages.filter(
+    (l) =>
+      !currentValue(target.setting, l, "title") ||
+      !currentValue(target.setting, l, "description"),
   );
+}
 
+// Salta i target modificati da meno di evalDays, salvo traduzioni ancora mancanti.
+function selectCandidates(targets, actions) {
+  const lastApplied = new Map();
+  for (const a of actions)
+    if (a.status === "applied") lastApplied.set(a.path, a.appliedAt);
+  const today = todayUtc();
+
+  return [...targets.values()].filter((t) => {
+    const last = lastApplied.get(t.path);
+    const recent =
+      last &&
+      daysBetween(new Date(`${last.slice(0, 10)}T00:00:00Z`), today) <
+        config.evalDays;
+    return !recent || missingLanguages(t).length > 0;
+  });
+}
+
+function toBatches(candidates) {
+  const byKind = new Map();
+  for (const t of candidates) {
+    if (!byKind.has(t.kind)) byKind.set(t.kind, []);
+    byKind.get(t.kind).push(t);
+  }
+  const batches = [];
+  for (const kind of [...byKind.keys()].sort(
+    (a, b) => KIND_ORDER[a] - KIND_ORDER[b],
+  )) {
+    const list = byKind.get(kind);
+    for (let i = 0; i < list.length; i += config.batchSize)
+      batches.push(list.slice(i, i + config.batchSize));
+  }
+  return batches;
+}
+
+async function planBatch(batch, range) {
   const input = {
     today: fmt(todayUtc()),
     metricsWindow: range,
     languages: config.languages,
     limits: config.limits,
-    maxChanges: config.maxChangesPerRun,
-    pages: [...pages.values()].map((p) => ({
-      path: p.path,
+    ...(config.maxChangesPerRun > 0 && { maxChanges: config.maxChangesPerRun }),
+    targets: batch.map((t) => ({
+      kind: t.kind,
+      path: t.path,
+      baseLanguage: t.baseLanguage,
+      languages: t.languages,
       current: {
-        title: p.setting.title,
-        description: p.setting.description,
-        translations: p.setting.translations ?? {},
+        title: t.setting.title,
+        description: t.setting.description,
+        translations: t.setting.translations ?? {},
       },
-      metrics28d: p.metrics,
-      topQueries: p.topQueries,
+      fallback: t.fallback,
+      context: t.context,
+      metrics28d: t.metrics,
+      topQueries: t.topQueries,
     })),
-    history: await historyForPrompt(config.allowedPaths),
+    history: await historyForPrompt(batch.map((t) => t.path)),
   };
-
   const plan = await chatJson({
     system: SYSTEM_PROMPT,
     user: JSON.stringify(input),
   });
-  const { accepted, rejected } = validatePlan(plan, pages);
-  const actions = buildActions(accepted, pages);
-  const analysis = String(plan?.analysis ?? "");
-
-  printSummary({ analysis, actions, rejected });
-  const proposalFile = await saveProposal({
-    createdAt: new Date().toISOString(),
-    mode: apply ? "apply" : "dry-run",
-    range,
-    analysis,
-    actions,
+  const targets = new Map(batch.map((t) => [t.path, t]));
+  const { accepted, rejected } = validatePlan(plan, targets);
+  return {
+    targets,
+    actions: buildActions(accepted, targets),
     rejected,
-  });
-
-  const run = {
-    id: randomUUID(),
-    at: new Date().toISOString(),
-    mode: apply ? "apply" : "dry-run",
-    range,
-    analysis,
-    totals: sumMetrics(metrics),
-    proposed: actions.map((a) => ({
-      path: a.path,
-      fields: a.changes.map((c) => `${c.lang}.${c.field}`),
-      confidence: a.confidence,
-      reason: a.reason,
-    })),
-    rejected: rejected.map((r) => ({
-      path: r.change?.path,
-      lang: r.change?.lang,
-      field: r.change?.field,
-      reason: r.reason,
-    })),
-    applied: [],
+    analysis: String(plan?.analysis ?? ""),
   };
+}
 
-  if (!apply) {
-    console.log(
-      `\nDry-run: nessuna modifica applicata. Proposta salvata in ${proposalFile}`,
-    );
-    await appendRecord("runs.jsonl", run);
-    return;
+const REMOTE_KINDS = {
+  "runs.jsonl": ["run", "at"],
+  "actions.jsonl": ["action", "appliedAt"],
+  "evaluations.jsonl": ["evaluation", "evaluatedAt"],
+};
+
+// Salva su file e nel registro remoto mostrato nella sezione SEO dell'admin.
+async function record(name, data) {
+  await appendRecord(name, data);
+  const [kind, dateField] = REMOTE_KINDS[name];
+  await logActivity(kind, data, data[dateField]);
+}
+
+export async function syncActivity() {
+  const sources = {
+    "runs.jsonl": await readRuns(),
+    "actions.jsonl": await readActions(),
+    "evaluations.jsonl": await readEvaluations(),
+  };
+  for (const [name, records] of Object.entries(sources)) {
+    const [kind, dateField] = REMOTE_KINDS[name];
+    for (const data of records) await logActivity(kind, data, data[dateField]);
+    console.log(`Sincronizzati ${records.length} record (${kind})`);
   }
+}
 
+async function applyActions(actions, targets, run) {
   for (const action of actions) {
-    const page = pages.get(action.path);
     const next = mergeSetting(
-      page.setting,
+      targets.get(action.path).setting,
       action.changes.map((c) => ({
         lang: c.lang,
         field: c.field,
@@ -322,7 +336,7 @@ export async function runOptimization({ apply }) {
       })),
     );
     await saveSeoSetting(next);
-    await appendRecord("actions.jsonl", {
+    await record("actions.jsonl", {
       id: randomUUID(),
       ...action,
       status: "applied",
@@ -331,7 +345,117 @@ export async function runOptimization({ apply }) {
     run.applied.push(action.path);
     console.log(`Applicato: ${action.path} (${action.changes.length} campi)`);
   }
-  await appendRecord("runs.jsonl", run);
+}
+
+export async function runOptimization({ apply }) {
+  const startedAt = Date.now();
+  const range = rangeEndingOn(latestGscDay(), 28);
+  const [metrics, queries, settings] = await Promise.all([
+    pageMetrics(range),
+    topQueries(range),
+    getSeoSettings(),
+  ]);
+
+  const targets = await loadTargets(settings);
+  for (const t of targets.values()) {
+    const url = pageUrl(t.path);
+    t.metrics = metrics.get(url) ?? null;
+    t.topQueries = (queries.get(url) ?? []).slice(0, 10);
+  }
+
+  const candidates = selectCandidates(targets, await readActions()).sort(
+    (a, b) =>
+      (b.metrics?.impressions ?? 0) - (a.metrics?.impressions ?? 0) ||
+      KIND_ORDER[a.kind] - KIND_ORDER[b.kind],
+  );
+  const batches = toBatches(candidates);
+  console.log(
+    `Target totali: ${targets.size}, da analizzare: ${candidates.length} in ${batches.length} gruppi.`,
+  );
+
+  const run = {
+    id: randomUUID(),
+    at: new Date().toISOString(),
+    mode: apply ? "apply" : "dry-run",
+    range,
+    analysis: "",
+    totals: sumMetrics(metrics),
+    proposed: [],
+    rejected: [],
+    applied: [],
+    errors: [],
+    skipped: 0,
+  };
+  const proposal = { actions: [], rejected: [] };
+  const analyses = [];
+  const budgetMs = config.runBudgetMinutes * 60_000;
+
+  for (const [i, batch] of batches.entries()) {
+    if (Date.now() - startedAt > budgetMs) {
+      run.skipped = batches.slice(i).reduce((n, b) => n + b.length, 0);
+      console.log(
+        `\nBudget di tempo esaurito: ${run.skipped} target rimandati al prossimo run.`,
+      );
+      break;
+    }
+    console.log(`\n### Gruppo ${i + 1}/${batches.length} (${batch[0].kind})`);
+
+    let result;
+    try {
+      result = await planBatch(batch, range);
+    } catch (err) {
+      console.error(`Gruppo ${i + 1} fallito: ${err.message}`);
+      run.errors.push(err.message);
+      continue;
+    }
+    const { actions, rejected, analysis } = result;
+    printSummary({ analysis, actions, rejected });
+    if (analysis) analyses.push(analysis);
+    proposal.actions.push(...actions);
+    proposal.rejected.push(...rejected);
+    run.proposed.push(
+      ...actions.map((a) => ({
+        path: a.path,
+        fields: a.changes.map((c) => `${c.lang}.${c.field}`),
+        confidence: a.confidence,
+        reason: a.reason,
+      })),
+    );
+    run.rejected.push(
+      ...rejected.map((r) => ({
+        path: r.change?.path,
+        lang: r.change?.lang,
+        field: r.change?.field,
+        reason: r.reason,
+      })),
+    );
+
+    if (apply) {
+      try {
+        await applyActions(actions, result.targets, run);
+      } catch (err) {
+        console.error(`Applicazione gruppo ${i + 1} fallita: ${err.message}`);
+        run.errors.push(err.message);
+      }
+    }
+  }
+
+  run.analysis = analyses.join(" | ");
+  const proposalFile = await saveProposal({
+    createdAt: run.at,
+    mode: run.mode,
+    range,
+    analysis: run.analysis,
+    ...proposal,
+  });
+  await record("runs.jsonl", run);
+
+  if (!apply)
+    console.log(
+      `\nDry-run: nessuna modifica applicata. Proposta salvata in ${proposalFile}`,
+    );
+  if (batches.length && run.errors.length === batches.length)
+    throw new Error(`tutti i gruppi sono falliti: ${run.errors[0]}`);
 }
 
 function compare(b, a) {
@@ -421,7 +545,7 @@ export async function evaluateActions() {
       was_right: Boolean(judged.was_right),
       lesson: String(judged.lesson ?? ""),
     };
-    await appendRecord("evaluations.jsonl", evaluation);
+    await record("evaluations.jsonl", evaluation);
     console.log(`${action.path}: ${verdict} - ${evaluation.lesson}`);
 
     if (verdict === "peggiorato" && config.autoRollback) {

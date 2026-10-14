@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Save, Globe, ExternalLink, ChevronDown, BarChart2 } from "lucide-react";
+import SeoBotActivity from "@/components/admin/SeoBotActivity";
 
 interface SiteConfig {
   gtm_id: string;
@@ -172,6 +173,8 @@ export default function SeoManager() {
 
   return (
     <div className="space-y-6">
+      <SeoBotActivity />
+
       {/* Tracking / Analytics */}
       <div className="border border-gray-200 rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
