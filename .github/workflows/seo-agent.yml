@@ -1,0 +1,53 @@
+name: SEO agent
+
+on:
+  schedule:
+    - cron: "0 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: seo-agent
+  cancel-in-progress: false
+
+jobs:
+  cron:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: seo-agent
+    env:
+      GOOGLE_SERVICE_ACCOUNT_FILE: secrets/service-account.json
+      API_TOKEN: ${{ secrets.SEO_API_TOKEN }}
+      DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Write Google service account key
+        env:
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+        run: |
+          mkdir -p secrets
+          printf '%s' "$GOOGLE_SA_JSON" > secrets/service-account.json
+
+      - name: Run SEO cron
+        run: node src/index.mjs cron
+
+      - name: Persist agent memory
+        if: always()
+        run: |
+          git config user.name "seo-agent-bot"
+          git config user.email "seo-agent-bot@users.noreply.github.com"
+          git add data/memory
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(seo): aggiorna memoria agente [skip ci] [vercel skip]"
+            git pull --rebase
+            git push
+          fi

@@ -1,0 +1,18 @@
+{
+  "name": "weapnea-seo-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Agente SEO per WeApnea: Google Search Console, DeepSeek e memoria storica",
+  "scripts": {
+    "run": "node --env-file=.env src/index.mjs run",
+    "apply": "node --env-file=.env src/index.mjs run --apply",
+    "evaluate": "node --env-file=.env src/index.mjs evaluate",
+    "cron": "node --env-file=.env src/index.mjs cron",
+    "report": "node --env-file=.env src/index.mjs report",
+    "history": "node --env-file=.env src/index.mjs history"
+  },
+  "engines": {
+    "node": ">=20.6"
+  }
+}
