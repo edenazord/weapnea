@@ -118,8 +118,6 @@ export function mergeSetting(setting, changes) {
 function checkChange(c, pages) {
   const page = pages.get(c?.path);
   if (!page) return "path non consentito";
-  if ((page.metrics?.impressions ?? 0) < MIN_IMPRESSIONS)
-    return "meno di 100 impressioni";
   if (!config.languages.includes(c.lang)) return "lingua non supportata";
   if (!["title", "description"].includes(c.field))
     return "campo non consentito";

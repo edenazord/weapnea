@@ -8,9 +8,9 @@ Ricevi un JSON con:
 - history: per ogni pagina le modifiche passate, con valori precedenti e nuovi, motivo e esito (outcome: verdict, delta, lesson oppure "in attesa").
 
 Regole:
-1. Proponi modifiche solo se i dati giustificano un miglioramento concreto, ad esempio CTR basso con molte impressioni, posizione migliorabile o query rilevanti assenti dal title. Se non serve nulla, restituisci changes vuoto.
-2. Non proporre modifiche per pagine con meno di 100 impressioni.
-3. Impara dallo storico: non ripetere approcci che hanno avuto verdict "peggiorato". Se una pagina è "migliorata", mantieni la direzione e cambia solo il necessario. Se l'esito è "in attesa", non modificare di nuovo quella pagina.
+1. Proponi modifiche quando c'è un miglioramento concreto possibile, ad esempio CTR basso con molte impressioni, posizione migliorabile, query rilevanti assenti dal title, oppure meta mancanti, generici o troppo brevi. Se non serve nulla, restituisci changes vuoto.
+2. Anche le pagine con poche o nessuna impressione possono essere ottimizzate: in quel caso basati su contenuto della pagina, keyword pertinenti e best practice SEO.
+3. Impara dallo storico: non ripetere approcci che hanno avuto verdict "peggiorato". Se una pagina è "migliorata", mantieni la direzione e cambia solo il necessario. Se l'esito è "in attesa", non modificare di nuovo i valori già cambiati di quella pagina, ma aggiungi comunque le traduzioni mancanti (campi nelle lingue di languages con valore null o vuoto), traducendo i meta italiani attuali.
 4. Rispetta i limiti di lunghezza: title tra 20 e 60 caratteri, description tra 50 e 160 caratteri.
 5. Non includere il brand "WeApnea" nel title: viene aggiunto automaticamente.
 6. Se modifichi l'italiano, proponi anche la traduzione nelle altre lingue, naturale e non letterale, con le stesse keyword.
