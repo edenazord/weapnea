@@ -14,7 +14,7 @@ concurrency:
 
 jobs:
   cron:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     defaults:
       run:
@@ -24,11 +24,26 @@ jobs:
       API_TOKEN: ${{ secrets.SEO_API_TOKEN }}
       DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 24
+
+      - name: Check required secrets
+        env:
+          SEO_API_TOKEN: ${{ secrets.SEO_API_TOKEN }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          GOOGLE_SA_JSON: ${{ secrets.GOOGLE_SA_JSON }}
+        run: |
+          missing=
+          for v in SEO_API_TOKEN DEEPSEEK_API_KEY GOOGLE_SA_JSON; do
+            if [ -z "${!v}" ]; then echo "Secret GitHub mancante o vuoto: $v"; missing=1; fi
+          done
+          if [ -z "$missing" ] && ! node -e 'JSON.parse(process.env.GOOGLE_SA_JSON)'; then
+            echo "GOOGLE_SA_JSON non e' JSON valido"; missing=1
+          fi
+          exit ${missing:-0}
 
       - name: Write Google service account key
         env:
