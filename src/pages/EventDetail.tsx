@@ -665,8 +665,11 @@ const EventDetail = () => {
                     )}
 
                     {relatedList.length > 0 && (
-                      <div className="mt-8">
-                        <h2 className="text-xl font-bold text-blue-900 mb-3">{t('events.other_events', 'Altri eventi')}</h2>
+                      <Card className="shadow-lg p-6 mt-8">
+                        <h2 className={`font-bold text-blue-900 mb-4 flex items-center ${isMobile ? 'text-xl' : 'text-2xl'}`}>
+                          <Calendar className="h-6 w-6 mr-2 text-blue-600" />
+                          {t('events.other_events', 'Altri eventi')}
+                        </h2>
                         <ul className="space-y-2">
                           {relatedList.map(e => (
                             <li key={e.id}>
@@ -674,7 +677,7 @@ const EventDetail = () => {
                             </li>
                           ))}
                         </ul>
-                      </div>
+                      </Card>
                     )}
                 </div>
 
