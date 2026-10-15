@@ -5498,8 +5498,8 @@ app.get('/sitemap.xml', async (_req, res) => {
       xml += `  <url><loc>${base}${p.path}</loc><changefreq>${p.changefreq}</changefreq><priority>${p.priority}</priority></url>\n`;
     }
 
-    // Eventi futuri o in corso: quelli passati restano raggiungibili ma non sono in sitemap
-    const { rows: events } = await pool.query("SELECT slug, date, created_at FROM events WHERE slug IS NOT NULL AND slug != '' AND date >= CURRENT_DATE ORDER BY date DESC NULLS LAST LIMIT 1000");
+    // Tutti gli eventi con slug, anche quelli passati (sono pagine con contenuto indicizzabile)
+    const { rows: events } = await pool.query("SELECT slug, date, created_at FROM events WHERE slug IS NOT NULL AND slug != '' ORDER BY date DESC NULLS LAST LIMIT 1000");
     for (const ev of events) {
       const lastmod = toDate(ev.created_at);
       xml += `  <url><loc>${base}/${ev.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
