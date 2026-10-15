@@ -63,8 +63,11 @@ seo-agent/
   package.json         script npm (nessuna dipendenza esterna)
   .gitignore           esclude .env, secrets/, data/proposals/, data/cron.log, docs/
   src/
-    index.mjs          CLI: run, evaluate, cron, report, monitor, opportunities, content, history
-    content.mjs        idee contenuti settimanali (blog esistente + query GSC) e invio WhatsApp
+    index.mjs          CLI: run, evaluate, cron, report, monitor, opportunities, content, indexing, analytics, history
+    content.mjs        idee contenuti settimanali (blog, query GSC, Wikipedia, autocomplete, GA4) e invio WhatsApp
+    sources.mjs        fonti pubbliche senza chiave: visite Wikipedia e suggerimenti di ricerca Google
+    indexing.mjs       controllo di indicizzazione delle URL della sitemap (URL Inspection API)
+    analytics.mjs      report mensile: pagine più visitate (GA4) e Core Web Vitals reali (CrUX)
     agent.mjs          logica: raccolta, decisione, validazione, applicazione, valutazione
     technical.mjs      controlli tecnici: sitemap e URL Inspection su Search Console
     indexnow.mjs       invio URL nuove o cambiate a IndexNow (Bing e altri motori)
@@ -82,6 +85,9 @@ seo-agent/
       evaluations.jsonl   esito di ogni modifica (metriche, verdetto, lezione)
       sitemap-snapshot.json   lastmod delle URL già notificate a IndexNow
       monitor-state.json      problemi tecnici già segnalati nel gruppo
+      indexing-state.json     pagine non indicizzate già segnalate, con il loro stato Google
+      analytics-state.json    mese dell'ultimo report inviato
+      content-state.json      data dell'ultimo messaggio di idee contenuti
     proposals/            proposte di ogni run (anche dry-run), per audit
 ```
 
@@ -111,6 +117,8 @@ Requisiti: Node.js 20.6 o superiore (usa `--env-file`). Nessuna dipendenza da in
 | `PUBLIC_BASE_URL`                                         | no                     | dominio pubblico usato per sitemap, IndexNow e monitor (default `https://www.weapnea.com`) |
 | `INDEXNOW_KEY`                                            | no (IndexNow)          | chiave IndexNow, uguale al nome del file in `public/`                                   |
 | `PAGESPEED_API_KEY`                                       | no                     | chiave PageSpeed Insights, evita la quota condivisa                                     |
+| `GA4_PROPERTY_ID`                                         | no (report mensile)    | ID numerico della proprietà Google Analytics 4. Il service account deve avere accesso Viewer |
+| `CRUX_API_KEY`                                            | no (report mensile)    | API key di Chrome UX Report, con restrizione alla sola "Chrome UX Report API"           |
 | `BOT_API_URL`, `BOT_API_TOKEN`, `BOT_GROUP_JID`           | no (avvisi WhatsApp)   | bot WhatsApp e gruppo di destinazione dei recap e degli avvisi                          |
 | `SEO_ALLOWED_PATHS`, `SEO_LANGUAGES`                      | no                     | path modificabili e lingue supportate                                                   |
 | `SEO_MAX_CHANGES_PER_RUN`, `SEO_BATCH_SIZE`, `SEO_RUN_BUDGET_MINUTES` | no                | limiti per run                                                                       |
@@ -119,7 +127,7 @@ Requisiti: Node.js 20.6 o superiore (usa `--env-file`). Nessuna dipendenza da in
 
 ### Secret GitHub per il cron
 
-Il workflow `.github/workflows/seo-agent.yml` legge questi secret: `SEO_API_TOKEN` (mappato su `API_TOKEN`), `DEEPSEEK_API_KEY`, `GOOGLE_SA_JSON` (scritto in `secrets/service-account.json`), `BOT_API_TOKEN`, `BOT_GROUP_JID`, `INDEXNOW_KEY`, `PAGESPEED_API_KEY` (opzionale).
+Il workflow `.github/workflows/seo-agent.yml` legge questi secret: `SEO_API_TOKEN` (mappato su `API_TOKEN`), `DEEPSEEK_API_KEY`, `GOOGLE_SA_JSON` (scritto in `secrets/service-account.json`), `BOT_API_TOKEN`, `BOT_GROUP_JID`, `INDEXNOW_KEY`, `PAGESPEED_API_KEY` (opzionale), `CRUX_API_KEY` (opzionale). `GA4_PROPERTY_ID` è una variabile del repository (`vars.GA4_PROPERTY_ID`), non un segreto.
 
 ## Comandi
 
@@ -133,6 +141,8 @@ npm run history    # storico con esiti
 node --env-file=.env src/index.mjs monitor        # controlli tecnici; avvisa nel gruppo solo i problemi nuovi
 node --env-file=.env src/index.mjs opportunities  # query in posizione 4–15 e query contese tra pagine
 node --env-file=.env src/index.mjs content        # anteprima delle idee contenuti: non invia nulla e non salva lo stato
+node --env-file=.env src/index.mjs indexing       # stampa le URL non indicizzate da Google: non invia nulla e non salva lo stato
+node --env-file=.env src/index.mjs analytics      # stampa il report mensile: non invia nulla
 ```
 
 Consiglio: esegui prima `npm run run` e controlla la proposta in `data/proposals/`. Passa ad `apply` solo quando i risultati ti convincono.
@@ -150,11 +160,15 @@ Il monitor gira per primo, così i suoi risultati servono anche agli altri passi
 2. **Ottimizzazione**: le pagine con un problema di status (URL della sitemap che non risponde 200) vengono escluse dal run e riportate in `technicalSkipped`. Per ogni pagina candidata l'agente riceve anche le sue opportunità (query in posizione 4–15 e query contese con altre pagine), così può usarle nei title e nelle description.
 3. **Valutazione** delle modifiche precedenti e **recap** del progresso.
 4. **IndexNow** sulle pagine modificate e **reinvio sitemap** a Search Console, se necessario.
-5. **Opportunità**: stampa nei log le query da spingere e quelle contese tra più pagine.
-6. **Digest WhatsApp**: un solo messaggio nel gruppo per run, che unisce pagine aggiornate, URL inviati a IndexNow, sitemap reinviata, nuovi problemi tecnici e pagine saltate. Se non c'è nulla da segnalare, non invia niente.
-7. **Idee contenuti** (una volta a settimana, `SEO_CONTENT_INTERVAL_DAYS`, default 7): il tool legge gli articoli già pubblicati nel blog in tutte le lingue e le query di Search Console con almeno 10 impressioni negli ultimi 28 giorni. DeepSeek propone al massimo 3 argomenti che non duplicano articoli esistenti, con un titolo per ciascuna delle 6 lingue del sito. Il messaggio WhatsApp è solo un suggerimento: il sito non viene modificato e non vengono scritte bozze. Il primo invio avviene al primo cron dopo il deploy; lo stato è in `data/memory/content-state.json`, e viene salvato solo dopo un invio riuscito. Se Search Console non risponde, le idee si basano solo sugli articoli esistenti.
+5. **Indicizzazione**: ispeziona ogni URL della sitemap con l'URL Inspection API di Search Console (5 richieste in parallelo). Segnala nel digest solo le pagine non indicizzate (verdict diverso da `PASS`) il cui stato è cambiato rispetto all'ultima segnalazione, così non si ripete lo stesso avviso ogni 12 ore. Il primo run registra lo stato attuale in silenzio, senza avvisi: da lì in poi segnala solo i cambiamenti. Per vedere l'elenco completo usare il comando `indexing`.
+6. **Opportunità**: stampa nei log le query da spingere e quelle contese tra più pagine.
+7. **Digest WhatsApp**: un solo messaggio nel gruppo per run, che unisce pagine aggiornate, URL inviati a IndexNow, sitemap reinviata, nuovi problemi tecnici, pagine non indicizzate e pagine saltate. Se non c'è nulla da segnalare, non invia niente.
+8. **Idee contenuti** (una volta a settimana, `SEO_CONTENT_INTERVAL_DAYS`, default 7): il tool legge gli articoli già pubblicati nel blog in tutte le lingue e le query di Search Console con almeno 10 impressioni negli ultimi 28 giorni. Aggiunge tre segnali facoltativi: visite alle voci Wikipedia su apnea/freediving (ultimi 30 giorni contro i 30 precedenti), suggerimenti di completamento di Google per lingua e le pagine più visitate su GA4. DeepSeek propone al massimo 3 argomenti che non duplicano articoli esistenti, con un titolo per ciascuna delle 6 lingue del sito. Il messaggio WhatsApp è solo un suggerimento: il sito non viene modificato e non vengono scritte bozze. Il primo invio avviene al primo cron dopo il deploy; lo stato è in `data/memory/content-state.json`, e viene salvato solo dopo un invio riuscito. Se una fonte non risponde, le idee si generano con le altre.
+9. **Report mensile** (una volta al mese, al primo cron del mese): pagine più visitate negli ultimi 28 giorni da GA4 e Core Web Vitals reali su mobile (LCP, INP, CLS, p75) da CrUX. Se né `GA4_PROPERTY_ID` né `CRUX_API_KEY` sono impostate, non invia nulla. CrUX risponde 404 quando il sito non ha abbastanza traffico Chrome: in quel caso la sezione viene omessa.
 
-Lo stato del monitor (problemi già segnalati) si salva solo dopo un invio riuscito: se WhatsApp fallisce, i problemi vengono riproposti al run successivo.
+Fonti senza chiave usate solo per le idee contenuti: Wikipedia (pageviews) e il suggerimento di ricerca Google. Il suggerimento di Google non è un'API documentata e può cambiare o essere limitato; i seed sono specifici per lingua perché "apnea" da solo in italiano porta soprattutto ad "apnea notturna".
+
+Lo stato del monitor e quello dell'indicizzazione (problemi già segnalati) si salvano solo dopo un invio riuscito: se WhatsApp fallisce, i problemi vengono riproposti al run successivo.
 
 Ogni passo accessorio (monitor, IndexNow, sitemap, digest) è protetto: se fallisce emette un `::warning::` e il cron continua.
 

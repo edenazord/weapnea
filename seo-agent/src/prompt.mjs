@@ -37,6 +37,11 @@ Ricevi un JSON con:
 - languages e limits: lingue del sito e lunghezze ammesse per i titoli.
 - articlesTotal ed existingArticles: articoli già pubblicati (title, language, tags, keywords, excerpt). Ogni articolo è scritto in una sola lingua.
 - demandQueries: query reali degli ultimi 28 giorni su Google Search Console, con impressions, clicks e position. Una query con molte impressioni che nessun articolo copre è un segnale forte.
+- wikipediaInterest: per lingua, visite alla voce Wikipedia sull'apnea/freediving negli ultimi 30 giorni (views30d) rispetto ai 30 precedenti (previous30d). Un aumento indica interesse crescente per il tema.
+- searchSuggestions: per lingua, suggerimenti di completamento della ricerca Google. Sono rumorosi: possono riguardare argomenti fuori tema, come l'apnea notturna o il sonno. Usali solo se il tema è chiaramente legato all'apnea subacquea e al freediving.
+- ga4TopPages: pagine più visitate del sito negli ultimi 28 giorni (path, views, users, engagementRate). Servono a capire cosa funziona già: non proporre argomenti che quelle pagine trattano già.
+
+Questi segnali esterni sono indizi, non fatti: non citarli come dati certi e non basare un'idea solo su uno di essi.
 
 Regole:
 1. Proponi al massimo 3 idee. Non proporre argomenti già trattati negli existingArticles, in nessuna lingua: controlla titoli, tag, keywords ed excerpt. Se un tema è già coperto, non riproporlo nemmeno con parole diverse.

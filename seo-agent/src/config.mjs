@@ -38,6 +38,8 @@ export const config = {
   botGroupJid: env("BOT_GROUP_JID"),
   indexNowKey: env("INDEXNOW_KEY"),
   pagespeedApiKey: env("PAGESPEED_API_KEY"),
+  ga4PropertyId: env("GA4_PROPERTY_ID"),
+  cruxApiKey: env("CRUX_API_KEY"),
   deepseekApiKey: env("DEEPSEEK_API_KEY"),
   deepseekBaseUrl: env("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
   deepseekModel: env("DEEPSEEK_MODEL", "deepseek-flash"),

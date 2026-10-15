@@ -8,6 +8,8 @@ import { printOpportunities } from "./opportunities.mjs";
 import { notifyChangedUrls } from "./indexnow.mjs";
 import { refreshSitemap } from "./technical.mjs";
 import { previewContent, sendContentIfDue } from "./content.mjs";
+import { sendMonthlyReportIfDue, buildMonthlyReport } from "./analytics.mjs";
+import { checkIndexing, saveIndexingState } from "./indexing.mjs";
 import { buildDigest, sendGroupMessage } from "./whatsapp.mjs";
 import {
   evaluateActions,
@@ -71,13 +73,19 @@ try {
     await printOpportunities().catch((err) =>
       console.warn(`::warning::Opportunità non stampate: ${err.message}`),
     );
+    const indexingCheck = await safely("Controllo indicizzazione", checkIndexing);
+    if (indexingCheck)
+      console.log(
+        `Indicizzazione: ${indexingCheck.checked} URL controllate, ${indexingCheck.issues.length} nuove segnalazioni, ${indexingCheck.errors} errori.`,
+      );
 
-    // Un solo messaggio nel gruppo per run. Lo stato del monitor si salva solo dopo l'invio.
+    // Un solo messaggio nel gruppo per run. Lo stato di monitor e indicizzazione si salva solo dopo l'invio.
     const digest = buildDigest({
       run,
       indexing,
       sitemap: sitemap?.submitted ? sitemap : null,
       fresh: monitor?.fresh ?? [],
+      indexingIssues: indexingCheck?.issues ?? [],
     });
     let delivered = true;
     if (digest) {
@@ -88,6 +96,7 @@ try {
         })) === true;
     }
     if (monitor && delivered) await saveMonitorState(monitor);
+    if (indexingCheck && delivered) await saveIndexingState(indexingCheck);
 
     // Messaggio separato, al massimo una volta a settimana: idee di contenuti.
     await safely("Idee contenuti", async () => {
@@ -98,9 +107,22 @@ try {
           : `Idee contenuti: ${r.reason}.`,
       );
     });
+    // Report mensile con Analytics e Core Web Vitals, se le chiavi sono configurate.
+    await safely("Report mensile", async () => {
+      const r = await sendMonthlyReportIfDue();
+      console.log(r.sent ? "Report mensile inviato." : `Report mensile: ${r.reason}.`);
+    });
   } else if (command === "content") {
     assertEnv(REQUIRED);
     await previewContent();
+  } else if (command === "indexing") {
+    assertEnv(["GOOGLE_SERVICE_ACCOUNT_FILE"]);
+    const r = await checkIndexing();
+    console.log(`URL controllate: ${r.checked}, errori: ${r.errors}.`);
+    for (const i of r.issues) console.log(`- ${i.path}: ${i.coverageState}`);
+  } else if (command === "analytics") {
+    assertEnv(["GOOGLE_SERVICE_ACCOUNT_FILE"]);
+    console.log((await buildMonthlyReport()) ?? "Nessuna fonte configurata (GA4_PROPERTY_ID, CRUX_API_KEY).");
   } else if (command === "monitor") {
     assertEnv(["GOOGLE_SERVICE_ACCOUNT_FILE"]);
     await runMonitor();
@@ -117,7 +139,7 @@ try {
     await printHistory();
   } else {
     console.log(
-      "Uso: node src/index.mjs <run|evaluate|cron|content|report|monitor|opportunities|history> [--apply]",
+      "Uso: node src/index.mjs <run|evaluate|cron|content|indexing|analytics|report|monitor|opportunities|history> [--apply]",
     );
     process.exitCode = 1;
   }

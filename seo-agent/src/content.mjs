@@ -4,6 +4,8 @@ import { config } from "./config.mjs";
 import { chatJson } from "./deepseek.mjs";
 import { CONTENT_PROMPT } from "./prompt.mjs";
 import { searchAnalytics } from "./google.mjs";
+import { fetchTopPages } from "./analytics.mjs";
+import { fetchSearchSuggestions, fetchWikipediaInterest } from "./sources.mjs";
 import { getBlogArticles } from "./site-api.mjs";
 import { buildContentMessage, sendGroupMessage } from "./whatsapp.mjs";
 
@@ -99,14 +101,22 @@ function validSuggestions(raw) {
     .slice(0, MAX_SUGGESTIONS);
 }
 
+// Ogni fonte esterna è facoltativa: se fallisce, le idee si generano con le altre.
+const optional = (label, task, fallback) =>
+  task().catch((err) => {
+    console.warn(`::warning::${label} non disponibile: ${err.message}`);
+    return fallback;
+  });
+
 export async function generateContentIdeas() {
-  const [demand, articles] = await Promise.all([
-    fetchDemand().catch((err) => {
-      console.warn(`::warning::Query di ricerca non disponibili: ${err.message}`);
-      return [];
-    }),
-    existingArticles(),
-  ]);
+  const [demand, articles, wikipediaInterest, searchSuggestions, ga4TopPages] =
+    await Promise.all([
+      optional("Query di ricerca", fetchDemand, []),
+      existingArticles(),
+      optional("Wikipedia", fetchWikipediaInterest, {}),
+      optional("Suggerimenti di ricerca", fetchSearchSuggestions, {}),
+      optional("Google Analytics", () => fetchTopPages(10), []),
+    ]);
   const raw = await chatJson({
     system: CONTENT_PROMPT,
     user: JSON.stringify({
@@ -116,6 +126,9 @@ export async function generateContentIdeas() {
       articlesTotal: articles.total,
       existingArticles: articles.list,
       demandQueries: demand,
+      wikipediaInterest,
+      searchSuggestions,
+      ga4TopPages,
     }),
   });
   return validSuggestions(raw);

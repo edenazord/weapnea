@@ -58,6 +58,8 @@ jobs:
           BOT_GROUP_JID: ${{ secrets.BOT_GROUP_JID }}
           INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
           PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+          CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
+          GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}
         run: node src/index.mjs cron
 
       - name: Persist agent memory
