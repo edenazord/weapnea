@@ -2,7 +2,7 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getEventById, getEventBySlug, EventWithCategory } from "@/lib/api";
+import { getEventById, getEventBySlug, getEvents, EventWithCategory } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, MapPin, Users, CreditCard, Globe, BookOpen, Target, Check, X, Clock, Languages, FileText, MessageCircle, Share2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -337,6 +337,24 @@ const EventDetail = () => {
         return disciplineMap[discipline] || discipline.charAt(0).toUpperCase() + discipline.slice(1);
     };
 
+    // Altri eventi futuri, stessa sorgente della home; i link corrispondono a quelli per i bot in /api/seo-meta.
+    const { data: relatedEvents } = useQuery<EventWithCategory[]>({
+        queryKey: ['events-related', event?.id],
+        queryFn: () => getEvents(),
+        enabled: !!event?.id,
+        staleTime: 60000,
+    });
+    const relatedList = useMemo(() => {
+        if (!event || !relatedEvents) return [];
+        const today = new Date(new Date().toDateString());
+        return relatedEvents
+            .filter(e => e.id !== event.id && e.slug && new Date(e.end_date || e.date) >= today)
+            .sort((a, b) =>
+                Number(b.category_id === event.category_id) - Number(a.category_id === event.category_id) ||
+                (a.date > b.date ? 1 : a.date < b.date ? -1 : 0))
+            .slice(0, 5);
+    }, [event, relatedEvents]);
+
     if (isLoading) {
         console.log("⏳ EventDetail - Caricamento in corso...");
         return <EventDetailSkeleton />;
@@ -643,6 +661,19 @@ const EventDetail = () => {
                     {event.id && (
                       <div className="mt-8">
                         <Comments eventId={event.id} canComment={!!user} />
+                      </div>
+                    )}
+
+                    {relatedList.length > 0 && (
+                      <div className="mt-8">
+                        <h2 className="text-xl font-bold text-blue-900 mb-3">{t('events.other_events', 'Altri eventi')}</h2>
+                        <ul className="space-y-2">
+                          {relatedList.map(e => (
+                            <li key={e.id}>
+                              <Link to={`/${e.slug}`} className="text-blue-600 hover:underline">{e.title}</Link>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                 </div>

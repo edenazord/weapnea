@@ -5259,11 +5259,22 @@ app.get('/api/seo-meta', async (req, res) => {
     const eventSlug = rawPath.replace(/^\//, '');
     if (eventSlug && !eventSlug.includes('/')) {
       const { rows } = await pool.query(
-        `SELECT title, description, image_url, date, end_date, location FROM events WHERE slug = $1 LIMIT 1`,
+        `SELECT id, category_id, title, description, image_url, date, end_date, location, cost FROM events WHERE slug = $1 LIMIT 1`,
         [eventSlug]
       );
       if (rows[0]) {
         const ev = rows[0];
+        // Link interni agli eventi futuri (prima quelli della stessa categoria): visibili anche nella pagina evento.
+        const { rows: related } = await pool.query(
+          `SELECT slug, title FROM events
+           WHERE slug IS NOT NULL AND slug <> '' AND id <> $1 AND COALESCE(end_date, date) >= CURRENT_DATE
+           ORDER BY (category_id IS NOT DISTINCT FROM $2) DESC, date ASC
+           LIMIT 5`,
+          [ev.id, ev.category_id]
+        );
+        const eventEnded = new Date(ev.end_date || ev.date) < new Date(new Date().toDateString());
+        // node-pg legge le colonne `date` a mezzanotte locale: uso i getter locali per non slittare di giorno.
+        const isoDay = (d) => d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : undefined;
         const dateStr = ev.date ? new Date(ev.date).toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
         const desc = custom?.description || (ev.description
           ? ev.description.replace(/<[^>]+>/g, '').slice(0, 160)
@@ -5285,17 +5296,23 @@ app.get('/api/seo-meta', async (req, res) => {
           url: `${base}${rawPath}`,
           type: 'event',
           body: evBody,
+          links: related.map((r) => ({ href: `${base}/${r.slug}`, text: r.title })),
           jsonld: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Event',
             'name': evTitle,
             'description': desc,
-            'startDate': ev.date ? new Date(ev.date).toISOString().split('T')[0] : undefined,
-            'endDate': ev.end_date ? new Date(ev.end_date).toISOString().split('T')[0] : undefined,
+            'startDate': isoDay(ev.date ? new Date(ev.date) : null),
+            'endDate': isoDay(ev.end_date ? new Date(ev.end_date) : null),
+            'eventStatus': 'https://schema.org/EventScheduled',
+            'eventAttendanceMode': 'https://schema.org/OfflineEventAttendanceMode',
             'location': ev.location ? { '@type': 'Place', 'name': ev.location } : undefined,
             'image': img,
             'url': `${base}${rawPath}`,
             'organizer': { '@type': 'Organization', 'name': 'WeApnea', 'url': base },
+            'offers': (!eventEnded && ev.cost != null && !Number.isNaN(Number(ev.cost)))
+              ? { '@type': 'Offer', 'price': Number(ev.cost), 'priceCurrency': 'EUR', 'availability': 'https://schema.org/InStock', 'url': `${base}${rawPath}` }
+              : undefined,
           }),
         });
       }

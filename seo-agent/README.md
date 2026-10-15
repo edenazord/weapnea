@@ -72,7 +72,7 @@ seo-agent/
     agent.mjs          logica: raccolta, decisione, validazione, applicazione, valutazione
     technical.mjs      controlli tecnici: sitemap e URL Inspection su Search Console
     sitemap.mjs        lettura e parsing della sitemap pubblica
-    monitor.mjs        controlli tecnici periodici con avvisi WhatsApp per i problemi nuovi
+    monitor.mjs        controlli tecnici periodici con avvisi WhatsApp per i problemi nuovi (stato HTTP, canonical e noindex delle URL in sitemap, robots, PageSpeed)
     opportunities.mjs  query vicine alla prima pagina e query contese tra più pagine
     prompt.mjs         prompt per DeepSeek (decisione e valutazione)
     google.mjs         client Search Console (autenticazione service account)

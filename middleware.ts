@@ -43,6 +43,7 @@ interface SeoMeta {
   lang?: string;
   jsonld?: string;
   body?: string[];
+  links?: { href: string; text: string }[];
 }
 
 function buildHtml(meta: SeoMeta, pathname: string): string {
@@ -50,6 +51,9 @@ function buildHtml(meta: SeoMeta, pathname: string): string {
   const d = escapeHtml(meta.description);
   const bodyParagraphs = meta.body && meta.body.length ? meta.body : [meta.description];
   const bodyHtml = bodyParagraphs.map(p => `  <p>${escapeHtml(p)}</p>`).join('\n');
+  const linksHtml = meta.links && meta.links.length
+    ? `  <h2>Altri eventi</h2>\n  <ul>\n${meta.links.map(l => `    <li><a href="${escapeHtml(l.href)}">${escapeHtml(l.text)}</a></li>`).join('\n')}\n  </ul>`
+    : '';
   const img = escapeHtml(meta.image);
   const u = escapeHtml(meta.url);
   const lang = meta.lang || 'it';
@@ -102,6 +106,7 @@ ${hreflangTags}
 <body>
   <h1>${t}</h1>
 ${bodyHtml}
+${linksHtml}
   <a href="${u}">WeApnea</a>
 </body>
 </html>`;

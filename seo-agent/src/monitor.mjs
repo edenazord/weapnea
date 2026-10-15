@@ -9,6 +9,7 @@ const PSI_URL = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed";
 const PSI_MIN_SCORE = 50;
 const PSI_MAX_LCP_MS = 4000;
 const CONCURRENCY = 5;
+const GOOGLEBOT_UA = "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)";
 
 async function head(url) {
   const res = await fetch(url, {
@@ -35,6 +36,65 @@ async function checkSitemapUrls(urls, problems) {
       }
     });
   }
+}
+
+// Confronta l'URL senza query/hash e senza slash finale (tranne la home), per evitare falsi positivi.
+function normalizeUrl(u) {
+  const url = new URL(u);
+  url.hash = "";
+  url.search = "";
+  const s = url.href;
+  return url.pathname !== "/" && s.endsWith("/") ? s.slice(0, -1) : s;
+}
+
+// Scarica ogni pagina della sitemap come Googlebot (il middleware gli serve l'HTML SEO) e verifica
+// che il canonical punti alla pagina stessa e che la pagina non sia noindex.
+async function checkCanonicals(urls, problems, warnings) {
+  let unchecked = 0;
+  for (let i = 0; i < urls.length; i += CONCURRENCY) {
+    const batch = urls.slice(i, i + CONCURRENCY);
+    const results = await Promise.all(
+      batch.map((url) =>
+        fetch(url, {
+          headers: { "User-Agent": GOOGLEBOT_UA },
+          signal: AbortSignal.timeout(15_000),
+        })
+          .then(async (res) => ({ res, html: res.ok ? await res.text() : "" }))
+          .catch(() => null),
+      ),
+    );
+    results.forEach((result, idx) => {
+      if (!result) {
+        unchecked++;
+        return;
+      }
+      const { res, html } = result;
+      if (!res.ok) return; // lo stato HTTP è già segnalato da checkSitemapUrls
+      const url = batch[idx];
+      const p = new URL(url).pathname;
+
+      const linkTags = html.match(/<link\b[^>]*>/gi) ?? [];
+      const canonicalTag = linkTags.find((tag) => /\brel\s*=\s*["']?canonical\b/i.test(tag));
+      const href = canonicalTag?.match(/\bhref\s*=\s*["']([^"']+)["']/i)?.[1];
+      if (!href) {
+        problems.push({ key: `canonical:${p}`, text: `${p} senza tag canonical` });
+      } else {
+        const canonical = new URL(href, url).href;
+        if (normalizeUrl(canonical) !== normalizeUrl(url))
+          problems.push({
+            key: `canonical:${p}`,
+            text: `${p} dichiara come canonical ${canonical.slice(0, 120)} invece di se stessa`,
+          });
+      }
+
+      const metaRobots = html.match(/<meta\b[^>]*name\s*=\s*["']robots["'][^>]*>/i)?.[0] ?? "";
+      const noindex = /noindex/i.test(metaRobots) || /noindex/i.test(res.headers.get("x-robots-tag") ?? "");
+      if (noindex)
+        problems.push({ key: `noindex:${p}`, text: `${p} è in sitemap ma ha noindex` });
+    });
+  }
+  if (unchecked)
+    warnings.push(`canonical non verificato per ${unchecked} pagine (errore di rete)`);
 }
 
 // Il dominio senza www deve fare un redirect permanente (301) verso il sito principale.
@@ -107,6 +167,7 @@ export async function runChecks() {
   }
 
   await checkSitemapUrls(urls, problems);
+  await checkCanonicals(urls, problems, warnings);
   await checkApexRedirect(problems);
   await checkRobots(problems);
   let pagespeed = null;
