@@ -25,7 +25,15 @@ export function buildRecap(run) {
 }
 
 // Un solo messaggio per run del cron. Restituisce null se non c'è niente da segnalare.
-export function buildDigest({ run, indexing, sitemap, fresh = [], indexingIssues = [] }) {
+export function buildDigest({
+  run,
+  indexing,
+  sitemap,
+  fresh = [],
+  indexingIssues = [],
+  indexingResolved = [],
+  indexingRecrawled = [],
+}) {
   const lines = [];
   const pages = [...new Set(run.applied)];
   if (pages.length) {
@@ -45,6 +53,12 @@ export function buildDigest({ run, indexing, sitemap, fresh = [], indexingIssues
     if (indexingIssues.length > shown.length)
       lines.push(`- e altre ${indexingIssues.length - shown.length}`);
   }
+  if (indexingResolved.length)
+    lines.push(`Risolte da Google: ${indexingResolved.join(", ")}.`);
+  if (indexingRecrawled.length)
+    lines.push(
+      `Ricrawlate da Google dopo la correzione ma ancora segnalate: ${indexingRecrawled.join(", ")}. Serve intervento manuale.`,
+    );
   if (run.technicalSkipped?.length)
     lines.push(`Pagine saltate per problemi tecnici: ${run.technicalSkipped.join(", ")}.`);
   const hasNews =
@@ -52,7 +66,9 @@ export function buildDigest({ run, indexing, sitemap, fresh = [], indexingIssues
     indexing?.submitted ||
     sitemap?.submitted ||
     fresh.length ||
-    indexingIssues.length;
+    indexingIssues.length ||
+    indexingResolved.length ||
+    indexingRecrawled.length;
   if (!hasNews) return null;
   return ["SEO weapnea: aggiornamento", ...lines].join("\n");
 }

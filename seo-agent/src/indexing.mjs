@@ -29,6 +29,9 @@ async function inspect(token, url) {
   return {
     verdict: s.verdict ?? "UNKNOWN",
     coverageState: s.coverageState ?? "stato sconosciuto",
+    userCanonical: s.userCanonical ?? null,
+    googleCanonical: s.googleCanonical ?? null,
+    lastCrawlTime: s.lastCrawlTime ?? null,
   };
 }
 
@@ -43,6 +46,8 @@ async function readState() {
 
 // Stati che dipendono da canonical, redirect o tag e non si risolvono cambiando title e description.
 const TECHNICAL_STATE = /duplicat|canonic|reindirizz|redirect|soft 404|noindex|non trovat|not found/i;
+// Da quando Googlebot riceve canonical e title corretti (middleware, commit 850faab).
+const BOT_FIX_AT = Date.parse("2026-10-15T10:48:46Z");
 
 // Ispeziona ogni URL della sitemap. Restituisce le pagine non indicizzate non ancora segnalate.
 // Al primo run (nessuno stato salvato) registra lo stato attuale senza avvisare.
@@ -57,6 +62,14 @@ export async function checkIndexing() {
   const nextAlerted = {};
   const issues = [];
   const problemPaths = [];
+  // Diagnosi per le pagine tecniche: quale canonical dichiariamo e quale ha scelto Google.
+  const diagnosis = [];
+  // Pagine segnalate prima e ora con verdetto PASS.
+  const resolved = [];
+  // Pagine tecniche ricrawlate da Google dopo la correzione e ancora segnalate, non ancora riportate.
+  const previousRecrawled = new Set(state?.recrawled ?? []);
+  const nextRecrawled = [];
+  const newlyRecrawled = [];
   let errors = 0;
   for (let i = 0; i < urls.length; i += CONCURRENCY) {
     const batch = urls.slice(i, i + CONCURRENCY);
@@ -69,11 +82,30 @@ export async function checkIndexing() {
         // Errore temporaneo: si mantiene lo stato precedente e non si avvisa.
         errors += 1;
         if (alerted[url]) nextAlerted[url] = alerted[url];
+        if (previousRecrawled.has(new URL(url).pathname)) nextRecrawled.push(new URL(url).pathname);
         return;
       }
-      if (r.verdict === "PASS") return;
       const pathname = new URL(url).pathname;
-      if (TECHNICAL_STATE.test(r.coverageState)) problemPaths.push(pathname);
+      if (r.verdict === "PASS") {
+        if (!firstRun && alerted[url]) resolved.push(pathname);
+        return;
+      }
+      if (TECHNICAL_STATE.test(r.coverageState)) {
+        problemPaths.push(pathname);
+        const recrawledSinceFix = Boolean(r.lastCrawlTime) && Date.parse(r.lastCrawlTime) >= BOT_FIX_AT;
+        diagnosis.push({
+          path: pathname,
+          coverageState: r.coverageState,
+          userCanonical: r.userCanonical,
+          googleCanonical: r.googleCanonical,
+          lastCrawlTime: r.lastCrawlTime,
+          recrawledSinceFix,
+        });
+        if (recrawledSinceFix) {
+          nextRecrawled.push(pathname);
+          if (!firstRun && !previousRecrawled.has(pathname)) newlyRecrawled.push(pathname);
+        }
+      }
       nextAlerted[url] = r.coverageState;
       if (!firstRun && alerted[url] !== r.coverageState)
         issues.push({ path: pathname, coverageState: r.coverageState });
@@ -86,7 +118,10 @@ export async function checkIndexing() {
     issues,
     // Percorsi con problemi tecnici: l'ottimizzatore di title e description non li deve toccare.
     problemPaths,
-    nextState: { alerted: nextAlerted },
+    diagnosis,
+    resolved,
+    newlyRecrawled,
+    nextState: { alerted: nextAlerted, recrawled: nextRecrawled },
   };
 }
 

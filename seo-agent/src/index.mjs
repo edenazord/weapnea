@@ -51,10 +51,15 @@ try {
       runMonitor({ notify: false }),
     );
     const indexingCheck = await safely("Controllo indicizzazione", checkIndexing);
-    if (indexingCheck)
+    if (indexingCheck) {
       console.log(
         `Indicizzazione: ${indexingCheck.checked} URL controllate, ${indexingCheck.issues.length} nuove segnalazioni, ${indexingCheck.errors} errori.`,
       );
+      for (const d of indexingCheck.diagnosis)
+        console.log(
+          `Diagnosi ${d.path}: canonical scelta da Google ${d.googleCanonical} (dichiarata ${d.userCanonical}), ultima scansione ${d.lastCrawlTime}`,
+        );
+    }
     const technicalPaths = new Set([
       ...(monitor ? brokenPaths(monitor) : []),
       ...(indexingCheck?.problemPaths ?? []),
@@ -89,6 +94,8 @@ try {
       sitemap: sitemap?.submitted ? sitemap : null,
       fresh: monitor?.fresh ?? [],
       indexingIssues: indexingCheck?.issues ?? [],
+      indexingResolved: indexingCheck?.resolved ?? [],
+      indexingRecrawled: indexingCheck?.newlyRecrawled ?? [],
     });
     let delivered = true;
     if (digest) {
