@@ -10,7 +10,7 @@ export const config = {
 };
 
 const BOT_UA_RE =
-  /googlebot|bingbot|slurp|duckduckbot|baiduspider|yandexbot|sogou|exabot|facebot|facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegrambot|applebot|discordbot|slackbot|redditbot|pinterestbot|vkshare|w3c_validator|lighthouse|chrome-lighthouse|prerender/i;
+  /googlebot|google-inspectiontool|googleother|google-read-aloud|storebot-google|adsbot-google|mediapartners-google|apis-google|bingbot|slurp|duckduckbot|baiduspider|yandexbot|sogou|exabot|facebot|facebookexternalhit|twitterbot|linkedinbot|whatsapp|telegrambot|applebot|discordbot|slackbot|redditbot|pinterestbot|vkshare|w3c_validator|lighthouse|chrome-lighthouse|prerender/i;
 
 // Set SEO_API_BASE_URL in the Vercel dashboard (Environment Variables)
 const API_BASE = (process.env.SEO_API_BASE_URL ?? 'https://weapnea-api.onrender.com').replace(/\/$/, '');const SITE_BASE = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://www.weapnea.com').replace(/\/$/, '');
@@ -104,6 +104,28 @@ ${hreflangTags}
 </html>`;
 }
 
+// Per i bot non si restituisce mai la shell SPA: non ha canonical e Google
+// sceglierebbe un'altra URL. Se l'API non risponde si usa un meta generico.
+function botFallback(pathname: string, lang: string): Response {
+  const meta: SeoMeta = {
+    title: 'WeApnea – Community Apnea & Freediving',
+    description: 'La community italiana per apneisti e freediver. Scopri eventi, corsi e allenamenti di apnea.',
+    image: `${SITE_BASE}/images/weapnea-logo.png`,
+    url: `${SITE_BASE}${pathname}`,
+    type: 'website',
+    lang,
+  };
+  return new Response(buildHtml(meta, pathname), {
+    status: 200,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=60',
+      'X-Robots-Tag': 'index, follow',
+      'Vary': 'Accept-Language',
+    },
+  });
+}
+
 export default async function middleware(request: Request): Promise<Response | undefined> {
   const ua = request.headers.get('user-agent') ?? '';
 
@@ -167,10 +189,10 @@ export default async function middleware(request: Request): Promise<Response | u
         'User-Agent': 'WeApnea-SEO-Middleware/1.0',
         'Accept-Language': acceptLang ?? 'it',
       },
-      signal: AbortSignal.timeout(5000),
+      signal: AbortSignal.timeout(12000),
     });
 
-    if (!resp.ok) return undefined;
+    if (!resp.ok) return botFallback(pathname, lang);
 
     const meta = (await resp.json()) as SeoMeta;
 
@@ -184,7 +206,6 @@ export default async function middleware(request: Request): Promise<Response | u
       },
     });
   } catch {
-    // On any error (API down, timeout), fall through to the static SPA
-    return undefined;
+    return botFallback(pathname, lang);
   }
 }
