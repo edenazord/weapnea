@@ -3,3 +3,4 @@ secrets/
 data/proposals/
 data/cron.log
 node_modules/
+docs/
