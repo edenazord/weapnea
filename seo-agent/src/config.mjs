@@ -36,6 +36,8 @@ export const config = {
   botApiUrl: env("BOT_API_URL", "https://wz-pro.it/ollama/api"),
   botApiToken: env("BOT_API_TOKEN"),
   botGroupJid: env("BOT_GROUP_JID"),
+  indexNowKey: env("INDEXNOW_KEY"),
+  pagespeedApiKey: env("PAGESPEED_API_KEY"),
   deepseekApiKey: env("DEEPSEEK_API_KEY"),
   deepseekBaseUrl: env("DEEPSEEK_BASE_URL", "https://api.deepseek.com"),
   deepseekModel: env("DEEPSEEK_MODEL", "deepseek-flash"),

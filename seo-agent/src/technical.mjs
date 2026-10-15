@@ -36,13 +36,14 @@ export async function sitemapStatus() {
   });
 }
 
-// Reinvia la sitemap pubblica a Search Console se Google non la riscarica da troppo tempo.
-export async function refreshSitemap() {
+// Reinvia la sitemap pubblica a Search Console se Google non la riscarica da troppo tempo,
+// oppure subito con force quando ci sono URL nuove o cambiate.
+export async function refreshSitemap({ force = false } = {}) {
   const feed = `${config.publicBaseUrl}/sitemap.xml`;
   const current = (await sitemapStatus()).find((s) => s.path === feed);
   const lastDownload = current?.lastDownloaded ? Date.parse(current.lastDownloaded) : 0;
   const ageDays = (Date.now() - lastDownload) / 86_400_000;
-  if (current && ageDays < STALE_AFTER_DAYS)
+  if (!force && current && ageDays < STALE_AFTER_DAYS)
     return { submitted: false, ageDays: round(ageDays) };
 
   await api(`${SITEMAPS_URL}/${encodeURIComponent(feed)}`, {

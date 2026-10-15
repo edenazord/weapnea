@@ -492,6 +492,7 @@ export async function runOptimization({ apply }) {
     );
   if (batches.length && run.errors.length === batches.length)
     throw new Error(`tutti i gruppi sono falliti: ${run.errors[0]}`);
+  return run;
 }
 
 function compare(b, a) {

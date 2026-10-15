@@ -64,9 +64,12 @@ seo-agent/
   .env.example         variabili di configurazione
   .gitignore           esclude .env, secrets/, data/proposals/
   src/
-    index.mjs          CLI: run, evaluate, history
+    index.mjs          CLI: run, evaluate, cron, report, monitor, opportunities, history
     agent.mjs          logica: raccolta, decisione, validazione, applicazione, valutazione
     technical.mjs      controlli tecnici: sitemap e URL Inspection su Search Console
+    indexnow.mjs       invio URL nuove o cambiate a IndexNow (Bing e altri motori)
+    monitor.mjs        controlli tecnici periodici con avvisi WhatsApp per i problemi nuovi
+    opportunities.mjs  query vicine alla prima pagina e query contese tra più pagine
     prompt.mjs         prompt per DeepSeek (decisione e valutazione)
     google.mjs         client Search Console (autenticazione service account)
     deepseek.mjs       client DeepSeek (output JSON)
@@ -77,6 +80,8 @@ seo-agent/
     memory/
       actions.jsonl       ogni modifica applicata (prima e dopo, motivo, stato)
       evaluations.jsonl   esito di ogni modifica (metriche, verdetto, lezione)
+      sitemap-snapshot.json   lastmod delle URL già notificate a IndexNow
+      monitor-state.json      problemi tecnici già segnalati nel gruppo
     proposals/            proposte di ogni run (anche dry-run), per audit
 ```
 
@@ -91,6 +96,8 @@ Requisiti: Node.js 20.6 o superiore (usa `--env-file`). Nessuna dipendenza da in
 2. **DeepSeek**: crea una API key su platform.deepseek.com.
 3. **Backend**: usa lo stesso valore di `API_TOKEN` impostato su Render.
 4. Copia `.env.example` in `.env` e compila i valori.
+5. **IndexNow** (opzionale ma consigliato): genera una chiave (8–128 caratteri `a-z A-Z 0-9 -`), salvala in `INDEXNOW_KEY` e crea nella cartella `public/` del sito un file `<chiave>.txt` che contiene solo la chiave. Va pubblicato con il sito: finché il file non è online la chiave non è verificabile e IndexNow non può usarla per indicizzare, anche se può accettare la richiesta.
+6. **PageSpeed** (opzionale): `PAGESPEED_API_KEY`. Senza chiave le richieste condividono una quota giornaliera che si esaurisce in fretta; in quel caso il monitor avvisa nei log e salta il controllo.
 
 ## Comandi
 
@@ -101,9 +108,25 @@ npm run run        # dry-run: analizza e salva una proposta, non modifica nulla
 npm run apply      # applica le modifiche proposte
 npm run evaluate   # valuta le modifiche applicate abbastanza vecchie
 npm run history    # storico con esiti
+node --env-file=.env src/index.mjs monitor        # controlli tecnici; avvisa nel gruppo solo i problemi nuovi
+node --env-file=.env src/index.mjs opportunities  # query in posizione 4–15 e query contese tra pagine
 ```
 
 Consiglio: esegui prima `npm run run` e controlla la proposta in `data/proposals/`. Passa ad `apply` solo quando i risultati ti convincono.
+
+## Automazioni (cron)
+
+Il workflow `.github/workflows/seo-agent.yml` esegue `cron` alle 08:00 e alle 18:00 UTC. In ordine:
+
+1. **Ottimizzazione** dei meta tag (`runOptimization` in modalità apply) e valutazione delle modifiche vecchie.
+2. **IndexNow**: confronta la sitemap con l'ultimo snapshot e invia a IndexNow le URL nuove o con `lastmod` cambiato, più le pagine appena modificate dal run. Il primo run invia tutte le URL della sitemap. Lo snapshot si aggiorna solo dopo un invio riuscito, quindi un errore viene riprovato al run successivo.
+3. **Reinvio sitemap** a Search Console: forzato quando IndexNow ha inviato URL, altrimenti solo se Google non l'ha riscaricata da più di 3 giorni.
+4. **Monitor tecnico**: verifica che ogni URL della sitemap risponda 200, che `robots.txt` contenga la riga `Sitemap:`, che il dominio senza www faccia un redirect 301 verso www, e le prestazioni mobile della home con PageSpeed (punteggio sotto 50 o LCP sopra 4 s). Invia un avviso nel gruppo WhatsApp solo per i problemi nuovi.
+5. **Opportunità**: stampa nei log le query da spingere e quelle contese tra più pagine.
+
+Ogni passo accessorio (IndexNow, sitemap, monitor, opportunità) è protetto: se fallisce emette un `::warning::` e il cron continua.
+
+Limiti del monitor: lo SPA risponde 200 anche per le pagine inesistenti (fallback su `/`), quindi il controllo degli status trova soprattutto errori 5xx e redirect inattesi, non le pagine vuote.
 
 ## Sicurezza e controlli
 
