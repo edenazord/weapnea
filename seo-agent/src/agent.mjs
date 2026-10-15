@@ -3,6 +3,7 @@ import { config } from "./config.mjs";
 import { chatJson } from "./deepseek.mjs";
 import { searchAnalytics } from "./google.mjs";
 import { LESSON_PROMPT, SYSTEM_PROMPT } from "./prompt.mjs";
+import { notifyRecap } from "./whatsapp.mjs";
 import {
   appendRecord,
   historyForPrompt,
@@ -449,6 +450,7 @@ export async function runOptimization({ apply }) {
     ...proposal,
   });
   await record("runs.jsonl", run);
+  if (apply) await notifyRecap(run);
 
   if (!apply)
     console.log(

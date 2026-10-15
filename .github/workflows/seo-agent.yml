@@ -53,6 +53,9 @@ jobs:
           printf '%s' "$GOOGLE_SA_JSON" > secrets/service-account.json
 
       - name: Run SEO cron
+        env:
+          BOT_API_TOKEN: ${{ secrets.BOT_API_TOKEN }}
+          BOT_GROUP_JID: ${{ secrets.BOT_GROUP_JID }}
         run: node src/index.mjs cron
 
       - name: Persist agent memory
