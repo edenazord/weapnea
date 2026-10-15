@@ -21,7 +21,6 @@ export function buildRecap(run) {
   return [
     "Recap SEO weapnea",
     `Aggiornate ${pages.length} pagine: ${pages.join(", ")}.`,
-    "Le valutazioni dei risultati arriveranno circa 3 settimane dopo le modifiche.",
   ].join("\n");
 }
 
@@ -31,7 +30,6 @@ export function buildDigest({ run, indexing, sitemap, fresh = [], indexingIssues
   const pages = [...new Set(run.applied)];
   if (pages.length) {
     lines.push(`Aggiornate ${pages.length} pagine: ${pages.join(", ")}.`);
-    lines.push("Le valutazioni dei risultati arriveranno circa 3 settimane dopo le modifiche.");
   }
   if (indexing?.submitted) lines.push(`IndexNow: inviate ${indexing.submitted} URL.`);
   if (sitemap?.submitted) lines.push("Sitemap reinviata a Search Console.");
