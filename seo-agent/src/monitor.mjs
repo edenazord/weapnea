@@ -132,24 +132,39 @@ async function writeState(keys) {
   await writeFile(STATE_FILE, `${JSON.stringify(keys, null, 2)}\n`, "utf8");
 }
 
-function buildAlert(fresh) {
-  return [
-    "Monitor SEO weapnea: nuovi problemi tecnici",
-    ...fresh.map((p) => `- ${p.text}`),
-  ].join("\n");
+// Problemi nuovi rispetto al run precedente. Non invia nulla e non salva lo stato.
+export async function freshProblems(result) {
+  const previous = await readState();
+  return result.problems.filter((p) => !previous.has(p.key));
 }
 
-// Avvisa nel gruppo solo per i problemi nuovi rispetto al run precedente, per non ripetere lo stesso messaggio ogni volta.
-// Lo stato si salva solo dopo un invio riuscito, così un avviso non va perso.
-export async function runMonitor({ notify = true } = {}) {
-  const result = await runChecks();
-  for (const w of result.warnings) console.warn(`::warning::Monitor: ${w}`);
+// Salva i problemi attuali: va chiamata solo dopo un invio riuscito, così un avviso non va perso.
+export async function saveMonitorState(result) {
+  await writeState(result.problems.map((p) => p.key));
+}
 
-  const previous = await readState();
-  const fresh = result.problems.filter((p) => !previous.has(p.key));
+// Percorsi delle pagine con problemi che l'ottimizzatore non deve toccare.
+export function brokenPaths(result) {
+  return result.problems
+    .filter((p) => p.key.startsWith("status:"))
+    .map((p) => p.key.slice("status:".length));
+}
+
+// Avvisa nel gruppo solo per i problemi nuovi (usato fuori dal cron, che invia un unico digest).
+export async function runMonitor({ notify = true, result } = {}) {
+  const checks = result ?? (await runChecks());
+  for (const w of checks.warnings) console.warn(`::warning::Monitor: ${w}`);
+
+  const fresh = await freshProblems(checks);
   if (notify) {
-    if (fresh.length) await sendGroupMessage(buildAlert(fresh));
-    await writeState(result.problems.map((p) => p.key));
+    if (fresh.length)
+      await sendGroupMessage(
+        [
+          "Monitor SEO weapnea: nuovi problemi tecnici",
+          ...fresh.map((p) => `- ${p.text}`),
+        ].join("\n"),
+      );
+    await saveMonitorState(checks);
   }
-  return { ...result, fresh };
+  return { ...checks, fresh };
 }

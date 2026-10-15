@@ -1,8 +1,13 @@
 import { assertEnv } from "./config.mjs";
-import { runMonitor } from "./monitor.mjs";
+import {
+  brokenPaths,
+  runMonitor,
+  saveMonitorState,
+} from "./monitor.mjs";
 import { printOpportunities } from "./opportunities.mjs";
 import { notifyChangedUrls } from "./indexnow.mjs";
 import { refreshSitemap } from "./technical.mjs";
+import { buildDigest, sendGroupMessage } from "./whatsapp.mjs";
 import {
   evaluateActions,
   printHistory,
@@ -38,23 +43,50 @@ try {
     await evaluateActions();
   } else if (command === "cron") {
     assertEnv(REQUIRED);
-    const run = await runOptimization({ apply: true });
+    // Il monitor gira per primo: le pagine con problemi tecnici non vengono ottimizzate.
+    const monitor = await safely("Monitor tecnico", () =>
+      runMonitor({ notify: false }),
+    );
+    const run = await runOptimization({
+      apply: true,
+      notify: false,
+      excludePaths: new Set(monitor ? brokenPaths(monitor) : []),
+    });
     await evaluateActions();
     await progressReport();
     const indexing = await safely("IndexNow", () =>
       notifyChangedUrls(run.applied),
     );
     if (indexing) console.log(`IndexNow: inviati ${indexing.submitted} URL.`);
-    await safely("Reinvio sitemap", async () => {
+    const sitemap = await safely("Reinvio sitemap", async () => {
       const r = await refreshSitemap({ force: (indexing?.submitted ?? 0) > 0 });
       console.log(
         r.submitted
           ? `Sitemap reinviata a Search Console (ultimo download precedente: ${r.previousDownload ?? "mai"}).`
           : `Sitemap aggiornata da Google ${r.ageDays} giorni fa: nessun reinvio.`,
       );
+      return r;
     });
-    await safely("Monitor tecnico", () => runMonitor());
-    await safely("Opportunità", () => printOpportunities());
+    await printOpportunities().catch((err) =>
+      console.warn(`::warning::Opportunità non stampate: ${err.message}`),
+    );
+
+    // Un solo messaggio nel gruppo per run. Lo stato del monitor si salva solo dopo l'invio.
+    const digest = buildDigest({
+      run,
+      indexing,
+      sitemap: sitemap?.submitted ? sitemap : null,
+      fresh: monitor?.fresh ?? [],
+    });
+    let delivered = true;
+    if (digest) {
+      delivered =
+        (await safely("Invio digest WhatsApp", async () => {
+          await sendGroupMessage(digest);
+          return true;
+        })) === true;
+    }
+    if (monitor && delivered) await saveMonitorState(monitor);
   } else if (command === "monitor") {
     assertEnv(["GOOGLE_SERVICE_ACCOUNT_FILE"]);
     await runMonitor();

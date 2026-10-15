@@ -4,6 +4,7 @@ import { chatJson } from "./deepseek.mjs";
 import { searchAnalytics } from "./google.mjs";
 import { LESSON_PROMPT, SYSTEM_PROMPT } from "./prompt.mjs";
 import { notifyRecap } from "./whatsapp.mjs";
+import { findOpportunities, opportunitiesForPage } from "./opportunities.mjs";
 import { inspectPages, sitemapStatus } from "./technical.mjs";
 import {
   appendRecord,
@@ -305,6 +306,7 @@ async function planBatch(batch, range, remaining) {
       context: t.context,
       metrics28d: withCtrReference(t.metrics),
       topQueries: t.topQueries,
+      ...(t.opportunities && { opportunities: t.opportunities }),
     })),
     history: await historyForPrompt(batch.map((t) => t.path)),
   };
@@ -371,13 +373,23 @@ async function applyActions(actions, targets, run) {
   }
 }
 
-export async function runOptimization({ apply }) {
+// excludePaths: pagine con problemi tecnici che non vanno ottimizzate in questo run.
+// notify: se false il chiamante invia il proprio riepilogo (es. il digest del cron).
+export async function runOptimization({
+  apply,
+  notify = true,
+  excludePaths = new Set(),
+}) {
   const startedAt = Date.now();
   const range = rangeEndingOn(latestGscDay(), 28);
-  const [metrics, queries, settings] = await Promise.all([
+  const [metrics, queries, settings, opportunities] = await Promise.all([
     pageMetrics(range),
     topQueries(range),
     getSeoSettings(),
+    findOpportunities().catch((err) => {
+      console.warn(`::warning::Opportunità non disponibili: ${err.message}`);
+      return null;
+    }),
   ]);
 
   const targets = await loadTargets(settings);
@@ -385,16 +397,28 @@ export async function runOptimization({ apply }) {
     const url = pageUrl(t.path);
     t.metrics = metrics.get(url) ?? null;
     t.topQueries = (queries.get(url) ?? []).slice(0, 10);
+    t.opportunities = opportunities
+      ? opportunitiesForPage(t.path, opportunities)
+      : null;
   }
 
-  const candidates = selectCandidates(targets, await readActions()).sort(
-    (a, b) =>
-      (b.metrics?.impressions ?? 0) - (a.metrics?.impressions ?? 0) ||
-      KIND_ORDER[a.kind] - KIND_ORDER[b.kind],
-  );
+  const eligible = selectCandidates(targets, await readActions());
+  const technicalSkipped = eligible
+    .filter((t) => excludePaths.has(t.path))
+    .map((t) => t.path);
+  const candidates = eligible
+    .filter((t) => !excludePaths.has(t.path))
+    .sort(
+      (a, b) =>
+        (b.metrics?.impressions ?? 0) - (a.metrics?.impressions ?? 0) ||
+        KIND_ORDER[a.kind] - KIND_ORDER[b.kind],
+    );
   const batches = toBatches(candidates);
   console.log(
-    `Target totali: ${targets.size}, da analizzare: ${candidates.length} in ${batches.length} gruppi.`,
+    `Target totali: ${targets.size}, da analizzare: ${candidates.length} in ${batches.length} gruppi.` +
+      (technicalSkipped.length
+        ? ` Saltati per problemi tecnici: ${technicalSkipped.join(", ")}.`
+        : ""),
   );
 
   const run = {
@@ -409,6 +433,7 @@ export async function runOptimization({ apply }) {
     applied: [],
     errors: [],
     skipped: 0,
+    technicalSkipped,
   };
   const proposal = { actions: [], rejected: [] };
   const analyses = [];
@@ -484,7 +509,7 @@ export async function runOptimization({ apply }) {
     ...proposal,
   });
   await record("runs.jsonl", run);
-  if (apply) await notifyRecap(run);
+  if (apply && notify) await notifyRecap(run);
 
   if (!apply)
     console.log(

@@ -6,6 +6,7 @@ Ricevi un JSON con:
 - maxChanges (solo se presente): numero massimo di modifiche.
 - targets: lista di pagine da valutare. Per ognuna: kind ("page", "blog" o "event"), path, baseLanguage, languages (le lingue per cui puoi scrivere), i meta attuali (current), fallback (meta effettivi mostrati oggi se current è vuoto), context (contenuto reale dell'articolo o dell'evento, assente per le pagine statiche), le metriche degli ultimi 28 giorni (metrics28d: clicks, impressions, ctr, position, più ctrExpected, cioè la CTR attesa per quella posizione (stima indicativa), e ctrGap in punti percentuali, negativo quando la CTR è sotto la media attesa) e le top query (topQueries).
 - history: per ogni path le modifiche passate, con valori precedenti e nuovi, motivo e esito (outcome: verdict, delta, lesson oppure "in attesa").
+- opportunities (solo se presente, per pagina): queriesToTarget sono query in posizione 4-15 che la pagina già riceve impressioni; sharedQueries sono query contese con altre pagine del sito, con la posizione di ciascuna.
 
 Regole:
 1. Proponi modifiche quando c'è un miglioramento concreto possibile, ad esempio CTR basso con molte impressioni, posizione migliorabile, query rilevanti assenti dal title, oppure meta mancanti, generici o troppo brevi. Se non serve nulla, restituisci changes vuoto.
@@ -17,6 +18,7 @@ Regole:
 7. Non inventare dati, eventi, prezzi, date, luoghi o affermazioni non presenti in context, fallback o nelle metriche. Per articoli ed eventi basati sul contenuto reale, riassumi ciò che c'è davvero e usa le query migliori come keyword.
 8. Se è presente maxChanges, non superarlo; altrimenti non c'è limite al numero di modifiche.
 9. Usa nel campo path esattamente il path del target.
+10. Se è presente opportunities, inserisci nel title o nella description le queriesToTarget solo quando la pagina è davvero pertinente, senza forzarle. Per le sharedQueries rendi title e description più specifici sul tema di questa pagina, così due pagine non competono sulla stessa query.
 
 Rispondi solo con un oggetto JSON valido con questa struttura:
 {"analysis": "sintesi breve dei problemi trovati", "changes": [{"path": "/chi-siamo", "lang": "it", "field": "title", "new_value": "...", "reason": "motivazione basata sui dati", "confidence": 0.0}]}

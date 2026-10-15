@@ -33,7 +33,6 @@ export async function findOpportunities() {
         r.impressions >= MIN_IMPRESSIONS,
     )
     .sort((a, b) => b.impressions - a.impressions)
-    .slice(0, 10)
     .map((r) => ({
       query: r.keys[0],
       page: pathOf(r.keys[1]),
@@ -56,10 +55,27 @@ export async function findOpportunities() {
       pages: pages.sort((a, b) => b.impressions - a.impressions),
       impressions: pages.reduce((n, p) => n + p.impressions, 0),
     }))
-    .sort((a, b) => b.impressions - a.impressions)
-    .slice(0, 5);
+    .sort((a, b) => b.impressions - a.impressions);
 
   return { window: { start: day(start), end: day(end) }, striking, cannibalization };
+}
+
+// Opportunità di una singola pagina, da passare all'ottimizzatore. Null se non ce ne sono.
+export function opportunitiesForPage(pagePath, { striking, cannibalization }) {
+  const r1 = (n) => Math.round(n * 10) / 10;
+  const queriesToTarget = striking
+    .filter((s) => s.page === pagePath)
+    .slice(0, 5)
+    .map(({ query, position, impressions }) => ({ query, position, impressions }));
+  const sharedQueries = cannibalization
+    .filter((c) => c.pages.some((p) => p.page === pagePath))
+    .slice(0, 3)
+    .map((c) => ({
+      query: c.query,
+      competingPages: c.pages.map((p) => ({ page: p.page, position: r1(p.position) })),
+    }));
+  if (!queriesToTarget.length && !sharedQueries.length) return null;
+  return { queriesToTarget, sharedQueries };
 }
 
 export async function printOpportunities() {
@@ -67,13 +83,15 @@ export async function printOpportunities() {
   console.log(`\nOpportunità (${window.start} → ${window.end})`);
 
   console.log(`\nQuery in posizione ${STRIKING_MIN_POSITION}–${STRIKING_MAX_POSITION} con almeno ${MIN_IMPRESSIONS} impressioni:`);
-  if (!striking.length) console.log("  nessuna");
-  for (const s of striking)
+  const topStriking = striking.slice(0, 10);
+  if (!topStriking.length) console.log("  nessuna");
+  for (const s of topStriking)
     console.log(`  "${s.query}" → ${s.page} | pos ${s.position} | ${s.impressions} impr. | ${s.clicks} clic`);
 
   console.log("\nQuery contese da più pagine:");
-  if (!cannibalization.length) console.log("  nessuna");
-  for (const c of cannibalization)
+  const topShared = cannibalization.slice(0, 5);
+  if (!topShared.length) console.log("  nessuna");
+  for (const c of topShared)
     console.log(
       `  "${c.query}": ${c.pages.map((p) => `${p.page} (pos ${Math.round(p.position * 10) / 10}, ${p.impressions} impr.)`).join(" vs ")}`,
     );

@@ -23,7 +23,7 @@ flowchart LR
   AGENT -->|actions e evaluations| MEM
 ```
 
-Il ciclo è composto dai comandi principali (vedi [Comandi](#comandi)). Il workflow GitHub esegue `cron` in automatico, che combina ottimizzazione, IndexNow, reinvio sitemap, monitor e opportunità (vedi [Automazioni](#automazioni-cron)).
+Il ciclo è composto dai comandi principali (vedi [Comandi](#comandi)). Il workflow GitHub esegue `cron` in automatico: le sezioni collaborano tra loro e inviano un solo messaggio WhatsApp per run (vedi [Automazioni](#automazioni-cron)).
 
 - `run`: raccoglie i dati, chiede a DeepSeek le modifiche, le valida e le mostra. Con `--apply` le scrive davvero. Senza `--apply` è un dry-run e salva solo una proposta.
 - `evaluate`: per ogni modifica applicata da almeno `SEO_EVAL_DAYS` giorni confronta le metriche prima e dopo, assegna un verdetto (`migliorato`, `peggiorato`, `neutro`, `dati-insufficienti`) e chiede a DeepSeek una lezione sintetica. Con `SEO_AUTO_ROLLBACK=true` (default) ripristina i valori precedenti in caso di peggioramento, salvo che la pagina abbia modifiche successive.
@@ -141,10 +141,18 @@ Il workflow `.github/workflows/seo-agent.yml` esegue `cron` alle 08:00 e alle 18
 1. **Ottimizzazione** dei meta tag (`runOptimization` in modalità apply) e valutazione delle modifiche vecchie.
 2. **IndexNow**: confronta la sitemap con l'ultimo snapshot e invia a IndexNow le URL nuove o con `lastmod` cambiato, più le pagine appena modificate dal run. Il primo run invia tutte le URL della sitemap. Lo snapshot si aggiorna solo dopo un invio riuscito, quindi un errore viene riprovato al run successivo.
 3. **Reinvio sitemap** a Search Console: forzato quando IndexNow ha inviato URL, altrimenti solo se Google non l'ha riscaricata da più di 3 giorni.
-4. **Monitor tecnico**: verifica che ogni URL della sitemap risponda 200, che `robots.txt` contenga la riga `Sitemap:`, che il dominio senza www faccia un redirect 301 verso www, e le prestazioni mobile della home con PageSpeed (punteggio sotto 50 o LCP sopra 4 s). Invia un avviso nel gruppo WhatsApp solo per i problemi nuovi.
-5. **Opportunità**: stampa nei log le query da spingere e quelle contese tra più pagine.
+Il monitor gira per primo, così i suoi risultati servono anche agli altri passi:
 
-Ogni passo accessorio (IndexNow, sitemap, monitor, opportunità) è protetto: se fallisce emette un `::warning::` e il cron continua.
+1. **Monitor tecnico**: verifica che ogni URL della sitemap risponda 200, che `robots.txt` contenga la riga `Sitemap:`, che il dominio senza www faccia un redirect permanente (301 o 308) verso www, e le prestazioni mobile della home con PageSpeed (punteggio sotto 50 o LCP sopra 4 s). Non invia nulla da solo.
+2. **Ottimizzazione**: le pagine con un problema di status (URL della sitemap che non risponde 200) vengono escluse dal run e riportate in `technicalSkipped`. Per ogni pagina candidata l'agente riceve anche le sue opportunità (query in posizione 4–15 e query contese con altre pagine), così può usarle nei title e nelle description.
+3. **Valutazione** delle modifiche precedenti e **recap** del progresso.
+4. **IndexNow** sulle pagine modificate e **reinvio sitemap** a Search Console, se necessario.
+5. **Opportunità**: stampa nei log le query da spingere e quelle contese tra più pagine.
+6. **Digest WhatsApp**: un solo messaggio nel gruppo per run, che unisce pagine aggiornate, URL inviati a IndexNow, sitemap reinviata, nuovi problemi tecnici e pagine saltate. Se non c'è nulla da segnalare, non invia niente.
+
+Lo stato del monitor (problemi già segnalati) si salva solo dopo un invio riuscito: se WhatsApp fallisce, i problemi vengono riproposti al run successivo.
+
+Ogni passo accessorio (monitor, IndexNow, sitemap, digest) è protetto: se fallisce emette un `::warning::` e il cron continua.
 
 Limiti del monitor: lo SPA risponde 200 anche per le pagine inesistenti (fallback su `/`), quindi il controllo degli status trova soprattutto errori 5xx e redirect inattesi, non le pagine vuote.
 
@@ -168,7 +176,7 @@ Limiti del monitor: lo SPA risponde 200 anche per le pagine inesistenti (fallbac
 - La prima valutazione utile arriva dopo circa 3 settimane. Serve tempo per avere campioni significativi.
 - Il cron gira due volte al giorno su GitHub Actions. Per eseguire i comandi a mano serve il file `.env` locale.
 - **Bing Webmaster**: il reinvio della sitemap a Bing non è implementato. Le API legacy di Bing Webmaster si ritirano il 31/08/2026 e la REST che le sostituisce non è ancora verificata. IndexNow copre comunque le URL su Bing.
-- **Redirect del dominio senza www**: il monitor segnala finché `weapnea.com` risponde 307 invece di 301. La correzione va fatta a mano nelle impostazioni del dominio su Vercel.
+- **Redirect del dominio senza www**: `weapnea.com` risponde 308 verso `www.weapnea.com`, impostato via API Vercel (`PATCH /v9/projects/{project}/domains/{domain}` con `redirectStatusCode`), perché la dashboard non permette di scegliere il codice. Se il monitor segnala di nuovo il problema, ripetere la chiamata.
 
 ## Prossimi passi possibili
 

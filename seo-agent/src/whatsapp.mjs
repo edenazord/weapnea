@@ -25,6 +25,27 @@ export function buildRecap(run) {
   ].join("\n");
 }
 
+// Un solo messaggio per run del cron. Restituisce null se non c'è niente da segnalare.
+export function buildDigest({ run, indexing, sitemap, fresh = [] }) {
+  const lines = [];
+  const pages = [...new Set(run.applied)];
+  if (pages.length) {
+    lines.push(`Aggiornate ${pages.length} pagine: ${pages.join(", ")}.`);
+    lines.push("Le valutazioni dei risultati arriveranno circa 3 settimane dopo le modifiche.");
+  }
+  if (indexing?.submitted) lines.push(`IndexNow: inviate ${indexing.submitted} URL.`);
+  if (sitemap?.submitted) lines.push("Sitemap reinviata a Search Console.");
+  if (fresh.length) {
+    lines.push("Nuovi problemi tecnici:");
+    lines.push(...fresh.map((p) => `- ${p.text}`));
+  }
+  if (run.technicalSkipped?.length)
+    lines.push(`Pagine saltate per problemi tecnici: ${run.technicalSkipped.join(", ")}.`);
+  const hasNews = pages.length || indexing?.submitted || sitemap?.submitted || fresh.length;
+  if (!hasNews) return null;
+  return ["SEO weapnea: aggiornamento", ...lines].join("\n");
+}
+
 // Non deve far fallire il run: un errore di WhatsApp viene solo segnalato nei log.
 export async function notifyRecap(run) {
   if (!run.applied.length) return;
