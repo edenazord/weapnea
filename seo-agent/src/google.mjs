@@ -5,7 +5,7 @@ const TOKEN_URL = "https://oauth2.googleapis.com/token";
 const SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
 let cachedToken = null;
 
-async function getAccessToken(keyFile) {
+export async function getAccessToken(keyFile) {
   if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000)
     return cachedToken.value;
 

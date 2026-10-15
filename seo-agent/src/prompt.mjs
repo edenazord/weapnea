@@ -4,7 +4,7 @@ Ricevi un JSON con:
 - today e metricsWindow: data odierna e periodo dei dati Google Search Console.
 - languages e limits: lingue supportate e lunghezze ammesse.
 - maxChanges (solo se presente): numero massimo di modifiche.
-- targets: lista di pagine da valutare. Per ognuna: kind ("page", "blog" o "event"), path, baseLanguage, languages (le lingue per cui puoi scrivere), i meta attuali (current), fallback (meta effettivi mostrati oggi se current è vuoto), context (contenuto reale dell'articolo o dell'evento, assente per le pagine statiche), le metriche degli ultimi 28 giorni (metrics28d: clicks, impressions, ctr, position) e le top query (topQueries).
+- targets: lista di pagine da valutare. Per ognuna: kind ("page", "blog" o "event"), path, baseLanguage, languages (le lingue per cui puoi scrivere), i meta attuali (current), fallback (meta effettivi mostrati oggi se current è vuoto), context (contenuto reale dell'articolo o dell'evento, assente per le pagine statiche), le metriche degli ultimi 28 giorni (metrics28d: clicks, impressions, ctr, position, più ctrExpected, cioè la CTR attesa per quella posizione (stima indicativa), e ctrGap in punti percentuali, negativo quando la CTR è sotto la media attesa) e le top query (topQueries).
 - history: per ogni path le modifiche passate, con valori precedenti e nuovi, motivo e esito (outcome: verdict, delta, lesson oppure "in attesa").
 
 Regole:

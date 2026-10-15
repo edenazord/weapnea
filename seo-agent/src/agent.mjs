@@ -4,6 +4,7 @@ import { chatJson } from "./deepseek.mjs";
 import { searchAnalytics } from "./google.mjs";
 import { LESSON_PROMPT, SYSTEM_PROMPT } from "./prompt.mjs";
 import { notifyRecap } from "./whatsapp.mjs";
+import { inspectPages, sitemapStatus } from "./technical.mjs";
 import {
   appendRecord,
   historyForPrompt,
@@ -18,8 +19,9 @@ import { loadTargets } from "./targets.mjs";
 
 const DAY_MS = 86_400_000;
 const GSC_LAG_DAYS = 3;
-const MIN_IMPRESSIONS = 100;
 const MIN_EVAL_DAYS = 14;
+// CTR organica indicativa per posizione media (1-10), da usare come riferimento.
+const CTR_BY_POSITION = [0.28, 0.15, 0.1, 0.07, 0.05, 0.04, 0.03, 0.025, 0.02, 0.02];
 
 const fmt = (d) => d.toISOString().slice(0, 10);
 const addDays = (d, n) => new Date(d.getTime() + n * DAY_MS);
@@ -130,12 +132,15 @@ function checkChange(c, pages) {
     c.field === "title" ? [titleMin, titleMax] : [descMin, descMax];
   if (value.length < min || value.length > max)
     return `lunghezza ${value.length} fuori da ${min}-${max}`;
+  if (c.field === "title" && /weapnea/i.test(value))
+    return "brand WeApnea nel title (viene aggiunto automaticamente)";
   if (value === currentValue(page.setting, c.lang, c.field))
     return "nessuna variazione";
   return null;
 }
 
-function validatePlan(plan, pages) {
+// "cap" e' il numero di modifiche ancora consentite nell'intero run.
+export function validatePlan(plan, pages, cap = Infinity) {
   const accepted = new Map();
   const rejected = [];
   const candidates = Array.isArray(plan?.changes) ? plan.changes : [];
@@ -155,14 +160,31 @@ function validatePlan(plan, pages) {
     });
   }
   const list = [...accepted.values()];
-  const cap = config.maxChangesPerRun;
-  for (const extra of cap > 0 ? list.splice(cap) : []) {
+  for (const extra of list.splice(Math.max(0, cap))) {
     rejected.push({
       change: extra,
       reason: "oltre il limite massimo per esecuzione",
     });
   }
   return { accepted: list, rejected };
+}
+
+function expectedCtr(position) {
+  if (position == null) return null;
+  const rounded = Math.round(position);
+  if (rounded > 10) return 0.01;
+  return CTR_BY_POSITION[Math.max(rounded, 1) - 1];
+}
+
+function withCtrReference(metrics) {
+  if (!metrics) return null;
+  const expected = expectedCtr(metrics.position);
+  return {
+    ...metrics,
+    ctrExpected: expected,
+    ctrGap:
+      expected == null ? null : round((metrics.ctr - expected) * 100, 2),
+  };
 }
 
 function buildActions(accepted, pages) {
@@ -262,13 +284,13 @@ function toBatches(candidates) {
   return batches;
 }
 
-async function planBatch(batch, range) {
+async function planBatch(batch, range, remaining) {
   const input = {
     today: fmt(todayUtc()),
     metricsWindow: range,
     languages: config.languages,
     limits: config.limits,
-    ...(config.maxChangesPerRun > 0 && { maxChanges: config.maxChangesPerRun }),
+    ...(Number.isFinite(remaining) && { maxChanges: remaining }),
     targets: batch.map((t) => ({
       kind: t.kind,
       path: t.path,
@@ -281,7 +303,7 @@ async function planBatch(batch, range) {
       },
       fallback: t.fallback,
       context: t.context,
-      metrics28d: t.metrics,
+      metrics28d: withCtrReference(t.metrics),
       topQueries: t.topQueries,
     })),
     history: await historyForPrompt(batch.map((t) => t.path)),
@@ -291,11 +313,12 @@ async function planBatch(batch, range) {
     user: JSON.stringify(input),
   });
   const targets = new Map(batch.map((t) => [t.path, t]));
-  const { accepted, rejected } = validatePlan(plan, targets);
+  const { accepted, rejected } = validatePlan(plan, targets, remaining);
   return {
     targets,
     actions: buildActions(accepted, targets),
     rejected,
+    accepted: accepted.length,
     analysis: String(plan?.analysis ?? ""),
   };
 }
@@ -390,6 +413,9 @@ export async function runOptimization({ apply }) {
   const proposal = { actions: [], rejected: [] };
   const analyses = [];
   const budgetMs = config.runBudgetMinutes * 60_000;
+  const changeLimit =
+    config.maxChangesPerRun > 0 ? config.maxChangesPerRun : Infinity;
+  let remaining = changeLimit;
 
   for (const [i, batch] of batches.entries()) {
     if (Date.now() - startedAt > budgetMs) {
@@ -399,16 +425,24 @@ export async function runOptimization({ apply }) {
       );
       break;
     }
+    if (remaining <= 0) {
+      run.skipped = batches.slice(i).reduce((n, b) => n + b.length, 0);
+      console.log(
+        `\nLimite di ${changeLimit} modifiche per run raggiunto: ${run.skipped} target rimandati al prossimo run.`,
+      );
+      break;
+    }
     console.log(`\n### Gruppo ${i + 1}/${batches.length} (${batch[0].kind})`);
 
     let result;
     try {
-      result = await planBatch(batch, range);
+      result = await planBatch(batch, range, remaining);
     } catch (err) {
       console.error(`Gruppo ${i + 1} fallito: ${err.message}`);
       run.errors.push(err.message);
       continue;
     }
+    remaining -= result.accepted;
     const { actions, rejected, analysis } = result;
     printSummary({ analysis, actions, rejected });
     if (analysis) analyses.push(analysis);
@@ -474,7 +508,7 @@ function compare(b, a) {
 }
 
 function judge(b, a) {
-  if (b.impressions + a.impressions < 2 * MIN_IMPRESSIONS)
+  if (b.impressions + a.impressions < 2 * config.minImpressions)
     return "dati-insufficienti";
   const posWorse =
     b.position != null && a.position != null ? a.position - b.position : 0;
@@ -550,7 +584,18 @@ export async function evaluateActions() {
     await record("evaluations.jsonl", evaluation);
     console.log(`${action.path}: ${verdict} - ${evaluation.lesson}`);
 
-    if (verdict === "peggiorato" && config.autoRollback) {
+    const laterChange = actions.some(
+      (b) =>
+        b !== action &&
+        b.status === "applied" &&
+        b.path === action.path &&
+        b.appliedAt > action.appliedAt,
+    );
+    if (verdict === "peggiorato" && config.autoRollback && laterChange) {
+      console.log(
+        `Rollback saltato: ${action.path} ha modifiche successive, ripristinarla sovrascriverebbe il lavoro più recente.`,
+      );
+    } else if (verdict === "peggiorato" && config.autoRollback) {
       const current = (await getSeoSettings()).get(action.path) ?? {
         path: action.path,
       };
@@ -695,10 +740,43 @@ export async function progressReport() {
       `${r.at.slice(0, 10)} ${r.mode}: ${r.applied.length} applicate, ${r.proposed.length} proposte, ${r.rejected.length} scartate. ${r.analysis || "-"}`,
     );
 
+  const technical = await technicalChecks();
+  console.log("\n== Controlli tecnici");
+  if (technical.sitemaps === null) {
+    console.log("Sitemap non verificate (vedi avviso).");
+  } else if (!technical.sitemaps.length) {
+    console.log("Nessuna sitemap inviata a Search Console.");
+  } else {
+    for (const s of technical.sitemaps)
+      console.log(
+        `Sitemap ${s.path}: ${s.indexed}/${s.submitted} indicizzate, ${s.errors} errori, ${s.warnings} avvisi`,
+      );
+  }
+  const notIndexed = technical.pages.filter(
+    (p) => p.error || p.verdict !== "PASS",
+  );
+  console.log(
+    `Pagine statiche indicizzate: ${technical.pages.length - notIndexed.length}/${technical.pages.length}`,
+  );
+  for (const p of notIndexed)
+    console.log(
+      `  ${p.path}: ${p.error ? `errore (${p.error})` : `${p.verdict} - ${p.coverage ?? "stato sconosciuto"}`}`,
+    );
+
   await appendRecord("snapshots.jsonl", {
     at: new Date().toISOString(),
     current,
     previous,
     trend,
+    technical,
   });
+}
+
+async function technicalChecks() {
+  const sitemaps = await sitemapStatus().catch((err) => {
+    console.warn(`::warning::Sitemap non verificate: ${err.message}`);
+    return null;
+  });
+  const pages = await inspectPages(config.allowedPaths);
+  return { sitemaps, pages };
 }

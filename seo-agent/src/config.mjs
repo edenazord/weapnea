@@ -52,11 +52,12 @@ export const config = {
     "/privacy-policy",
     "/cookie-policy",
   ]),
-  maxChangesPerRun: Number(env("SEO_MAX_CHANGES_PER_RUN", "0")),
+  maxChangesPerRun: Number(env("SEO_MAX_CHANGES_PER_RUN", "5")),
   batchSize: Number(env("SEO_BATCH_SIZE", "6")),
   runBudgetMinutes: Number(env("SEO_RUN_BUDGET_MINUTES", "40")),
   evalDays: Number(env("SEO_EVAL_DAYS", "21")),
-  autoRollback: env("SEO_AUTO_ROLLBACK", "false") === "true",
+  minImpressions: Number(env("SEO_MIN_IMPRESSIONS", "30")),
+  autoRollback: env("SEO_AUTO_ROLLBACK", "true") === "true",
   limits: { titleMin: 20, titleMax: 60, descMin: 50, descMax: 160 },
 };
 

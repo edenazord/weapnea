@@ -26,8 +26,9 @@ flowchart LR
 Il ciclo è composto da tre comandi:
 
 - `run`: raccoglie i dati, chiede a DeepSeek le modifiche, le valida e le mostra. Con `--apply` le scrive davvero. Senza `--apply` è un dry-run e salva solo una proposta.
-- `evaluate`: per ogni modifica applicata da almeno `SEO_EVAL_DAYS` giorni confronta le metriche prima e dopo, assegna un verdetto (`migliorato`, `peggiorato`, `neutro`, `dati-insufficienti`) e chiede a DeepSeek una lezione sintetica. Se `SEO_AUTO_ROLLBACK=true` ripristina i valori precedenti in caso di peggioramento.
+- `evaluate`: per ogni modifica applicata da almeno `SEO_EVAL_DAYS` giorni confronta le metriche prima e dopo, assegna un verdetto (`migliorato`, `peggiorato`, `neutro`, `dati-insufficienti`) e chiede a DeepSeek una lezione sintetica. Con `SEO_AUTO_ROLLBACK=true` (default) ripristina i valori precedenti in caso di peggioramento, salvo che la pagina abbia modifiche successive.
 - `history`: stampa lo storico delle modifiche con esito e lezione.
+- `report`: andamento a 28 giorni e 12 settimane, esiti delle modifiche e controlli tecnici (sitemap e indicizzazione delle pagine statiche).
 
 ### Come decide se una modifica è giusta o sbagliata
 
@@ -35,12 +36,14 @@ Il verdetto è calcolato con regole sulle metriche, non dal modello:
 
 | Verdetto             | Regola                                                                                                 |
 | -------------------- | ------------------------------------------------------------------------------------------------------ |
-| `dati-insufficienti` | meno di 200 impressioni complessive nei due periodi                                                    |
+| `dati-insufficienti` | meno di 60 impressioni complessive nei due periodi (`SEO_MIN_IMPRESSIONS`, default 30 per periodo)    |
 | `peggiorato`         | clic in calo di oltre il 15% (con almeno 10 clic prima) oppure posizione media peggiorata di oltre 1,5 |
 | `migliorato`         | clic in crescita di oltre il 15% (e almeno 3 clic in più) oppure posizione migliorata di oltre 1,5     |
 | `neutro`             | nessuna delle condizioni sopra                                                                         |
 
 DeepSeek riceve metriche e verdetto e scrive una lezione (`was_right` e `lesson`). Questa lezione torna nei prompt successivi insieme allo storico della pagina, così il modello evita di ripetere approcci già falliti.
+
+Nei prompt di decisione ogni pagina riceve anche `ctrExpected` (CTR indicativa per la sua posizione media) e `ctrGap` (differenza in punti percentuali). Un `ctrGap` negativo segnala un titolo che non attira clic rispetto alla posizione occupata. La tabella di riferimento è una stima generica, non dati del sito.
 
 **Limite importante:** la correlazione non è causalità. Stagionalità, aggiornamenti di Google o altri contenuti possono cambiare i numeri senza che il meta tag c'entri. Per questo il periodo di valutazione è di 21 giorni per default e il tool non applica modifiche automatiche senza `--apply`.
 
@@ -63,6 +66,7 @@ seo-agent/
   src/
     index.mjs          CLI: run, evaluate, history
     agent.mjs          logica: raccolta, decisione, validazione, applicazione, valutazione
+    technical.mjs      controlli tecnici: sitemap e URL Inspection su Search Console
     prompt.mjs         prompt per DeepSeek (decisione e valutazione)
     google.mjs         client Search Console (autenticazione service account)
     deepseek.mjs       client DeepSeek (output JSON)
@@ -106,15 +110,16 @@ Consiglio: esegui prima `npm run run` e controlla la proposta in `data/proposals
 - **Dry-run di default**: senza `--apply` non scrive nulla sul sito.
 - **Allow-list**: il tool modifica solo i path in `SEO_ALLOWED_PATHS` e solo i campi `title` e `description`.
 - **Validazione**: lunghezze (title 20–60, description 50–160), lingue supportate, valori non vuoti e diversi dall'attuale. Le modifiche scartate compaiono nella proposta con il motivo.
-- **Limite per run**: massimo `SEO_MAX_CHANGES_PER_RUN` modifiche.
+- **Limite per run**: massimo `SEO_MAX_CHANGES_PER_RUN` modifiche (default 5), contate su tutti i gruppi insieme. Il resto dei target passa al run successivo.
 - **Soglia di dati**: nessuna modifica per pagine con poche impressioni (il prompt lo impone, la valutazione lo richiede).
-- **Rollback**: opzionale con `SEO_AUTO_ROLLBACK=true`, ripristina i valori precedenti se il verdetto è `peggiorato`.
+- **Rollback**: attivo di default (`SEO_AUTO_ROLLBACK=true`). Ripristina i valori precedenti se il verdetto è `peggiorato`. Non ripristina se la pagina ha ricevuto modifiche successive, per non cancellare il lavoro più recente. Imposta `SEO_AUTO_ROLLBACK=false` per la sola revisione manuale.
+- **Brand nel title**: un title che contiene "WeApnea" viene scartato, perché il sito lo aggiunge da sé.
 - **Segreti**: `.env` e `secrets/` sono nel `.gitignore`. Non committare mai le chiavi.
 
 ## Limiti attuali
 
-- Copre le pagine statiche di `seo_settings`, gli articoli del blog (`/blog/<slug>`) e gli eventi (`/<slug>`): tutti salvati in `seo_settings` per path, con traduzioni per eventi e pagine statiche. Non ci sono tetti al numero di modifiche; ogni run è limitato solo dal budget di tempo (`SEO_RUN_BUDGET_MINUTES`, default 40) e i target rimasti passano al run successivo.
-- Non modifica sitemap, robots, og_image, dati strutturati o contenuti delle pagine: solo meta tag.
+- Copre le pagine statiche di `seo_settings`, gli articoli del blog (`/blog/<slug>`) e gli eventi (`/<slug>`): tutti salvati in `seo_settings` per path, con traduzioni per eventi e pagine statiche. Ogni run è limitato da `SEO_MAX_CHANGES_PER_RUN` e dal budget di tempo (`SEO_RUN_BUDGET_MINUTES`, default 40); i target rimasti passano al run successivo.
+- Non modifica sitemap, robots, og_image, dati strutturati o contenuti delle pagine: solo meta tag. Sitemap e indicizzazione vengono solo letti per i controlli tecnici.
 - Google Search Console ha un ritardo di 2–3 giorni: il tool usa come ultimo giorno disponibile oggi meno 3.
 - La prima valutazione utile arriva dopo circa 3 settimane. Serve tempo per avere campioni significativi.
 - Non esegue cron automatici: i comandi vanno lanciati a mano o schedulati (ad esempio con una task pianificata di Windows o un cron sul server).

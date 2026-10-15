@@ -27,11 +27,14 @@ export const getBlogArticles = () => call("GET", "/api/blog?published=true");
 
 export const getEvents = () => call("GET", "/api/events");
 
-// Non blocca l'agente se il backend non e' raggiungibile.
+// Non blocca l'agente se il backend non e' raggiungibile. L'avviso con "::warning::"
+// compare come annotazione nei log di GitHub Actions.
 export const logActivity = (kind, data, at) =>
   call("POST", "/api/admin/seo-agent/log", {
     kind,
     record_id: data.id,
     data,
     at,
-  }).catch((err) => console.warn(`Registro remoto non aggiornato: ${err.message}`));
+  }).catch((err) =>
+    console.warn(`::warning::Registro remoto (${kind}) non aggiornato: ${err.message}`),
+  );
