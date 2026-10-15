@@ -47,6 +47,35 @@ export async function fetchTopPages(limit = 15) {
   }));
 }
 
+// Totali del sito negli ultimi 28 giorni: sessioni e utenti attivi. Null se GA4 non è configurata.
+export async function fetchGa4Totals() {
+  if (!config.ga4PropertyId) return null;
+  const token = await getAccessToken(config.googleKeyFile, GA_SCOPE);
+  const res = await fetch(
+    `https://analyticsdata.googleapis.com/v1beta/properties/${config.ga4PropertyId}:runReport`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        dateRanges: [{ startDate: "28daysAgo", endDate: "yesterday" }],
+        metrics: [{ name: "sessions" }, { name: "activeUsers" }],
+      }),
+      signal: AbortSignal.timeout(30_000),
+    },
+  );
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok)
+    throw new Error(`GA4 ${res.status}: ${JSON.stringify(data.error ?? {}).slice(0, 300)}`);
+  const values = data.rows?.[0]?.metricValues ?? [];
+  return {
+    sessions: Number(values[0]?.value ?? 0),
+    users: Number(values[1]?.value ?? 0),
+  };
+}
+
 // Core Web Vitals reali (Chrome UX Report) del sito, su mobile. Null se Google non ha abbastanza dati.
 export async function fetchCrux() {
   if (!config.cruxApiKey) return null;

@@ -63,11 +63,12 @@ seo-agent/
   package.json         script npm (nessuna dipendenza esterna)
   .gitignore           esclude .env, secrets/, data/proposals/, data/cron.log, docs/
   src/
-    index.mjs          CLI: run, evaluate, cron, report, monitor, opportunities, content, indexing, analytics, history
+    index.mjs          CLI: run, evaluate, cron, report, monitor, opportunities, content, indexing, analytics, overview, history
     content.mjs        idee contenuti settimanali (blog, query GSC, Wikipedia, autocomplete, GA4) e invio WhatsApp
     sources.mjs        fonti pubbliche senza chiave: visite Wikipedia e suggerimenti di ricerca Google
     indexing.mjs       controllo di indicizzazione delle URL della sitemap (URL Inspection API)
     analytics.mjs      report mensile: pagine più visitate (GA4) e Core Web Vitals reali (CrUX)
+    overview.mjs       snapshot della panoramica SEO mostrata nell'admin (GSC, GA4, CrUX, sitemap, indicizzazione, bot)
     agent.mjs          logica: raccolta, decisione, validazione, applicazione, valutazione
     technical.mjs      controlli tecnici: sitemap e URL Inspection su Search Console
     indexnow.mjs       invio URL nuove o cambiate a IndexNow (Bing e altri motori)
@@ -143,6 +144,7 @@ node --env-file=.env src/index.mjs opportunities  # query in posizione 4–15 e 
 node --env-file=.env src/index.mjs content        # anteprima delle idee contenuti: non invia nulla e non salva lo stato
 node --env-file=.env src/index.mjs indexing       # stampa le URL non indicizzate da Google: non invia nulla e non salva lo stato
 node --env-file=.env src/index.mjs analytics      # stampa il report mensile: non invia nulla
+npm run overview                                  # stampa lo snapshot della panoramica SEO: non lo salva nel backend
 ```
 
 Consiglio: esegui prima `npm run run` e controlla la proposta in `data/proposals/`. Passa ad `apply` solo quando i risultati ti convincono.
@@ -166,6 +168,7 @@ Il monitor e il controllo di indicizzazione girano per primi, così i loro risul
 
 8. **Idee contenuti** (una volta a settimana, `SEO_CONTENT_INTERVAL_DAYS`, default 7): il tool legge gli articoli già pubblicati nel blog in tutte le lingue e le query di Search Console con almeno 10 impressioni negli ultimi 28 giorni. Aggiunge tre segnali facoltativi: visite alle voci Wikipedia su apnea/freediving (ultimi 30 giorni contro i 30 precedenti), suggerimenti di completamento di Google per lingua e le pagine più visitate su GA4. DeepSeek propone al massimo 3 argomenti che non duplicano articoli esistenti, con un titolo per ciascuna delle 6 lingue del sito. Il messaggio WhatsApp è solo un suggerimento: il sito non viene modificato e non vengono scritte bozze. Il primo invio avviene al primo cron dopo il deploy; lo stato è in `data/memory/content-state.json`, e viene salvato solo dopo un invio riuscito. Se una fonte non risponde, le idee si generano con le altre.
 9. **Report mensile** (una volta al mese, al primo cron del mese): pagine più visitate negli ultimi 28 giorni da GA4 e Core Web Vitals reali su mobile (LCP, INP, CLS, p75) da CrUX. Se né `GA4_PROPERTY_ID` né `CRUX_API_KEY` sono impostate, non invia nulla. CrUX risponde 404 quando il sito non ha abbastanza traffico Chrome: in quel caso la sezione viene omessa.
+10. **Panoramica SEO** (ad ogni run del cron, alla fine): costruisce lo snapshot mostrato nella sezione SEO dell'admin e lo salva nel backend con `PUT /api/admin/seo-overview`. Riusa il risultato del controllo di indicizzazione del run, senza fare altre chiamate a URL Inspection. Non invia nulla su WhatsApp. Se il backend non accetta il salvataggio (per esempio perché l'endpoint non è ancora stato deployato), emette un `::warning::` e il cron continua.
 
 Fonti senza chiave usate solo per le idee contenuti: Wikipedia (pageviews) e il suggerimento di ricerca Google. Il suggerimento di Google non è un'API documentata e può cambiare o essere limitato; i seed sono specifici per lingua perché "apnea" da solo in italiano porta soprattutto ad "apnea notturna".
 
@@ -174,6 +177,19 @@ Lo stato del monitor e quello dell'indicizzazione (problemi già segnalati) si s
 Ogni passo accessorio (monitor, IndexNow, sitemap, digest) è protetto: se fallisce emette un `::warning::` e il cron continua.
 
 Limiti del monitor: lo SPA risponde 200 anche per le pagine inesistenti (fallback su `/`), quindi il controllo degli status trova soprattutto errori 5xx e redirect inattesi, non le pagine vuote.
+
+## Panoramica SEO nell'admin
+
+La sezione SEO dell'admin è in sola lettura. Non modifica più title, description e immagini OG per pagina: quelle le gestisce il bot. Mostra lo snapshot generato dal cron:
+
+- Search Console: clic, impressioni, CTR e posizione media negli ultimi 28 giorni (con ritardo di 3 giorni), confrontati con i 28 precedenti. Top query e top pagine.
+- GA4: sessioni, utenti attivi e pagine più visitate negli ultimi 28 giorni.
+- Core Web Vitals reali (CrUX, mobile, p75), quando il sito ha abbastanza traffico.
+- Sitemap: URL inviate e indicizzate, errori, ultimo download. Il conteggio degli indicizzati viene da Google e può restare a 0 per un po'.
+- Indicizzazione: pagine controllate, indicizzate, non indicizzate e con problemi tecnici, con canonical dichiarata e canonical scelta da Google.
+- Bot: ultimo run, modifiche applicate, valutazioni ed esiti, più l'attività del bot.
+
+Lo snapshot è un unico record nella tabella `seo_overview` del backend, sovrascritto ad ogni run. L'admin lo legge con `GET /api/admin/seo-overview`. Se il cron non ha ancora girato, la sezione mostra uno stato vuoto. Il blocco GTM / GA4 / Search Console in fondo alla sezione resta modificabile, come prima.
 
 ## Sicurezza e controlli
 

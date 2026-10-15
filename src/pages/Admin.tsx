@@ -9,7 +9,7 @@ import BlogTagManager from "@/components/admin/BlogTagManager";
 // Forum disabilitato temporaneamente
 import UsersManager from "@/components/admin/UsersManager";
 import EmailTemplatesManager from "@/components/admin/EmailTemplatesManager";
-import SeoManager from "@/components/admin/SeoManager";
+import SeoOverview from "@/components/admin/SeoOverview";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -409,7 +409,7 @@ const AdminDashboard = () => {
             case "email":
                 return <div className="p-4 md:p-6"><EmailTemplatesManager /></div>;
             case "seo":
-                return <div className="p-4 md:p-6"><SeoManager /></div>;
+                return <div className="p-4 md:p-6"><SeoOverview /></div>;
             default:
                 return null;
         }

@@ -9,6 +9,7 @@ import { notifyChangedUrls } from "./indexnow.mjs";
 import { refreshSitemap } from "./technical.mjs";
 import { previewContent, sendContentIfDue } from "./content.mjs";
 import { sendMonthlyReportIfDue, buildMonthlyReport } from "./analytics.mjs";
+import { buildOverview, publishOverview } from "./overview.mjs";
 import { checkIndexing, saveIndexingState } from "./indexing.mjs";
 import { buildDigest, sendGroupMessage } from "./whatsapp.mjs";
 import {
@@ -122,6 +123,15 @@ try {
       const r = await sendMonthlyReportIfDue();
       console.log(r.sent ? "Report mensile inviato." : `Report mensile: ${r.reason}.`);
     });
+    // Snapshot per la sezione SEO dell'admin. Riusa il controllo indicizzazione già fatto sopra.
+    await safely("Panoramica SEO", async () => {
+      await publishOverview({ indexing: indexingCheck ?? null });
+      console.log("Panoramica SEO aggiornata.");
+    });
+  } else if (command === "overview") {
+    // Solo anteprima: stampa lo snapshot senza salvarlo sul backend.
+    assertEnv(["GOOGLE_SERVICE_ACCOUNT_FILE"]);
+    console.log(JSON.stringify(await buildOverview(), null, 2));
   } else if (command === "content") {
     assertEnv(REQUIRED);
     await previewContent();
@@ -149,7 +159,7 @@ try {
     await printHistory();
   } else {
     console.log(
-      "Uso: node src/index.mjs <run|evaluate|cron|content|indexing|analytics|report|monitor|opportunities|history> [--apply]",
+      "Uso: node src/index.mjs <run|evaluate|cron|content|indexing|analytics|report|monitor|opportunities|history|overview> [--apply]",
     );
     process.exitCode = 1;
   }

@@ -11,7 +11,8 @@
     "cron": "node --env-file=.env src/index.mjs cron",
     "report": "node --env-file=.env src/index.mjs report",
     "sync": "node --env-file=.env src/index.mjs sync",
-    "history": "node --env-file=.env src/index.mjs history"
+    "history": "node --env-file=.env src/index.mjs history",
+    "overview": "node --env-file=.env src/index.mjs overview"
   },
   "engines": {
     "node": ">=20.6"

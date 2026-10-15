@@ -71,6 +71,7 @@ export async function checkIndexing() {
   const nextRecrawled = [];
   const newlyRecrawled = [];
   let errors = 0;
+  let indexed = 0;
   for (let i = 0; i < urls.length; i += CONCURRENCY) {
     const batch = urls.slice(i, i + CONCURRENCY);
     const results = await Promise.all(
@@ -87,6 +88,7 @@ export async function checkIndexing() {
       }
       const pathname = new URL(url).pathname;
       if (r.verdict === "PASS") {
+        indexed += 1;
         if (!firstRun && alerted[url]) resolved.push(pathname);
         return;
       }
@@ -115,6 +117,8 @@ export async function checkIndexing() {
   return {
     checked: urls.length,
     errors,
+    indexed,
+    notIndexed: urls.length - indexed - errors,
     issues,
     // Percorsi con problemi tecnici: l'ottimizzatore di title e description non li deve toccare.
     problemPaths,

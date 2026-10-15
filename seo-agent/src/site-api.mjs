@@ -23,6 +23,10 @@ export function saveSeoSetting(setting) {
   return call("PUT", "/api/admin/seo-settings", setting);
 }
 
+// Snapshot della panoramica SEO letto dalla sezione admin. Non blocca il cron se fallisce.
+export const saveSeoOverview = (overview) =>
+  call("PUT", "/api/admin/seo-overview", { data: overview });
+
 export const getBlogArticles = () => call("GET", "/api/blog?published=true");
 
 export const getEvents = () => call("GET", "/api/events");

@@ -253,6 +253,14 @@ async function runMigrationsAtStartup() {
       );
     `);
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS public.seo_overview (
+        id int PRIMARY KEY DEFAULT 1,
+        data jsonb NOT NULL DEFAULT '{}'::jsonb,
+        updated_at timestamptz NOT NULL DEFAULT now(),
+        CONSTRAINT seo_overview_single_row CHECK (id = 1)
+      );
+    `);
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS public.site_config (
         id int PRIMARY KEY DEFAULT 1,
         gtm_id text,
@@ -5364,6 +5372,40 @@ app.put('/api/admin/seo-settings', requireAuth, requireAdmin, async (req, res) =
        ON CONFLICT (path) DO UPDATE SET title = $2, description = $3, og_image = $4, translations = $5, updated_at = now()
        RETURNING *`,
       [pagePath, title || null, description || null, og_image || null, JSON.stringify(translations || {})]
+    );
+    res.json(rows[0]);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// =============================================
+// SEO OVERVIEW SNAPSHOT (scritto dal cron del seo-agent, letto dall'admin)
+// =============================================
+
+// GET /api/admin/seo-overview — ultimo snapshot salvato dal cron (null se mai eseguito)
+app.get('/api/admin/seo-overview', requireAuth, requireAdmin, async (_req, res) => {
+  try {
+    const { rows } = await pool.query('SELECT data, updated_at FROM public.seo_overview WHERE id = 1 LIMIT 1');
+    res.json(rows[0] || { data: null, updated_at: null });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// PUT /api/admin/seo-overview — sostituisce lo snapshot. Body: { data: { ... } }
+app.put('/api/admin/seo-overview', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const data = req.body?.data;
+    if (!data || typeof data !== 'object' || Array.isArray(data)) {
+      return res.status(400).json({ error: 'data object is required' });
+    }
+    const { rows } = await pool.query(
+      `INSERT INTO public.seo_overview (id, data, updated_at)
+       VALUES (1, $1, now())
+       ON CONFLICT (id) DO UPDATE SET data = $1, updated_at = now()
+       RETURNING data, updated_at`,
+      [JSON.stringify(data)]
     );
     res.json(rows[0]);
   } catch (e) {
