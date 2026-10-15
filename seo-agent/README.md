@@ -23,7 +23,7 @@ flowchart LR
   AGENT -->|actions e evaluations| MEM
 ```
 
-Il ciclo è composto da tre comandi:
+Il ciclo è composto dai comandi principali (vedi [Comandi](#comandi)). Il workflow GitHub esegue `cron` in automatico, che combina ottimizzazione, IndexNow, reinvio sitemap, monitor e opportunità (vedi [Automazioni](#automazioni-cron)).
 
 - `run`: raccoglie i dati, chiede a DeepSeek le modifiche, le valida e le mostra. Con `--apply` le scrive davvero. Senza `--apply` è un dry-run e salva solo una proposta.
 - `evaluate`: per ogni modifica applicata da almeno `SEO_EVAL_DAYS` giorni confronta le metriche prima e dopo, assegna un verdetto (`migliorato`, `peggiorato`, `neutro`, `dati-insufficienti`) e chiede a DeepSeek una lezione sintetica. Con `SEO_AUTO_ROLLBACK=true` (default) ripristina i valori precedenti in caso di peggioramento, salvo che la pagina abbia modifiche successive.
@@ -61,8 +61,7 @@ Nei prompt di decisione ogni pagina riceve anche `ctrExpected` (CTR indicativa p
 seo-agent/
   README.md            questa documentazione
   package.json         script npm (nessuna dipendenza esterna)
-  .env.example         variabili di configurazione
-  .gitignore           esclude .env, secrets/, data/proposals/
+  .gitignore           esclude .env, secrets/, data/proposals/, data/cron.log, docs/
   src/
     index.mjs          CLI: run, evaluate, cron, report, monitor, opportunities, history
     agent.mjs          logica: raccolta, decisione, validazione, applicazione, valutazione
@@ -92,12 +91,33 @@ Requisiti: Node.js 20.6 o superiore (usa `--env-file`). Nessuna dipendenza da in
 1. **Google Search Console**
    - In Google Cloud crea un progetto, abilita la _Search Console API_ e crea un _service account_.
    - Scarica la chiave JSON e salvala in `seo-agent/secrets/service-account.json`.
-   - In Search Console, nella property del sito, aggiungi l'email del service account come utente con permesso di lettura.
+   - In Search Console, nella property del sito, aggiungi l'email del service account con permesso **Completo**. Il permesso di sola lettura non basta: il reinvio della sitemap è una scrittura.
 2. **DeepSeek**: crea una API key su platform.deepseek.com.
 3. **Backend**: usa lo stesso valore di `API_TOKEN` impostato su Render.
-4. Copia `.env.example` in `.env` e compila i valori.
+4. Crea `seo-agent/.env` con le variabili della tabella sotto. Il file non va committato.
 5. **IndexNow** (opzionale ma consigliato): genera una chiave (8–128 caratteri `a-z A-Z 0-9 -`), salvala in `INDEXNOW_KEY` e crea nella cartella `public/` del sito un file `<chiave>.txt` che contiene solo la chiave. Va pubblicato con il sito: finché il file non è online la chiave non è verificabile e IndexNow non può usarla per indicizzare, anche se può accettare la richiesta.
 6. **PageSpeed** (opzionale): `PAGESPEED_API_KEY`. Senza chiave le richieste condividono una quota giornaliera che si esaurisce in fretta; in quel caso il monitor avvisa nei log e salta il controllo.
+
+### Variabili d'ambiente
+
+| Variabile                                                 | Obbligatoria per       | Descrizione                                                                             |
+| --------------------------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------- |
+| `API_TOKEN`                                               | run, cron, sync        | token admin del backend                                                                 |
+| `GOOGLE_SERVICE_ACCOUNT_FILE`                             | run, cron, report, monitor, opportunities | percorso della chiave JSON del service account                       |
+| `DEEPSEEK_API_KEY`                                        | run, cron, evaluate    | API key DeepSeek                                                                        |
+| `API_BASE_URL`, `DEEPSEEK_BASE_URL`, `DEEPSEEK_MODEL`     | no                     | override degli endpoint e del modello                                                   |
+| `GSC_SITE_URL`                                            | no                     | proprietà Search Console (default `sc-domain:weapnea.com`)                              |
+| `PUBLIC_BASE_URL`                                         | no                     | dominio pubblico usato per sitemap, IndexNow e monitor (default `https://www.weapnea.com`) |
+| `INDEXNOW_KEY`                                            | no (IndexNow)          | chiave IndexNow, uguale al nome del file in `public/`                                   |
+| `PAGESPEED_API_KEY`                                       | no                     | chiave PageSpeed Insights, evita la quota condivisa                                     |
+| `BOT_API_URL`, `BOT_API_TOKEN`, `BOT_GROUP_JID`           | no (avvisi WhatsApp)   | bot WhatsApp e gruppo di destinazione dei recap e degli avvisi                          |
+| `SEO_ALLOWED_PATHS`, `SEO_LANGUAGES`                      | no                     | path modificabili e lingue supportate                                                   |
+| `SEO_MAX_CHANGES_PER_RUN`, `SEO_BATCH_SIZE`, `SEO_RUN_BUDGET_MINUTES` | no                | limiti per run                                                                       |
+| `SEO_MIN_IMPRESSIONS`, `SEO_EVAL_DAYS`, `SEO_AUTO_ROLLBACK` | no                   | soglie di valutazione e rollback                                                        |
+
+### Secret GitHub per il cron
+
+Il workflow `.github/workflows/seo-agent.yml` legge questi secret: `SEO_API_TOKEN` (mappato su `API_TOKEN`), `DEEPSEEK_API_KEY`, `GOOGLE_SA_JSON` (scritto in `secrets/service-account.json`), `BOT_API_TOKEN`, `BOT_GROUP_JID`, `INDEXNOW_KEY`, `PAGESPEED_API_KEY` (opzionale).
 
 ## Comandi
 
@@ -130,7 +150,7 @@ Limiti del monitor: lo SPA risponde 200 anche per le pagine inesistenti (fallbac
 
 ## Sicurezza e controlli
 
-- **Dry-run di default**: senza `--apply` non scrive nulla sul sito.
+- **Dry-run di default**: i comandi a mano non scrivono nulla sul sito senza `--apply`. Il cron del workflow invece applica le modifiche in automatico (`runOptimization({ apply: true })`), con gli stessi limiti e lo stesso rollback.
 - **Allow-list**: il tool modifica solo i path in `SEO_ALLOWED_PATHS` e solo i campi `title` e `description`.
 - **Validazione**: lunghezze (title 20–60, description 50–160), lingue supportate, valori non vuoti e diversi dall'attuale. Le modifiche scartate compaiono nella proposta con il motivo.
 - **Limite per run**: massimo `SEO_MAX_CHANGES_PER_RUN` modifiche (default 5), contate su tutti i gruppi insieme. Il resto dei target passa al run successivo.
@@ -146,11 +166,14 @@ Limiti del monitor: lo SPA risponde 200 anche per le pagine inesistenti (fallbac
 - **Reinvio sitemap:** a ogni `cron` il tool reinvia `sitemap.xml` se Google non l'ha riscaricata da più di 3 giorni. Usa lo scope `webmasters` (scrittura), separato dallo scope di sola lettura del resto. Il service account deve avere il permesso Completo sulla proprietà.
 - Google Search Console ha un ritardo di 2–3 giorni: il tool usa come ultimo giorno disponibile oggi meno 3.
 - La prima valutazione utile arriva dopo circa 3 settimane. Serve tempo per avere campioni significativi.
-- Non esegue cron automatici: i comandi vanno lanciati a mano o schedulati (ad esempio con una task pianificata di Windows o un cron sul server).
+- Il cron gira due volte al giorno su GitHub Actions. Per eseguire i comandi a mano serve il file `.env` locale.
+- **Bing Webmaster**: il reinvio della sitemap a Bing non è implementato. Le API legacy di Bing Webmaster si ritirano il 31/08/2026 e la REST che le sostituisce non è ancora verificata. IndexNow copre comunque le URL su Bing.
+- **Redirect del dominio senza www**: il monitor segnala finché `weapnea.com` risponde 307 invece di 301. La correzione va fatta a mano nelle impostazioni del dominio su Vercel.
 
 ## Prossimi passi possibili
 
 - Estendere il tool agli articoli del blog (`seo_title`, `seo_description`).
-- Schedulare `run` settimanale e `evaluate` mensile.
+- Aggiungere il reinvio della sitemap a Bing Webmaster, quando la API REST è verificata.
+- Aggiungere dati strutturati per gli eventi (JSON-LD).
 - Aggiungere una vista di riepilogo nella dashboard admin.
 - Integrare dati SEM (Google Ads) per confrontare parole chiave a pagamento e organiche.
