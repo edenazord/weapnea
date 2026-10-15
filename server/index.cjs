@@ -5134,6 +5134,9 @@ function toBodyParagraphs(text) {
     .filter(Boolean);
 }
 
+// Gli eventi hanno un URL canonico senza il prefisso data (vedi buildFriendlyEventPath nel frontend)
+const stripEventDatePrefix = (s) => String(s).replace(/^\d{4}-\d{2}-\d{2}-/, '');
+
 app.get('/api/seo-meta', async (req, res) => {
   res.set('Cache-Control', 'public, max-age=120');
   const rawPath = String(req.query.path || '/');
@@ -5249,6 +5252,8 @@ app.get('/api/seo-meta', async (req, res) => {
           type: 'profile',
           body: profileBody,
           jsonld: personJsonLd,
+          // Stesso criterio della sitemap: bio sotto 80 caratteri = test o profilo vuoto, niente indicizzazione
+          noindex: (p.bio || '').trim().length < 80,
         });
       }
       // Profilo inesistente o non pubblico: 404 vero, non il meta della home
@@ -5258,12 +5263,17 @@ app.get('/api/seo-meta', async (req, res) => {
     // 4) /:slug (event)
     const eventSlug = rawPath.replace(/^\//, '');
     if (eventSlug && !eventSlug.includes('/')) {
+      // Lo slug nel DB può avere il prefisso data (YYYY-MM-DD-titolo) mentre l'URL canonico è solo il titolo
+      const safeSlug = /^[a-zA-Z0-9-]+$/.test(eventSlug);
       const { rows } = await pool.query(
-        `SELECT id, category_id, title, description, image_url, date, end_date, location, cost FROM events WHERE slug = $1 LIMIT 1`,
-        [eventSlug]
+        `SELECT id, category_id, title, description, image_url, date, end_date, location, cost, slug FROM events
+         WHERE slug = $1 OR ($2 AND slug LIKE $3)
+         ORDER BY (slug = $1) DESC LIMIT 1`,
+        [eventSlug, safeSlug, `____-__-__-${eventSlug}`]
       );
       if (rows[0]) {
         const ev = rows[0];
+        const canonicalPath = `/${stripEventDatePrefix(ev.slug)}`;
         // Link interni agli eventi futuri (prima quelli della stessa categoria): visibili anche nella pagina evento.
         const { rows: related } = await pool.query(
           `SELECT slug, title FROM events
@@ -5293,10 +5303,10 @@ app.get('/api/seo-meta', async (req, res) => {
           title: `${evTitle} | WeApnea`,
           description: desc,
           image: img,
-          url: `${base}${rawPath}`,
+          url: `${base}${canonicalPath}`,
           type: 'event',
           body: evBody,
-          links: related.map((r) => ({ href: `${base}/${r.slug}`, text: r.title })),
+          links: related.map((r) => ({ href: `${base}/${stripEventDatePrefix(r.slug)}`, text: r.title })),
           jsonld: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Event',
@@ -5308,10 +5318,10 @@ app.get('/api/seo-meta', async (req, res) => {
             'eventAttendanceMode': 'https://schema.org/OfflineEventAttendanceMode',
             'location': ev.location ? { '@type': 'Place', 'name': ev.location } : undefined,
             'image': img,
-            'url': `${base}${rawPath}`,
+            'url': `${base}${canonicalPath}`,
             'organizer': { '@type': 'Organization', 'name': 'WeApnea', 'url': base },
             'offers': (!eventEnded && ev.cost != null && !Number.isNaN(Number(ev.cost)))
-              ? { '@type': 'Offer', 'price': Number(ev.cost), 'priceCurrency': 'EUR', 'availability': 'https://schema.org/InStock', 'url': `${base}${rawPath}` }
+              ? { '@type': 'Offer', 'price': Number(ev.cost), 'priceCurrency': 'EUR', 'availability': 'https://schema.org/InStock', 'url': `${base}${canonicalPath}` }
               : undefined,
           }),
         });
@@ -5519,7 +5529,7 @@ app.get('/sitemap.xml', async (_req, res) => {
     const { rows: events } = await pool.query("SELECT slug, date, created_at FROM events WHERE slug IS NOT NULL AND slug != '' ORDER BY date DESC NULLS LAST LIMIT 1000");
     for (const ev of events) {
       const lastmod = toDate(ev.created_at);
-      xml += `  <url><loc>${base}/${ev.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
+      xml += `  <url><loc>${base}/${stripEventDatePrefix(ev.slug)}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
     }
 
     // Blog posts (published only) — tabella: blog_articles

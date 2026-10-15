@@ -44,6 +44,7 @@ interface SeoMeta {
   jsonld?: string;
   body?: string[];
   links?: { href: string; text: string }[];
+  noindex?: boolean;
 }
 
 function buildHtml(meta: SeoMeta, pathname: string): string {
@@ -77,6 +78,7 @@ function buildHtml(meta: SeoMeta, pathname: string): string {
   <meta name="description" content="${d}" />
   <meta name="author" content="WeApnea" />
   <link rel="canonical" href="${u}" />
+${meta.noindex ? '  <meta name="robots" content="noindex, follow" />\n' : ''}
   <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   <meta name="theme-color" content="#1e40af" />
 
@@ -232,7 +234,7 @@ export default async function middleware(request: Request): Promise<Response | u
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
         'Cache-Control': 'public, max-age=300, stale-while-revalidate=60',
-        'X-Robots-Tag': 'index, follow',
+        'X-Robots-Tag': meta.noindex ? 'noindex, follow' : 'index, follow',
         'Vary': 'Accept-Language',
       },
     });
