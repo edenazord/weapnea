@@ -46,14 +46,23 @@ try {
     await evaluateActions();
   } else if (command === "cron") {
     assertEnv(REQUIRED);
-    // Il monitor gira per primo: le pagine con problemi tecnici non vengono ottimizzate.
+    // Il monitor e il controllo indicizzazione girano prima: le pagine con problemi tecnici non vengono ottimizzate.
     const monitor = await safely("Monitor tecnico", () =>
       runMonitor({ notify: false }),
     );
+    const indexingCheck = await safely("Controllo indicizzazione", checkIndexing);
+    if (indexingCheck)
+      console.log(
+        `Indicizzazione: ${indexingCheck.checked} URL controllate, ${indexingCheck.issues.length} nuove segnalazioni, ${indexingCheck.errors} errori.`,
+      );
+    const technicalPaths = new Set([
+      ...(monitor ? brokenPaths(monitor) : []),
+      ...(indexingCheck?.problemPaths ?? []),
+    ]);
     const run = await runOptimization({
       apply: true,
       notify: false,
-      excludePaths: new Set(monitor ? brokenPaths(monitor) : []),
+      excludePaths: technicalPaths,
     });
     await evaluateActions();
     await progressReport();
@@ -73,12 +82,6 @@ try {
     await printOpportunities().catch((err) =>
       console.warn(`::warning::Opportunità non stampate: ${err.message}`),
     );
-    const indexingCheck = await safely("Controllo indicizzazione", checkIndexing);
-    if (indexingCheck)
-      console.log(
-        `Indicizzazione: ${indexingCheck.checked} URL controllate, ${indexingCheck.issues.length} nuove segnalazioni, ${indexingCheck.errors} errori.`,
-      );
-
     // Un solo messaggio nel gruppo per run. Lo stato di monitor e indicizzazione si salva solo dopo l'invio.
     const digest = buildDigest({
       run,

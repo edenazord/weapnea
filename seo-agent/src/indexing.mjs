@@ -41,6 +41,9 @@ async function readState() {
   }
 }
 
+// Stati che dipendono da canonical, redirect o tag e non si risolvono cambiando title e description.
+const TECHNICAL_STATE = /duplicat|canonic|reindirizz|redirect|soft 404|noindex|non trovat|not found/i;
+
 // Ispeziona ogni URL della sitemap. Restituisce le pagine non indicizzate non ancora segnalate.
 // Al primo run (nessuno stato salvato) registra lo stato attuale senza avvisare.
 // Non invia nulla: lo stato si salva con saveIndexingState solo dopo un invio riuscito.
@@ -53,6 +56,7 @@ export async function checkIndexing() {
 
   const nextAlerted = {};
   const issues = [];
+  const problemPaths = [];
   let errors = 0;
   for (let i = 0; i < urls.length; i += CONCURRENCY) {
     const batch = urls.slice(i, i + CONCURRENCY);
@@ -68,9 +72,11 @@ export async function checkIndexing() {
         return;
       }
       if (r.verdict === "PASS") return;
+      const pathname = new URL(url).pathname;
+      if (TECHNICAL_STATE.test(r.coverageState)) problemPaths.push(pathname);
       nextAlerted[url] = r.coverageState;
       if (!firstRun && alerted[url] !== r.coverageState)
-        issues.push({ path: new URL(url).pathname, coverageState: r.coverageState });
+        issues.push({ path: pathname, coverageState: r.coverageState });
     });
   }
 
@@ -78,6 +84,8 @@ export async function checkIndexing() {
     checked: urls.length,
     errors,
     issues,
+    // Percorsi con problemi tecnici: l'ottimizzatore di title e description non li deve toccare.
+    problemPaths,
     nextState: { alerted: nextAlerted },
   };
 }

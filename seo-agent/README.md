@@ -149,20 +149,21 @@ Consiglio: esegui prima `npm run run` e controlla la proposta in `data/proposals
 
 ## Automazioni (cron)
 
-Il workflow `.github/workflows/seo-agent.yml` esegue `cron` alle 08:00 e alle 18:00 UTC. In ordine:
+Il workflow `.github/workflows/seo-agent.yml` esegue `cron` alle 08:00 e alle 18:00 UTC. Prima dei passi qui sotto girano il monitor tecnico e il controllo di indicizzazione, descritti nella lista dettagliata. In ordine:
 
 1. **Ottimizzazione** dei meta tag (`runOptimization` in modalità apply) e valutazione delle modifiche vecchie.
 2. **IndexNow**: confronta la sitemap con l'ultimo snapshot e invia a IndexNow le URL nuove o con `lastmod` cambiato, più le pagine appena modificate dal run. Il primo run invia tutte le URL della sitemap. Lo snapshot si aggiorna solo dopo un invio riuscito, quindi un errore viene riprovato al run successivo.
 3. **Reinvio sitemap** a Search Console: forzato quando IndexNow ha inviato URL, altrimenti solo se Google non l'ha riscaricata da più di 3 giorni.
-Il monitor gira per primo, così i suoi risultati servono anche agli altri passi:
+Il monitor e il controllo di indicizzazione girano per primi, così i loro risultati servono anche agli altri passi:
 
 1. **Monitor tecnico**: verifica che ogni URL della sitemap risponda 200, che `robots.txt` contenga la riga `Sitemap:`, che il dominio senza www faccia un redirect permanente (301 o 308) verso www, e le prestazioni mobile della home con PageSpeed (punteggio sotto 50 o LCP sopra 4 s). Non invia nulla da solo.
-2. **Ottimizzazione**: le pagine con un problema di status (URL della sitemap che non risponde 200) vengono escluse dal run e riportate in `technicalSkipped`. Per ogni pagina candidata l'agente riceve anche le sue opportunità (query in posizione 4–15 e query contese con altre pagine), così può usarle nei title e nelle description.
-3. **Valutazione** delle modifiche precedenti e **recap** del progresso.
-4. **IndexNow** sulle pagine modificate e **reinvio sitemap** a Search Console, se necessario.
-5. **Indicizzazione**: ispeziona ogni URL della sitemap con l'URL Inspection API di Search Console (5 richieste in parallelo). Segnala nel digest solo le pagine non indicizzate (verdict diverso da `PASS`) il cui stato è cambiato rispetto all'ultima segnalazione, così non si ripete lo stesso avviso ogni 12 ore. Il primo run registra lo stato attuale in silenzio, senza avvisi: da lì in poi segnala solo i cambiamenti. Per vedere l'elenco completo usare il comando `indexing`.
+2. **Indicizzazione**: ispeziona ogni URL della sitemap con l'URL Inspection API di Search Console (5 richieste in parallelo). Le pagine non indicizzate (verdict diverso da `PASS`) con uno stato tecnico (duplicato, canonical diversa, redirect, soft 404, noindex, non trovata) vengono escluse dall'ottimizzazione, perché title e description non le risolvono. Segnala nel digest solo le pagine non indicizzate il cui stato è cambiato rispetto all'ultima segnalazione, così non si ripete lo stesso avviso ogni 12 ore. Il primo run registra lo stato attuale in silenzio, senza avvisi: da lì in poi segnala solo i cambiamenti. Per vedere l'elenco completo usare il comando `indexing`.
+3. **Ottimizzazione**: le pagine con un problema di status (URL della sitemap che non risponde 200) o con uno stato tecnico di indicizzazione vengono escluse dal run e riportate in `technicalSkipped`. Per ogni pagina candidata l'agente riceve le sue opportunità (query in posizione 4–15 e query contese con altre pagine) e, se GA4 è configurato, le visite reali degli ultimi 28 giorni (`ga4`), così può usarle nei title e nelle description.
+4. **Valutazione** delle modifiche precedenti e **recap** del progresso.
+5. **IndexNow** sulle pagine modificate e **reinvio sitemap** a Search Console, se necessario.
 6. **Opportunità**: stampa nei log le query da spingere e quelle contese tra più pagine.
 7. **Digest WhatsApp**: un solo messaggio nel gruppo per run, che unisce pagine aggiornate, URL inviati a IndexNow, sitemap reinviata, nuovi problemi tecnici, pagine non indicizzate e pagine saltate. Se non c'è nulla da segnalare, non invia niente.
+
 8. **Idee contenuti** (una volta a settimana, `SEO_CONTENT_INTERVAL_DAYS`, default 7): il tool legge gli articoli già pubblicati nel blog in tutte le lingue e le query di Search Console con almeno 10 impressioni negli ultimi 28 giorni. Aggiunge tre segnali facoltativi: visite alle voci Wikipedia su apnea/freediving (ultimi 30 giorni contro i 30 precedenti), suggerimenti di completamento di Google per lingua e le pagine più visitate su GA4. DeepSeek propone al massimo 3 argomenti che non duplicano articoli esistenti, con un titolo per ciascuna delle 6 lingue del sito. Il messaggio WhatsApp è solo un suggerimento: il sito non viene modificato e non vengono scritte bozze. Il primo invio avviene al primo cron dopo il deploy; lo stato è in `data/memory/content-state.json`, e viene salvato solo dopo un invio riuscito. Se una fonte non risponde, le idee si generano con le altre.
 9. **Report mensile** (una volta al mese, al primo cron del mese): pagine più visitate negli ultimi 28 giorni da GA4 e Core Web Vitals reali su mobile (LCP, INP, CLS, p75) da CrUX. Se né `GA4_PROPERTY_ID` né `CRUX_API_KEY` sono impostate, non invia nulla. CrUX risponde 404 quando il sito non ha abbastanza traffico Chrome: in quel caso la sezione viene omessa.
 

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { config } from "./config.mjs";
 import { chatJson } from "./deepseek.mjs";
 import { searchAnalytics } from "./google.mjs";
+import { fetchTopPages } from "./analytics.mjs";
 import { LESSON_PROMPT, SYSTEM_PROMPT } from "./prompt.mjs";
 import { notifyRecap } from "./whatsapp.mjs";
 import { findOpportunities, opportunitiesForPage } from "./opportunities.mjs";
@@ -306,6 +307,7 @@ async function planBatch(batch, range, remaining) {
       context: t.context,
       metrics28d: withCtrReference(t.metrics),
       topQueries: t.topQueries,
+      ga4: t.ga4,
       ...(t.opportunities && { opportunities: t.opportunities }),
     })),
     history: await historyForPrompt(batch.map((t) => t.path)),
@@ -382,7 +384,7 @@ export async function runOptimization({
 }) {
   const startedAt = Date.now();
   const range = rangeEndingOn(latestGscDay(), 28);
-  const [metrics, queries, settings, opportunities] = await Promise.all([
+  const [metrics, queries, settings, opportunities, ga4Pages] = await Promise.all([
     pageMetrics(range),
     topQueries(range),
     getSeoSettings(),
@@ -390,13 +392,19 @@ export async function runOptimization({
       console.warn(`::warning::Opportunità non disponibili: ${err.message}`);
       return null;
     }),
+    fetchTopPages(100).catch((err) => {
+      console.warn(`::warning::Visite GA4 non disponibili: ${err.message}`);
+      return [];
+    }),
   ]);
+  const ga4ByPath = new Map(ga4Pages.map((p) => [p.path, p]));
 
   const targets = await loadTargets(settings);
   for (const t of targets.values()) {
     const url = pageUrl(t.path);
     t.metrics = metrics.get(url) ?? null;
     t.topQueries = (queries.get(url) ?? []).slice(0, 10);
+    t.ga4 = ga4ByPath.get(t.path) ?? null;
     t.opportunities = opportunities
       ? opportunitiesForPage(t.path, opportunities)
       : null;
