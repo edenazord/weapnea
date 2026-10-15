@@ -5441,7 +5441,7 @@ app.get('/sitemap.xml', async (_req, res) => {
     // Events (all, including past)
     const { rows: events } = await pool.query("SELECT slug, date, created_at FROM events WHERE slug IS NOT NULL AND slug != '' ORDER BY date DESC NULLS LAST LIMIT 1000");
     for (const ev of events) {
-      const lastmod = toDate(ev.date || ev.created_at);
+      const lastmod = toDate(ev.created_at);
       xml += `  <url><loc>${base}/${ev.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
     }
 
