@@ -63,7 +63,8 @@ seo-agent/
   package.json         script npm (nessuna dipendenza esterna)
   .gitignore           esclude .env, secrets/, data/proposals/, data/cron.log, docs/
   src/
-    index.mjs          CLI: run, evaluate, cron, report, monitor, opportunities, content, indexing, analytics, overview, history
+    index.mjs          CLI: run, evaluate, cron, report, monitor, opportunities, content, indexing, analytics, overview, check, orphans, history
+    links.mjs          crawl del sito con Playwright per trovare le URL in sitemap senza link interni (solo comando orphans)
     content.mjs        idee contenuti settimanali (blog, query GSC, Wikipedia, autocomplete, GA4) e invio WhatsApp
     sources.mjs        fonti pubbliche senza chiave: visite Wikipedia e suggerimenti di ricerca Google
     indexing.mjs       controllo di indicizzazione delle URL della sitemap (URL Inspection API)
@@ -143,7 +144,10 @@ node --env-file=.env src/index.mjs content        # anteprima delle idee contenu
 node --env-file=.env src/index.mjs indexing       # stampa le URL non indicizzate da Google: non invia nulla e non salva lo stato
 node --env-file=.env src/index.mjs analytics      # stampa il report mensile: non invia nulla
 npm run overview                                  # stampa lo snapshot della panoramica SEO: non lo salva nel backend
+node src/index.mjs orphans                        # esplora il sito con Chromium headless e stampa le URL in sitemap senza link interni: non invia nulla
 ```
+
+`orphans` richiede `npm ci` e `npx playwright install chromium` in locale. Vede solo i link con `href` nel DOM renderizzato: i bottoni JS senza link non contano. Il workflow manuale `.github/workflows/seo-agent-orphans.yml` esegue lo stesso comando.
 
 Consiglio: esegui prima `npm run run` e controlla la proposta in `data/proposals/`. Passa ad `apply` solo quando i risultati ti convincono.
 

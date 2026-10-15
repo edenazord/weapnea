@@ -11,6 +11,7 @@ import { previewContent, sendContentIfDue } from "./content.mjs";
 import { sendMonthlyReportIfDue, buildMonthlyReport } from "./analytics.mjs";
 import { buildOverview, publishOverview } from "./overview.mjs";
 import { checkIndexing, saveIndexingState } from "./indexing.mjs";
+import { findOrphanPages } from "./links.mjs";
 import { buildDigest, sendGroupMessage } from "./whatsapp.mjs";
 import {
   evaluateActions,
@@ -164,9 +165,16 @@ try {
     for (const p of r.problems) console.log(`Problema: ${p.text}`);
     for (const w of r.warnings) console.warn(`::warning::${w}`);
     if (!r.problems.length) console.log("Nessun problema tecnico rilevato.");
+  } else if (command === "orphans") {
+    // Solo log: crawl del sito con browser headless, nessun messaggio WhatsApp e nessuna scrittura.
+    const r = await findOrphanPages();
+    console.log(`Pagine esplorate seguendo i link: ${r.crawled}. URL in sitemap: ${r.sitemap}.`);
+    if (r.truncated) console.warn("::warning::Crawl interrotto al limite massimo di pagine.");
+    if (!r.orphans.length) console.log("Nessuna URL in sitemap senza link interni.");
+    for (const p of r.orphans) console.log(`Orfana (nessun link interno): ${p}`);
   } else {
     console.log(
-      "Uso: node src/index.mjs <run|evaluate|cron|content|indexing|analytics|report|monitor|opportunities|history|overview|check> [--apply]",
+      "Uso: node src/index.mjs <run|evaluate|cron|content|indexing|analytics|report|monitor|opportunities|history|overview|check|orphans> [--apply]",
     );
     process.exitCode = 1;
   }
