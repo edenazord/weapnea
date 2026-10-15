@@ -46,6 +46,22 @@ export function buildDigest({ run, indexing, sitemap, fresh = [] }) {
   return ["SEO weapnea: aggiornamento", ...lines].join("\n");
 }
 
+// Messaggio separato, una volta a settimana: idee di contenuti con il titolo in ogni lingua del sito.
+export function buildContentMessage(suggestions) {
+  const lines = [
+    "SEO weapnea: idee contenuti della settimana",
+    "Sono solo suggerimenti: il sito non è stato modificato.",
+  ];
+  suggestions.forEach((s, i) => {
+    lines.push("", `${i + 1}. ${s.topic}`);
+    if (s.why) lines.push(`Perché: ${s.why}`);
+    if (s.targetQuery) lines.push(`Query di riferimento: ${s.targetQuery}`);
+    for (const [lang, title] of Object.entries(s.titles))
+      lines.push(`${lang.toUpperCase()}: ${title}`);
+  });
+  return lines.join("\n");
+}
+
 // Non deve far fallire il run: un errore di WhatsApp viene solo segnalato nei log.
 export async function notifyRecap(run) {
   if (!run.applied.length) return;

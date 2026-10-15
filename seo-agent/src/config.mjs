@@ -59,6 +59,7 @@ export const config = {
   runBudgetMinutes: Number(env("SEO_RUN_BUDGET_MINUTES", "40")),
   evalDays: Number(env("SEO_EVAL_DAYS", "21")),
   minImpressions: Number(env("SEO_MIN_IMPRESSIONS", "30")),
+  contentIntervalDays: Number(env("SEO_CONTENT_INTERVAL_DAYS", "7")),
   autoRollback: env("SEO_AUTO_ROLLBACK", "true") === "true",
   limits: { titleMin: 20, titleMax: 60, descMin: 50, descMax: 160 },
 };

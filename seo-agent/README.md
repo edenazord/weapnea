@@ -63,7 +63,8 @@ seo-agent/
   package.json         script npm (nessuna dipendenza esterna)
   .gitignore           esclude .env, secrets/, data/proposals/, data/cron.log, docs/
   src/
-    index.mjs          CLI: run, evaluate, cron, report, monitor, opportunities, history
+    index.mjs          CLI: run, evaluate, cron, report, monitor, opportunities, content, history
+    content.mjs        idee contenuti settimanali (blog esistente + query GSC) e invio WhatsApp
     agent.mjs          logica: raccolta, decisione, validazione, applicazione, valutazione
     technical.mjs      controlli tecnici: sitemap e URL Inspection su Search Console
     indexnow.mjs       invio URL nuove o cambiate a IndexNow (Bing e altri motori)
@@ -114,6 +115,7 @@ Requisiti: Node.js 20.6 o superiore (usa `--env-file`). Nessuna dipendenza da in
 | `SEO_ALLOWED_PATHS`, `SEO_LANGUAGES`                      | no                     | path modificabili e lingue supportate                                                   |
 | `SEO_MAX_CHANGES_PER_RUN`, `SEO_BATCH_SIZE`, `SEO_RUN_BUDGET_MINUTES` | no                | limiti per run                                                                       |
 | `SEO_MIN_IMPRESSIONS`, `SEO_EVAL_DAYS`, `SEO_AUTO_ROLLBACK` | no                   | soglie di valutazione e rollback                                                        |
+| `SEO_CONTENT_INTERVAL_DAYS`                               | no                     | intervallo in giorni tra due messaggi di idee contenuti (default 7)                     |
 
 ### Secret GitHub per il cron
 
@@ -130,6 +132,7 @@ npm run evaluate   # valuta le modifiche applicate abbastanza vecchie
 npm run history    # storico con esiti
 node --env-file=.env src/index.mjs monitor        # controlli tecnici; avvisa nel gruppo solo i problemi nuovi
 node --env-file=.env src/index.mjs opportunities  # query in posizione 4–15 e query contese tra pagine
+node --env-file=.env src/index.mjs content        # anteprima delle idee contenuti: non invia nulla e non salva lo stato
 ```
 
 Consiglio: esegui prima `npm run run` e controlla la proposta in `data/proposals/`. Passa ad `apply` solo quando i risultati ti convincono.
@@ -149,6 +152,7 @@ Il monitor gira per primo, così i suoi risultati servono anche agli altri passi
 4. **IndexNow** sulle pagine modificate e **reinvio sitemap** a Search Console, se necessario.
 5. **Opportunità**: stampa nei log le query da spingere e quelle contese tra più pagine.
 6. **Digest WhatsApp**: un solo messaggio nel gruppo per run, che unisce pagine aggiornate, URL inviati a IndexNow, sitemap reinviata, nuovi problemi tecnici e pagine saltate. Se non c'è nulla da segnalare, non invia niente.
+7. **Idee contenuti** (una volta a settimana, `SEO_CONTENT_INTERVAL_DAYS`, default 7): il tool legge gli articoli già pubblicati nel blog in tutte le lingue e le query di Search Console con almeno 10 impressioni negli ultimi 28 giorni. DeepSeek propone al massimo 3 argomenti che non duplicano articoli esistenti, con un titolo per ciascuna delle 6 lingue del sito. Il messaggio WhatsApp è solo un suggerimento: il sito non viene modificato e non vengono scritte bozze. Il primo invio avviene al primo cron dopo il deploy; lo stato è in `data/memory/content-state.json`, e viene salvato solo dopo un invio riuscito. Se Search Console non risponde, le idee si basano solo sugli articoli esistenti.
 
 Lo stato del monitor (problemi già segnalati) si salva solo dopo un invio riuscito: se WhatsApp fallisce, i problemi vengono riproposti al run successivo.
 
@@ -161,7 +165,7 @@ Limiti del monitor: lo SPA risponde 200 anche per le pagine inesistenti (fallbac
 - **Dry-run di default**: i comandi a mano non scrivono nulla sul sito senza `--apply`. Il cron del workflow invece applica le modifiche in automatico (`runOptimization({ apply: true })`), con gli stessi limiti e lo stesso rollback.
 - **Allow-list**: il tool modifica solo i path in `SEO_ALLOWED_PATHS` e solo i campi `title` e `description`.
 - **Validazione**: lunghezze (title 20–60, description 50–160), lingue supportate, valori non vuoti e diversi dall'attuale. Le modifiche scartate compaiono nella proposta con il motivo.
-- **Limite per run**: massimo `SEO_MAX_CHANGES_PER_RUN` modifiche (default 5), contate su tutti i gruppi insieme. Il resto dei target passa al run successivo.
+- **Limite per run**: massimo `SEO_MAX_CHANGES_PER_RUN` modifiche (default 5), contate su tutti i gruppi insieme. Il resto dei target passa al run successivo. Ogni lingua e ogni campo contano come una modifica: il primo recupero delle traduzioni del blog richiede più run (o un valore più alto della variabile).
 - **Soglia di dati**: nessuna modifica per pagine con poche impressioni (il prompt lo impone, la valutazione lo richiede).
 - **Rollback**: attivo di default (`SEO_AUTO_ROLLBACK=true`). Ripristina i valori precedenti se il verdetto è `peggiorato`. Non ripristina se la pagina ha ricevuto modifiche successive, per non cancellare il lavoro più recente. Imposta `SEO_AUTO_ROLLBACK=false` per la sola revisione manuale.
 - **Brand nel title**: un title che contiene "WeApnea" viene scartato, perché il sito lo aggiunge da sé.
@@ -169,7 +173,7 @@ Limiti del monitor: lo SPA risponde 200 anche per le pagine inesistenti (fallbac
 
 ## Limiti attuali
 
-- Copre le pagine statiche di `seo_settings`, gli articoli del blog (`/blog/<slug>`) e gli eventi (`/<slug>`): tutti salvati in `seo_settings` per path, con traduzioni per eventi e pagine statiche. Ogni run è limitato da `SEO_MAX_CHANGES_PER_RUN` e dal budget di tempo (`SEO_RUN_BUDGET_MINUTES`, default 40); i target rimasti passano al run successivo.
+- Copre le pagine statiche di `seo_settings`, gli articoli del blog (`/blog/<slug>`) e gli eventi (`/<slug>`): tutti salvati in `seo_settings` per path, con traduzioni. Gli articoli del blog hanno le traduzioni di title e description in tutte le lingue del sito (`SEO_LANGUAGES`), come gli eventi. Ogni run è limitato da `SEO_MAX_CHANGES_PER_RUN` e dal budget di tempo (`SEO_RUN_BUDGET_MINUTES`, default 40); i target rimasti passano al run successivo.
 - Non modifica sitemap, robots, og_image, dati strutturati o contenuti delle pagine: solo meta tag. L'unica scrittura sulla sitemap è il reinvio a Search Console (vedi sotto).
 - **Reinvio sitemap:** a ogni `cron` il tool reinvia `sitemap.xml` se Google non l'ha riscaricata da più di 3 giorni. Usa lo scope `webmasters` (scrittura), separato dallo scope di sola lettura del resto. Il service account deve avere il permesso Completo sulla proprietà.
 - Google Search Console ha un ritardo di 2–3 giorni: il tool usa come ultimo giorno disponibile oggi meno 3.

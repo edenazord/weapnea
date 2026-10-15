@@ -44,7 +44,7 @@ export async function loadTargets(settings) {
     add({
       kind: "blog",
       path: `/blog/${a.slug}`,
-      languages: ["it"],
+      languages: config.languages,
       baseLanguage: a.language || "it",
       fallback: { title: a.seo_title || a.title, description: a.seo_description || a.excerpt || null },
       context: {

@@ -7,6 +7,7 @@ import {
 import { printOpportunities } from "./opportunities.mjs";
 import { notifyChangedUrls } from "./indexnow.mjs";
 import { refreshSitemap } from "./technical.mjs";
+import { previewContent, sendContentIfDue } from "./content.mjs";
 import { buildDigest, sendGroupMessage } from "./whatsapp.mjs";
 import {
   evaluateActions,
@@ -87,6 +88,19 @@ try {
         })) === true;
     }
     if (monitor && delivered) await saveMonitorState(monitor);
+
+    // Messaggio separato, al massimo una volta a settimana: idee di contenuti.
+    await safely("Idee contenuti", async () => {
+      const r = await sendContentIfDue();
+      console.log(
+        r.sent
+          ? `Idee contenuti inviate (${r.count}).`
+          : `Idee contenuti: ${r.reason}.`,
+      );
+    });
+  } else if (command === "content") {
+    assertEnv(REQUIRED);
+    await previewContent();
   } else if (command === "monitor") {
     assertEnv(["GOOGLE_SERVICE_ACCOUNT_FILE"]);
     await runMonitor();
@@ -103,7 +117,7 @@ try {
     await printHistory();
   } else {
     console.log(
-      "Uso: node src/index.mjs <run|evaluate|cron|report|monitor|opportunities|history> [--apply]",
+      "Uso: node src/index.mjs <run|evaluate|cron|content|report|monitor|opportunities|history> [--apply]",
     );
     process.exitCode = 1;
   }
