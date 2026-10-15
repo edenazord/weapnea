@@ -2,12 +2,13 @@ import { createSign } from "node:crypto";
 import { readFile } from "node:fs/promises";
 
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
-const SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
-let cachedToken = null;
+export const SCOPE_READONLY = "https://www.googleapis.com/auth/webmasters.readonly";
+export const SCOPE_WRITE = "https://www.googleapis.com/auth/webmasters";
+const cachedTokens = new Map();
 
-export async function getAccessToken(keyFile) {
-  if (cachedToken && cachedToken.expiresAt > Date.now() + 60_000)
-    return cachedToken.value;
+export async function getAccessToken(keyFile, scope = SCOPE_READONLY) {
+  const cached = cachedTokens.get(scope);
+  if (cached && cached.expiresAt > Date.now() + 60_000) return cached.value;
 
   const key = JSON.parse(await readFile(keyFile, "utf8"));
   const now = Math.floor(Date.now() / 1000);
@@ -17,7 +18,7 @@ export async function getAccessToken(keyFile) {
   const claims = Buffer.from(
     JSON.stringify({
       iss: key.client_email,
-      scope: SCOPE,
+      scope,
       aud: TOKEN_URL,
       iat: now,
       exp: now + 3600,
@@ -41,11 +42,11 @@ export async function getAccessToken(keyFile) {
   if (!res.ok)
     throw new Error(`autenticazione Google fallita: ${JSON.stringify(data)}`);
 
-  cachedToken = {
+  cachedTokens.set(scope, {
     value: data.access_token,
     expiresAt: Date.now() + data.expires_in * 1000,
-  };
-  return cachedToken.value;
+  });
+  return data.access_token;
 }
 
 export async function searchAnalytics({

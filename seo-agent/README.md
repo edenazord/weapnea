@@ -119,7 +119,8 @@ Consiglio: esegui prima `npm run run` e controlla la proposta in `data/proposals
 ## Limiti attuali
 
 - Copre le pagine statiche di `seo_settings`, gli articoli del blog (`/blog/<slug>`) e gli eventi (`/<slug>`): tutti salvati in `seo_settings` per path, con traduzioni per eventi e pagine statiche. Ogni run è limitato da `SEO_MAX_CHANGES_PER_RUN` e dal budget di tempo (`SEO_RUN_BUDGET_MINUTES`, default 40); i target rimasti passano al run successivo.
-- Non modifica sitemap, robots, og_image, dati strutturati o contenuti delle pagine: solo meta tag. Sitemap e indicizzazione vengono solo letti per i controlli tecnici.
+- Non modifica sitemap, robots, og_image, dati strutturati o contenuti delle pagine: solo meta tag. L'unica scrittura sulla sitemap è il reinvio a Search Console (vedi sotto).
+- **Reinvio sitemap:** a ogni `cron` il tool reinvia `sitemap.xml` se Google non l'ha riscaricata da più di 3 giorni. Usa lo scope `webmasters` (scrittura), separato dallo scope di sola lettura del resto. Il service account deve avere il permesso Completo sulla proprietà.
 - Google Search Console ha un ritardo di 2–3 giorni: il tool usa come ultimo giorno disponibile oggi meno 3.
 - La prima valutazione utile arriva dopo circa 3 settimane. Serve tempo per avere campioni significativi.
 - Non esegue cron automatici: i comandi vanno lanciati a mano o schedulati (ad esempio con una task pianificata di Windows o un cron sul server).

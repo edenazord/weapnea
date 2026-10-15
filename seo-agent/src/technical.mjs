@@ -1,11 +1,13 @@
 import { config } from "./config.mjs";
-import { getAccessToken } from "./google.mjs";
+import { getAccessToken, SCOPE_READONLY, SCOPE_WRITE } from "./google.mjs";
 
 const SITEMAPS_URL = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(config.siteUrl)}/sitemaps`;
 const INSPECT_URL = "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect";
+// Google riscarica le sitemap da solo: reinviamo solo se l'ultimo download è più vecchio di così.
+const STALE_AFTER_DAYS = 3;
 
-async function api(url, options = {}) {
-  const token = await getAccessToken(config.googleKeyFile);
+async function api(url, { scope = SCOPE_READONLY, ...options } = {}) {
+  const token = await getAccessToken(config.googleKeyFile, scope);
   const res = await fetch(url, {
     ...options,
     headers: {
@@ -34,7 +36,27 @@ export async function sitemapStatus() {
   });
 }
 
-// Esito dell'indicizzazione di ogni pagina statica con l'URL Inspection API.
+// Reinvia la sitemap pubblica a Search Console se Google non la riscarica da troppo tempo.
+export async function refreshSitemap() {
+  const feed = `${config.publicBaseUrl}/sitemap.xml`;
+  const current = (await sitemapStatus()).find((s) => s.path === feed);
+  const lastDownload = current?.lastDownloaded ? Date.parse(current.lastDownloaded) : 0;
+  const ageDays = (Date.now() - lastDownload) / 86_400_000;
+  if (current && ageDays < STALE_AFTER_DAYS)
+    return { submitted: false, ageDays: round(ageDays) };
+
+  await api(`${SITEMAPS_URL}/${encodeURIComponent(feed)}`, {
+    method: "PUT",
+    scope: SCOPE_WRITE,
+  });
+  return { submitted: true, previousDownload: current?.lastDownloaded ?? null };
+}
+
+function round(n) {
+  return Math.round(n * 10) / 10;
+}
+
+
 export async function inspectPages(paths) {
   const results = [];
   for (const p of paths) {

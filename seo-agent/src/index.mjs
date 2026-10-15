@@ -1,4 +1,5 @@
 import { assertEnv } from "./config.mjs";
+import { refreshSitemap } from "./technical.mjs";
 import {
   evaluateActions,
   printHistory,
@@ -27,6 +28,18 @@ try {
     await runOptimization({ apply: true });
     await evaluateActions();
     await progressReport();
+    await refreshSitemap()
+      .then((r) =>
+        console.log(
+          r.submitted
+            ? `Sitemap reinviata a Search Console (ultimo download precedente: ${r.previousDownload ?? "mai"}).`
+            : `Sitemap aggiornata da Google ${r.ageDays} giorni fa: nessun reinvio.`,
+        ),
+      )
+      .catch((err) =>
+        console.warn(`::warning::Reinvio sitemap non riuscito: ${err.message}`),
+      );
+
   } else if (command === "sync") {
     assertEnv(["API_TOKEN"]);
     await syncActivity();
