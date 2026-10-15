@@ -129,6 +129,28 @@ function botFallback(pathname: string, lang: string): Response {
   });
 }
 
+// Pagine che non esistono o non sono pubbliche: 404 con noindex, così Google
+// non le tratta come soft 404 con il meta della home.
+function notFoundResponse(pathname: string, lang: string): Response {
+  const meta: SeoMeta = {
+    title: 'Pagina non trovata | WeApnea',
+    description: 'La pagina cercata non esiste o non è pubblica.',
+    image: `${SITE_BASE}/images/weapnea-logo.png`,
+    url: `${SITE_BASE}${pathname}`,
+    type: 'website',
+    lang,
+  };
+  return new Response(buildHtml(meta, pathname), {
+    status: 404,
+    headers: {
+      'Content-Type': 'text/html; charset=utf-8',
+      'Cache-Control': 'public, max-age=300',
+      'X-Robots-Tag': 'noindex, follow',
+      'Vary': 'Accept-Language',
+    },
+  });
+}
+
 export default async function middleware(request: Request): Promise<Response | undefined> {
   const ua = request.headers.get('user-agent') ?? '';
 
@@ -195,6 +217,7 @@ export default async function middleware(request: Request): Promise<Response | u
       signal: AbortSignal.timeout(12000),
     });
 
+    if (resp.status === 404) return notFoundResponse(pathname, lang);
     if (!resp.ok) return botFallback(pathname, lang);
 
     const meta = (await resp.json()) as SeoMeta;

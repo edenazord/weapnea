@@ -5251,6 +5251,8 @@ app.get('/api/seo-meta', async (req, res) => {
           jsonld: personJsonLd,
         });
       }
+      // Profilo inesistente o non pubblico: 404 vero, non il meta della home
+      return res.status(404).json({ notFound: true });
     }
 
     // 4) /:slug (event)
