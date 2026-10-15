@@ -1,0 +1,28 @@
+name: SEO check (manuale)
+
+# Solo esecuzione manuale: controlla sitemap, redirect, robots e PageSpeed e scrive il risultato nel log.
+# Non invia WhatsApp, non salva lo stato e non tocca IndexNow o Search Console.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: seo-agent
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+
+      - name: Run SEO check
+        env:
+          PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
+        run: node src/index.mjs check

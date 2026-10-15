@@ -1,6 +1,7 @@
 import { assertEnv } from "./config.mjs";
 import {
   brokenPaths,
+  runChecks,
   runMonitor,
   saveMonitorState,
 } from "./monitor.mjs";
@@ -157,9 +158,21 @@ try {
     await progressReport();
   } else if (command === "history") {
     await printHistory();
+  } else if (command === "check") {
+    // Solo log: nessun messaggio WhatsApp, nessuno stato salvato, nessun invio a IndexNow o Search Console.
+    const r = await runChecks();
+    console.log(`URL sitemap controllate: ${r.checked}.`);
+    console.log(
+      r.pagespeed
+        ? `PageSpeed home mobile: ${r.pagespeed.score}/100, LCP ${Math.round(r.pagespeed.lcpMs / 100) / 10} s.`
+        : "PageSpeed: non disponibile.",
+    );
+    for (const p of r.problems) console.log(`Problema: ${p.text}`);
+    for (const w of r.warnings) console.warn(`::warning::${w}`);
+    if (!r.problems.length) console.log("Nessun problema tecnico rilevato.");
   } else {
     console.log(
-      "Uso: node src/index.mjs <run|evaluate|cron|content|indexing|analytics|report|monitor|opportunities|history|overview> [--apply]",
+      "Uso: node src/index.mjs <run|evaluate|cron|content|indexing|analytics|report|monitor|opportunities|history|overview|check> [--apply]",
     );
     process.exitCode = 1;
   }
