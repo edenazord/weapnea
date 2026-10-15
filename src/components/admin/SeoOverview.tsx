@@ -126,14 +126,20 @@ function Unavailable({ text }: { text: string }) {
 export default function SeoOverview() {
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [siteConfig, setSiteConfig] = useState<SiteConfig>({ gtm_id: "", ga4_id: "", gsc_verification: "" });
   const [siteConfigSaving, setSiteConfigSaving] = useState(false);
 
   const loadOverview = useCallback(() => {
     setLoading(true);
+    setLoadError(null);
     return apiGet("/api/admin/seo-overview")
       .then((r: { data: Snapshot | null }) => setSnapshot(r.data))
-      .catch(() => toast.error("Errore nel caricamento della panoramica SEO"))
+      .catch((err: unknown) => {
+        const message = err instanceof Error ? err.message : String(err);
+        setLoadError(message);
+        toast.error("Errore nel caricamento della panoramica SEO");
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -180,7 +186,17 @@ export default function SeoOverview() {
         </Button>
       </div>
 
-      {!loading && !snapshot && (
+      {!loading && loadError && (
+        <div className="flex gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+          <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-medium">Impossibile caricare la panoramica SEO.</p>
+            <p className="text-xs break-all">{loadError}</p>
+          </div>
+        </div>
+      )}
+
+      {!loading && !loadError && !snapshot && (
         <Unavailable text="Nessuno snapshot ancora. Viene creato al prossimo run del cron del bot SEO, oppure con `npm run overview` in seo-agent." />
       )}
 
