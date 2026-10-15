@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { config } from "./config.mjs";
 import { getAccessToken, SCOPE_READONLY } from "./google.mjs";
-import { fetchSitemap } from "./indexnow.mjs";
+import { fetchSitemap } from "./sitemap.mjs";
 
 const STATE_FILE = path.join(config.dataDir, "memory", "indexing-state.json");
 const INSPECT_URL = "https://searchconsole.googleapis.com/v1/urlInspection/index:inspect";

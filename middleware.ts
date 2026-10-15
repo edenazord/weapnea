@@ -42,11 +42,14 @@ interface SeoMeta {
   type: string;
   lang?: string;
   jsonld?: string;
+  body?: string[];
 }
 
 function buildHtml(meta: SeoMeta, pathname: string): string {
   const t = escapeHtml(meta.title);
   const d = escapeHtml(meta.description);
+  const bodyParagraphs = meta.body && meta.body.length ? meta.body : [meta.description];
+  const bodyHtml = bodyParagraphs.map(p => `  <p>${escapeHtml(p)}</p>`).join('\n');
   const img = escapeHtml(meta.image);
   const u = escapeHtml(meta.url);
   const lang = meta.lang || 'it';
@@ -98,7 +101,7 @@ ${hreflangTags}
 </head>
 <body>
   <h1>${t}</h1>
-  <p>${d}</p>
+${bodyHtml}
   <a href="${u}">WeApnea</a>
 </body>
 </html>`;

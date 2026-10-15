@@ -56,7 +56,6 @@ jobs:
         env:
           BOT_API_TOKEN: ${{ secrets.BOT_API_TOKEN }}
           BOT_GROUP_JID: ${{ secrets.BOT_GROUP_JID }}
-          INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
           PAGESPEED_API_KEY: ${{ secrets.PAGESPEED_API_KEY }}
           CRUX_API_KEY: ${{ secrets.CRUX_API_KEY }}
           GA4_PROPERTY_ID: ${{ vars.GA4_PROPERTY_ID }}

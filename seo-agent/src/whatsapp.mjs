@@ -27,7 +27,6 @@ export function buildRecap(run) {
 // Un solo messaggio per run del cron. Restituisce null se non c'è niente da segnalare.
 export function buildDigest({
   run,
-  indexing,
   sitemap,
   fresh = [],
   indexingIssues = [],
@@ -39,7 +38,6 @@ export function buildDigest({
   if (pages.length) {
     lines.push(`Aggiornate ${pages.length} pagine: ${pages.join(", ")}.`);
   }
-  if (indexing?.submitted) lines.push(`IndexNow: inviate ${indexing.submitted} URL.`);
   if (sitemap?.submitted) lines.push("Sitemap reinviata a Search Console.");
   if (fresh.length) {
     lines.push("Nuovi problemi tecnici:");
@@ -63,7 +61,6 @@ export function buildDigest({
     lines.push(`Pagine saltate per problemi tecnici: ${run.technicalSkipped.join(", ")}.`);
   const hasNews =
     pages.length ||
-    indexing?.submitted ||
     sitemap?.submitted ||
     fresh.length ||
     indexingIssues.length ||

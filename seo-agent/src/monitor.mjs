@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { config } from "./config.mjs";
-import { fetchSitemap } from "./indexnow.mjs";
+import { fetchSitemap } from "./sitemap.mjs";
 import { sendGroupMessage } from "./whatsapp.mjs";
 
 const STATE_FILE = path.join(config.dataDir, "memory", "monitor-state.json");

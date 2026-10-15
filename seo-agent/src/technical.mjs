@@ -36,8 +36,7 @@ export async function sitemapStatus() {
   });
 }
 
-// Reinvia la sitemap pubblica a Search Console se Google non la riscarica da troppo tempo,
-// oppure subito con force quando ci sono URL nuove o cambiate.
+// Reinvia la sitemap pubblica a Search Console se Google non la riscarica da troppo tempo.
 export async function refreshSitemap({ force = false } = {}) {
   const feed = `${config.publicBaseUrl}/sitemap.xml`;
   const current = (await sitemapStatus()).find((s) => s.path === feed);

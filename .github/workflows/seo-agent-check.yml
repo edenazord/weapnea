@@ -1,7 +1,7 @@
 name: SEO check (manuale)
 
 # Solo esecuzione manuale: controlla sitemap, redirect, robots e PageSpeed e scrive il risultato nel log.
-# Non invia WhatsApp, non salva lo stato e non tocca IndexNow o Search Console.
+# Non invia WhatsApp, non salva lo stato e non tocca Search Console.
 on:
   workflow_dispatch:
 

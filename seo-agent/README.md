@@ -71,7 +71,7 @@ seo-agent/
     overview.mjs       snapshot della panoramica SEO mostrata nell'admin (GSC, GA4, CrUX, sitemap, indicizzazione, bot)
     agent.mjs          logica: raccolta, decisione, validazione, applicazione, valutazione
     technical.mjs      controlli tecnici: sitemap e URL Inspection su Search Console
-    indexnow.mjs       invio URL nuove o cambiate a IndexNow (Bing e altri motori)
+    sitemap.mjs        lettura e parsing della sitemap pubblica
     monitor.mjs        controlli tecnici periodici con avvisi WhatsApp per i problemi nuovi
     opportunities.mjs  query vicine alla prima pagina e query contese tra più pagine
     prompt.mjs         prompt per DeepSeek (decisione e valutazione)
@@ -84,7 +84,7 @@ seo-agent/
     memory/
       actions.jsonl       ogni modifica applicata (prima e dopo, motivo, stato)
       evaluations.jsonl   esito di ogni modifica (metriche, verdetto, lezione)
-      sitemap-snapshot.json   lastmod delle URL già notificate a IndexNow
+      sitemap-snapshot.json   vecchia lastmod della sitemap (non più usato dal cron)
       monitor-state.json      problemi tecnici già segnalati nel gruppo
       indexing-state.json     pagine non indicizzate già segnalate, con il loro stato Google
       analytics-state.json    mese dell'ultimo report inviato
@@ -103,8 +103,7 @@ Requisiti: Node.js 20.6 o superiore (usa `--env-file`). Nessuna dipendenza da in
 2. **DeepSeek**: crea una API key su platform.deepseek.com.
 3. **Backend**: usa lo stesso valore di `API_TOKEN` impostato su Render.
 4. Crea `seo-agent/.env` con le variabili della tabella sotto. Il file non va committato.
-5. **IndexNow** (opzionale ma consigliato): genera una chiave (8–128 caratteri `a-z A-Z 0-9 -`), salvala in `INDEXNOW_KEY` e crea nella cartella `public/` del sito un file `<chiave>.txt` che contiene solo la chiave. Va pubblicato con il sito: finché il file non è online la chiave non è verificabile e IndexNow non può usarla per indicizzare, anche se può accettare la richiesta.
-6. **PageSpeed** (opzionale): `PAGESPEED_API_KEY`. Senza chiave le richieste condividono una quota giornaliera che si esaurisce in fretta; in quel caso il monitor avvisa nei log e salta il controllo.
+5. **PageSpeed** (opzionale): `PAGESPEED_API_KEY`. Senza chiave le richieste condividono una quota giornaliera che si esaurisce in fretta; in quel caso il monitor avvisa nei log e salta il controllo.
 
 ### Variabili d'ambiente
 
@@ -115,8 +114,7 @@ Requisiti: Node.js 20.6 o superiore (usa `--env-file`). Nessuna dipendenza da in
 | `DEEPSEEK_API_KEY`                                        | run, cron, evaluate    | API key DeepSeek                                                                        |
 | `API_BASE_URL`, `DEEPSEEK_BASE_URL`, `DEEPSEEK_MODEL`     | no                     | override degli endpoint e del modello                                                   |
 | `GSC_SITE_URL`                                            | no                     | proprietà Search Console (default `sc-domain:weapnea.com`)                              |
-| `PUBLIC_BASE_URL`                                         | no                     | dominio pubblico usato per sitemap, IndexNow e monitor (default `https://www.weapnea.com`) |
-| `INDEXNOW_KEY`                                            | no (IndexNow)          | chiave IndexNow, uguale al nome del file in `public/`                                   |
+| `PUBLIC_BASE_URL`                                         | no                     | dominio pubblico usato per sitemap e monitor (default `https://www.weapnea.com`)        |
 | `PAGESPEED_API_KEY`                                       | no                     | chiave PageSpeed Insights, evita la quota condivisa                                     |
 | `GA4_PROPERTY_ID`                                         | no (report mensile)    | ID numerico della proprietà Google Analytics 4. Il service account deve avere accesso Viewer |
 | `CRUX_API_KEY`                                            | no (report mensile)    | API key di Chrome UX Report, con restrizione alla sola "Chrome UX Report API"           |
@@ -128,7 +126,7 @@ Requisiti: Node.js 20.6 o superiore (usa `--env-file`). Nessuna dipendenza da in
 
 ### Secret GitHub per il cron
 
-Il workflow `.github/workflows/seo-agent.yml` legge questi secret: `SEO_API_TOKEN` (mappato su `API_TOKEN`), `DEEPSEEK_API_KEY`, `GOOGLE_SA_JSON` (scritto in `secrets/service-account.json`), `BOT_API_TOKEN`, `BOT_GROUP_JID`, `INDEXNOW_KEY`, `PAGESPEED_API_KEY` (opzionale), `CRUX_API_KEY` (opzionale). `GA4_PROPERTY_ID` è una variabile del repository (`vars.GA4_PROPERTY_ID`), non un segreto.
+Il workflow `.github/workflows/seo-agent.yml` legge questi secret: `SEO_API_TOKEN` (mappato su `API_TOKEN`), `DEEPSEEK_API_KEY`, `GOOGLE_SA_JSON` (scritto in `secrets/service-account.json`), `BOT_API_TOKEN`, `BOT_GROUP_JID`, `PAGESPEED_API_KEY` (opzionale), `CRUX_API_KEY` (opzionale). `GA4_PROPERTY_ID` è una variabile del repository (`vars.GA4_PROPERTY_ID`), non un segreto.
 
 ## Comandi
 
@@ -154,17 +152,16 @@ Consiglio: esegui prima `npm run run` e controlla la proposta in `data/proposals
 Il workflow `.github/workflows/seo-agent.yml` esegue `cron` alle 08:00 e alle 18:00 UTC. Prima dei passi qui sotto girano il monitor tecnico e il controllo di indicizzazione, descritti nella lista dettagliata. In ordine:
 
 1. **Ottimizzazione** dei meta tag (`runOptimization` in modalità apply) e valutazione delle modifiche vecchie.
-2. **IndexNow**: confronta la sitemap con l'ultimo snapshot e invia a IndexNow le URL nuove o con `lastmod` cambiato, più le pagine appena modificate dal run. Il primo run invia tutte le URL della sitemap. Lo snapshot si aggiorna solo dopo un invio riuscito, quindi un errore viene riprovato al run successivo.
-3. **Reinvio sitemap** a Search Console: forzato quando IndexNow ha inviato URL, altrimenti solo se Google non l'ha riscaricata da più di 3 giorni.
+2. **Reinvio sitemap** a Search Console: solo se Google non l'ha riscaricata da più di 3 giorni.
 Il monitor e il controllo di indicizzazione girano per primi, così i loro risultati servono anche agli altri passi:
 
 1. **Monitor tecnico**: verifica che ogni URL della sitemap risponda 200, che `robots.txt` contenga la riga `Sitemap:`, che il dominio senza www faccia un redirect permanente (301 o 308) verso www, e le prestazioni mobile della home con PageSpeed (punteggio sotto 50 o LCP sopra 4 s). Non invia nulla da solo.
 2. **Indicizzazione**: ispeziona ogni URL della sitemap con l'URL Inspection API di Search Console (5 richieste in parallelo). Le pagine non indicizzate (verdict diverso da `PASS`) con uno stato tecnico (duplicato, canonical diversa, redirect, soft 404, noindex, non trovata) vengono escluse dall'ottimizzazione, perché title e description non le risolvono. Segnala nel digest solo le pagine non indicizzate il cui stato è cambiato rispetto all'ultima segnalazione, così non si ripete lo stesso avviso ogni 12 ore. Il primo run registra lo stato attuale in silenzio, senza avvisi: da lì in poi segnala solo i cambiamenti. Per vedere l'elenco completo usare il comando `indexing`.
 3. **Ottimizzazione**: le pagine con un problema di status (URL della sitemap che non risponde 200) o con uno stato tecnico di indicizzazione vengono escluse dal run e riportate in `technicalSkipped`. Per ogni pagina candidata l'agente riceve le sue opportunità (query in posizione 4–15 e query contese con altre pagine) e, se GA4 è configurato, le visite reali degli ultimi 28 giorni (`ga4`), così può usarle nei title e nelle description.
 4. **Valutazione** delle modifiche precedenti e **recap** del progresso.
-5. **IndexNow** sulle pagine modificate e **reinvio sitemap** a Search Console, se necessario.
+5. **Reinvio sitemap** a Search Console, se necessario.
 6. **Opportunità**: stampa nei log le query da spingere e quelle contese tra più pagine.
-7. **Digest WhatsApp**: un solo messaggio nel gruppo per run, che unisce pagine aggiornate, URL inviati a IndexNow, sitemap reinviata, nuovi problemi tecnici, pagine non indicizzate e pagine saltate. Se non c'è nulla da segnalare, non invia niente.
+7. **Digest WhatsApp**: un solo messaggio nel gruppo per run, che unisce pagine aggiornate, sitemap reinviata, nuovi problemi tecnici, pagine non indicizzate e pagine saltate. Se non c'è nulla da segnalare, non invia niente.
 
 8. **Idee contenuti** (una volta a settimana, `SEO_CONTENT_INTERVAL_DAYS`, default 7): il tool legge gli articoli già pubblicati nel blog in tutte le lingue e le query di Search Console con almeno 10 impressioni negli ultimi 28 giorni. Aggiunge tre segnali facoltativi: visite alle voci Wikipedia su apnea/freediving (ultimi 30 giorni contro i 30 precedenti), suggerimenti di completamento di Google per lingua e le pagine più visitate su GA4. DeepSeek propone al massimo 3 argomenti che non duplicano articoli esistenti, con un titolo per ciascuna delle 6 lingue del sito. Il messaggio WhatsApp è solo un suggerimento: il sito non viene modificato e non vengono scritte bozze. Il primo invio avviene al primo cron dopo il deploy; lo stato è in `data/memory/content-state.json`, e viene salvato solo dopo un invio riuscito. Se una fonte non risponde, le idee si generano con le altre.
 9. **Report mensile** (una volta al mese, al primo cron del mese): pagine più visitate negli ultimi 28 giorni da GA4 e Core Web Vitals reali su mobile (LCP, INP, CLS, p75) da CrUX. Se né `GA4_PROPERTY_ID` né `CRUX_API_KEY` sono impostate, non invia nulla. CrUX risponde 404 quando il sito non ha abbastanza traffico Chrome: in quel caso la sezione viene omessa.
@@ -174,7 +171,7 @@ Fonti senza chiave usate solo per le idee contenuti: Wikipedia (pageviews) e il 
 
 Lo stato del monitor e quello dell'indicizzazione (problemi già segnalati) si salvano solo dopo un invio riuscito: se WhatsApp fallisce, i problemi vengono riproposti al run successivo.
 
-Ogni passo accessorio (monitor, IndexNow, sitemap, digest) è protetto: se fallisce emette un `::warning::` e il cron continua.
+Ogni passo accessorio (monitor, indicizzazione, sitemap, digest) è protetto: se fallisce emette un `::warning::` e il cron continua.
 
 Limiti del monitor: lo SPA risponde 200 anche per le pagine inesistenti (fallback su `/`), quindi il controllo degli status trova soprattutto errori 5xx e redirect inattesi, non le pagine vuote.
 
@@ -206,11 +203,12 @@ Lo snapshot è un unico record nella tabella `seo_overview` del backend, sovrasc
 
 - Copre le pagine statiche di `seo_settings`, gli articoli del blog (`/blog/<slug>`) e gli eventi (`/<slug>`): tutti salvati in `seo_settings` per path, con traduzioni. Gli articoli del blog hanno le traduzioni di title e description in tutte le lingue del sito (`SEO_LANGUAGES`), come gli eventi. Ogni run è limitato da `SEO_MAX_CHANGES_PER_RUN` e dal budget di tempo (`SEO_RUN_BUDGET_MINUTES`, default 40); i target rimasti passano al run successivo.
 - Non modifica sitemap, robots, og_image, dati strutturati o contenuti delle pagine: solo meta tag. L'unica scrittura sulla sitemap è il reinvio a Search Console (vedi sotto).
+- **Filtri della sitemap** (`/sitemap.xml` in `server/index.cjs`): include gli eventi solo se la data è oggi o futura, e i profili solo se la bio ha almeno 80 caratteri. Le pagine escluse restano raggiungibili dal sito. Soglia modificabile in quel punto del codice.
 - **Reinvio sitemap:** a ogni `cron` il tool reinvia `sitemap.xml` se Google non l'ha riscaricata da più di 3 giorni. Usa lo scope `webmasters` (scrittura), separato dallo scope di sola lettura del resto. Il service account deve avere il permesso Completo sulla proprietà.
 - Google Search Console ha un ritardo di 2–3 giorni: il tool usa come ultimo giorno disponibile oggi meno 3.
 - La prima valutazione utile arriva dopo circa 3 settimane. Serve tempo per avere campioni significativi.
 - Il cron gira due volte al giorno su GitHub Actions. Per eseguire i comandi a mano serve il file `.env` locale.
-- **Bing Webmaster**: il reinvio della sitemap a Bing non è implementato. Le API legacy di Bing Webmaster si ritirano il 31/08/2026 e la REST che le sostituisce non è ancora verificata. IndexNow copre comunque le URL su Bing.
+- **Bing Webmaster**: il reinvio della sitemap a Bing non è implementato. Le API legacy di Bing Webmaster si ritirano il 31/08/2026 e la REST che le sostituisce non è ancora verificata. IndexNow è stato rimosso dal cron perché la chiave restituiva 403 `UserForbiddedToAccessSite`.
 - **Redirect del dominio senza www**: `weapnea.com` risponde 308 verso `www.weapnea.com`, impostato via API Vercel (`PATCH /v9/projects/{project}/domains/{domain}` con `redirectStatusCode`), perché la dashboard non permette di scegliere il codice. Se il monitor segnala di nuovo il problema, ripetere la chiamata.
 
 ## Prossimi passi possibili

@@ -36,7 +36,6 @@ export const config = {
   botApiUrl: env("BOT_API_URL", "https://wz-pro.it/ollama/api"),
   botApiToken: env("BOT_API_TOKEN"),
   botGroupJid: env("BOT_GROUP_JID"),
-  indexNowKey: env("INDEXNOW_KEY"),
   pagespeedApiKey: env("PAGESPEED_API_KEY"),
   ga4PropertyId: env("GA4_PROPERTY_ID"),
   cruxApiKey: env("CRUX_API_KEY"),

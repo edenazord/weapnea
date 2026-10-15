@@ -6,7 +6,6 @@ import {
   saveMonitorState,
 } from "./monitor.mjs";
 import { printOpportunities } from "./opportunities.mjs";
-import { notifyChangedUrls } from "./indexnow.mjs";
 import { refreshSitemap } from "./technical.mjs";
 import { previewContent, sendContentIfDue } from "./content.mjs";
 import { sendMonthlyReportIfDue, buildMonthlyReport } from "./analytics.mjs";
@@ -73,12 +72,8 @@ try {
     });
     await evaluateActions();
     await progressReport();
-    const indexing = await safely("IndexNow", () =>
-      notifyChangedUrls(run.applied),
-    );
-    if (indexing) console.log(`IndexNow: inviati ${indexing.submitted} URL.`);
     const sitemap = await safely("Reinvio sitemap", async () => {
-      const r = await refreshSitemap({ force: (indexing?.submitted ?? 0) > 0 });
+      const r = await refreshSitemap();
       console.log(
         r.submitted
           ? `Sitemap reinviata a Search Console (ultimo download precedente: ${r.previousDownload ?? "mai"}).`
@@ -92,7 +87,6 @@ try {
     // Un solo messaggio nel gruppo per run. Lo stato di monitor e indicizzazione si salva solo dopo l'invio.
     const digest = buildDigest({
       run,
-      indexing,
       sitemap: sitemap?.submitted ? sitemap : null,
       fresh: monitor?.fresh ?? [],
       indexingIssues: indexingCheck?.issues ?? [],
@@ -159,7 +153,7 @@ try {
   } else if (command === "history") {
     await printHistory();
   } else if (command === "check") {
-    // Solo log: nessun messaggio WhatsApp, nessuno stato salvato, nessun invio a IndexNow o Search Console.
+    // Solo log: nessun messaggio WhatsApp, nessuno stato salvato, nessun invio a Search Console.
     const r = await runChecks();
     console.log(`URL sitemap controllate: ${r.checked}.`);
     console.log(

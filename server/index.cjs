@@ -5126,6 +5126,14 @@ function resolveLang(acceptLangHeader) {
   return 'it';
 }
 
+function toBodyParagraphs(text) {
+  return String(text || '')
+    .replace(/<[^>]+>/g, ' ')
+    .split(/\n+/)
+    .map((s) => s.replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+}
+
 app.get('/api/seo-meta', async (req, res) => {
   res.set('Cache-Control', 'public, max-age=120');
   const rawPath = String(req.query.path || '/');
@@ -5223,6 +5231,7 @@ app.get('/api/seo-meta', async (req, res) => {
           ? (p.avatar_url.startsWith('http') ? p.avatar_url : `${base}${p.avatar_url}`)
           : defaultMeta.image;
         const profileDesc = p.bio ? p.bio.slice(0, 160) : `Profilo istruttore di apnea su WeApnea.`;
+        const profileBody = toBodyParagraphs(p.bio);
         const personJsonLd = JSON.stringify({
           '@context': 'https://schema.org',
           '@type': 'Person',
@@ -5238,6 +5247,7 @@ app.get('/api/seo-meta', async (req, res) => {
           image: img,
           url: `${base}${rawPath}`,
           type: 'profile',
+          body: profileBody,
           jsonld: personJsonLd,
         });
       }
@@ -5260,6 +5270,11 @@ app.get('/api/seo-meta', async (req, res) => {
           ? (ev.image_url.startsWith('http') ? ev.image_url : `${base}${ev.image_url}`)
           : defaultMeta.image);
         const evTitle = custom?.title || ev.title;
+        const evBody = [
+          dateStr ? `Data: ${dateStr}` : null,
+          ev.location ? `Luogo: ${ev.location}` : null,
+          ...toBodyParagraphs(ev.description),
+        ].filter(Boolean);
         return res.json({
           ...defaultMeta,
           title: `${evTitle} | WeApnea`,
@@ -5267,6 +5282,7 @@ app.get('/api/seo-meta', async (req, res) => {
           image: img,
           url: `${base}${rawPath}`,
           type: 'event',
+          body: evBody,
           jsonld: JSON.stringify({
             '@context': 'https://schema.org',
             '@type': 'Event',
@@ -5480,8 +5496,8 @@ app.get('/sitemap.xml', async (_req, res) => {
       xml += `  <url><loc>${base}${p.path}</loc><changefreq>${p.changefreq}</changefreq><priority>${p.priority}</priority></url>\n`;
     }
 
-    // Events (all, including past)
-    const { rows: events } = await pool.query("SELECT slug, date, created_at FROM events WHERE slug IS NOT NULL AND slug != '' ORDER BY date DESC NULLS LAST LIMIT 1000");
+    // Eventi futuri o in corso: quelli passati restano raggiungibili ma non sono in sitemap
+    const { rows: events } = await pool.query("SELECT slug, date, created_at FROM events WHERE slug IS NOT NULL AND slug != '' AND date >= CURRENT_DATE ORDER BY date DESC NULLS LAST LIMIT 1000");
     for (const ev of events) {
       const lastmod = toDate(ev.created_at);
       xml += `  <url><loc>${base}/${ev.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>weekly</changefreq><priority>0.8</priority></url>\n`;
@@ -5494,10 +5510,11 @@ app.get('/sitemap.xml', async (_req, res) => {
       xml += `  <url><loc>${base}/blog/${p.slug}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.6</priority></url>\n`;
     }
 
-    // Public profiles
-    const { rows: profiles } = await pool.query("SELECT public_slug FROM profiles WHERE public_profile_enabled = true AND public_slug IS NOT NULL AND public_slug != ''");
+    // Profili pubblici con una bio sufficiente: quelli vuoti restano raggiungibili ma non sono in sitemap
+    const { rows: profiles } = await pool.query("SELECT public_slug, updated_at FROM profiles WHERE public_profile_enabled = true AND public_slug IS NOT NULL AND public_slug != '' AND length(btrim(coalesce(bio, ''))) >= 80");
     for (const p of profiles) {
-      xml += `  <url><loc>${base}/profile/${p.public_slug}</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
+      const lastmod = toDate(p.updated_at);
+      xml += `  <url><loc>${base}/profile/${p.public_slug}</loc><lastmod>${lastmod}</lastmod><changefreq>monthly</changefreq><priority>0.5</priority></url>\n`;
     }
 
     xml += '</urlset>';
